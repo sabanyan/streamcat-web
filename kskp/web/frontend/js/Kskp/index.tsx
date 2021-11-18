@@ -112,7 +112,7 @@ const Kskp = (props: Props) => {
         }
 
         return (
-            <AsyncResourceContent fallback={<p>'Loading...'</p>}>
+            <AsyncResourceContent fallback={<p>Loading...</p>}>
             <div className={style.view}>
                 {viewComponent}
             </div>

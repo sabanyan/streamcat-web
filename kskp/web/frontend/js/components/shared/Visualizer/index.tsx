@@ -2,13 +2,14 @@ import * as React from 'react';
 
 import {API} from 'Modules/api/index';
 import {CommandParamType} from 'Types/index';
-import {StateUtil} from 'Utils/index';
+import {APIUtil2, StateUtil} from 'Utils/index';
 import style from './style.scss';
 
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
 
 import {EmptyState, Loader} from 'Shared/Base';
 import { PreviewInspector} from 'Shared/Inspector';
+import { ActivityType } from 'Model/Library';
 
 
 type Props = {
@@ -132,44 +133,40 @@ export default class Visualizer extends React.Component<Props, State> {
             return new Promise<void>((resolve, reject) => {})
         }
 
-        // GET /frames?contents を発行する
-        return API.request.doGet.frames({
-                frameUUID: frame_uuid,
-                contents: true,
-                ...this.state.args
-            })
-            .then((res) => {
-                const json = API.response.get.frames(res.data);
-                const headers = json.args.column_names;
-                const contents = json.contents;
-                const result = {
-                    html: contents,
-                    args: this.state.args
-                };
-                onSaveResult(index, result, headers);
-                this.setState(result);
-            })
-            .catch((exception) => {
-                if (exception.message !== "VisualizeInitException") {
-                    notify({
-                        title: exception.title,
-                        message: exception.message,
-                        status: (exception.messageStatus) ? exception.messageStatus : "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                }
-                const result = {
-                    html: null,
-                    args: this.state.args
-                };
-                onSaveResult(index, result, []);
-                this.setState(result);
-            })
-            .then(() => {
-                const {afterViz} = this.props;
-                if (afterViz) afterViz();
-            });
+        // 取得するFrameの取得開始行と取得行数を取得する
+        const offset: number = this.state.args['offset'] || 0;
+        const limit: number = this.state.args['limit'] || 100;
+
+        // GET /frames?contents=on を発行する
+        return APIUtil2.findFrame(frame_uuid, true, offset, limit).then(frame => {
+            const headers = frame.args!.column_names;
+            const contents = frame.contents;
+            const result = {
+                html: contents,
+                args: this.state.args
+            };
+            onSaveResult(index, result, headers);
+            this.setState(result);
+        }).catch((e) => {
+            if (e.message !== "VisualizeInitException") {
+                notify({
+                    title: e.title,
+                    message: e.message,
+                    status: (e.messageStatus) ? e.messageStatus : "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            }
+            const result = {
+                html: null,
+                args: this.state.args
+            };
+            onSaveResult(index, result, []);
+            this.setState(result);
+        }).then(() => {
+            const {afterViz} = this.props;
+            if (afterViz) afterViz();
+        });
     }
 
     postActivity() {
@@ -183,69 +180,73 @@ export default class Visualizer extends React.Component<Props, State> {
         }
 
         // stepIdのリストから、stepIdをプロパティに持つオブジェクトへ変換する
-        const stepIdsToObj = (stepIds: (string | null | undefined)[]) => {
-            const obj = {};
-            stepIds.forEach((stepId) => {
-                if(stepId){
-                    obj[stepId] = {
-                        command_id: visualize.id,
-                        args: this.state.args
-                    };
-                }
-            });
-            return obj;
-        };
-
-        // POST /vizsを発行する
-        return API.request.doPost.vizs({
-                uuid: flow_uuid,
-                frame: frame_uuid,
-                args: {
-                    // プレビュー実行はキャッシュの作成を許可する
-                    use_cache: true,
-                    vis: stepIdsToObj(stepIds)
-                },
-                lock: lock_uuid
-            })
-            .then((res) => {
-                // JSON Parser
-                const json = API.response.post.vizs(res.data);
-                // TODO: 将来はModel
-                const headers = json.outs[0].args.column_names;
-                const contents = json.outs[0].contents;
-                const args = this.state.args;
-                const result = {
-                    html: contents,
-                    args: args
-                };
-                onSaveResult(index, result, headers);
-                this.setState({args: args, html: contents});
-            })
-            .catch((exception) => {
-                if (exception.message !== "VisualizeInitException") {
-                    notify({
-                        title: exception.title,
-                        message: exception.message,
-                        status: (exception.messageStatus) ? exception.messageStatus : "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                }
-                const args = this.state.args;
-                const result = {
-                    html: null,
-                    args: args
-                };
-                onSaveResult(index, result, []);
-                this.setState({
-                    html: null,
+        const stepIdsArgs = stepIds.reduce((stepIdObj, stepId) => {
+            if(stepId){
+                stepIdObj[stepId] = {
+                    command_id: visualize.id,
                     args: this.state.args
+                };
+            }
+            return stepIdObj;
+        }, {});
+
+        let promise: Promise<ActivityType>;
+        if(frame_uuid){
+            // POST /vizsを発行する
+            promise = APIUtil2.createFrameVis(
+                frame_uuid,
+                {   // プレビュー実行はキャッシュの作成を許可する
+                    use_cache: true,
+                    vis: stepIdsArgs
+                }
+            )
+        }else{
+            // POST /vizsを発行する
+            promise = APIUtil2.createFlowVis(
+                flow_uuid,
+                {   // プレビュー実行はキャッシュの作成を許可する
+                    use_cache: true,
+                    vis: stepIdsArgs
+                },
+                lock_uuid
+            )
+        }
+        
+        return promise.then(activity => {
+            // TODO: 将来はModel
+            const headers = activity.outs[0].args.column_names;
+            const contents = activity.outs[0].contents;
+            const args = this.state.args;
+            const result = {
+                html: contents,
+                args: args
+            };
+            onSaveResult(index, result, headers);
+            this.setState({args: args, html: contents});
+        }).catch(e => {
+            if (e.message !== "VisualizeInitException") {
+                notify({
+                    title: e.title,
+                    message: e.message,
+                    status: (e.messageStatus) ? e.messageStatus : "error",
+                    dismissAfter: 0,
+                    closeButton: true
                 });
-            })
-            .then(() => {
-                const {afterViz} = this.props;
-                if (afterViz) afterViz();
+            }
+            const args = this.state.args;
+            const result = {
+                html: null,
+                args: args
+            };
+            onSaveResult(index, result, []);
+            this.setState({
+                html: null,
+                args: this.state.args
             });
+        }).then(() => {
+            const {afterViz} = this.props;
+            if (afterViz) afterViz();
+        });
     }
 
     /**

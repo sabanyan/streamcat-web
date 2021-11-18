@@ -1,8 +1,6 @@
 import React from 'react'
-import { useEffect, useRef, useState } from 'react';
-import { Paper, TextField, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Select } from '@material-ui/core';
+import { Paper, TextField, TableContainer, Table, TableRow, TableCell, TableBody, Select } from '@material-ui/core';
 import style from './style.scss'
-import { Tab } from 'Components/shared/Base';
 import Constants from 'Constants/index';
 
 type Row = {
@@ -38,9 +36,7 @@ export function MemberForm(props: Props) {
       native
       value={row.type ? row.type : "Reader"}
       onChange={(e) => onMemberRoleChanged(e, row)}
-      className={style.role}
-
-    >
+      className={style.role}>
       <option value="Owner">{Constants.projectMemberRole.OWNER}</option>
       <option value="Writer">{Constants.projectMemberRole.WRITER}</option>
       <option value="Reader">{Constants.projectMemberRole.READER}</option>
@@ -61,7 +57,7 @@ export function MemberForm(props: Props) {
       </div>
 
       <TableContainer component={Paper} className={style.table}>
-        <Table aria-label="member"  >
+        <Table aria-label="member">
           {/*
           <TableHead>
             <TableRow>

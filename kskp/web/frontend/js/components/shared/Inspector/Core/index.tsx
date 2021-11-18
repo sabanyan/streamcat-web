@@ -14,11 +14,11 @@ import {
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { DataFrameDetailType, MastType } from "Types/index";
-import { FlowModelProps } from "Model/Flow/FlowModel";
+import { FlowType } from 'Model/Library';
 
 type InspectorProps = {
   inspector: { width: number };
-  flow: FlowModelProps;
+  flow: FlowType;
   selected_step_ids: Array<string>;
   nodes: [];
   mast: MastType;
@@ -33,7 +33,6 @@ type InspectorProps = {
   updateFlow: Function;
   notify: Function;
   dismissNotify: Function;
-  loadFlowJSON: Function;
   refreshFlow: Function;
   deleteSteps: Function;
   addHistory: Function;
@@ -53,7 +52,7 @@ class Inspector extends React.Component<InspectorProps> {
   render() {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
-      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
+      deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
       resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       updateLastSavedFlow, previewDisabled } = this.props
 
@@ -67,7 +66,7 @@ class Inspector extends React.Component<InspectorProps> {
         property = <FlowSettingsInspector
           mast={mast}
           selected_step_ids={selected_step_ids}
-          nodes={flow.nodes}
+          nodes={flow.flow.nodes}
           addStep={addStep}
           addDataSrcStep={addDataSrcStep}
           addDataDstStep={addDataDstStep}
@@ -82,14 +81,13 @@ class Inspector extends React.Component<InspectorProps> {
       } else {
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataFrameInspector
-            nodes={flow.nodes}
+            nodes={flow.flow.nodes}
             notify={notify}
             dismissNotify={dismissNotify}
             selected_data_source_detail={selected_data_source_detail}
             updateDataFrameDetail={updateDataFrameDetail}
             mast={mast}
             lockUUID={lockUUID}
-            loadFlowJSON={loadFlowJSON}
             deleteSteps={deleteSteps}
             selectSteps={selectSteps}
             addHistory={addHistory}
@@ -156,7 +154,7 @@ class Inspector extends React.Component<InspectorProps> {
       }
     } else if (!selected_step_ids.length) {
       property = <FlowSettingsInspector
-        nodes={flow.nodes}
+        nodes={flow.flow.nodes}
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
@@ -174,7 +172,7 @@ class Inspector extends React.Component<InspectorProps> {
       property = <MultiInspector
         deleteSteps={deleteSteps}
         selectSteps={selectSteps}
-        nodes={flow.nodes}
+        nodes={flow.flow.nodes}
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
@@ -190,7 +188,7 @@ class Inspector extends React.Component<InspectorProps> {
       <Resizer
         inspector={inspector}
         resizeInspector={resizeInspector}>
-        <AsyncResourceContent fallback={<p>'Loading...'</p>}>
+        <AsyncResourceContent fallback={<p>Loading...</p>}>
           {property}
         </AsyncResourceContent>
       </Resizer>

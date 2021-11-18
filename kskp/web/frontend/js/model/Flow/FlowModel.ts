@@ -7,6 +7,7 @@ import {
     SubFlowStepModel,
     DataSrcStepModel
 } from "Model/index";
+import { FlowType } from 'Model/Library';
     
 export interface FlowAllowList {
     copy: boolean;
@@ -87,19 +88,19 @@ export default class FlowModel {
     description: string = "";
     masked?: boolean;
 
-    constructor(props?: FlowModelProps) {
+    constructor(props?: FlowType) {
         if (!props) return;
         this.createdAt = props.createdAt;
         this.creator = props.creator;
         this.label = props.label;
-        this.masked = props.masked;
-        this.nodes = this.toNodeModels(props.nodes || []);
-        this.params = props.params || [];
-        this.ports = props.ports || [[], []];
-        this.projectId = props.projectId;
-        this.description = props.description;
-        this.folderPath = props.folderPath;
-        this.folderUuid = props.folderUuid;
+        // this.masked = props.masked;
+        this.nodes = this.toNodeModels(props.flow.nodes || []);
+        this.params = props.flow.params || [];
+        this.ports = props.flow.ports || [[], []];
+        this.projectId = props.flow.projectId;
+        this.description = props.flow.description || '';
+        this.folderPath = props.folderPath || '';
+        this.folderUuid = props.folderUuid || '';
     }
 
     toNodeModels(nodes?: any[]) {
@@ -214,7 +215,8 @@ export default class FlowModel {
         this.deletePortWithId(1, id);
     }
 
-    setPort(type: number, port) {
+    // PortのUpsert処理
+    private setPort(type: number, port) {
         let targetPorts = (type === 0) ? this.getInPorts() : this.getOutPorts();
         let hasUpdate = false;
         this.ports[type] = targetPorts.map((p) => {
@@ -229,11 +231,11 @@ export default class FlowModel {
         if (!hasUpdate) this.ports[type].push(port);
     }
 
-    setInPort(port: []) {
+    setInPort(port) {
         this.setPort(0, port);
     }
 
-    setOutPort(port: []) {
+    setOutPort(port) {
         this.setPort(1, port);
     }
 }

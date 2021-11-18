@@ -63,7 +63,7 @@ if (document.getElementById('admin_users')) {
 if (elementId) {
     ReactDOM.render(
         <Provider store={store}>
-        <AsyncResourceContent fallback={<p>'Loading...'</p>}>
+        <AsyncResourceContent fallback={<p>Loading...</p>}>
             <Kskp viewId={viewId} />
         </AsyncResourceContent>
         </Provider>,

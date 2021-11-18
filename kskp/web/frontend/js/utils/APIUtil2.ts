@@ -4,14 +4,18 @@ import {
     DatumType,
     ParentProjectType,
     ParentFolderType,
+    ParentTrashType,
     ProjectType,
     FolderType,
+    TrashType,
     RemoteFolderType,
     DatabaseType,
     FlowType,
     ScheduleType,
     FrameType,
-    DocumentType
+    DocumentType,
+    ActivityType,
+    Port
 } from 'Model/Library';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import {LockType} from 'Model/Locks';
@@ -50,7 +54,10 @@ const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => 
  * GET APIを発行する
  * @param url 
  */
-const get = <TDatumType>(url: string) => {
+const get = <TDatumType>(url: string, params?: {}) => {
+    if(params) {
+        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+    }
     return fetch(
         url,
         {
@@ -137,7 +144,7 @@ const del = (url: string, body={}) => {
  * DatumにWebAPIを発行する関数を付与する
  * @param data Datumのリスト
  */
-const DatumArray = function (this: any, data: DatumType[]) {
+const DatumArray = function(this: any, data: DatumType[]) {
     // NOTE: Arrow形式のコンストラクタ関数内ではthisを参照できない
     // NOTE: TypeScriptではコンストラクタ関数にはthis引数が必要のようだ
     // 
@@ -240,9 +247,11 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                 }
 
             }else if(datum.type === 'trash') {
-                const d = datum as ParentFolderType;
-                d.delete = () =>
-                    del(`/api/v0/trashes/${d.uuid}`);
+                const d = datum as TrashType;
+                d.trashAll = () =>
+                    del(`/api/v0/trashes`);
+                d.putBack = (uuid) =>
+                    put<TrashType>(`/api/v0/trashes/${uuid}`, {});
             }else if(datum.type === 'rfolder') {
                 const d = datum as RemoteFolderType;
                 d.move = (parent) => 
@@ -306,7 +315,7 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
     return Array.prototype.map.apply(this, [wrapCallbackfn, thisArg]);
 }
 
-DatumArray.prototype.slice = function(start?: number, end?: number)  {
+DatumArray.prototype.slice = function(start?: number, end?: number) {
     // this: new DatumArray()で生成するオブジェクト
     return DatumArray.prototype.map.apply(this, [datum => datum]).slice(start, end);
 }
@@ -316,6 +325,46 @@ DatumArray.prototype.shift = function() {
     return DatumArray.prototype.map.apply(this, [datum => datum]).shift();
 }
 
+/**
+ * PortArrayにhasPort関数を付与する
+ */
+const PortArray = function(this: any, ports: Port[]){
+    Array.prototype.push.apply(this, ports);
+}
+PortArray.prototype = Object.create(Array.prototype);
+PortArray.prototype.constructor = PortArray;
+
+PortArray.prototype.hasPort = function(portId: string){
+    // TODO: Portの識別子はnodeIdからlabelに変更予定
+    return !!PortArray.prototype.find.apply(this, [p => p.nodeId === portId]);
+}
+
+PortArray.prototype.upsertPort = function(port: Port){
+    const findPort = PortArray.prototype.find.apply(this, [p => p.nodeId === port.nodeId]);
+    if(findPort){
+        // 既に存在する場合は更新する
+        findPort.label = port.label;
+        findPort.type = port.type;
+    }else{
+        // 存在しない場合は追加する
+        this.push(port);
+    }
+}
+
+PortArray.prototype.removePort = function(portId: string){
+    const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === portId]);
+    if(index === -1){
+        // 存在しない場合は何もしない
+        return;
+    }
+    // 存在する場合は削除する
+    PortArray.prototype.splice.apply(this, [index, 1]);
+}
+
+// PortArrayをJSON文字列に変換する
+PortArray.prototype.toJSON = function(){
+    return PortArray.prototype.map.apply(this, [port => {return {...port};}]);
+}
 
 /**
  * Web APIを発行する関数を纏めるクラス
@@ -347,7 +396,11 @@ export class APIUtil2 {
      * GET /trashesを発行してゴミ箱を取得する
      */
     static findTrash = () => {
-        return get<ParentFolderType>('/api/v0/trashes');
+        return get<ParentTrashType>('/api/v0/trashes').then(trash => {
+            trash = (new DatumArray([trash])).shift();
+            trash.children = new DatumArray(trash.children);
+            return trash;
+        });
     };
 
     /**
@@ -381,7 +434,33 @@ export class APIUtil2 {
     static findFlow = (uuid: string) => {
         return get<FlowType>(`/api/v0/flows/${uuid}`).then(flow => {
             flow = (new DatumArray([flow])).shift();
+            const flowJson = flow.flow;
+            // 配列プロパティがない場合は空値を格納する
+            if(!flowJson.nodes){
+                flowJson.nodes = [];
+            }
+            if(!flowJson.params){
+                flowJson.params = [];
+            }
+            if(!flowJson.ports){
+                flowJson.ports =[new PortArray([]), new PortArray([])];
+            }else if(flow.flow.ports.length === 2) {
+                flowJson.ports[0] = new PortArray(flowJson.ports[0]);
+                flowJson.ports[1] = new PortArray(flowJson.ports[1]);
+            }
             return flow;
+        });
+    };
+
+    /**
+     * GET /framesを発行してフレームを取得する
+     * @param uuid 取得するフレームのUUID
+     */
+    static findFrame = (uuid: string, contents?: boolean, offset?: number, limit?: number) => {
+        return get<FrameType>(`/api/v0/frames/${uuid}`,
+                              {contents:contents, offset:offset, limit:limit}).then(frame => {
+            frame = (new DatumArray([frame])).shift();
+            return frame;
         });
     };
 
@@ -412,4 +491,31 @@ export class APIUtil2 {
             return lock;
         });
     }
+
+    /**
+     * POST /vizsを発行してフローをプレビューする
+     * @param flowUUID
+     */
+    static createFlowVis = (flowUUID:string, args:{}, lockUUID?:string) => {
+        const body = {uuid:flowUUID, args:args, lock:lockUUID};
+        return post<ActivityType>('/api/v0/vizs', body);
+    }
+
+    /**
+     * POST /vizsを発行してFrameをプレビューする
+     * @param flowUUID
+     */
+    static createFrameVis = (frameUUID:string, args:{}) => {
+        const body = {frame:frameUUID, args:args};
+        return post<ActivityType>('/api/v0/vizs', body);
+    }
+
+    /**
+     * POST /activitiesを発行してフローを実行する
+     * @param flowUUID
+     */
+    static createActivity = (flowUUID:string, args:{}, lockUUID?:string) => {
+        const body = {uuid:flowUUID, args:args, lock:lockUUID};
+        return post<ActivityType>('/api/v0/activities', body);
+    };
 }

@@ -4,22 +4,21 @@ import {APIUtil, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateU
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
-import {DataFrameStepModel, FlowModelProps} from "Model/index";
+import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {DataFrameDetailType, MastType} from "Types/index";
 import {Loader} from "Shared/Base";
-import {API} from "Modules/api";
+import { FlowType, Port } from "Model/Library";
 
 type Props = {
     notify: Function;
     dismissNotify: Function;
     selected_data_source_detail: DataFrameDetailType;
     mast: MastType;
-    loadFlowJSON: Function;
     deleteSteps: Function;
     selectSteps: Function;
     addHistory: Function;
-    flow: FlowModelProps;
+    flow: FlowType;
     selected_step_ids: string[];
     deleteCache: Function;
     nodes: any[];
@@ -80,99 +79,62 @@ const DataFrameInspector = (props: Props) => {
             dismissAfter: 0
         });
 
-        return new Promise(async (reslove, reject) => {
-
-            await API.request.doPut.flow(
-                {
-                    flowUUID: inject_flow_uuid,
-                    flow: flow,
-                    // TODO: string|undefined -> string への間に合わせのキャスト
-                    lockUUID: lockUUID || ''
-                }
-            )
-                .then((response) => {
-                    dismissNotify(saveNotify.id);
-                    if (response.data.success === true) {
-                        updateLastSavedFlow();
-                        reslove(response.data);
-                    } else {
-                        reject(response.data);
-                    }
-                });
-        })
+        return flow.update(flow.flow, lockUUID).then(flow => {
+            dismissNotify(saveNotify.id);
+            updateLastSavedFlow();
+        }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
-            .catch(e => {
-                notify({
-                    title: "フロー保存エラー",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: -1,
-                    closeButton: true
-                });
+            notify({
+                title: "フロー保存エラー",
+                message: e.message,
+                status: "error",
+                dismissAfter: -1,
+                closeButton: true
             });
+        });
     };
-
 
     const onClickPreview = () => {
         setShowPreview(true);
     }
     
     useEffect(() => {
-        if (showPreview) {
-            const {mast, lockUUID} = props;
-            let visualizers = mast.visualizers;
-            const flow_uuid = inject_flow_uuid;
-            const selected_step = getSelectedStep();
-            let id = selected_step.id;
-            let stepIds: (string | null | undefined)[] = [];
-            stepIds.push(id);
+        if(!showPreview) return;
+        
+        const {mast, lockUUID} = props;
+        let visualizers = mast.visualizers;
+        const flow_uuid = inject_flow_uuid;
+        const selected_step = getSelectedStep();
+        let id = selected_step.id;
+        let stepIds: (string | null | undefined)[] = [];
+        stepIds.push(id);
 
-            visualizers = SortUtil.getSortedContents(visualizers);
+        visualizers = SortUtil.getSortedContents(visualizers);
 
-            saveFlow()
-                .then((result: any) => {
-                    if (result.success === true) {
-                        // preview
-                        /*
-                        let contents: Contents[] = [];
-                        for (const v of visualizers) {
-                            let content : Content = {
-                                flow_uuid: flow_uuid,
-                                stepIds: stepIds,
-                                frame_uuid: selected_step.uuid,
-                                visualize: v,
-                                lock_uuid: lockUUID
-                            };
-                            contents.push({title: v.label, content: content, id: id, afterViz: updateCache});
-                        }
-                        */
-                        if (selected_step.uuid) {
-                            // uuidだけでプレビュー
-                            window.open("/preview?step_id=" + id +
-                                        "&dialog=true" +
-                                        "&title=" + StringUtil.urlEncode(selected_step.label) +
-                                        "&frame_uuid=" + selected_step.uuid);
-                        } else {
-                            // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
-                            window.open("/preview?step_id=" + id +
-                                        "&dialog=true" +
-                                        "&title=" + StringUtil.urlEncode(selected_step.label) +
-                                        "&flow_uuid=" + flow_uuid +
-                                        "&lock_uuid=" + lockUUID +
-                                        "&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)));
-                        }
-                    }
-                })
-                .catch((message) => {
-                    console.log(message);
-                })
-                .then(() => {
-                    setLoading(false);
-                }).finally(() => {
-                    setShowPreview(false);
-                }
-            );
-        }
+        saveFlow().then(() => {
+            // preview
+            if (selected_step.uuid) {
+                // uuidだけでプレビュー
+                window.open("/preview?step_id=" + id +
+                            "&dialog=true" +
+                            "&title=" + StringUtil.urlEncode(selected_step.label) +
+                            "&frame_uuid=" + selected_step.uuid);
+            } else {
+                // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
+                window.open("/preview?step_id=" + id +
+                            "&dialog=true" +
+                            "&title=" + StringUtil.urlEncode(selected_step.label) +
+                            "&flow_uuid=" + flow_uuid +
+                            "&lock_uuid=" + lockUUID +
+                            "&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)));
+            }
+        }).catch((message) => {
+            console.log(message);
+        }).then(() => {
+            setLoading(false);
+        }).finally(() => {
+            setShowPreview(false);
+        });
     }, [showPreview]);
 
     const updateCache = () => {
@@ -222,7 +184,7 @@ const DataFrameInspector = (props: Props) => {
 
     const onChangeFlowInOut = () => {
         const {updateFlow} = props;
-        let {flow }: any = props;
+        let {flow} = props;
         const flowInChecked = (flowIn && flowIn.current) ? flowIn.current.checked : false;
         const flowOutChecked = (flowOut && flowOut.current) ? flowOut.current.checked : false;
 
@@ -235,15 +197,21 @@ const DataFrameInspector = (props: Props) => {
         };
 
         if (flowInChecked) {
-            flow.setInPort(port);
+            if(!port.label || !port.nodeId || !port.type) {
+                throw new Error("port is not set");
+            }
+            flow.flow.ports[0].upsertPort(port as Port);
         } else {
-            flow.deleteInPortWithId(selected_step.id);
+            selected_step.id && flow.flow.ports[0].removePort(selected_step.id);
         }
 
         if (flowOutChecked) {
-            flow.setOutPort(port);
+            if(!port.label || !port.nodeId || !port.type) {
+                throw new Error("port is not set");
+            }
+            flow.flow.ports[1].upsertPort(port as Port);
         } else {
-            flow.deleteOutPortWithId(selected_step.id);
+            selected_step.id && flow.flow.ports[1].removePort(selected_step.id);
         }
 
         updateFlow(flow);
@@ -368,13 +336,13 @@ const DataFrameInspector = (props: Props) => {
     const {flow} = props;
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
-            <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id || "")} ref={flowIn}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[0].hasPort(selected_step.id)} ref={flowIn}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;入力
             </label>
         </div>
         <div>
-            <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id || "")}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[1].hasPort(selected_step.id)}
                 ref={flowOut}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;出力

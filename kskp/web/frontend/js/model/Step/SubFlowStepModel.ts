@@ -48,14 +48,9 @@ export default class SubFlowStepModel extends CommandStepModel {
     return result
   }
 
-  getCommand = (): any => {
-    let subflow
-    (window as any).subflows.forEach((_subflow) => {
-      if (this.uuid === _subflow.uuid) {
-        subflow = _subflow
-      }
-    })
-    return subflow as SubflowCommandModel
+  getCommand = () => {
+    const subflows = (window as any).subflows;
+    return subflows.find(subflow => this.uuid === subflow.uuid);
   };
 
   getLabel () {

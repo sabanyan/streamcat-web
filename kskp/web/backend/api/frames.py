@@ -196,7 +196,6 @@ def throw_away_frame(frame_uuid):
 def make_new_vis():
     """
     フローを実行してVisを作成する
-    TODO: 廃止予定
     """
     # Vizを取得するには'vis'属性の指定が必須である
     req = RequestJson(request.json)

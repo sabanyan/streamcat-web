@@ -15,12 +15,11 @@ import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
 import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { DatumType, ParentFolderType, DatabaseType, FrameType } from "Model/Library";
+import { DatumType, ParentFolderType, DatabaseType, FrameType, ParentTrashType } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
 import { LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
-import { API } from "Modules/api";
 import { TrashMenuList } from "Components/LibraryContainer/Libary/TrashMenuList";
 import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
@@ -1097,33 +1096,32 @@ const Library = () => {
 
     const renderTrashInspector = (): React.ReactNode => {
         if (!selectedDatas.length) return null;
-        const data = selectedDatas[0];
 
-        const doRecovery = (data) => {
-            API.request.doPut.trash({ trashUUID: data.uuid })
-                .then((response) => {
-                    if (!response.data.success) throw response.data;
+        const datum = selectedDatas[0];
 
-                })
-                .catch((err) => {
-                    let message = new MessageModel(err);
-                    notify({
-                        title: message.title,
-                        message: message.message,
-                        status: message.messageStatus,
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                })
-                .then(() => {
-                    fetchFolder();
+        const doRecovery = () => {
+            if(parentFolder.type !== 'trash'){
+                throw new Error('Trash folder is not selected.');
+            }
+            const trashFolder = parentFolder as ParentTrashType;
+            trashFolder.putBack(datum.uuid).catch((e) => {
+                let message = new MessageModel(e);
+                notify({
+                    title: message.title,
+                    message: message.message,
+                    status: message.messageStatus,
+                    dismissAfter: 0,
+                    closeButton: true
                 });
+            }).then(() => {
+                fetchFolder();
+            });
         };
 
         const onClickRecovery = (e, data) => {
             ModalUtil.registerModal({
                 id: Constants.modal.CONFIRM, onClickDone: () => {
-                    doRecovery(data);
+                    doRecovery();
                     ModalUtil.closeModal(Constants.modal.CONFIRM);
                 }
             });
@@ -1217,7 +1215,7 @@ const Library = () => {
             });
         };
 
-        return <TrashInspector data={data}
+        return <TrashInspector data={datum}
             onClickRecovery={(e, data) => onClickRecovery(e, data)}
             onClickMove={(e, data) => onClickMove(e, data)}
         />;

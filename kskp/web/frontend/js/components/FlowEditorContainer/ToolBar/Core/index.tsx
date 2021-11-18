@@ -3,15 +3,15 @@ import Constants from 'Constants/index';
 import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import classnames from 'classnames';
-import { DataFrameStepModel, FlowModelProps, NoteStepModel } from 'Model/index';
+import { DataFrameStepModel, NoteStepModel } from 'Model/index';
 import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
 import { Loader } from 'Shared/Base';
 import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index';
 import { NoteStepModelProps } from 'Model/Step/NoteStepModel';
 import { defaultGraphProps } from 'Utils/GraphUtil';
+import { FlowType } from 'Model/Library';
 
 type ToolBarProps = {
-    flow: FlowModelProps;
     nodes: any[];
     history: HistoryType;
     zoom: number;
@@ -21,7 +21,6 @@ type ToolBarProps = {
     addStep: Function;
     addHistory: Function;
     sortFlow: Function;
-    loadFlowJSON: Function;
     selectSteps: Function;
     setZoom: Function;
     undo: Function;
@@ -111,8 +110,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
                 }
                 // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
                 this.flowUpdate();
-            })
-            .catch((e) => {
+            }).finally(() => {
                 this.setState({
                     isLoading:false
                 })
@@ -125,14 +123,13 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
 
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
-                this.props.onClickRunFlowPromise().then((result: any) => {
-                    if (result.success === true) {
-                        this.setState({
-                            isLoading: true
-                        }, () => {
-                            this.run();
-                        })
-                    }
+                this.props.onClickRunFlowPromise().then((flow: FlowType) => {
+                    this.setState({
+                        isLoading: true
+                    }, () => {
+                        // フローを実行する
+                        this.run();
+                    })
                 });
                 ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
             }, onClickCancel: () => {

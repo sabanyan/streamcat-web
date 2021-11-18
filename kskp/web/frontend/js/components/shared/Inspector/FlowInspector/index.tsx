@@ -6,7 +6,7 @@ import {Button} from "Shared/Input";
 import {BaseInspector, InputFlowForm, Resizer} from "Shared/Inspector";
 import {RunArgsType, RunResponseType} from "Types/index";
 import moment from "moment/moment";
-import {FlowModelProps} from "Model/Flow/FlowModel";
+import { FlowType } from "Model/Library";
 
 type Props = {
     onClickDelete: Function;
@@ -14,7 +14,7 @@ type Props = {
     onBlurTitle: Function;
     runArgs: RunArgsType;
     updateRunArgs: Function;
-    flow: FlowModelProps;
+    flow: FlowType;
     notify: Function;
     dismissNotify: Function;
 }
@@ -104,7 +104,7 @@ const FlowInspector = (props: Props) => {
     };
 
     const {onClickDuplicate, onClickDelete, onBlurTitle} = props;
-    const {flow}: { flow: FlowModelProps } = props;
+    const {flow} = props;
     if (!flow) {
         return nullInspector();
     }
@@ -112,7 +112,7 @@ const FlowInspector = (props: Props) => {
     const label = flow.label;
     const creator = flow.creator;
     const createdAt = flow.createdAt;
-    const description = flow.description;
+    const description = flow.flow.description;
     const content = <div>
         <div className={style.actions}>
             <Button onClick={() => onClickRun()}>実行する</Button>

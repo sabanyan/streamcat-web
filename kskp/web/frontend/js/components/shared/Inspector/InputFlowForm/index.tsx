@@ -2,13 +2,13 @@ import React from 'react';
 import {AddButton} from 'Shared/Input';
 import {HttpUtil} from 'Utils/index';
 import style from './style.scss';
-import {FlowModelProps} from "Model/Flow/FlowModel";
 import {RunArgsType, LibraryListDataType} from "Types/index";
+import { FlowType } from 'Model/Library';
 
 type Props = {
     runArgs: RunArgsType;
     updateRunArgs: Function;
-    flow: FlowModelProps;
+    flow: FlowType;
 }
 
 const InputFlowForm = (props: Props) => {
@@ -73,8 +73,8 @@ const InputFlowForm = (props: Props) => {
         return result;
     };
 
-    const renderFlowVariableForm = (flow) => {
-        const params = flow.params;
+    const renderFlowVariableForm = (flow:FlowType) => {
+        const params = flow.flow.params;
 
         if (params.length === 0) {
             return null;

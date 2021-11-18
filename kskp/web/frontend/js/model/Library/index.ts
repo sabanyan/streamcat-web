@@ -166,6 +166,21 @@ export type ProjectType = FolderType & {
 };
 
 /**
+ * ゴミ箱を格納するオブジェクト型
+ */
+export type TrashType = FolderType & {
+  trashAll:() => Promise<void>;
+  putBack:(uuid:string) => Promise<DatumType>;
+}
+
+/**
+ * 子Datumを持つProjectを格納するオブジェクト型
+ */
+ export type ParentTrashType = TrashType & {
+  children: DatumType[];
+};
+
+/**
  * RemoteFolderを格納するオブジェクト型
  */
 export type RemoteFolderType = DatumType & {
@@ -209,16 +224,41 @@ export type DatabaseType = DatumType & {
   ) => Promise<DatabaseType>;
 }
 
+export type Port = {
+  label: string;
+  nodeId: string;
+  type: string;
+};
+
+type PortArray = [] & {
+  hasPort: (portId: string) => boolean,
+  upsertPort: (port: Port) => void,
+  removePort: (portId: string) => void,
+  toJSON: () => string
+};
+
+type Flow = {
+  label?: string,
+  description?: string,
+  creator?: string,
+  createdAt?: string,
+  projectId?: number,
+  nodes: any[]
+  params: any[]
+  ports: [PortArray,PortArray]
+}
+
 /**
  * Flowを格納するオブジェクト型
  */
  export type FlowType = DatumType & {
   editLock: boolean;
   modifiedAt: string;
+  flow: Flow;
 
   update:(
-    label:string,
-    flow:{}
+    flow:Flow,
+    lockUUID?:string
   ) => Promise<FlowType>;
 };
 
@@ -248,6 +288,9 @@ export type FrameType = DatumType & {
   encoding: string;
   newline: string;
 
+  args?: {column_names: string[]};
+  contents?: string | null;
+
   update:(
     encoding:string,
     newline:string
@@ -261,6 +304,21 @@ export type FrameType = DatumType & {
   fileSize: number;
 };
 
+type Outs = {
+  // 出力Pointのid
+  id: string;
+  // 出力Pointのラベル名
+  label: string;
+  // 出力データのUUID
+  uuid: string;
+  // 出力データが格納されているフォルダのUUID
+  parent: string | null;
+  // 出力データの列名一覧
+  args: {column_names: string[]};
+  // HTMLに変換したVisデータ
+  contents: string | null;
+}
+
 /**
  * Activityを格納するオブジェクト型
  */
@@ -268,8 +326,8 @@ export type FrameType = DatumType & {
   flow_uuid: string;
   start_time: string;
   end_time: string;
-  outs: {};
-  caches: {};
-  exs: {};
+  // 出力結果情報
+  outs: Outs[];
+  caches: [];
+  exs: [];
 };
-

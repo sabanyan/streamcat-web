@@ -5,7 +5,7 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel }
 import style from "./style.scss";
 import { APIUtil, ZoomUtil } from "Utils/index";
 import { DragType, MastType, StepModelType } from "Types/index";
-import { FlowModelProps } from "Model/Flow/FlowModel";
+import { FlowType } from "Model/Library";
 
 let mouseMoveEvent;
 let mouseUpEvent;
@@ -19,7 +19,7 @@ interface Props {
     invalid: {};
     error: {};
     mast: MastType;
-    flow: FlowModelProps;
+    flow: FlowType;
     selected_step_ids: string[];
     zoom: number;
     drag: DragType;
@@ -294,8 +294,8 @@ const Step = (props: Props) => {
 
     const selected = selectorIntersect();
 
-    const flowIn = flow.hasInPortWithId(step.id);
-    const flowOut = flow.hasOutPortWithId(step.id);
+    const flowIn = flow.flow.ports[0].hasPort(step.id);
+    const flowOut = flow.flow.ports[1].hasPort(step.id);
 
     let stepLabel = step.label;
 

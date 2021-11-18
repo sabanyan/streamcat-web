@@ -5,8 +5,8 @@ import {AddButton, Button} from "Shared/Input";
 import {ModalUtil, StringUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {FlowModelProps} from "Model/Flow/FlowModel";
 import {flowEditorReducerInitialState} from "Modules/flowEditor";
+import { FlowType } from "Model/Library";
 
 type Props = {
     mast: typeof flowEditorReducerInitialState.mast;
@@ -16,7 +16,7 @@ type Props = {
     addDataSrcStep: Function;
     addDataDstStep: Function;
     selectSteps: Function;
-    flow: FlowModelProps;
+    flow: FlowType;
     updateFlow: Function;
     addHistory: Function;
     addFlowVariableHidden: boolean;
@@ -40,14 +40,14 @@ const FlowSettingsInspector = (props: Props) => {
     const onClickAddFlowParam = () => {
         let {flow, updateFlow} = props;
         const name = setNewParamName("new_param", 1);
-        flow.params.push({label:name, name:name, type:'string'});
+        flow.flow.params.push({label:name, name:name, type:'string'});
         updateFlow(flow);
     };
 
     const setNewParamName = (name: string, cnt: number): string => {
         let {flow} = props;
 
-        const findResult = flow.params.find(param => {
+        const findResult = flow.flow.params.find(param => {
             return param.name === (name + cnt);
         });
         if (findResult) {
@@ -58,24 +58,24 @@ const FlowSettingsInspector = (props: Props) => {
 
     const onDeleteParam = (index) => {
         let {flow, updateFlow} = props;
-        const newParams = flow.params.filter((param, paramIndex) => {
+        const newParams = flow.flow.params.filter((param, paramIndex) => {
             return (paramIndex !== index);
         });
 
-        flow.params = newParams;
+        flow.flow.params = newParams;
         updateFlow(flow);
     };
 
     const onDescriptionChange = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
         let {flow, updateFlow} = props;
-        flow.description = e.currentTarget.value;
+        flow.flow.description = e.currentTarget.value;
         updateFlow(flow);
     };
 
     const onParamChange = (e: React.SyntheticEvent<HTMLInputElement>, index: number) => {
         let {flow, updateFlow} = props;
-        flow.params[index].name = e.currentTarget.value;
-        flow.params[index].label = e.currentTarget.value;
+        flow.flow.params[index].name = e.currentTarget.value;
+        flow.flow.params[index].label = e.currentTarget.value;
         updateFlow(flow);
     };
 
@@ -103,7 +103,7 @@ const FlowSettingsInspector = (props: Props) => {
 
     if (!flow) return null;
 
-    const {params} = flow;
+    const {params} = flow.flow;
 
     let inputParams, inputParamsContainer, addFlowParams;
 
@@ -147,7 +147,7 @@ const FlowSettingsInspector = (props: Props) => {
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}
-                  defaultValue={flow.description} rows={8}
+                  defaultValue={flow.flow.description} rows={8}
                   onChange={(e) => onDescriptionChange(e)} disabled={(baseInspectorDisabled)} />
         {inputParamsContainer}
         {addFlowParams}
