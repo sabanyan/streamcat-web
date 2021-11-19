@@ -1,4 +1,3 @@
-
 /**
  * Datumの種別
  */
@@ -23,6 +22,16 @@ type MemberType =
   | 'Writer'
   | 'Owner'
   ;
+
+/**
+ * WebAPI共通のレスポンスの型
+ */
+export type CommonResponse<DataType> = {
+  success  : boolean;
+  data     : DataType;
+  message? : string;
+  code?    : number;
+};
 
 /**
  * Datumのallowlist
@@ -50,7 +59,7 @@ export type FolderAllowlist = Allowlist & {
   createFile: boolean;
   upload: boolean;
   import: boolean;
-}
+};
 
 /**
  * ProjectのMember
@@ -82,7 +91,7 @@ type DatumBaseType<TAllowlist> = {
   move: (parent:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
   rename: (label:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
   delete: (lockUUID?:string) => Promise<void>;
-}
+};
 
 /**
  * Datumを格納するオブジェクト型
@@ -136,7 +145,7 @@ export type FolderType = DatumBaseType<FolderAllowlist> & {
     label:string,
     file:File
   ) => Promise<DocumentType>;
-}
+};
 
 /**
  * 子Datumを持つFolderを格納するオブジェクト型
@@ -161,7 +170,7 @@ export type ProjectType = FolderType & {
 /**
  * 子Datumを持つProjectを格納するオブジェクト型
  */
- export type ParentProjectType = ProjectType & {
+export type ParentProjectType = ProjectType & {
   children: DatumType[];
 };
 
@@ -171,12 +180,12 @@ export type ProjectType = FolderType & {
 export type TrashType = FolderType & {
   trashAll:() => Promise<void>;
   putBack:(uuid:string) => Promise<DatumType>;
-}
+};
 
 /**
  * 子Datumを持つProjectを格納するオブジェクト型
  */
- export type ParentTrashType = TrashType & {
+export type ParentTrashType = TrashType & {
   children: DatumType[];
 };
 
@@ -222,7 +231,7 @@ export type DatabaseType = DatumType & {
     user_id: string,
     password: string
   ) => Promise<DatabaseType>;
-}
+};
 
 export type Port = {
   label: string;
@@ -246,7 +255,7 @@ type Flow = {
   nodes: any[]
   params: any[]
   ports: [PortArray,PortArray]
-}
+};
 
 /**
  * Flowを格納するオブジェクト型
@@ -278,7 +287,7 @@ export type ScheduleType = DatumType & {
     inputs: {},
     trigger: {}
   ) => Promise<ScheduleType>;
-}
+};
 
 /**
  * Frameを格納するオブジェクト型
@@ -317,12 +326,12 @@ type Outs = {
   args: {column_names: string[]};
   // HTMLに変換したVisデータ
   contents: string | null;
-}
+};
 
 /**
  * Activityを格納するオブジェクト型
  */
- export type ActivityType = DatumType & {
+export type ActivityType = DatumType & {
   flow_uuid: string;
   start_time: string;
   end_time: string;

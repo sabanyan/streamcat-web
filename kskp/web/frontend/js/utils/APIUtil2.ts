@@ -1,6 +1,5 @@
-
-import {CommonResponse} from 'Modules/api/core/index';
 import {
+    CommonResponse,
     DatumType,
     ParentProjectType,
     ParentFolderType,

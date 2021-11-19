@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import {API} from 'Modules/api/index';
 import {CommandParamType} from 'Types/index';
 import {APIUtil2, StateUtil} from 'Utils/index';
 import style from './style.scss';
