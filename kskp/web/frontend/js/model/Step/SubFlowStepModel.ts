@@ -53,12 +53,14 @@ export default class SubFlowStepModel extends CommandStepModel {
     return subflows.find(subflow => this.uuid === subflow.uuid);
   };
 
-  getLabel () {
+  getLabel() {
     if (this.label == this.id) {
-      return this.getCommand().label
+        const command = this.getCommand();
+        if (command) {
+            return command.label;
+        }
     }
-
-    return this.label
+    return this.label;
   }
 
   addableInPort () {

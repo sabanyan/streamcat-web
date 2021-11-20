@@ -173,7 +173,10 @@ export default class CommandStepModel extends BaseStepModel {
 
     getLabel() {
         if (this.label == this.id) {
-            return this.getCommand().label;
+            const command = this.getCommand();
+            if (command) {
+                return command.label;
+            }
         }
         return this.label;
     }

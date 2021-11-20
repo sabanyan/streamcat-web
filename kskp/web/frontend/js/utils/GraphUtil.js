@@ -337,19 +337,18 @@ class GraphUtil {
         case Constants.step.type.note:
           const note = node
 
-          model = {
+          const model2 = {
             id: note.id,
-            name: note.name,
+            type: note.type,
             label: note.label,
+            position: note.position,
+            size: note.size,
             title: note.title,
             content: note.content,
-            position: note.position,
-            type: note.type,
-            size: note.size,
-            fontSize: note.fontSize,
             color: note.color,
+            fontSize: note.fontSize
           }
-          node = new NoteStepModel(model)
+          node = new NoteStepModel(model2)
           newNodes.push(node)
 
           break
