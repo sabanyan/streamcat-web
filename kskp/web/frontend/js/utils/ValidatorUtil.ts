@@ -1,20 +1,9 @@
-import Ajv from 'ajv/lib/ajv'
-import FlowModelSchema from 'Schema/flow/FlowModelSchema.json'
-import GraphModelSchema from 'Schema/graph/GraphModelSchema.json'
-import CommandStepModelSchema from 'Schema/steps/CommandStepModelSchema.json'
-import DataFrameStepModelSchema from 'Schema/steps/DataFrameStepModelSchema.json'
-import SubFlowCommandModeSchema from 'Schema/steps/SubFlowStepModelSchema.json'
-import NoteStepModelSchema from 'Schema/steps/NoteStepModelSchema.json'
-
-import { CommandUtil, LogUtil } from 'Utils/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, NoteStepModel } from 'Model/index'
+import { CommandUtil } from 'Utils/index'
 import ValidateJS from 'validate.js'
 
 class ValidatorUtil {
-  ajv: any
   allDefined: ()=>any;
   constructor () {
-    this.ajv = new Ajv() as any
     //日本語対応のバリデーターに変更する
     (ValidateJS as any).options = {fullMessages: false}
 
@@ -550,42 +539,6 @@ class ValidatorUtil {
       return (isError) ? '範囲を指定する数値は小さい順に入力してください' : null
     }
 
-  }
-
-  schemaValidate (schema, state) {
-    const valid = this.ajv.validate(schema, state)
-    if (!valid) {
-      LogUtil.error(this.ajv.errorsText() + ' by ' + schema.$id, state)
-      return false
-    }
-    return true
-  }
-
-  isFlowModelSchema (state) {
-    return this.schemaValidate(FlowModelSchema, state)
-  }
-
-  isGraphModelSchema (state) {
-    return this.schemaValidate(GraphModelSchema, state)
-  }
-
-  isNodesSchema ({nodes}) {
-    let success = true
-    nodes.forEach((node) => {
-      let schema
-      if (node instanceof DataFrameStepModel) {
-        schema = DataFrameStepModelSchema
-      } else if (node instanceof SubFlowStepModel) {
-        schema = SubFlowCommandModeSchema
-      } else if (node instanceof CommandStepModel) {
-        schema = CommandStepModelSchema
-      } else if (node instanceof NoteStepModel) {
-        schema = NoteStepModelSchema
-      }
-      const result = this.schemaValidate(schema, node)
-      if (!result) success = false
-    })
-    return success
   }
 
   nodesValidate (nodes) {

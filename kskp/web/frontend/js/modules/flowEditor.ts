@@ -160,11 +160,6 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
-      //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
-      //ValidatorUtil.isFlowModelSchema(newState);
-      //ValidatorUtil.isGraphModelSchema(newState);
-      //ValidatorUtil.isNodesSchema(newState);
-      //ValidatorUtil.nodesValidate(newState.nodes);
       newState.flow.flow.nodes = newState.nodes;
       break;
     }
