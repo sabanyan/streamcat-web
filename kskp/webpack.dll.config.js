@@ -1,5 +1,4 @@
 const path = require('path')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const webpack = require('webpack')
 
 module.exports = (env) => {
@@ -9,7 +8,7 @@ module.exports = (env) => {
       mode: mode,
       //ref:https://qiita.com/pirosikick/items/c77db84dbed4c447a6fe
       entry: {
-        vendor: ['react', 'react-dom', 'react-redux', 'classnames', 'dagre', 'react-chartjs-2', 'eventemitter3', 'moment']
+        vendor: ['react', 'react-dom', 'react-redux', 'classnames', 'dagre', 'eventemitter3', 'moment']
       },
       output: {
         path: `${__dirname}/web/frontend/static/js`,
