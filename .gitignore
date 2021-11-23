@@ -108,3 +108,4 @@ venv.bak/
 
 .idea
 vendor.js.LICENSE.txt
+package-lock.json

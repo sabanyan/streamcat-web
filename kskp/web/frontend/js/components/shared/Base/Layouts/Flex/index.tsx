@@ -1,12 +1,12 @@
 import React from "react";
 import * as style from "./style.scss";
-import {Property} from "csstype";
+import {AlignItemsProperty, FlexDirectionProperty, JustifyContentProperty} from "csstype";
 
 type Props = {
     children: React.ReactNode
-    justifyContent?: Property.AlignContent;
-    alignItems?: Property.AlignItems;
-    flexDirection?: Property.FlexDirection;
+    justifyContent?: JustifyContentProperty;
+    alignItems?: AlignItemsProperty;
+    flexDirection?: FlexDirectionProperty;
     inline?: boolean;
     fluid?: boolean;
     width?: number | string;
