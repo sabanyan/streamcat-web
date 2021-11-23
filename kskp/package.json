@@ -1,7 +1,17 @@
 {
-  "name": "kskp-beta",
+  "name": "kskp",
   "version": "1.0.0",
-  "description": "kskp-beta",
+  "description": "A data-analysis software, KSKP",
+  "author": "KSKP developers",
+  "license": "GNU Affero General Public License v3.0",
+  "homepage": "https://www.kskp.io/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ksk-anl/kskp-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ksk-anl/kskp-web/issues"
+  },
   "main": "index.js",
   "scripts": {
     "start": "npx webpack --config webpack.dll.config.js --env=development && npx webpack --env=development --watch",
@@ -15,16 +25,6 @@
     "flow": "flow",
     "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ksk-anl/kskp-beta.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ksk-anl/kskp-beta/issues"
-  },
-  "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "jest": {
     "roots": [
       "<rootDir>/web/frontend/js"
