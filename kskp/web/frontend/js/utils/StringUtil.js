@@ -1,5 +1,4 @@
 //@flow
-import { v4 as uuidv4 } from 'uuid';
 export default class StringUtil {
 
   static separate (num: number): string {
@@ -32,9 +31,6 @@ export default class StringUtil {
     return metrics.width
   }
 
-  static generateUUID(): string{
-    return uuidv4();
-  }
   static urlEncode(value:string):string{
    return encodeURIComponent(value);
   }
