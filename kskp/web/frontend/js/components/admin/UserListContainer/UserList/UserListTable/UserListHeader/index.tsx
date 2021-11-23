@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import iconStyle from "Shared/Input/FlatButton/style.scss";
 import style from "./style.scss";
 

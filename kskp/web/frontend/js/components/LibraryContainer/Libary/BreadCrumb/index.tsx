@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import {Fragment} from "react";
 import * as style from "./style.scss";
 import {Text} from "Shared/Base/Texts/Text";

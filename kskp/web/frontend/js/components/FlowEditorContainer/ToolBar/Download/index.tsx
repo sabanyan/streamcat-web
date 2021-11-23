@@ -1,5 +1,5 @@
 //@flow
-import * as React from "react";
+import React from 'react';
 import {ToolBarButton} from "FlowEditorContainer/ToolBar";
 import {ToolBarButtonType} from "Types/index";
 

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import style from "../style.scss";
 import {AddButton, DropDownList} from "Shared/Input";
 import {CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel} from "Model/index";

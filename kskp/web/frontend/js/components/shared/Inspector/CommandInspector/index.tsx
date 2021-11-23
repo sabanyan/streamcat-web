@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import {useAsyncResource} from 'use-async-resource';
 import {SortEndHandler} from "react-sortable-hoc";
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";

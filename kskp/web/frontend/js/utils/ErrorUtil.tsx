@@ -1,6 +1,6 @@
 import { ModalUtil, StringUtil } from 'Utils/index'
 import Constants from 'Constants/index'
-import * as React from "react";
+import React from 'react';
 import { ReactDomUtil } from "./index";
 
 export default class ErrorUtil {

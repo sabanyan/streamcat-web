@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import { useEffect, useRef, useState } from "react";
 import {useAsyncResource} from 'use-async-resource';
 import { ModalManager } from "Shared/Modal";
