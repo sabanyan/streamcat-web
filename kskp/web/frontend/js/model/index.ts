@@ -1,7 +1,6 @@
 // Model
 export { default as CommandModel } from './Command/CommandModel'
 export { default as SubflowCommandModel } from './Command/SubflowCommandModel'
-export { default as CSVModel } from './CSV/CSVModel'
 export { default as FlowModel } from './Flow/FlowModel'
 export { default as BaseStepModel } from './Step/BaseStepModel'
 export { default as CommandStepModel } from './Step/CommandStepModel'
