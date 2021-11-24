@@ -1,5 +1,5 @@
 //@flow
-import * as React from 'react';
+import React from 'react';
 import {useState} from 'react';
 import {BaseInspector, ParamsForm, Resizer} from 'Shared/Inspector';
 import style from './style.scss';

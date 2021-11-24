@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {LinkButton} from 'Shared/Input';
 import moment from 'moment';
 import classnames from 'classnames';

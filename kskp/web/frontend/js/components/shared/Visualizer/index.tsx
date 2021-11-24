@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 
 import {CommandParamType} from 'Types/index';
 import {APIUtil2, StateUtil} from 'Utils/index';
