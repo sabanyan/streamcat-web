@@ -1,6 +1,6 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import Constants from "Constants/index";
-import {APIUtil, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
+import {APIUtil, APIUtil2, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
@@ -137,27 +137,6 @@ const DataFrameInspector = (props: Props) => {
         });
     }, [showPreview]);
 
-    const updateCache = () => {
-        const {notify, refreshFlow} = props;
-
-        APIUtil.get("flows/" + inject_flow_uuid + "?navigation=off")
-            .then((response) => {
-                if (response.data.success === false) throw response.data;
-                const json = response.data;
-                refreshFlow(json);
-            })
-            .catch((error) => {
-                console.log(error);
-                notify({
-                    title: "フロ取得エラー",
-                    message: error.message + "(フローの読み込みに失敗しました。再読み込みしてください)",
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
-            });
-    };
-
     const onClickDelete = () => {
         const {deleteSteps, selectSteps, addHistory} = props;
         let {selected_step_ids, nodes} = props;
@@ -272,11 +251,10 @@ const DataFrameInspector = (props: Props) => {
             if (response.data.success) {
                 deleteCache(id);
                 const selected_step = getSelectedStep();
-                if (selected_step.hasData()) {
+                if (selected_step.hasData() && selected_step.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
-                    APIUtil.get("frames/" + selected_step.uuid).then((response) => {
-                        const json = response.data;
-                        updateDataFrameDetail(json.data);
+                    APIUtil2.findFrame(selected_step.uuid).then(frame => {
+                        updateDataFrameDetail(frame);
                     });
                 } else {
                     updateDataFrameDetail({});

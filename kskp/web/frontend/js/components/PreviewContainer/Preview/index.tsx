@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import Constants from "Constants/index";
 
-import {APIUtil, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
+import {APIUtil, APIUtil2, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
@@ -33,20 +33,12 @@ const Preview = () => {
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
 
     const getVisualizers = () => {
-        setIsLoading(true);
-        APIUtil.get("visualizers").then((response) => {
-            const json = response.data;
-            let visualizers = json.data.map((visualize) => {
-                return new VisualizeModel(visualize);
-            });
-            setVisualizers(SortUtil.getSortedContents(visualizers));
-            window.visualizers = visualizers;
-        }).then((response) => {
-            },
-            (error) => {
-                console.log(error);
-            });
-    };
+        APIUtil2.findVisualizers().then(visualizers => {
+            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
+            setVisualizers(SortUtil.getSortedContents(visualizerModels));
+            window.visualizers = visualizerModels;
+        });
+    }
 
     useEffect(() => {
         getVisualizers();

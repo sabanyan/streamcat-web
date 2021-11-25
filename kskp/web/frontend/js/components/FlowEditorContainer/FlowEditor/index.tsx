@@ -580,68 +580,46 @@ const FlowEditor = () => {
     useEffect(() => {
         const preRequest :Promise<any>[] = [];
 
-        preRequest.push(APIUtil.get("subflows").then((response) => {
-            const json = response.data;
-            const subflows = json.data.map((subflow: SubFlowParamType) => {
-                return new SubflowCommandModel(subflow);
-            });
-            window.subflows = subflows;
-            addMaster({ subflows: subflows })
-        }).then(() => {
-        },
-            (error) => {
-                console.log(error);
-            }));
+        // サブフローの一覧を取得する
+        preRequest.push(
+            APIUtil2.findSubflows().then(subflows => {
+                const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
+                window.subflows = subflowModels;
+                addMaster({ subflows: subflowModels });
+            })
+        );
 
-        preRequest.push(APIUtil.get("datasrcs").then((response) => {
-            const json = response.data;
-            const datasrcs = json.data.map((datasrc: any) => {
-                return datasrc
-            });
-            addMaster({ datasrcs: datasrcs })
-        }).then(() => {
-        },
-            (error) => {
-                console.log(error);
-            }));
+        // データソースの一覧を取得する
+        preRequest.push(
+            APIUtil2.findDataSrcs().then(datasrcs => {
+                addMaster({ datasrcs: datasrcs });
+            })
+        );
 
-        preRequest.push(APIUtil.get("datadsts").then((response) => {
-            const json = response.data;
-            const datadsts = json.data.map((datadst: any) => {
-                return datadst
-            });
-            addMaster({ datadsts: datadsts })
-        }).then(() => {
-        },
-            (error) => {
-                console.log(error);
-            }));
+        // データデストの一覧を取得する
+        preRequest.push(
+            APIUtil2.findDataDsts().then(datadsts => {
+                addMaster({ datadsts: datadsts });
+            })
+        );
 
-        preRequest.push(APIUtil.get("commands").then((response) => {
-            const json = response.data;
-            const commands = json.data.map((command) => {
-                return new CommandModel(command);
-            });
-            window.commands = commands;
-            addMaster({ commands: commands });
-        }).then(() => {
-        },
-            (error) => {
-                console.log(error);
-            }));
+        // Commandの一覧を取得する
+        preRequest.push(
+            APIUtil2.findCommands().then(commands => {
+                const commandModels = commands.map(command => new CommandModel(command as any));
+                window.commands = commandModels;
+                addMaster({ commands: commandModels });
+            })
+        );
 
-        preRequest.push(APIUtil.get("visualizers").then((response) => {
-            const json = response.data;
-            const visualizers = json.data.map((visualize) => {
-                return new VisualizeModel(visualize);
-            });
-            window.visualizers = visualizers;
-            addMaster({ visualizers: visualizers })
-        }).then(() => {
-        },
-            (error) => {
-                console.log(error);
-            }));
+        // VCommandの一覧を取得する
+        preRequest.push(
+            APIUtil2.findVisualizers().then(visualizers => {
+                const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
+                window.visualizers = visualizerModels;
+                addMaster({ visualizers: visualizerModels });
+            })
+        );
 
         Promise.all(preRequest).then(() => {
             // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので

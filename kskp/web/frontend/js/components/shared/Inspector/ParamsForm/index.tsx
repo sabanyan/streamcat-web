@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParamString, ParamNumber, ParamBoolean, ParamSelect, ParamList, ParamFrame } from 'Shared/Inspector/index';
+import { ParamString, ParamBoolean, ParamSelect, ParamList, ParamFrame } from 'Shared/Inspector/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { CommandParamType } from 'Types/index';
 import Constants from 'Constants/index';

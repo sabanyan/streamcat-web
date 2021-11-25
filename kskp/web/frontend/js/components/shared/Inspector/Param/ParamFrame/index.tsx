@@ -1,14 +1,7 @@
 import React from 'react'
-import { Popper } from '@material-ui/core';
-
 import { CommandParamType } from 'Types/index'
-import { Helper } from 'Shared/Inspector'
-import { HttpUtil, APIUtil } from 'Utils/index';
-
-import Constants from 'Constants/index'
-
+import { HttpUtil, APIUtil, APIUtil2 } from 'Utils/index';
 import style from './style.scss'
-import classnames from 'classnames';
 
 type Props = {
   param: CommandParamType;
@@ -37,17 +30,15 @@ export class ParamFrame extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { param, value } = this.props
-    if (value) {
-      APIUtil.get("frames/" + value).then((response) => {
-        const frame = response.data.data;
-        this.setState({
-          path: frame.folderPath + "/" + frame.label
-        })
-      }).catch((exception) => {
-        this.setState(initialState);
-      });
+    const { value } = this.props
+    if(!value){
+      return;
     }
+    APIUtil2.findFrame(value).then(frame => {
+      this.setState({ path: frame.folderPath + "/" + frame.label });
+    }).catch(e => {
+      this.setState(initialState);
+    });
   }
 
   onClick(e) {

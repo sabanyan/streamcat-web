@@ -14,7 +14,9 @@ import {
     FrameType,
     DocumentType,
     ActivityType,
-    Port
+    Port,
+    Flow,
+    Command
 } from 'Model/Library';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import {LockType} from 'Model/Locks';
@@ -456,11 +458,50 @@ export class APIUtil2 {
      * @param uuid 取得するフレームのUUID
      */
     static findFrame = (uuid: string, contents?: boolean, offset?: number, limit?: number) => {
-        return get<FrameType>(`/api/v0/frames/${uuid}`,
-                              {contents:contents, offset:offset, limit:limit}).then(frame => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        let params: {contents?:boolean, offset?:number, limit?:number} = {};
+        contents && (params.contents = contents);
+        offset && (params.offset = offset);
+        limit && (params.limit = limit);
+        return get<FrameType>(`/api/v0/frames/${uuid}`, params).then(frame => {
             frame = (new DatumArray([frame])).shift();
             return frame;
         });
+    };
+
+    /**
+     * GET /subflowsを発行してサブフローを取得する
+     */
+    static findSubflows = () => {
+        return get<Flow[]>('/api/v0/subflows');
+    };
+
+    /**
+     * GET /datasrcsを発行してデータソースを取得する
+     */
+    static findDataSrcs = () => {
+        return get<Flow[]>('/api/v0/datasrcs');
+    };
+
+    /**
+     * GET /datadstsを発行してデータデストを取得する
+     */
+    static findDataDsts = () => {
+        return get<Flow[]>('/api/v0/datadsts');
+    };
+
+    /**
+     * GET /commandsを発行してCommandを取得する
+     */
+    static findCommands = () => {
+        return get<Command[]>('/api/v0/commands');
+    };
+
+    /**
+     * GET /visualizersを発行してVCommandを取得する
+     */
+    static findVisualizers = () => {
+        return get<Command[]>('/api/v0/visualizers');
     };
 
     /**
@@ -476,12 +517,8 @@ export class APIUtil2 {
      */
     static createLock = (flowUUID: string, lastModifiedAt?: string) => {
         // lastModifiedAtが指定された場合はロックの再取得をする
-        let body: {target:string, lastModifiedAt?:string};
-        if(lastModifiedAt){
-            body = {target:flowUUID, lastModifiedAt:lastModifiedAt};
-        }else{
-            body = {target:flowUUID};
-        }
+        let body: {target:string, lastModifiedAt?:string} = {target: flowUUID};
+        lastModifiedAt && (body.lastModifiedAt = lastModifiedAt);
         return post<LockType>('/api/v0/locks', body).then(lock => {
             lock.delete = () =>
                 post(`/api/v0/delete-locks/${lock.uuid}`, {});

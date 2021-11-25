@@ -524,16 +524,14 @@ const Library = () => {
         });
     }, [addDatabase]);
 
+    // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
     const getVisualizers = () => {
-        // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
-        APIUtil.get("visualizers").then((response) => {
-            const json = response.data;
-            const visualizers = json.data.map((visualize) => {
-                return new VisualizeModel(visualize);
-            });
-            setVisualizers(visualizers);
+        APIUtil2.findVisualizers().then(visualizers => {
+            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
+            setVisualizers(visualizerModels);
         });
     };
+
     const makeBreadCrumbLinks = (folderPath: any[] | any): IBreadCrumbsLink[] => {
         const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
         return folderPath.map((path, index): IBreadCrumbsLink => {

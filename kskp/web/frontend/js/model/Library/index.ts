@@ -246,7 +246,7 @@ type PortArray = [] & {
   toJSON: () => string
 };
 
-type Flow = {
+export type Flow = {
   label?: string,
   description?: string,
   creator?: string,
@@ -255,6 +255,27 @@ type Flow = {
   nodes: any[]
   params: any[]
   ports: [PortArray,PortArray]
+};
+
+export type Command = {
+  version: string;
+  id: string;
+  label: string;
+  classification: string;
+  description: string;
+  groups:[]
+  params:[{
+    name: string;
+    type: string;
+    label: string;
+    optional?: boolean;
+    options: any;
+    default?: string | number;
+  }];
+  ports:[{
+    name: string;
+    type: string;
+  }];
 };
 
 /**

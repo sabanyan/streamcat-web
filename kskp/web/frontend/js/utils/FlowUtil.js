@@ -128,44 +128,6 @@ export default class FlowUtil {
     return nodes
   }
 
-  static runNodes (flowUUID: string, notify: Function, dismissNotify: Function): any {
-    let runNotify
-    if (notify) {
-      runNotify = notify({
-        title: 'フロー実行中',
-        message: 'フローを実行しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.get('frames?from=' + flowUUID).then((response) => {
-        if (dismissNotify) dismissNotify(runNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, () => {
-        if (dismissNotify) dismissNotify(runNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
-  }
-
   static runWithArgs (runArgs: {}, notify: Function, dismissNotify: Function): any {
     let runNotify
     if (notify) {

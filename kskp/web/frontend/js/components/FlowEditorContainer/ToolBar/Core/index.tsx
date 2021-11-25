@@ -3,11 +3,10 @@ import Constants from 'Constants/index';
 import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import classnames from 'classnames';
-import { DataFrameStepModel, NoteStepModel } from 'Model/index';
-import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
+import { DataFrameStepModel, NoteStepModel, NoteStepModelProps } from 'Model/index';
+import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil, APIUtil2 } from 'Utils/index';
 import { Loader } from 'Shared/Base';
 import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index';
-import { NoteStepModelProps } from 'Model/Step/NoteStepModel';
 import { defaultGraphProps } from 'Utils/GraphUtil';
 import { FlowType } from 'Model/Library';
 
@@ -152,13 +151,12 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     flowUpdate() {
-        APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
-            const json = response.data.data;
-            this.props.refreshFlow(json);
+        APIUtil2.findFlow(inject_flow_uuid).then(flow => {
+            this.props.refreshFlow(flow);
         }).then(() => {
             this.setState({
-                isLoading:false
-            })
+                isLoading: false
+            });
         });
     }
 
