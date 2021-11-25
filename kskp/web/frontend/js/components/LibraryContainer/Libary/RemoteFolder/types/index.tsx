@@ -4,6 +4,6 @@ export type RemoteFolder = {
   hostname: string,
   domain: string,
   directory: string,
-  user_id: string,
+  userId: string,
   password: string
 }

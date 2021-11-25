@@ -14,10 +14,10 @@ import { ActivityType } from 'Model/Library';
 type Props = {
     index: number;
     visualize: VisualizeModel<VisualizeModelProps>;
-    flow_uuid: string;
+    flowUuid: string;
     stepIds: (string | null | undefined)[];
-    frame_uuid: string | null;
-    lock_uuid?: string;
+    frameUuid: string | null;
+    lockUuid?: string;
     result: {
         args: {},
         html: any
@@ -112,10 +112,10 @@ export default class Visualizer extends React.Component<Props, State> {
 
     // GET /framesでの取得はWebブラウザでのキャッシュを期待できる
     selectApi() {
-        const {stepIds, frame_uuid, visualize} = this.props;
+        const {stepIds, frameUuid, visualize} = this.props;
         const args = this.state.args;
 
-        if(frame_uuid && visualize.id == 'csvtohtmltable'){
+        if(frameUuid && visualize.id == 'csvtohtmltable'){
             // Frameファイルのプレビューする
             return this.getFrame()
         }else{
@@ -125,10 +125,10 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     getFrame() {
-        const {index, frame_uuid} = this.props;
+        const {index, frameUuid} = this.props;
         const {onSaveResult, notify} = this.props;
 
-        if(!frame_uuid){
+        if(!frameUuid){
             return new Promise<void>((resolve, reject) => {})
         }
 
@@ -137,7 +137,7 @@ export default class Visualizer extends React.Component<Props, State> {
         const limit: number = this.state.args['limit'] || 100;
 
         // GET /frames?contents=on を発行する
-        return APIUtil2.findFrame(frame_uuid, true, offset, limit).then(frame => {
+        return APIUtil2.findFrame(frameUuid, true, offset, limit).then(frame => {
             const headers = frame.args!.column_names;
             const contents = frame.contents;
             const result = {
@@ -169,7 +169,7 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     postActivity() {
-        const {index, flow_uuid, frame_uuid, lock_uuid, visualize} = this.props;
+        const {index, flowUuid, frameUuid, lockUuid, visualize} = this.props;
         const {onSaveResult, notify} = this.props;
         let stepIds = this.props.stepIds;
         
@@ -190,10 +190,10 @@ export default class Visualizer extends React.Component<Props, State> {
         }, {});
 
         let promise: Promise<ActivityType>;
-        if(frame_uuid){
+        if(frameUuid){
             // POST /vizsを発行する
             promise = APIUtil2.createFrameVis(
-                frame_uuid,
+                frameUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
                     vis: stepIdsArgs
@@ -202,12 +202,12 @@ export default class Visualizer extends React.Component<Props, State> {
         }else{
             // POST /vizsを発行する
             promise = APIUtil2.createFlowVis(
-                flow_uuid,
+                flowUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
                     vis: stepIdsArgs
                 },
-                lock_uuid
+                lockUuid
             )
         }
         

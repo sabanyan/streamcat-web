@@ -1,6 +1,3 @@
-import { remoteFolder } from 'Components/shared/IconRenderer/icon';
-import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { APIUtil } from 'Utils/index';
 import { RemoteFolder } from 'Components/LibraryContainer/Libary/RemoteFolder/types'
 
@@ -15,7 +12,7 @@ export function addRemoteFolder(parentUUID:string, remoteFolder: RemoteFolder) {
     hostname: remoteFolder.hostname,
     domain: remoteFolder.domain,
     directory: remoteFolder.directory,
-    user_id: remoteFolder.user_id,
+    userId: remoteFolder.userId,
     password: remoteFolder.password
   }
 
@@ -29,7 +26,7 @@ export function editRemoteFolder(uuid:string, remoteFolder: RemoteFolder) {
     hostname: remoteFolder.hostname,
     domain: remoteFolder.domain,
     directory: remoteFolder.directory,
-    user_id: remoteFolder.user_id,
+    userId: remoteFolder.userId,
     password: remoteFolder.password
   }
   return APIUtil.put("remote-folders/" + uuid, body)

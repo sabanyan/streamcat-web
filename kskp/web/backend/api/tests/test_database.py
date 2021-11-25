@@ -15,7 +15,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
@@ -28,7 +28,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], 'db')
         self.assertEqual(result['data']['port'], 5432)
         self.assertEqual(result['data']['database'], 'kskp')
-        self.assertEqual(result['data']['user_id'], 'postgres')
+        self.assertEqual(result['data']['userId'], 'postgres')
         self.assertEqual(result['data']['password'], '')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -46,7 +46,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], 'db')
         self.assertEqual(result['data']['port'], 5432)
         self.assertEqual(result['data']['database'], 'kskp')
-        self.assertEqual(result['data']['user_id'], 'postgres')
+        self.assertEqual(result['data']['userId'], 'postgres')
         self.assertEqual(result['data']['password'], '')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -71,7 +71,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
@@ -85,7 +85,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "hostname" : "localhost",
             "port"     : 1192,
             "database" : "kskp!",
-            "user_id"  : "tiger",
+            'userId'  : "tiger",
             "password" : "scott"
         }
         result = self.put_uri('/api/v0/databases/' + database_uuid, update_data, self.USER1)
@@ -98,7 +98,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], 'localhost')
         self.assertEqual(result['data']['port'], 1192)
         self.assertEqual(result['data']['database'], 'kskp!')
-        self.assertEqual(result['data']['user_id'], 'tiger')
+        self.assertEqual(result['data']['userId'], 'tiger')
         self.assertEqual(result['data']['password'], 'scott')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -122,7 +122,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
@@ -138,7 +138,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : "",
             'type'     : 'database',
             'creator'  : 'ユーザー管理者'
@@ -151,7 +151,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], expected_result['hostname'])
         self.assertEqual(result['data']['port'], expected_result['port'])
         self.assertEqual(result['data']['database'], expected_result['database'])
-        self.assertEqual(result['data']['user_id'], expected_result['user_id'])
+        self.assertEqual(result['data']['userId'], expected_result['userId'])
         self.assertEqual(result['data']['password'], expected_result['password'])
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
@@ -186,7 +186,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フォルダを作成する(POST /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.post('/api/v0/folders',
     #                                 content_type='application/json',
     #                                 data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
@@ -203,7 +203,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # ドキュメントを作成する(POST /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.post('/api/v0/documents',
     #             content_type='multipart/form-data',
     #             data={
@@ -221,7 +221,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # ドキュメントを取得する(GET /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.get('/api/v0/documents/' + doc_uuid)
     #         result = json.loads(response.get_data())
         
@@ -231,7 +231,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # 中のファイルを削除する(DELETE /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/documents/' + doc_uuid)
     #         result = json.loads(response.get_data())
 
@@ -241,7 +241,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フォルダを削除する(DELETE /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/folders/' + folder_uuid)
     #         result = json.loads(response.get_data())
 
@@ -252,7 +252,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フォルダを作成する(POST /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.post('/api/v0/folders',
     #                                 content_type='application/json',
     #                                 data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
@@ -269,7 +269,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フレームデータを作成する(POST /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.post('/api/v0/documents',
     #             content_type='multipart/form-data',
     #             data={
@@ -298,7 +298,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # 中のファイルごとフォルダを削除しようとする(DELETE /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/folders/' + folder_uuid)
     #         result = json.loads(response.get_data())
 
@@ -308,7 +308,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # 中のファイルを削除する(DELETE /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/documents/' + doc_uuid)
     #         result = json.loads(response.get_data())
 
@@ -318,7 +318,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フォルダを削除する(DELETE /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/folders/' + folder_uuid)
     #         result = json.loads(response.get_data())
 
@@ -329,7 +329,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フォルダを作成する(POST /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.post('/api/v0/folders',
     #                                 content_type='application/json',
     #                                 data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
@@ -346,7 +346,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フレームデータを作成する(POST /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.post('/api/v0/documents',
     #             content_type='multipart/form-data',
     #             data={
@@ -361,7 +361,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フレームのラベル名を変更する(PUT /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.put('/api/v0/documents/' + doc_uuid,
     #             content_type='application/json',
     #             data=json.dumps({'label' : ' DOCUMENT-F I L E '})
@@ -387,7 +387,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # 中のファイルを削除する(DELETE /documents)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/documents/' + doc_uuid)
     #         result = json.loads(response.get_data())
 
@@ -397,7 +397,7 @@ class DatabaseTestCase(ApiTestCaseBase):
     #     # フォルダを削除する(DELETE /folders)
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = '1'
+    #             session['userId'] = '1'
     #         response = client.delete('/api/v0/folders/' + folder_uuid)
     #         result = json.loads(response.get_data())
 

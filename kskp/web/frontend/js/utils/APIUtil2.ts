@@ -183,7 +183,7 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                 const d = datum as FolderType;
                 d.createFolder = (label) =>
                     post<FolderType>(`/api/v0/folders`, {parent:d.uuid, label:label});
-                d.createRemoteFolder = (label, protocol, hostname, domain, directory, user_id, password) =>
+                d.createRemoteFolder = (label, protocol, hostname, domain, directory, userId, password) =>
                     post<RemoteFolderType>(`/api/v0/remote_folders`,
                                            {parent   : d.uuid,
                                             label    : label,
@@ -191,9 +191,9 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                                             hostname : hostname,
                                             domain   : domain,
                                             directory: directory,
-                                            user_id  : user_id,
+                                            userId  : userId,
                                             password : password});
-                d.createDatabase = (label, dbms, hostname, port, database, user_id, password) =>
+                d.createDatabase = (label, dbms, hostname, port, database, userId, password) =>
                     post<DatabaseType>(`/api/v0/databases`,
                                        {parent  : d.uuid,
                                         label   : label,
@@ -201,7 +201,7 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                                         hostname: hostname,
                                         port    : port,
                                         database: database,
-                                        user_id : user_id,
+                                        userId : userId,
                                         password: password});
                 d.createFlow = (label, flow={}) =>
                     post<FlowType>(`/api/v0/flows`,

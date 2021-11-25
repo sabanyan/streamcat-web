@@ -65,7 +65,7 @@ export default class PreviewModal extends React.Component<Props, State> {
   renderTabContent(index) {
     const {notify, dismissNotify, title} = this.props
     const contents = this.props.contents
-    const {flow_uuid, stepIds, frame_uuid, lock_uuid, visualize} = contents[index].content
+    const {flowUuid, stepIds, frameUuid, lockUuid, visualize} = contents[index].content
     const {id, afterViz} = contents[index]
 
     const result = this.state.results[index]
@@ -77,9 +77,9 @@ export default class PreviewModal extends React.Component<Props, State> {
     return <Visualizer key={id + index}
                        index={index}
                        headers={this.state.headers}
-                       flow_uuid={flow_uuid}
-                       frame_uuid={frame_uuid}
-                       lock_uuid={lock_uuid}
+                       flowUuid={flowUuid}
+                       frameUuid={frameUuid}
+                       lockUuid={lockUuid}
                        stepIds={stepIds}
                        visualize={visualize} 
                        afterViz={afterViz}

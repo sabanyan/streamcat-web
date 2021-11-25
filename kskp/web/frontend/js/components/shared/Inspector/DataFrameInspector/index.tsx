@@ -37,10 +37,10 @@ type Props = {
 }
 
 type Content = {
-    flow_uuid: string;
+    flowUuid: string;
     stepIds: (string | null | undefined)[];
-    frame_uuid: string | null;
-    lock_uuid?: string;
+    frameUuid: string | null;
+    lockUuid?: string;
     visualize: any;
 }
 
@@ -103,7 +103,7 @@ const DataFrameInspector = (props: Props) => {
         
         const {mast, lockUUID} = props;
         let visualizers = mast.visualizers;
-        const flow_uuid = inject_flow_uuid;
+        const flowUuid = inject_flow_uuid;
         const selected_step = getSelectedStep();
         let id = selected_step.id;
         let stepIds: (string | null | undefined)[] = [];
@@ -120,11 +120,11 @@ const DataFrameInspector = (props: Props) => {
                             "&title=" + StringUtil.urlEncode(selected_step.label) +
                             "&frame_uuid=" + selected_step.uuid);
             } else {
-                // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
+                // 新規生成するので、step_id と flowUuid と step_ids でデータを生成する
                 window.open("/preview?step_id=" + id +
                             "&dialog=true" +
                             "&title=" + StringUtil.urlEncode(selected_step.label) +
-                            "&flow_uuid=" + flow_uuid +
+                            "&flow_uuid=" + flowUuid +
                             "&lock_uuid=" + lockUUID +
                             "&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)));
             }

@@ -72,8 +72,8 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     run() {
         let { notify, dismissNotify, lockUUID } = this.props;
         const runArgs = {
-            "flow_uuid": inject_flow_uuid,
-            "lock_uuid": lockUUID,
+            "flowUuid": inject_flow_uuid,
+            "lockUuid": lockUUID,
             "flows": [],
             "variables": []
         };

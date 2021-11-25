@@ -168,7 +168,7 @@ export type BreadCrumbHistoryType = {
 }
 
 export type RunArgsType = {
-  flow_uuid: string;
+  flowUuid: string;
   flows: [];
   variables: [];
 }

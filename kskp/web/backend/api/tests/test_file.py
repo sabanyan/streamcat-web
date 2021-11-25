@@ -301,7 +301,7 @@ class FileTestCase(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)

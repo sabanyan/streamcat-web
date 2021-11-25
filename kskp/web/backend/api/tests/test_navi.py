@@ -15,7 +15,7 @@ class NavigationTestCase(ApiTestCaseBase):
         uri = '/api/v0/navigation'
         result = self.get_uri(uri, self.USER1)
         data = result['data']
-        self.assertEqual(data['user_id'], self.USER1.id)
+        self.assertEqual(data['userId'], self.USER1.id)
         self.assertEqual(data['user_name'], self.USER1.name)
         self.assertEqual(data['project_uuid'], '')
         self.assertEqual(data['project_name'], '')
@@ -53,7 +53,7 @@ class NavigationTestCase(ApiTestCaseBase):
         uri = '/api/v0/navigation?flow_uuid=' + flow_uuid
         result = self.get_uri(uri, self.USER1)
         data = result['data']
-        self.assertEqual(data['user_id'], self.USER1.id)
+        self.assertEqual(data['userId'], self.USER1.id)
         self.assertEqual(data['user_name'], self.USER1.name)
         # NOTE: flow_uuidオプションは廃止した
         # self.assertEqual(data['project_uuid'], root.uuid)
@@ -70,7 +70,7 @@ class NavigationTestCase(ApiTestCaseBase):
         uri = '/api/v0/navigation?project_uuid=' + project_uuid
         result = self.get_uri(uri, self.USER1)
         data = result['data']
-        self.assertEqual(data['user_id'], self.USER1.id)
+        self.assertEqual(data['userId'], self.USER1.id)
         self.assertEqual(data['user_name'], self.USER1.name)
         self.assertEqual(data['project_uuid'], root.uuid)
         self.assertEqual(data['project_name'], root.label)
@@ -85,7 +85,7 @@ class NavigationTestCase(ApiTestCaseBase):
         uri = '/api/v0/navigation?project_uuid=' + project_uuid + '&flow_uuid=' + flow_uuid
         result = self.get_uri(uri, self.USER1)
         data = result['data']
-        self.assertEqual(data['user_id'], self.USER1.id)
+        self.assertEqual(data['userId'], self.USER1.id)
         self.assertEqual(data['user_name'], self.USER1.name)
         self.assertEqual(data['project_uuid'], root.uuid)
         self.assertEqual(data['project_name'], root.label)
@@ -103,7 +103,7 @@ class NavigationTestCase(ApiTestCaseBase):
         """
         result = self.get_uri('/api/v0/navigation', self.USER0)
         data = result['data']
-        self.assertEqual(data['user_id'], self.USER0.id)
+        self.assertEqual(data['userId'], self.USER0.id)
         self.assertEqual(data['user_name'], self.USER0.name)
         self.assertEqual(data['project_uuid'], '')
         self.assertEqual(data['project_name'], '')

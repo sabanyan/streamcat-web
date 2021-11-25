@@ -17,7 +17,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
@@ -30,7 +30,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], '18.178.64.116')
         self.assertEqual(result['data']['domain'], 'WORKGROUP')
         self.assertEqual(result['data']['directory'], 'share')
-        self.assertEqual(result['data']['user_id'], 'samba')
+        self.assertEqual(result['data']['userId'], 'samba')
         self.assertEqual(result['data']['password'], 'kskanalytics')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -48,7 +48,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], '18.178.64.116')
         self.assertEqual(result['data']['domain'], 'WORKGROUP')
         self.assertEqual(result['data']['directory'], 'share')
-        self.assertEqual(result['data']['user_id'], 'samba')
+        self.assertEqual(result['data']['userId'], 'samba')
         self.assertEqual(result['data']['password'], 'kskanalytics')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -76,7 +76,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
@@ -90,7 +90,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "hostname" : "192.168.0.5",
             "domain"   : "MyDomain2",
             "directory": "share2",
-            "user_id"  : "user2",
+            'userId'  : "user2",
             "password" : ""
         }
         result = self.put_uri('/api/v0/remote-folders/' + folder_uuid, update_data, self.USER1)
@@ -103,7 +103,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], '192.168.0.5')
         self.assertEqual(result['data']['domain'], 'MyDomain2')
         self.assertEqual(result['data']['directory'], 'share2')
-        self.assertEqual(result['data']['user_id'], 'user2')
+        self.assertEqual(result['data']['userId'], 'user2')
         self.assertEqual(result['data']['password'], '')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -134,7 +134,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
@@ -150,7 +150,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics",
             "type"     : "rfolder"
         }
@@ -162,7 +162,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['hostname'], expected_result['hostname'])
         self.assertEqual(result['data']['domain'], expected_result['domain'])
         self.assertEqual(result['data']['directory'], expected_result['directory'])
-        self.assertEqual(result['data']['user_id'], expected_result['user_id'])
+        self.assertEqual(result['data']['userId'], expected_result['userId'])
         self.assertEqual(result['data']['password'], expected_result['password'])
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], self.USER1.name)

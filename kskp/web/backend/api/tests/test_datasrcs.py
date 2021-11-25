@@ -21,7 +21,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER2)
@@ -35,7 +35,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
@@ -245,7 +245,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER2)
@@ -259,7 +259,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "hostname" : "18.178.64.116",
             "domain"   : "WORKGROUP",
             "directory": "share",
-            "user_id"  : "samba",
+            'userId'  : "samba",
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER2)

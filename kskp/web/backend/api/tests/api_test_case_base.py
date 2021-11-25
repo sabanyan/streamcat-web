@@ -51,7 +51,7 @@ class ApiTestCaseBase(TestCaseBase):
         # from flask import g
         # with app.test_client() as client:
         #     with client.session_transaction() as session:
-        #         session['user_id'] = self.USER1.id
+        #         session['userId'] = self.USER1.id
         #         from kskp.store.auth.authz_session import AuthzSession, Session
         #         g.factory = AuthzSession(Session, user=self.USER1)
 

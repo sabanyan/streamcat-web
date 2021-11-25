@@ -617,7 +617,7 @@ def get_navigation():
     from kskp.core import KSKP_VER
 
     navigation = {
-        'user_id': '',
+        'userId': '',
         'user_name': '',
         'project_uuid': '',
         'project_name': '',
@@ -634,7 +634,7 @@ def get_navigation():
 
 
     if g.user is not None:
-        navigation['user_id'] = g.user.id
+        navigation['userId'] = g.user.id
         navigation['user_name'] = g.user.name
         navigation['user'] = g.user.to_json()
         navigation['allowlist'] = g.user.get_allowlist()

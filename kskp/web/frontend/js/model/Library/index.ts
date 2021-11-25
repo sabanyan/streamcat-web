@@ -114,7 +114,7 @@ export type FolderType = DatumBaseType<FolderAllowlist> & {
     hostname: string,
     domain: string,
     directory: string,
-    user_id: string,
+    userId: string,
     password: string
   ) => Promise<RemoteFolderType>;
   createDatabase:(
@@ -123,7 +123,7 @@ export type FolderType = DatumBaseType<FolderAllowlist> & {
     hostname: string,
     port: number,
     database: string,
-    user_id: string,
+    userId: string,
     password: string
   ) => Promise<DatabaseType>;
   createFlow:(
@@ -197,7 +197,7 @@ export type RemoteFolderType = DatumType & {
   hostname: string;
   domain: string;
   directory: string;
-  user_id: string;
+  userId: string;
   password: string;
 
   update:(
@@ -206,7 +206,7 @@ export type RemoteFolderType = DatumType & {
     hostname: string,
     domain: string,
     directory: string,
-    user_id: string,
+    userId: string,
     password: string
   ) => Promise<RemoteFolderType>;
 };
@@ -219,7 +219,7 @@ export type DatabaseType = DatumType & {
   hostname: string;
   port: number;
   database: string;
-  user_id: string;
+  userId: string;
   password: string;
 
   update:(
@@ -228,7 +228,7 @@ export type DatabaseType = DatumType & {
     hostname: string,
     port: number,
     database: string,
-    user_id: string,
+    userId: string,
     password: string
   ) => Promise<DatabaseType>;
 };
@@ -353,9 +353,9 @@ type Outs = {
  * Activityを格納するオブジェクト型
  */
 export type ActivityType = DatumType & {
-  flow_uuid: string;
-  start_time: string;
-  end_time: string;
+  flowUuid: string;
+  startAt: string;
+  endAt: string;
   // 出力結果情報
   outs: Outs[];
   caches: [];

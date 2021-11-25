@@ -39,7 +39,7 @@ const params = [
     "default": ""
   },
   {
-    "name": "user_id",
+    "name": "userId",
     "type": "string",
     "label": "ユーザID",
     "default": ""

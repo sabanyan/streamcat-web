@@ -44,7 +44,7 @@ export interface Database {
     hostname?: string;
     port?: number;
     database?: string;
-    user_id?: string;
+    userId?: string;
     password?: string;
 }
 
@@ -102,7 +102,7 @@ export const getDataBaseParams = () => {
             "default": ""
         },
         {
-            "name": "user_id",
+            "name": "userId",
             "type": "string",
             "label": "ユーザID",
             "default": ""
@@ -124,7 +124,7 @@ const getInitialDatabase = (): Database => {
         hostname: "",
         port: NaN,
         database: "",
-        user_id: "",
+        userId: "",
         password: ""
     };
 };
@@ -606,7 +606,7 @@ const Library = () => {
                 hostname: database.hostname,
                 port: Number(database.port),
                 database: database.database,
-                user_id: database.user_id,
+                userId: database.userId,
                 password: database.password
             };
             setIsLoading(true);
@@ -1134,15 +1134,15 @@ const Library = () => {
             });
         };
 
-        const editFlow = (flow_uuid, parent_uuid) => {
-            let body = { target: flow_uuid };
-            let locks = new LocksModel(flow_uuid);
+        const editFlow = (flowUuid, parent_uuid) => {
+            let body = { target: flowUuid };
+            let locks = new LocksModel(flowUuid);
 
             return axios.post("/api/v0/locks", body).then((response) => {
                 let locksModel = locks.Parse(response);
                 let lockId = locksModel.getLockId();
                 if (lockId) {
-                    axios.put("/api/v0/flows/" + flow_uuid, {
+                    axios.put("/api/v0/flows/" + flowUuid, {
                         parent: parent_uuid,
                         lock: lockId
                     }).then(() => {
@@ -1266,7 +1266,7 @@ const Library = () => {
             "hostname": data.hostname,
             "port": data.port,
             "database": data.database,
-            "user_id": data.user_id,
+            "userId": data.userId,
             "password": data.password
         };
         setEditDatabase(database);
@@ -1500,7 +1500,7 @@ const Library = () => {
                     hostname: selected_data.hostname,
                     port: selected_data.port,
                     database: selected_data.database,
-                    user_id: selected_data.user_id,
+                    userId: selected_data.userId,
                     password: selected_data.password
                 };
             } else if (selected_data.type === Constants.library.type.remoteFolder) {
@@ -1510,7 +1510,7 @@ const Library = () => {
                     hostname: selected_data.hostname,
                     domain: selected_data.domain,
                     directory: selected_data.directory,
-                    user_id: selected_data.user_id,
+                    userId: selected_data.userId,
                     password: selected_data.password
                 }
             }
@@ -1775,15 +1775,15 @@ const Library = () => {
         _onChangeFlowLock = (e, data) => {
             const checked = e.currentTarget.checked;
 
-            const editFlow = (flow_uuid, editLock) => {
-                let body = { target: flow_uuid };
-                let locks = new LocksModel(flow_uuid);
+            const editFlow = (flowUuid, editLock) => {
+                let body = { target: flowUuid };
+                let locks = new LocksModel(flowUuid);
 
                 return APIUtil.post("locks", body).then((response) => {
                     let locksModel = locks.Parse(response);
                     let lockId = locksModel.getLockId();
                     if (lockId) {
-                        APIUtil.put("flows/" + flow_uuid, {
+                        APIUtil.put("flows/" + flowUuid, {
                             editLock: editLock,
                             lock: lockId
                         }).then((response) => {

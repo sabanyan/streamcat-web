@@ -147,9 +147,9 @@ export default class FlowUtil {
     })
 
     let body = {
-      uuid: runArgs.flow_uuid,
+      uuid: runArgs.flowUuid,
       args: args,
-      lock: runArgs.lock_uuid
+      lock: runArgs.lockUuid
     }
 
     runArgs.flows.map((f) => {

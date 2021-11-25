@@ -13,7 +13,7 @@ const initState = {
   hostname: "",
   domain: "",
   directory: "",
-  user_id: "",
+  userId: "",
   password: "",
 }
 

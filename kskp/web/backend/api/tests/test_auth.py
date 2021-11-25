@@ -20,7 +20,7 @@ class AuthTestCase(ApiTestCaseBase):
     # def test_login_required_DO_LOGGING_IN(self):
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = 'me'
+    #             session['userId'] = 'me'
     #         templates = []
     #         with captured_templates(app, templates):
     #             result = client.get('/projects')
