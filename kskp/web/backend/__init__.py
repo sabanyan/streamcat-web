@@ -50,8 +50,10 @@ werkzeug_logger = logging.getLogger('werkzeug')
 werkzeug_logger.disabled = True
 
 # ログの書式を定義する
+# %(message)sにHTTPステータスコードが記述されているようだ
+# https://docs.python.org/ja/3/library/logging.html#logrecord-attributes
 log_formatter = KSKPLogFormatter(
-    '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(method)s","%(path)s","%(message)s"'
+    '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(message)s","%(method)s","%(path)s"'
 )
 
 # Flaskのログ書式を設定する

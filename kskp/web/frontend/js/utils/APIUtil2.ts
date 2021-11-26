@@ -68,6 +68,7 @@ const get = <TDatumType>(url: string, params?: {}) => {
             }
         }
     ).then<CommonResponse<TDatumType>>(
+        // fetch()はHTTPステータスコードがエラーでもrejectしない
         res => res.json()
     ).then(
         json => unwrapJson(json)
