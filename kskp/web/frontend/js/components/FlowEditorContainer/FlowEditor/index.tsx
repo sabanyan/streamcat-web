@@ -9,7 +9,7 @@ import style from './style.scss';
 import { APIUtil, APIUtil2, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DataFrameDetailType, StepModelType, SubFlowParamType } from 'Types/index';
+import { DataFrameDetailType, StepModelType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
 import { NotificationManager } from 'Shared/Notification';

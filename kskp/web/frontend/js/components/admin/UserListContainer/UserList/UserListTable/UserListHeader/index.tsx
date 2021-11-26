@@ -1,6 +1,5 @@
 import React from 'react';
 import iconStyle from "Shared/Input/FlatButton/style.scss";
-import style from "./style.scss";
 
 export interface ITableHeader {
     label: string;
