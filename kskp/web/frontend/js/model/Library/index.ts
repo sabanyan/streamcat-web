@@ -122,9 +122,9 @@ export type FolderType = DatumBaseType<FolderAllowlist> & {
     dbms: string,
     hostname: string,
     port: number,
-    database: string,
-    userId: string,
-    password: string
+    database?: string,
+    userId?: string,
+    password?: string
   ) => Promise<DatabaseType>;
   createFlow:(
     label:string,

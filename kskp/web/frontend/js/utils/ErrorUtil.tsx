@@ -28,7 +28,7 @@ export default class ErrorUtil {
       errorBody = <div className={'modal-server-error-text'}>
         <div>
           <strong>
-            {error.request.statusText}
+            {error.request && error.request.statusText}
           </strong>
         </div>
         {StringUtil.stripHtmlToText(error.request.responseText)}

@@ -8,7 +8,7 @@ import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, Zoo
 import { Loader } from 'Shared/Base';
 import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
-import { FlowType } from 'Model/Library';
+import { ActivityType, FlowType } from 'Model/Library';
 
 type ToolBarProps = {
     nodes: any[];
@@ -57,8 +57,8 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
         this.props.addHistory();
     }
 
-    renderRunResult(json: RunResponseType) {
-        const result = json.data.outs.map((n) => {
+    renderRunResult(activity: ActivityType) {
+        const result = activity.outs.map((n) => {
             return <li>{n.id}</li>;
         });
         const content = <div>
@@ -77,36 +77,32 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             "flows": [],
             "variables": []
         };
-        return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
-            .then((response) => {
-                if (response.data.success) {
-                    const json: RunResponseType = response.data;
-                    const content = this.renderRunResult(json);
-                    // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
-                    const parentFolderUUID = json.data.outs[0].parent; //　今はlasts[0]
-                    // 結果出力
-                    let notifyId = notify({
-                        title: "フロー実行完了",
-                        message: ReactDomUtil.renderToString(content),
-                        status: "success",
-                        dismissAfter: 0,
-                        buttons: [
-                            {
-                                name: "閉じる",
-                                primary: true,
-                                onClick: () => {
-                                    this.props.dismissNotify(notifyId);
-                                }
-                            },
-                            {
-                                name: "開く",
-                                primary: true,
-                                onClick: () => {
-                                    window.open("/folders/" + parentFolderUUID, "_blank");
-                                }
-                            }]
-                    });
-                }
+        return FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then(activity => {
+                const content = this.renderRunResult(activity);
+                // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
+                const parentFolderUUID = activity.outs[0].parent; //　今はlasts[0]
+                // 結果出力
+                let notifyId = notify({
+                    title: "フロー実行完了",
+                    message: ReactDomUtil.renderToString(content),
+                    status: "success",
+                    dismissAfter: 0,
+                    buttons: [
+                        {
+                            name: "閉じる",
+                            primary: true,
+                            onClick: () => {
+                                this.props.dismissNotify(notifyId);
+                            }
+                        },
+                        {
+                            name: "開く",
+                            primary: true,
+                            onClick: () => {
+                                window.open("/folders/" + parentFolderUUID, "_blank");
+                            }
+                        }]
+                });
                 // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
                 this.flowUpdate();
             }).finally(() => {

@@ -85,7 +85,7 @@ const InOutConnector = (props: Props) => {
     const {nodes, selectedStep, disabled} = props;
     //すべてのデータフレーム先をリスト化
 
-    let dataFrameOnlyNodes: [DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes);
+    let dataFrameOnlyNodes: DataFrameStepModel[] = FlowUtil.getAllDataFrame(nodes);
 
     let dataSourceOptions: { value: string | null | undefined, label: string | null | undefined, object: DataFrameStepModel }[] = [];
 

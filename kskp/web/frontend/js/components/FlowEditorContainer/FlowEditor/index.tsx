@@ -6,7 +6,7 @@ import { Edge, Selector, Step } from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
-import { APIUtil, APIUtil2, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
+import { APIUtil2, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
 import { DataFrameDetailType, StepModelType } from 'Types/index';
@@ -252,43 +252,23 @@ const FlowEditor = () => {
                 if (!saveAsFlowName || !saveAsFlowName.length) {
                     alert("フロー名を指定してください")
                 } else {
-                    // フローを新規作成
-                    APIUtil.post("flows", {
-                        name: saveAsFlowName,
-                        project_uuid: folderUuid,// 現在のフォルダーのUUIDに作成する
-                        datasource: {
-                            "type": "frame"
-                        }
-                    }).then((newFlow) => {
-                        // 別名保存するための現在表示されている flow
-                        const targetFlow = flow;
-                        targetFlow.label = saveAsFlowName;
-                        const anotherFlow = newFlow.data.data;
-                        // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
-                        APIUtil2.createLock(anotherFlow.uuid).then(lock => {
-                            // 新規に作成した newFlow の uuid を設定して保存する
-                            saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
-                                // 転移する前にnewFlowのロックは一度解除する
-                                lock.delete();
-                                // 保存後に作成したフローに遷移する
-                                WebUtil.navigateURL(WebUtil.webURL("/flows/" + anotherFlow.uuid));
-                            }).catch((e) => {
-                                notify({
-                                    title: "エラー",
-                                    message: e.message,
-                                    status: "error",
-                                    dismissAfter: 0,
-                                    closeButton: true
+                    // フローを別名保存する
+                    APIUtil2.findFolder(folderUuid).then(folder => {
+                        // 現在のフォルダに別名フローを新規作成する
+                        folder.createFlow(saveAsFlowName).then(anotherFlow => {
+                            // 別名保存するための現在表示されている flow
+                            const targetFlow = flow;
+                            targetFlow.label = saveAsFlowName;
+                            // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
+                            APIUtil2.createLock(anotherFlow.uuid).then(lock => {
+                                // 新規に作成した newFlow の uuid を設定して保存する
+                                saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
+                                    // 転移する前にnewFlowのロックは一度解除する
+                                    lock.delete();
+                                    // 保存後に作成したフローに遷移する
+                                    WebUtil.navigateURL(WebUtil.webURL("/flows/" + anotherFlow.uuid));
                                 });
                             });
-                        });
-                    }).catch((e) => {
-                        notify({
-                            title: "エラー",
-                            message: e.message,
-                            status: "error",
-                            dismissAfter: 0,
-                            closeButton: true
                         });
                     });
                 }
@@ -532,7 +512,9 @@ const FlowEditor = () => {
         lock.extend().then( () => {
             // 取得した lockUUID を設定
             setLock(lock);
+            console.log("lock extended");
         }).catch(e => {
+            console.log(e);
             // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
             regenerateNewLockUUID();
             setReadOnly(true);

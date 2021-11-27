@@ -343,13 +343,16 @@ const Library = () => {
                     return;
                 }
                 setIsLoading(true);
-                APIUtil.post("projects", { label: formProjectName, parent: inject_folder_uuid }).then(() => {
-                    ModalUtil.emitModal(
-                        { id: Constants.modal.ADD_PROJECT, visible: false });
+                parentFolder.createProject(formProjectName).then(project => {
+                    ModalUtil.emitModal({
+                        id: Constants.modal.ADD_PROJECT,
+                        visible: false
+                    });
                     fetchFolder();
                     setFormProjectName("");
                     notify({
-                        title: "プロジェクトを作成しました", message: formProjectName + "を作成しました",
+                        title: "プロジェクトを作成しました",
+                        message: project.label + "を作成しました",
                         status: "success"
                     });
                 });
@@ -384,17 +387,25 @@ const Library = () => {
                     return;
                 }
                 setIsLoading(true);
-                const body = {
-                    "label": formFolderName,
-                    "parent": inject_folder_uuid
-                };
-                APIUtil.post("folders", body).then((response) => {
-                    completeAddedFolder(response);
+                parentFolder.createFolder(formFolderName).then(folder => {
+                    notify({
+                        title: "フォルダを作成しました",
+                        message: folder.label + "を作成しました",
+                        status: "success"
+                    });
                     setFormFolderName("");
                     ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
                     fetchFolder();
-                }, () => {
-                    unhandledNotify("フォルダ作成エラー");
+                }).catch(error => {
+                    notify({
+                        title: "フォルダ作成エラー",
+                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                        status: "error",
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                }).finally(() => {
+                    setIsLoading(false);
                 });
             }
         });
@@ -581,71 +592,53 @@ const Library = () => {
     const onClickAddDatabaseDone = () => {
         const database = addDatabase;
         if (!database) return;
-        try {
-            if (!database.label) {
-                alert("名称を入力してください");
-                return;
-            }
-            if (!database.dbms) {
-                alert("DBMSを入力してください");
-                return;
-            }
-            if (!database.hostname) {
-                alert("ホスト名を入力してください");
-                return;
-            }
-            if (!database.port) {
-                alert("ポート番号を入力してください");
-                return;
-            }
 
-            const body = {
-                label: database.label,
-                parent: inject_folder_uuid,
-                dbms: database.dbms,
-                hostname: database.hostname,
-                port: Number(database.port),
-                database: database.database,
-                userId: database.userId,
-                password: database.password
-            };
-            setIsLoading(true);
-            APIUtil.post("databases", body).then((response) => {
-                completeAddedDatabase(response);
-            }, () => {
-                unhandledNotify("データベース作成エラー");
-            });
-        } catch (e) {
-            console.log(e);
+        if (!database.label) {
+            alert("名称を入力してください");
+            return;
         }
-    };
+        if (!database.dbms) {
+            alert("DBMSを入力してください");
+            return;
+        }
+        if (!database.hostname) {
+            alert("ホスト名を入力してください");
+            return;
+        }
+        if (!database.port) {
+            alert("ポート番号を入力してください");
+            return;
+        }
 
-    /**
-     * データベース作成後の完了処理
-     * @param response
-     */
-    const completeAddedDatabase = (response: any) => {
-        const database = addDatabase;
-        if (!database) return;
-        if (!response.data.success) {
-            notify({
-                title: "データベース作成エラー",
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                status: "error",
-                dismissAfter: 0,
-                closeButton: true
-            });
-        } else {
+        setIsLoading(true);
+        parentFolder.createDatabase(
+            database.label,
+            database.dbms,
+            database.hostname,
+            database.port,
+            database.database,
+            database.userId,
+            database.password
+        ).then(database => {
             notify({
                 title: "データベースを作成しました",
                 message: database.label + "を作成しました",
                 status: "success"
             });
-        }
-        setIsLoading(false);
-        setAddDatabase(null);
-        ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
-        fetchFolder();
+        }).catch(error => {
+            notify({
+                title: "データベース作成エラー",
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
+            });
+        }).finally(() => {
+            setIsLoading(false);
+            setAddDatabase(null);
+            ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
+            fetchFolder();
+        });
     };
 
     /**
@@ -661,30 +654,6 @@ const Library = () => {
             dismissAfter: 0,
             closeButton: true
         });
-    };
-
-    /**
-     * フォルダ作成時の完了処理
-     * @param response
-     */
-    const completeAddedFolder = (response: any) => {
-        setIsLoading(false);
-        if (!response.data.success) {
-            notify({
-                title: "フォルダ作成エラー",
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                status: "error",
-                dismissAfter: 0,
-                closeButton: true
-            });
-        } else {
-            notify({
-                title: "フォルダを作成しました",
-                message: formFolderName + "を作成しました",
-                status: "success"
-            });
-        }
-        fetchFolder();
     };
 
     const fetchFolder = () => {
@@ -1288,7 +1257,7 @@ const Library = () => {
         let _onClickDelete: any = null;
         let _onClickMove: any = null;
         let _onClickEditEncoding: any = null;
-        let _onBlurTitle: any = null;
+        let _onBlurTitle: ((e:any, selectedData:DatumType) => void) | null = null;
         let _onClickMemberInfo: any = null;
         let _onChangeFlowLock: any = null;
 
@@ -1443,109 +1412,52 @@ const Library = () => {
                 break;
         }
 
-        const getEndPoint = (libraryType: string): string | null => {
-            let endPoint: string | null = null;
-            switch (libraryType) {
-                case Constants.library.type.flow:
-                    endPoint = "flows/";
-                    break;
-                case Constants.library.type.frame:
-                    endPoint = "frames/";
-                    break;
-                case Constants.library.type.document:
-                    endPoint = "documents/"
-                    break;
-                case Constants.library.type.folder:
-                    endPoint = "folders/";
-                    break;
-                case Constants.library.type.project:
-                    endPoint = "projects/";
-                    break;
-                case Constants.library.type.database:
-                    endPoint = "databases/";
-                    break;
-                case Constants.library.type.remoteFolder:
-                    endPoint = "remote-folders/"
-                    break;
-                default:
-                    break;
-            }
-
-            return endPoint;
-        };
-
-        const onBlurTitle = (
-            e: React.FocusEvent<HTMLInputElement>, selected_data: any) => {
+        /**
+         * ラベル名を変更する
+         * @param e 
+         * @param selectedData
+         */
+        const onBlurTitle = (e:React.FocusEvent<HTMLInputElement>, selectedData:DatumType) => {
             // Label の修正
-            if (!selected_data) {
+            if (!selectedData) {
                 return;
             }
 
-            const uuid = selected_data.uuid;
-            const libraryType = selected_data.type;
-
-            let endPoint = getEndPoint(libraryType);
-
-            if (!endPoint) {
+            const newLabel = e.target.value;
+            if(!newLabel || newLabel === selectedData.label) {
                 return;
             }
 
-            let body: any = {
-                label: e.target.value
-            };
-            if (selected_data.type === Constants.library.type.database) {
-                body = {
-                    label: e.target.value,
-                    dbms: selected_data.dbms,
-                    hostname: selected_data.hostname,
-                    port: selected_data.port,
-                    database: selected_data.database,
-                    userId: selected_data.userId,
-                    password: selected_data.password
-                };
-            } else if (selected_data.type === Constants.library.type.remoteFolder) {
-                body = {
-                    label: e.target.value,
-                    protocol: selected_data.protocol,
-                    hostname: selected_data.hostname,
-                    domain: selected_data.domain,
-                    directory: selected_data.directory,
-                    userId: selected_data.userId,
-                    password: selected_data.password
-                }
-            }
+            let promise: Promise<any>;
 
             setIsLoading(true);
-            let locksModel = new LocksModel(uuid);
-            let lock, lockId, response
+            if(selectedData.type === 'flow'){
+                // フローのラベル名を変更するには排他ロックを獲得する必要がある
+                promise = APIUtil2.createLock(selectedData.uuid).then(lock => {
+                    selectedData.rename(newLabel, lock.uuid).then(datum => {
+                    // ライブラリ画面を再表示する
+                        fetchFolder();
+                    }).finally(() => {
+                        lock.delete();
+                    });
+                });
+            }else{
+                promise = selectedData.rename(newLabel).then(datum => {
+                // ライブラリ画面を再表示する
+                    fetchFolder();
+                });
+            }
 
-            new Promise(async (resolve, reject) => {
-                // lockが必要な場合、lockを取得
-                if (libraryType === Constants.library.type.flow) {
-                    const lockBody = { target: uuid };
-                    // lockの取得
-                    response = await APIUtil.post("locks", lockBody);
-                    if (!response.data.success) reject(response.data)
-                    lock = locksModel.Parse(response);
-                    lockId = lock.getLockId();
-                    if (!lockId) reject(response.data);
-                    body = { ...body, lock: lockId }
-                }
-                resolve(body);
-            }).then(async (body) => {
-                response = await APIUtil.put(endPoint + uuid, body)
-                if (lockId) navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                if (response.data.success) fetchFolder();
-            }).catch((exception) => {
+            promise.catch(error => {
                 notify({
                     title: "エラー",
-                    message: exception.message,
+                    message: error.message,
                     status: "error",
                     dismissAfter: 0,
                     closeButton: true
                 });
-            }).then(() => {
-                setIsLoading(false);
+            }).finally(() => {
+                setIsLoading(true);
             });
         };
 

@@ -1,13 +1,12 @@
 //@flow
 import Constants from 'Constants/index'
-import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, MessageModel} from 'Model/index'
-import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
-import { APIUtil, ErrorUtil, ReactDomUtil, ValidatorUtil } from 'Utils/index'
+import type { CommandParamType, StepModelType } from 'Types/index'
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel} from 'Model/index'
+import { APIUtil2, ErrorUtil, ReactDomUtil } from '.'
 
 export default class FlowUtil {
 
-  static getAllDataFrame (nodes: [StepModelType]) {
+  static getAllDataFrame (nodes: StepModelType[]) {
     return nodes.filter((node) => {
       if (node instanceof DataFrameStepModel) {
         return true
@@ -16,7 +15,7 @@ export default class FlowUtil {
     })
   }
 
-  static getNodeFromID (nodes: [StepModelType], id: string) {
+  static getNodeFromID (nodes: StepModelType[], id: string) {
     return nodes.find((node) => {
       if (node instanceof DataFrameStepModel) {
         return (node.id === id)
@@ -35,19 +34,6 @@ export default class FlowUtil {
       })
     }
     return param
-  }
-
-  static getSubFlowParam (subflow: SubFlowStepModel, paramName: string): (SubFlowParamType | {}) {
-    let result = {}
-    if (!subflow || !paramName) return null
-    if (!subflow.params) return null
-
-    subflow.params.forEach((param) => {
-      if (param.name === paramName) {
-        result = param
-      }
-    })
-    return result
   }
 
   static getFlowJson (nodes: [], projectId: string, projectName: string): {} {
@@ -102,7 +88,7 @@ export default class FlowUtil {
   //   return newNodeId
   // }
 
-  static removeNodeId (nodes: [], node_ids: []) {
+  static removeNodeId (nodes: any[], node_ids: any[]) {
     node_ids.forEach((removeId) => {
       nodes.forEach((node) => {
         if (node.dsts) {
@@ -128,7 +114,7 @@ export default class FlowUtil {
     return nodes
   }
 
-  static runWithArgs (runArgs: {}, notify: Function, dismissNotify: Function): any {
+  static runWithArgs (runArgs: any, notify: Function, dismissNotify: Function) {
     let runNotify
     if (notify) {
       runNotify = notify({
@@ -146,100 +132,39 @@ export default class FlowUtil {
       args[v.name] = v.value
     })
 
-    let body = {
-      uuid: runArgs.flowUuid,
-      args: args,
-      lock: runArgs.lockUuid
-    }
-
-    runArgs.flows.map((f) => {
-      body[f.nodeId] = f.uuid
-    })
-
-    return new Promise((resolve, reject) => {
-      APIUtil.post('activities', body).then((response) => {
-        if (dismissNotify) dismissNotify(runNotify.id)
-        if (!response.data.success) throw response
-
-        resolve(response)
+    // フローを実行する
+    return APIUtil2.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch((error) => {
+      let message = new MessageModel(error.data)
+      notify({
+        title: message.title,
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+        status: message.messageStatus,
+        dismissAfter: 0,
+        closeButton: true
       })
-      .catch((error) => {
-        if (dismissNotify) dismissNotify(runNotify.id)
-        let message = new MessageModel(error.data)
-        notify({
-          title: message.title,
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: message.messageStatus,
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
+      throw error;
+    }).finally(() => {
+      dismissNotify && dismissNotify(runNotify.id);
+    });
   }
 
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
-  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: []) {
+  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: any[]) {
     let result = {x: x, y: y}
     const threshold = 3
     nodes.forEach((node) => {
       //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
-      if (parseInt(node.position.x) >= parseInt(x) - threshold &&
-        parseInt(node.position.x) <= parseInt(x) + threshold &&
-        parseInt(node.position.y) >= parseInt(y) - threshold &&
-        parseInt(node.position.y) <= parseInt(y) + threshold) {
+      if (parseInt(node.position.x) >= x - threshold &&
+        parseInt(node.position.x) <= x + threshold &&
+        parseInt(node.position.y) >= y - threshold &&
+        parseInt(node.position.y) <= y + threshold) {
         //合致していた場合新しい座標を計算
         result = FlowUtil.getNotOverlapNodePosition({x: x + 10, y: y + 10}, nodes)
       }
     })
     return result
-  }
-
-  static saveFlow (flowUUID: string, flowModel, locksModel, nodes:{}, notify: Function, dismissNotify: Function): any {
-    //validation
-    ValidatorUtil.nodesValidate(nodes)
-
-    let flow = {}
-    if (flowModel.label)       flow['label']       = flowModel.label
-    if (flowModel.description) flow['description'] = flowModel.description
-    if (flowModel.params)      flow['params']      = flowModel.params
-    if (flowModel.ports)       flow['ports']       = flowModel.ports
-    if (flowModel.nodes)       flow['nodes']       = nodes
-
-    let putBody = {
-      label :flowModel.label,
-      flow  :flow,
-      lock  :(locksModel && locksModel.lockId) ? locksModel.lockId : undefined
-    }
-
-    let saveNotify
-    saveNotify = notify({
-      title: 'フロー保存中',
-      message: 'フローの設定を保存しています',
-      status: 'loading',
-      dismissAfter: 0
-    })
-
-    return APIUtil.put('flows/' + flowUUID, putBody)
-      .catch((message) => {
-        console.log(message)
-      })
-      .then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (locksModel && locksModel.error) throw locksModel.error.message
-        if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
-      }).catch((message) => {
-        notify({
-          title: 'フロー保存エラー',
-          message: message,
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(message)
-      })
   }
 
   /**
@@ -262,32 +187,7 @@ export default class FlowUtil {
     return step
   }
 
-  /**
-   * Dstsをコピーする
-   * @param step
-   * @returns {StepModelType}
-   */
-  static copyDsts (step: StepModelType, addStepFunc): StepModelType {
-    Object.keys(step.dsts).forEach((key) => {
-      //出力先を作成し、接続先を変更する
-      const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(key)
-      const props: DataFrameStepModelProps = {
-        id: null,
-        type: Constants.step.type.frame,
-        uuid: null,
-        label: 'コピー ' + copiedStep.label,
-        dataSource: copiedStep.dataSource,
-        srcs: step.id,
-        dsts: [],
-      }
-      const add_step = new DataFrameStepModel(props)
-      step.dsts[key] = add_step.id
-    })
-
-    return step
-  }
-
-  static setModelType (json: {}): StepModelType {
+  static setModelType (json: any): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
     if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
       let node = new CommandStepModel(json)

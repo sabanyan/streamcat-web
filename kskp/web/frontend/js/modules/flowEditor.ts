@@ -483,7 +483,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
         let newDsts = {};
         Object.keys(newNode.dsts).forEach((key) => {
           //出力先を作成し、接続先を変更する
-          const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(newState.nodes, newNode.dsts[key]);
+          const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(newState.nodes as [any], newNode.dsts[key]);
           const props: any = {
             id: null,
             type: Constants.step.type.frame,

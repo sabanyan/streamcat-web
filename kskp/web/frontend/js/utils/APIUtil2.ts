@@ -92,9 +92,11 @@ const post = <TDatumType>(url: string, body: {}) => {
         }
     ).then<CommonResponse<TDatumType>>(
         res => res.json()
-    ).then(
-        json => unwrapJson(json)
-    )
+    ).then<TDatumType>(json => {
+        const datum = unwrapJson(json)
+        // DatumArrayのshift()を用いてdatumに各種関数を付与する
+        return datum && (new DatumArray([datum as any])).shift();
+    })
 }
 
 /**
@@ -156,6 +158,7 @@ const DatumArray = function(this: any, data: DatumType[]) {
 
 // DatumArrayはArrayオブジェクトを継承する
 // Object.create: 指定したプロトタイプオブジェクトを持つオブジェクトを生成する
+// NOTE: https://stackoverflow.com/questions/26630676
 DatumArray.prototype = Object.create(Array.prototype);
 DatumArray.prototype.constructor = DatumArray;
 
@@ -240,6 +243,9 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                         put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
                 }else if(datum.type === 'folder') {
                     const d = datum as ParentFolderType;
+                    // プロジェクトはルート直下でしか作成できない
+                    d.createProject = (label) =>
+                        post<ProjectType>(`/api/v0/projects`, {parent:d.uuid, label:label});
                     d.move = (parent) => 
                         put<FolderType>(`/api/v0/folders/${d.uuid}`, {parent:parent});
                     d.rename = (label) => 

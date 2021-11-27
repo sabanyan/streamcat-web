@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Constants from "Constants/index";
-
-import {APIUtil, APIUtil2, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
+import {APIUtil2, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";

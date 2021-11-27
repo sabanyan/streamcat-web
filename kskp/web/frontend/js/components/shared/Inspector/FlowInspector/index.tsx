@@ -73,33 +73,30 @@ const FlowInspector = (props: Props) => {
         const {runArgs, notify, dismissNotify} = props;
         //TODO RunArgsのValidate
 
-        FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then((response) => {
+        FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then(activity => {
             resetRunArgsValue();
-            if (response.data.success) {
-                const json: RunResponseType = response.data;
-                const result = json.data.outs.map((n, index) => {
-                    return <li key={index}>{n.id}</li>;
-                });
-                const content = <div>
-                    <div>ライブラリにフローの実行結果が追加されました。</div>
-                    <ul>{result}</ul>
-                </div>;
+            const result = activity.outs.map((n, index) => {
+                return <li key={index}>{n.id}</li>;
+            });
+            const content = <div>
+                <div>ライブラリにフローの実行結果が追加されました。</div>
+                <ul>{result}</ul>
+            </div>;
 
-                notify({
-                    title: "フロー実行完了",
-                    message: ReactDomUtil.renderToString(content),
-                    status: "success",
-                    dismissAfter: 0,
-                    buttons: [
-                        {
-                            name: "開く",
-                            primary: true,
-                            onClick: () => {
-                                window.open("/library");
-                            }
-                        }]
-                });
-            }
+            notify({
+                title: "フロー実行完了",
+                message: ReactDomUtil.renderToString(content),
+                status: "success",
+                dismissAfter: 0,
+                buttons: [
+                    {
+                        name: "開く",
+                        primary: true,
+                        onClick: () => {
+                            window.open("/library");
+                        }
+                    }]
+            });
         });
     };
 

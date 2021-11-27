@@ -1,7 +1,6 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import {SortEndHandler} from "react-sortable-hoc";
-import { flowEditorReducerInitialState } from 'Modules/flowEditor';
-import { GraphUtil, StateUtil, ModalUtil, HttpUtil } from 'Utils/index';
+import { GraphUtil, StateUtil, ModalUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'

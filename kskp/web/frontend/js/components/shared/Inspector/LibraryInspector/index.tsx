@@ -17,7 +17,7 @@ type Props = {
     onClickDelete?: Function;
     onClickApply?: Function;
     onClickMove?: Function;
-    onBlurTitle?: Function;
+    onBlurTitle?: ((e:any, selectedData: DatumType) => void) | null;
     onClickEdit?: Function;
     onClickEditEncoding?: Function;
     onClickCleanTrash?: Function;
