@@ -5,7 +5,6 @@ import {BaseStepModel} from "Model/index";
 type dataSourceType = 'csv'
 
 export interface DataFrameStepModelProps extends BaseModelProps{
-  id: string|null
   uuid: string|null
   dataSource: string | undefined;
   makeCache?: boolean;

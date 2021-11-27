@@ -117,13 +117,13 @@ const DataFrameInspector = (props: Props) => {
                 // uuidだけでプレビュー
                 window.open("/preview?step_id=" + id +
                             "&dialog=true" +
-                            "&title=" + StringUtil.urlEncode(selected_step.label) +
+                            "&title=" + StringUtil.urlEncode(selected_step.label || '') +
                             "&frame_uuid=" + selected_step.uuid);
             } else {
                 // 新規生成するので、step_id と flowUuid と step_ids でデータを生成する
                 window.open("/preview?step_id=" + id +
                             "&dialog=true" +
-                            "&title=" + StringUtil.urlEncode(selected_step.label) +
+                            "&title=" + StringUtil.urlEncode(selected_step.label || '') +
                             "&flow_uuid=" + flowUuid +
                             "&lock_uuid=" + lockUUID +
                             "&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)));

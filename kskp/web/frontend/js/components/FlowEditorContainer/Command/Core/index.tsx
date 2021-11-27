@@ -6,7 +6,7 @@ import classnames from "classnames";
 import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { CommandModelType, CommandParamType, CommandPortType } from "Types/index";
+import { CommandModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
 
 type Props = {
@@ -70,7 +70,7 @@ const Command = (props: Props) => {
 
             const output_steps = command.ports[1].map(() => {
                 const output_step = new DataFrameStepModel({
-                    id: null,
+                    id: '',
                     label: null,
                     type: Constants.step.type.frame,
                     uuid: null,

@@ -1,8 +1,7 @@
 import { defaultGraphProps, defaultNodeProps } from "Utils/GraphUtil";
 import Constants from "Constants/index";
-import { FlowUtil, GraphUtil, StateUtil, ValidatorUtil, ZoomUtil } from "Utils/index";
-import FlowModel, { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
-import { DataFrameStepModelProps } from "Model/Step/DataFrameStepModel";
+import { FlowUtil, GraphUtil, StateUtil, ZoomUtil } from "Utils/index";
+import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, StepModelType } from "../types";
 import { DataFrameDetailType } from "Types/index";
@@ -386,7 +385,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
     }
 
     case DELETE_STEPS_ACTION: {
-      let deleteKeySet = new Set();
+      let deleteKeySet = new Set<string>();
       //削除対象がデータフレームの場合、srcも削除対象とする
       //ただしsrcが別のデータフレームを複数出力している場合があるので、
       //一つでもデータフレームが残っていると削除は行わない
@@ -802,7 +801,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
       const outPorts: any[] = dataSrc.ports[1];
 
       const dstNodeIds = newNodeId('d', newState.flow!.flow.nodes, outPorts.length);
-      const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(GraphUtil, newState.flow!.flow.nodes, [], dstNodeIds);
+      const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, [], dstNodeIds);
       let args = {};
       // default value
       dataSrc.params.map((param: any) => {
@@ -862,7 +861,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
 
       const id = newNodeId('o', newState.flow!.flow.nodes, 1)[0];
 
-      const { newNodePositionAndSize } = newNodesPositionAndSize(GraphUtil, newState.flow!.flow.nodes, srcNodeIds, []);
+      const { newNodePositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, srcNodeIds, []);
 
       // portの追加
       srcNodeIds.forEach((srcNodeId) => {
@@ -1099,7 +1098,7 @@ function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: str
 
   if (srcNodeIds.length > 0) {
     srcNodeIds.forEach((id: string) => {
-      const node = graph.getNode(nodes, id);
+      const node = GraphUtil.getNode(nodes, id);
       totalSX = totalSX + node.position.x;
       totalSY = totalSY + node.position.y;
     });

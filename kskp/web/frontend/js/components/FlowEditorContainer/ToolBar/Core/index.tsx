@@ -6,7 +6,7 @@ import classnames from 'classnames';
 import { DataFrameStepModel, NoteStepModel, NoteStepModelProps } from 'Model/index';
 import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil, APIUtil2 } from 'Utils/index';
 import { Loader } from 'Shared/Base';
-import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index';
+import { HistoryType, LibraryListDataType, UploadedFileType } from 'Types/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
 import { ActivityType, FlowType } from 'Model/Library';
 
@@ -105,6 +105,8 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
                 });
                 // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
                 this.flowUpdate();
+            }).catch(e => {
+                console.log(e);
             }).finally(() => {
                 this.setState({
                     isLoading:false
@@ -227,6 +229,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             { ...position }, nodes);
 
         const props: NoteStepModelProps = {
+            id: '',
             type: Constants.step.type.note,
             position: notOverlapNodePosition,
             title: "新しいメモ",

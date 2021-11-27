@@ -23,7 +23,7 @@ export default class StringUtil {
   }
 
   static getTextWidth (text, fontSize) {
-    let canvas = StringUtil.getTextWidth.canvas || (StringUtil.getTextWidth.canvas = document.createElement('canvas'))
+    let canvas = StringUtil.getTextWidth['canvas'] || (StringUtil.getTextWidth['canvas'] = document.createElement('canvas'))
     let context = canvas.getContext('2d')
     context.font = fontSize + "px " + '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
     let metrics = context.measureText(text)

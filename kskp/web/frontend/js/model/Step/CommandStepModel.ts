@@ -5,8 +5,6 @@ import validateJS from "validate.js";
 import arrayMove from "array-move";
 import {BaseModelProps} from "Model/Step/BaseStepModel";
 
-type stepType = "command" | "frame"
-
 export interface CommandStepModelProps extends BaseModelProps {
     srcs: {};
     srcsOrder: [];

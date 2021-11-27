@@ -24,6 +24,7 @@ type GraphType = {
 }
 
 class GraphUtil {
+  g: any
 
   constructor() {
     this.g = new dagre.graphlib.Graph({ multigraph: true })
@@ -87,7 +88,7 @@ class GraphUtil {
    * ノードの削除
    * @param id
    */
-  removeNode(nodes: [], id: string): [] {
+  removeNode(nodes: any[], id: string): any[] {
     const edges = this.g.nodeEdges(id)
     if (Array.isArray(edges)) {
       edges.forEach((edge) => {
@@ -120,7 +121,7 @@ class GraphUtil {
    * 全エッジの削除
    * @param edges
    */
-  removeAllEdges(edges: []) {
+  removeAllEdges(edges: any[]) {
     edges.forEach((edge) => {
       const from = edge.v
       const to = edge.w
@@ -165,7 +166,7 @@ class GraphUtil {
    * @param nodes
    * @returns {*}
    */
-  refreshPosition(nodes: []) {
+  refreshPosition(nodes: any[]) {
     const self = this
     this.layout()
     this.g.nodes().forEach((v) => {
@@ -192,7 +193,7 @@ class GraphUtil {
    * @param key
    * @returns {*}
    */
-  static getNode(nodes: [], key: string) {
+  static getNode(nodes: any[], key: string) {
     let node = nodes.find((node) => {
       return node.id === key
     })
@@ -204,7 +205,7 @@ class GraphUtil {
    * @returns {any[]}
    * @param parameters
    */
-  static updateNode(parameters: { nodes: [], key: string, new_node: any }) {
+  static updateNode(parameters: { nodes: any[], key: string, new_node: any }) {
     let { nodes, key, new_node } = parameters
     let new_nodes = nodes.map((node: any) => {
       if (node.id === key) {
@@ -222,9 +223,9 @@ class GraphUtil {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithIncludeKeys(nodes: [], keySet: any) {
+  static getNewNodesWithIncludeKeys(nodes: any[], keySet: Set<string>) {
     let node = nodes.filter((node) => {
-      return (key_set.has(node.id))
+      return (keySet.has(node.id))
     })
     return node
   }
@@ -235,7 +236,7 @@ class GraphUtil {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithExculudeKeys(nodes: [], keySet: Set) {
+  static getNewNodesWithExculudeKeys(nodes: any[], keySet: Set<string>) {
     let node = nodes.filter((node) => {
       return !(keySet.has(node.id))
     })
@@ -247,13 +248,13 @@ class GraphUtil {
    * @param json
    * @returns {*}
    */
-  load(json: {}) {
+  load(json: any) {
     const self = this
     let hasPosition = false
 
     if (!json || !json.nodes) return new FlowModel()
 
-    let newNodes = []
+    let newNodes: DataFrameStepModel[] = [];
     json.nodes.forEach((node) => {
       self.addNode(node.id)
       const type = node.type
@@ -284,12 +285,19 @@ class GraphUtil {
             id: step.id,
             name: step.name,
             label: step.label,
+            type: step.type,
+            commandId: step.commandId,
+            uuid: step.uuid,
             srcs: step.srcs,
             dsts: step.dsts,
             args: step.args,
             position: step.position,
             size: step.size,
-            masked: step.masked
+            masked: step.masked,
+            srcsOrder: step.srcsOrder,
+            getSrcsSteps: step.getSrcsSteps,
+            getDstsSteps: step.getDstsSteps,
+            getCommand: step.getCommand
           }
           if (type === Constants.step.type.command) {
             model.type = Constants.step.type.command

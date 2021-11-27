@@ -3,9 +3,9 @@ import ModelUtil from "Utils/ModelUtil";
 import Model from "Model/Core";
 
 export type BaseModelProps = {
-  id?: string | null | undefined;
+  id: string;
   type: string;
-  label?: string | null | undefined;
+  label?: string | null;
   position?: { x: number, y: number };
   size?: { width: number, height: number };
   invalid?: boolean;
@@ -13,7 +13,7 @@ export type BaseModelProps = {
 }
 
 export default class BaseStepModel extends Model {
-  id: string | null | undefined = undefined;
+  id: string = '';
   type: string | undefined = undefined;
   label: string | null | undefined = undefined;
   position: { x: number, y: number } = {x: 0, y: 0}

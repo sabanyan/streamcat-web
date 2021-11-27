@@ -133,15 +133,15 @@ export default class FlowUtil {
     })
 
     // フローを実行する
-    return APIUtil2.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch((error) => {
-      let message = new MessageModel(error.data)
+    return APIUtil2.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch(error => {
+      let message = new MessageModel(error);
       notify({
         title: message.title,
         message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
         status: message.messageStatus,
         dismissAfter: 0,
         closeButton: true
-      })
+      });
       throw error;
     }).finally(() => {
       dismissNotify && dismissNotify(runNotify.id);
