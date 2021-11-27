@@ -1103,82 +1103,36 @@ const Library = () => {
             });
         };
 
-        const editFlow = (flowUuid, parent_uuid) => {
-            let body = { target: flowUuid };
-            let locks = new LocksModel(flowUuid);
-
-            return axios.post("/api/v0/locks", body).then((response) => {
-                let locksModel = locks.Parse(response);
-                let lockId = locksModel.getLockId();
-                if (lockId) {
-                    axios.put("/api/v0/flows/" + flowUuid, {
-                        parent: parent_uuid,
-                        lock: lockId
-                    }).then(() => {
-                        navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                    }, (error) => {
-                        navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                        console.log(error);
+        const onClickMove = (e, libraryData: DatumType) => {
+            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (newParentUuid) => {
+                // Datumを移動する
+                let promise: Promise<any>;
+                if(libraryData.type === 'flow'){
+                    promise = APIUtil2.createLock(libraryData.uuid).then(lock => {
+                        libraryData.move(newParentUuid, lock.uuid).then(flow => {
+                            lock.delete().then(() => {
+                                // ライブラリ画面を再読み込みする
+                                fetchFolder();
+                            });
+                        });
                     });
-                } else {
-                    // lockが出来なかった場合
+                }else{
+                    promise = libraryData.move(newParentUuid).then(datum => {
+                        // ライブラリ画面を再読み込みする
+                        fetchFolder();
+                    })
+                }
+
+                // エラー処理
+                promise.catch((e) => {
                     notify({
-                        title: "ライブラリー移動エラー",
-                        message: response.data.message,
+                        title: "エラー",
+                        message: e.message,
                         status: "error",
                         dismissAfter: 0,
                         closeButton: true
-                    });
-                }
-            });
-        };
-
-        const onClickMove = (e, libraryData: any) => {
-            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
-                const type = libraryData.type;
-                const uuid = libraryData.uuid;
-                const data = {
-                    parent: folder_uuid
-                };
-
-                let result;
-                switch (type) {
-                    case Constants.library.type.folder:
-                        result = APIUtil.put("folders/" + uuid, data);
-                        break;
-                    case Constants.library.type.project:
-                        result = APIUtil.put("projects/" + uuid, data);
-                        break;
-                    case Constants.library.type.flow:
-                        result = editFlow(uuid, folder_uuid);
-                        break;
-                    case Constants.library.type.frame:
-                        result = APIUtil.put("frames/" + uuid, data);
-                        break;
-                    case Constants.library.type.document:
-                        result = APIUtil.put("documents/" + uuid, data);
-                        break;
-                    case Constants.library.type.database:
-                        result = APIUtil.put("databases/" + uuid, data);
-                        break;
-                    case Constants.library.type.remoteFolder:
-                        result = APIUtil.put("remote-folders/" + uuid, data);
-                        break;
-                }
-                if (!result) return;
-                result.then((response) => {
-                    fetchFolder();
-                    if (!response.data.success) {
-                        notify({
-                            title: "エラー",
-                            message: response.data.message,
-                            status: "error",
-                            dismissAfter: 0,
-                            closeButton: true
-                        });
-                    }
+                    })
                 });
-
             });
         };
 
