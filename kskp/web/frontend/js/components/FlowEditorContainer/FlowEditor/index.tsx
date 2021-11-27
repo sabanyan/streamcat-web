@@ -512,9 +512,7 @@ const FlowEditor = () => {
         lock.extend().then( () => {
             // 取得した lockUUID を設定
             setLock(lock);
-            console.log("lock extended");
         }).catch(e => {
-            console.log(e);
             // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
             regenerateNewLockUUID();
             setReadOnly(true);

@@ -1,6 +1,5 @@
 export {default as APIUtil} from './APIUtil'
 export {APIUtil2} from './APIUtil2'
-export {default as ChartUtil} from './ChartUtil'
 export {default as CommandUtil} from './CommandUtil'
 export {default as DetectUtil} from './DetectUtil'
 export {default as ErrorUtil} from './ErrorUtil'
@@ -18,6 +17,3 @@ export {default as StringUtil} from './StringUtil'
 export {default as ValidatorUtil} from './ValidatorUtil'
 export {default as WebUtil} from './WebUtil'
 export {default as ZoomUtil} from './ZoomUtil'
-
-
-
