@@ -197,7 +197,7 @@ class FileTestCase(ApiTestCaseBase):
         self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
 
         # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
-        project1.update_data('うごげ〜')
+        project1.update_label('うごげ〜')
 
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:

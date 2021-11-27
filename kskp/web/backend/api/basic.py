@@ -76,7 +76,7 @@ def update_project(project_uuid):
 
     if req.has('label'):
         # プロジェクトのラベルを修正する
-        return project.update_data(req['label'])
+        return project.update_label(req['label'])
     elif req.has('parent'):
         # プロジェクトを移動する
         return project.move(req['parent'])

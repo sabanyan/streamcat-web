@@ -256,7 +256,7 @@ def update_folder(folder_uuid):
         # フォルダのラベルを修正する
         label = request.json['label']
         folder = g.factory.data.find_by_uuid(folder_uuid)
-        return folder.update_data(label)
+        return folder.update_label(label)
     elif 'parent' in request.json and request.json['parent'] != '':
         # フォルダを移動する
         new_parent = request.json['parent']
@@ -363,25 +363,28 @@ def update_database(database_uuid):
     """
     データベースを修正する、またはデータベースを移動する
     """
-    if ('label'  not in request.json or request.json['label']  == '') and \
-       ('parent' not in request.json or request.json['parent'] == ''):
+    req = RequestJson(request.json)
+
+    if req.has_no_all('label', 'parent'):
         raise Exception('labelまたはparent属性を指定してください')
-    elif 'label' in request.json and 'parent' in request.json:
+    elif req.has_all('label', 'parent'):
         raise Exception('labelとはparent属性は同時に指定できません')
 
-    if 'label' in request.json and request.json['label'] != '':
-        # データベースを修正する
-        database_conn = DatabaseConn(request.json)
-
-        # 接続情報に漏れがあれば例外を送出する
-        database_conn.valid_or_raise()
-
-        label = request.json['label']
+    if req.has('label'):
+        label = req['label']
         database = g.factory.data.find_by_uuid(database_uuid)
-        return database.update_data(label, database_conn)
-    elif 'parent' in request.json and request.json['parent'] != '':
+        if len(req) == 1:
+            # ラベル名を変更する
+            return database.update_label(label)
+        else:
+            # データベースを修正する
+            database_conn = DatabaseConn(request.json)
+            # 接続情報に漏れがあれば例外を送出する
+            database_conn.valid_or_raise()
+            return database.update_data(label, database_conn)
+    elif req.has('parent'):
         # データベースを移動する
-        new_parent = request.json['parent']
+        new_parent = req['parent']
         database = g.factory.data.find_by_uuid(database_uuid)
         return database.move(new_parent)
     else:
@@ -437,25 +440,28 @@ def update_remote_folder(folder_uuid):
     """
     リモートフォルダを修正する、またはリモートフォルダを移動する
     """
-    if ('label'  not in request.json or request.json['label']  == '') and \
-       ('parent' not in request.json or request.json['parent'] == ''):
+    req = RequestJson(request.json)
+
+    if req.has_no_all('label', 'parent'):
         raise Exception('labelまたはparent属性を指定してください')
-    elif 'label' in request.json and 'parent' in request.json:
+    elif req.has_all('label', 'parent'):
         raise Exception('labelとはparent属性は同時に指定できません')
 
-    if 'label' in request.json and request.json['label'] != '':
-        # リモートフォルダを修正する
-        remote_folder_conn = RemoteFolderConn(request.json)
-
-        # 接続情報に漏れがあれば例外を送出する
-        remote_folder_conn.valid_or_raise()
-
-        label = request.json['label']
+    if req.has('label'):
+        label = req['label']
         folder = g.factory.data.find_by_uuid(folder_uuid)
-        return folder.update_data(label, remote_folder_conn)
-    elif 'parent' in request.json and request.json['parent'] != '':
+        if len(req) == 1:
+            # ラベル名を変更する
+            return folder.update_label(label)
+        else:
+            # リモートフォルダを修正する
+            remote_folder_conn = RemoteFolderConn(request.json)
+            # 接続情報に漏れがあれば例外を送出する
+            remote_folder_conn.valid_or_raise()
+            return folder.update_data(label, remote_folder_conn)
+    elif req.has('parent'):
         # リモートフォルダを移動する
-        new_parent = request.json['parent']
+        new_parent = req['parent']
         folder = g.factory.data.find_by_uuid(folder_uuid)
         return folder.move(new_parent)
     else:
