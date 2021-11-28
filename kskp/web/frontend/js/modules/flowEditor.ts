@@ -167,7 +167,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
       const flowJson = graph.load(context.flow);
       newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;
-      newState.flow = context.flow;
+      newState.flow = context;
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       newState.allowlist = flowJson.allowlist;
@@ -181,8 +181,8 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
       //ValidatorUtil.isGraphModelSchema(newState);
       //ValidatorUtil.isNodesSchema(newState);
       //ValidatorUtil.nodesValidate(newState.nodes);
-      if(newState.flow) {
-        newState.flow!.flow.nodes = newState.nodes;
+      if(newState.flow && newState.flow.flow){
+        newState.flow.flow.nodes = newState.nodes;
       }else{
         console.log(`newState.flow is ${newState.flow}`);
       }
