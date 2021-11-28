@@ -8,7 +8,7 @@ export default class ModelUtil {
    * "d1,c1,f1" というフォーマットで発行される
    * @returns {string}
    */
-  static getNewId (type: string, nodes: []): string {
+  static getNewId (type: string): string {
     let prefix: string = ModelUtil.getTypePrefix(type)
     let Id: string = ModelUtil.getMinimumIDNumberFromNodes(type)
     return prefix + Id
@@ -36,11 +36,12 @@ export default class ModelUtil {
   }
 
   static getMinimumIDNumberFromNodes (type: string): string {
-    let prefix: string = ModelUtil.getTypePrefix(type)
+    const prefix: string = ModelUtil.getTypePrefix(type)
+    const nodes = window.nodes as any[];
     let idNumber: string = ''
-    for (let index = 1; index <= window.nodes.length; index++) {
+    for (let index = 1; index <= nodes.length; index++) {
       idNumber = index.toString()
-      const found = window.nodes.find((node) => {
+      const found = nodes.find((node) => {
         return (node.id === prefix + index)
       })
       if (found) {

@@ -62,7 +62,7 @@ const FlowInspector = (props: Props) => {
             id: Constants.modal.RUN_FLOW,
             visible: true,
             done: "実行する",
-            cancle: "キャンセル",
+            cancel: "キャンセル",
             dynamic: true,
             danger: false,
             content: content

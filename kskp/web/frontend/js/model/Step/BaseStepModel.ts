@@ -14,7 +14,7 @@ export type BaseModelProps = {
 
 export default class BaseStepModel extends Model {
   id: string = '';
-  type: string | undefined = undefined;
+  type: string = '';
   label: string | null | undefined = undefined;
   position: { x: number, y: number } = {x: 0, y: 0}
   size: { width: number, height: number } = {width: 0, height: 0}

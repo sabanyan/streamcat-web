@@ -11,7 +11,9 @@ class HttpUtil {
 
   mergeConfig (config?: {}) {
     if (config) {
-      return Object.assign(this.config, config)
+      return Object.assign(this.config, config);
+    }else{
+      return this.config;
     }
   }
 
@@ -24,10 +26,9 @@ class HttpUtil {
     window['onCallbackApply'] = callBackApply
   }
 
-  get (path: string, data?: {}, config?: {}) {
-    const merged_config = this.mergeConfig(config)
+  get (path: string, data?: {}) {
     const url = this.httpUrl(path)
-    return axios.get(url, {params: data}, merged_config)
+    return axios.get(url, {params: data})
   }
 
   post (path: string, data: {}, config?: {}) {
@@ -42,16 +43,15 @@ class HttpUtil {
     return axios.put(url, data, merged_config)
   }
 
-  delete (path: string, data: {}, config: {}) {
-    const merged_config = this.mergeConfig(config)
+  delete (path: string, data: {}) {
     const url = this.httpUrl(path)
-    return axios.delete(url, data, merged_config)
+    return axios.delete(url, data)
   }
 
   getURLParam (paramName: string) {
-    var url_string = window.location.href
-    var url = new URL(url_string)
-    return url.searchParams.get(paramName)
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    return url.searchParams.get(paramName) || '';
   }
 }
 

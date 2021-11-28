@@ -1,6 +1,22 @@
 //@flow
 import Constants from 'Constants/index'
 
+type Context ={
+  id: string,
+  title?: string,
+  contents?: any[]
+  visible?: boolean,
+  dynamic?: boolean,
+  danger?: boolean,
+  cancel?: string,
+  done?: string,
+  onClickOK?: Function,
+  onClickCancel?: Function,
+  onClickDone?: Function,
+  onClickClose?: Function,
+  content?: JSX.Element,
+}
+
 export default class ModalUtil {
   static getUDID () {
     return 'm' + Math.floor(Math.random() * 10000)
@@ -10,10 +26,10 @@ export default class ModalUtil {
    * モーダル処理の登録
    * @param context
    */
-  static registerModal (context: {}) {
+  static registerModal (context: Context) {
     window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_DONE + context.id)
     window.emitter.addListener(Constants.event.MODAL_ON_CLICK_DONE + context.id,
-      (result_context) => {
+      (result_conext) => {
         if (context.onClickDone) {
           context.onClickDone()
         }
@@ -38,12 +54,15 @@ export default class ModalUtil {
    * モーダルの呼び出し
    * @param context
    */
-  static emitModal (context: {}) {
+  static emitModal (context: Context) {
     window.emitter.emit(Constants.event.MODAL_EVENT + context.id, context)
   }
 
   static closeModal (modalId: string) {
-    ModalUtil.emitModal({id: modalId, visible: false})
+    ModalUtil.emitModal({
+      id: modalId,
+      visible: false
+    })
   }
 }
 
