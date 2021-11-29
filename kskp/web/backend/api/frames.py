@@ -254,7 +254,8 @@ def _make_flow(flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> 
         return parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame.uuid})
     elif flow_uuid is not None:
         # FlowのUUIDが指定された場合
-        return g.factory.data.find_by_uuid(flow_uuid)
+        # AssertCommandがflow.folder_pathを参照するため、folder_path=Trueにする
+        return g.factory.data.find_by_uuid(flow_uuid, folder_path=True)
     elif flow_json is not None:
         # フローJSONが指定された場合
         from kskp.store import FlowData
