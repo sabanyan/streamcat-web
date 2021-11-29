@@ -1,95 +1,26 @@
-from flask import Blueprint, send_from_directory, request, g
-from kskp.store import DatabaseConn, RemoteFolderConn
-from kskp.store.lock import lock_manager
+from flask import (
+    Blueprint,
+    send_from_directory,
+    request,
+    g
+)
+from kskp.core import Datum
+from kskp.store import (
+    ProjectFolder,
+    DatabaseConn,
+    RemoteFolderConn
+)
+from ..views.auth import MY_PROJECT
 from .utils import (
     RequestJson,
     api_base,
+    login_required_api,
+    update_project_info,
     update_projects_info,
-    login_required_api
+    update_projects_info2
 )
 
 mod = Blueprint('lib', __name__)
-
-@mod.route('/flow_files/<uuid>', methods=['GET'])
-@login_required_api
-def download_flow(uuid):
-    from kskp.store import FlowDumper
-    flow_dumper = FlowDumper(g.factory)
-    (archive_path, archive_name) = flow_dumper.dump_archive(uuid)
-
-    # アーカイブファイルを返す
-    ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
-                              download_name = archive_name + '.tgz', mimetype = 'application/x-tar')
-    archive_path.unlink()
-    return ret
-
-@mod.route('/flow_files', methods=['POST'])
-@login_required_api
-@api_base
-def upload_flow():
-    from pathlib import Path
-
-    if 'file' not in request.files or request.files.get('file') is None:
-        raise Exception('No archive file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-
-    if 'label' in request.form:
-        folder_label = request.form['label']
-    else:
-        folder_label = None
-
-    parent = g.factory.data.find_by_uuid(request.form['parent'])
-    file_name = Path(request.files.get('file').filename).stem
-    stream = request.files.get('file').stream
-
-    from kskp.store import FlowDumper
-    flow_dumper = FlowDumper(g.factory)
-    flow_dumper.restore_archive(parent, folder_label, file_name, stream)
-
-@mod.route('/stores', methods=['GET'])
-@login_required_api
-@api_base
-def fecth_stores():
-    """
-    データストアの定義(雛形)の一覧を返却する
-    """
-    return g.factory.store.find_all()
-
-@mod.route('/stores/<store_id>', methods=['GET'])
-@login_required_api
-@api_base
-def fecth_store(store_id):
-    """
-    データストアの定義(雛形)を返却する
-    """
-    return g.factory.store.find_by_id(store_id)
-
-@mod.route('/stores', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_store():
-    """
-    データストアの定義(雛形)を作成する
-    """
-    new_store = g.factory.store.create(request.json['id'],
-                                       request.json['version'],
-                                       request.json['label'],
-                                       request.json['description'],
-                                       request.json['url'],
-                                       request.json['params'])
-    new_store.save()
-    return new_store
-
-@mod.route('/stores/<store_id>', methods=['DELETE'])
-@login_required_api
-@api_base
-def delete_store(store_id):
-    """
-    データストアの定義(雛形)を削除する
-    """
-    store = g.factory.store.find_by_id(store_id)
-    store.delete()
 
 def _jsonify_folder(folder, prev_folder_path=False):
     """
@@ -110,6 +41,7 @@ def _jsonify_folder(folder, prev_folder_path=False):
     data['folderPath'] = [folder for folder in folder_list]
     return data
 
+
 @mod.route('/library', methods=['GET'])
 @login_required_api
 @update_projects_info
@@ -121,100 +53,107 @@ def fecth_library():
     root = g.factory.data.load_root()
     return _jsonify_folder(root)
 
-@mod.route('/trashes', methods=['GET'])
-@login_required_api
-@api_base
-def fetch_trashes():
-    """
-    ゴミ箱を返却する
-    """
-    trash_folder = g.factory.data.find_trashcan()
-    return _jsonify_folder(trash_folder, prev_folder_path=True)
 
-@mod.route('/trashes/<datum_uuid>', methods=['PUT'])
+@mod.route('/projects')
 @login_required_api
+@update_projects_info2
 @api_base
-def return_trashes(datum_uuid):
+def get_projects():
     """
-    ゴミを捨てる前の場所に戻す
+    全てのプロジェクトを返却する
     """
-    datum = g.factory.data.find_by_uuid(datum_uuid)
-    return datum.put_back()
+    if request.args.get('except_myproject') == 'on':
+        except_label = MY_PROJECT
+    else:
+        except_label = None
 
-@mod.route('/trashes', methods=['DELETE'])
-@login_required_api
-@api_base
-def empty_all():
-    """
-    ゴミ箱を空にする
-    """
-    trash_folder = g.factory.data.find_trashcan()
-    trash_folder.trash_all()
+    return g.factory.data.find_all(type=Datum.PROJECT_TYPE, except_label=except_label)
 
-@mod.route('/locks', methods=['POST'])
+@mod.route('/projects/<project_uuid>', methods=['GET'])
+@login_required_api
+@update_project_info
+@api_base
+def fetch_project(project_uuid):
+    """
+    プロジェクトを返却する
+    """
+    from .lib import _jsonify_folder
+    project = g.factory.data.find_by_uuid(project_uuid)
+    return _jsonify_folder(project)
+
+@mod.route('/projects', methods=['POST'])
 @login_required_api
 @api_base
-def make_new_lock():
+def new_project():
     """
-    ロックを獲得する
+    プロジェクトを作成する
+    """
+    if 'parent' not in request.json:
+        raise Exception('parent属性を指定してください')
+
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_project = parent.create_project_folder(request.json['label'])
+    new_project.save()
+    return new_project
+
+@mod.route('/projects/<project_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_project(project_uuid):
+    """
+    プロジェクトのラベルを修正する
+    プロジェクトを移動する
+    プロジェクトメンバを設定する
     """
     req = RequestJson(request.json)
-    if not req.has('target'):
-        raise Exception('排他ロック対象データのuuidを指定してください')
 
-    if req.has('lastModifiedAt'):
-        # 排他ロックの再取得の場合
+    if req.has_no_all('parent', 'label', 'members'):
+        raise Exception('label,parentまたはmembers属性を指定してください')
+    elif req.has_all('parent', 'label', 'members'):
+        raise Exception('label,parentとmembers属性は同時に指定できません')
+
+    project = g.factory.data.find_by_uuid(project_uuid)
+
+    if req.has('label'):
+        # プロジェクトのラベルを修正する
+        return project.update_label(req['label'])
+    elif req.has('parent'):
+        # プロジェクトを移動する
+        return project.move(req['parent'])
+
+    elif req.has('members'):
+        # プロジェクトにユーザを追加・削除する
+        if not req.has('lastModifiedAt'):
+            raise Exception('lastModifiedAtにプロジェクトの最終更新時刻を指定してください')
+        if not isinstance(req['members'], list):
+            raise Exception('members属性にはユーザuuidの配列を指定してください')
+        # member属性からMembersオブジェクトを作成する
+        members = []
+        for member_dict in req['members']:
+            user = g.factory.user.find_by_uuid(member_dict['uuid'])
+            type = member_dict['type']
+            members.append(ProjectFolder.Member(user, type))
+        # プロジェクト管理者が設定されない場合はエラーとする
+        if not project.owner_exists(members):
+            raise Exception('プロジェクト管理者が設定されていません')
+        # member属性で指定されたユーザを追加する
         from datetime import datetime
-        target_uuid = request.json['target']
-        target = g.factory.data.find_by_uuid(target_uuid)
         last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
-        lock = lock_manager.relock(target, lastModifiedAt=last_modified_at, creator=g.user)
+        project.init_members(members, last_modified_at)
+        return project
     else:
-        # 排他ロックの新規取得の場合
-        # (新規取得の場合はfind_by_uuid()の実行で遅くしたくない)
-        target_uuid = request.json['target']
-        lock = lock_manager.lock(target_uuid, creator=g.user)
-    
-    return lock.to_json()
+        raise Exception('誤った引数が指定されました')
 
-@mod.route('/extend-locks/<lock_uuid>', methods=['POST'])
+@mod.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def extend_lock(lock_uuid):
+def throw_away_project(project_uuid):
     """
-    ロックの有効期間を延長する
+    指定したプロジェクトをほかす
     """
-    from kskp.store.lock import LockedDatumException
-    if not lock_manager.contains(lock_uuid):
-        raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
+    project = g.factory.data.find_by_uuid(project_uuid)
+    project.throw_away()
 
-@mod.route('/delete-locks', methods=['POST'])
-@login_required_api
-@api_base
-def delete_all_locks():
-    """
-    指定したuuidのロックを解除する
-    全てのロックを解除する
-    """
-    if 'of' in request.args:
-        target_uuid = request.args['of']
-        return lock_manager.unlock_target(target_uuid)
-    else:
-        return lock_manager.unlock_all()
-
-"""
-frontendのNavagator.sendBeacon()に対応するため、下記のように変更
-methods: DELETE => POST
-url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
-"""
-@mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
-@login_required_api
-@api_base
-def delete_lock(lock_uuid):
-    """
-    ロックを解除する
-    """ 
-    return lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
@@ -275,6 +214,188 @@ def throw_away_folder(folder_uuid):
     folder = g.factory.data.find_by_uuid(folder_uuid)
     folder.throw_away()
 
+
+@mod.route('/trashes', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_trashes():
+    """
+    ゴミ箱を返却する
+    """
+    trash_folder = g.factory.data.find_trashcan()
+    return _jsonify_folder(trash_folder, prev_folder_path=True)
+
+@mod.route('/trashes/<datum_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def return_trashes(datum_uuid):
+    """
+    ゴミを捨てる前の場所に戻す
+    """
+    datum = g.factory.data.find_by_uuid(datum_uuid)
+    return datum.put_back()
+
+@mod.route('/trashes', methods=['DELETE'])
+@login_required_api
+@api_base
+def empty_all():
+    """
+    ゴミ箱を空にする
+    """
+    trash_folder = g.factory.data.find_trashcan()
+    trash_folder.trash_all()
+
+
+@mod.route('/frames', methods=['POST'])
+@login_required_api
+@api_base
+def create_frame():
+    """
+    Frameをアップロードする
+    """
+    if request.files.get('file') is None:
+        raise Exception('No frame file found.')
+    if 'parent' not in request.form:
+        raise Exception('No parent is designated.')
+    if 'label' not in request.form:
+        raise Exception('No label is designated.')
+
+    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
+    new_frame = parent.create_frame(request.form.get('label'),
+                                    request.files.get('file').stream)
+    # FrameをDBに格納する
+    new_frame.save()
+    return new_frame
+
+@mod.route('/frames/<frame_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_frame(frame_uuid):
+    """
+    frameのラベルを修正する、またはframeを移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has_no_all('parent', 'label', 'encoding', 'newline'):
+        raise Exception('label,encoding,newlineまたはparent属性を指定してください')
+    elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
+        raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
+
+    frame = g.factory.data.find_by_uuid(frame_uuid)
+
+    if req.has('parent'):
+        # frameを移動する
+        new_parent = req['parent']
+        return frame.move(new_parent)
+
+    else:
+        if req.has('label'):
+            # frameのラベルを修正する
+            label = req['label']
+            # ret = Frame.update_label(frame_uuid, label, modifier)
+            ret = frame.update_label(label)
+
+        if req.has_all('encoding', 'newline'):
+            encoding_str = req['encoding']
+            newline_str = req['newline']
+            ret = frame.update_encoding_newline(encoding_str, newline_str)
+
+        if ret is None:
+            raise Exception('update_frame parameter error!')
+
+        return ret
+
+@mod.route('/frames/<frame_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_frame(frame_uuid):
+    """
+    指定したframeをほかす
+    """
+    frame = g.factory.data.find_by_uuid(frame_uuid)
+    if frame is None:
+        raise Exception('no frame exists.')
+    frame.throw_away()
+
+
+@mod.route('/documents/<document_uuid>', methods=['GET'])
+@login_required_api
+def fetch_document(document_uuid):
+    """
+    ドキュメントを返却する
+    """
+    document = g.factory.data.find_by_uuid(document_uuid)
+    return send_from_directory(document.path.parent,
+                               document.path.name,
+                               download_name=document.label,
+                               mimetype=document.content_type)
+
+@mod.route('/documents', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_document():
+    """
+    ファイルストリームからファイルタイプを判定して
+    FrameまたはDocumentを作成する
+    """
+    if request.files.get('file') is None:
+        raise Exception('No file found.')
+    if 'parent' not in request.form:
+        raise Exception('No parent is designated.')
+    if 'label' not in request.form:
+        raise Exception('No label is designated.')
+
+    # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
+    content_type = request.files['file'].content_type
+    maybe_csv = content_type == 'text/csv'
+    
+    # 格納先フォルダを取得する
+    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
+    # ファイルを作成する
+    new_file = parent.create_file(request.form.get('label'),
+                                  request.files.get('file').stream,
+                                  maybe_csv=maybe_csv)
+    # ファイルをDBに格納する
+    new_file.save()
+
+@mod.route('/documents/<document_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_document(document_uuid):
+    """
+    指定したdocumentのラベル名を変更する、または移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has_no_all('parent', 'label'):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif req.has_all('parent', 'label') and req.has('label'):
+        raise Exception('labelとparent属性は同時に指定できません')
+
+    document = g.factory.data.find_by_uuid(document_uuid)
+
+    if req.has('parent'):
+        # ドキュメントを移動する
+        new_parent = req['parent']
+        return document.move(new_parent)
+    elif req.has('label'):
+        # ドキュメントのラベルを修正する
+        label = req['label']
+        return document.update_label(label)
+    else:
+        raise Exception('update_document parameter error!')
+
+@mod.route('/documents/<document_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_document(document_uuid):
+    """
+    指定したdocumentをほかす
+    """
+    document = g.factory.data.find_by_uuid(document_uuid)
+    document.throw_away()
+
+
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
 @update_projects_info
@@ -312,7 +433,6 @@ def update_awss3_folder(awss3_uuid):
     awss3 = g.factory.data.find_by_uuid(awss3_uuid)
     return awss3.update_data(label, bucket_name)
 
-
 @mod.route('/awss3s/<awss3_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
@@ -326,6 +446,7 @@ def throw_away_awss3(awss3_uuid):
     folder = g.factory.data.find_by_uuid(awss3_uuid)
     # AWS S3 folderレコードをDBから削除する
     folder.throw_away()
+
 
 @mod.route('/databases/<database_uuid>', methods=['GET'])
 @login_required_api
@@ -413,7 +534,6 @@ def fetch_remote_folder(folder_uuid):
     folder = g.factory.data.find_by_uuid(folder_uuid)
     return folder
 
-
 @mod.route('/remote-folders', methods=['POST'])
 @login_required_api
 @api_base
@@ -477,78 +597,3 @@ def throw_away_remote_folder(folder_uuid):
     folder = g.factory.data.find_by_uuid(folder_uuid)
     # リモートフォルダレコードをDBから削除する
     folder.throw_away()
-
-
-@mod.route('/documents/<document_uuid>', methods=['GET'])
-@login_required_api
-def fetch_document(document_uuid):
-    """
-    ドキュメントを返却する
-    """
-    document = g.factory.data.find_by_uuid(document_uuid)
-    return send_from_directory(document.path.parent, document.path.name, download_name=document.label, mimetype=document.content_type)
-
-@mod.route('/documents', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_document():
-    """
-    ファイルストリームからファイルタイプを判定して
-    FrameまたはDocumentを作成する
-    """
-    if request.files.get('file') is None:
-        raise Exception('No file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-    if 'label' not in request.form:
-        raise Exception('No label is designated.')
-
-    # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
-    content_type = request.files['file'].content_type
-    maybe_csv = content_type == 'text/csv'
-    
-    # 格納先フォルダを取得する
-    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
-    # ファイルを作成する
-    new_file = parent.create_file(request.form.get('label'),
-                                  request.files.get('file').stream,
-                                  maybe_csv=maybe_csv)
-    # ファイルをDBに格納する
-    new_file.save()
-
-@mod.route('/documents/<document_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def update_document(document_uuid):
-    """
-    指定したdocumentのラベル名を変更する、または移動する
-    """
-    req = RequestJson(request.json)
-
-    if req.has_no_all('parent', 'label'):
-        raise Exception('labelまたはparent属性を指定してください')
-    elif req.has_all('parent', 'label') and req.has('label'):
-        raise Exception('labelとparent属性は同時に指定できません')
-
-    document = g.factory.data.find_by_uuid(document_uuid)
-
-    if req.has('parent'):
-        # ドキュメントを移動する
-        new_parent = req['parent']
-        return document.move(new_parent)
-    elif req.has('label'):
-        # ドキュメントのラベルを修正する
-        label = req['label']
-        return document.update_label(label)
-    else:
-        raise Exception('update_document parameter error!')
-
-@mod.route('/documents/<document_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def throw_away_document(document_uuid):
-    """
-    指定したdocumentをほかす
-    """
-    document = g.factory.data.find_by_uuid(document_uuid)
-    document.throw_away()
