@@ -1,6 +1,5 @@
 from flask import (
     Blueprint,
-    jsonify,
     request,
     g
 )
@@ -291,6 +290,7 @@ def fetch_datadsts():
 
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
+@api_base
 def fetch_subflows():
     """
     サブフロー一覧を取得する
@@ -309,9 +309,10 @@ def fetch_subflows():
         subflow_data['projectName'] = ''
         subflow_data_list.append(subflow_data)
 
-    return jsonify({'success': True, 'data': subflow_data_list})
+    return subflow_data_list
 
 @mod.route('/commands')
+@api_base
 def fetch_commands():
     """
     コマンド定義の一覧を返す
@@ -338,9 +339,10 @@ def fetch_commands():
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
         commands_list.extend(link.resolve())
 
-    return jsonify({'success': True, 'data': commands_list})
+    return commands_list
 
 @mod.route('/visualizers')
+@api_base
 def fetch_visualizers():
     """
     ビジュアライズ用コマンド定義の一覧を返す
@@ -348,7 +350,7 @@ def fetch_visualizers():
     from kskp.depo.std.commands import CommandsPathLink, CommandsPathFileSource
 
     link = CommandsPathLink(CommandsPathFileSource('vcmd'))
-    return jsonify({'success': True, 'data': link.resolve()})
+    return link.resolve()
 
 
 @mod.route('/flows', methods=['GET'])
