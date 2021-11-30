@@ -62,17 +62,14 @@ module.exports = (env) => {
         alias: {
           Components: path.resolve(__dirname, './web/frontend/js/components/'),
           FlowEditorContainer: path.resolve(__dirname, './web/frontend/js/components/FlowEditorContainer/'),
-          FlowListContainer: path.resolve(__dirname, './web/frontend/js/components/FlowListContainer/'),
           LibraryContainer: path.resolve(__dirname, './web/frontend/js/components/LibraryContainer/'),
           ProfileContainer: path.resolve(__dirname, './web/frontend/js/components/ProfileContainer/'),
-          ProjectListContainer: path.resolve(__dirname, './web/frontend/js/components/ProjectListContainer/'),
           PreviewContainer: path.resolve(__dirname, './web/frontend/js/components/PreviewContainer/'),
           UserListContainer: path.resolve(__dirname, './web/frontend/js/components/admin/UserListContainer/'),
           Shared: path.resolve(__dirname, './web/frontend/js/components/shared/'),
           Constants: path.resolve(__dirname, './web/frontend/js/constants/'),
           Model: path.resolve(__dirname, './web/frontend/js/model/'),
           Modules: path.resolve(__dirname, './web/frontend/js/modules/'),
-          Schema: path.resolve(__dirname, './web/frontend/js/schema/'),
           Types: path.resolve(__dirname, './web/frontend/js/types/'),
           Utils: path.resolve(__dirname, './web/frontend/js/utils/')
         },

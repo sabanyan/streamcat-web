@@ -20,17 +20,14 @@
       "paths": {// WebPackのAlias設定も忘れずに
         "Components/*": ["./web/frontend/js/components/*"],
         "FlowEditorContainer/*": ["./web/frontend/js/components/FlowEditorContainer/*"],
-        "FlowListContainer/*": ["./web/frontend/js/components/FlowListContainer/*"],
         "LibraryContainer/*": ["./web/frontend/js/components/LibraryContainer/*"],
         "ProfileContainer/*": ["./web/frontend/js/components/ProfileContainer/*"],
-        "ProjectListContainer/*": ["./web/frontend/js/components/ProjectListContainer/*"],
         "PreviewContainer/*": ["./web/frontend/js/components/PreviewContainer/*"],
         "UserListContainer/*": ["./web/frontend/js/components/admin/UserListContainer/*"],
         "Shared/*": ["./web/frontend/js/components/shared/*"],
         "Constants/*": ["./web/frontend/js/constants/*"],
         "Model/*": ["./web/frontend/js/model/*"],
         "Modules/*": ["./web/frontend/js/modules/*"],
-        "Schema/*": ["./web/frontend/js/schema/*"],
         "Types/*": ["./web/frontend/js/types/*"],
         "Utils/*": ["./web/frontend/js/utils/*"]
       },
