@@ -14,6 +14,26 @@ from .utils import (
 
 mod = Blueprint('api', __name__)
 
+@mod.route('/navigation', methods=['GET'])
+@login_required_api
+@api_base
+def get_navigation():
+    from kskp.core import KSKP_VER
+
+    navigation = {
+        'version': KSKP_VER,
+        'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test',
+        'user': {},
+        'allowlist': {}
+    }
+
+    if g.user is not None:
+        navigation['user'] = g.user.to_json()
+        navigation['allowlist'] = g.user.get_allowlist()
+
+    return navigation
+
+
 @mod.route('/stores', methods=['GET'])
 @login_required_api
 @api_base
@@ -184,54 +204,6 @@ def upload_flow():
     from kskp.store import FlowDumper
     flow_dumper = FlowDumper(g.factory)
     flow_dumper.restore_archive(parent, folder_label, file_name, stream)
-
-
-@mod.route('/navigation', methods=['GET'])
-@login_required_api
-@api_base
-def get_navigation():
-    from kskp.core import KSKP_VER
-
-    navigation = {
-        'userId': '',
-        'user_name': '',
-        'project_uuid': '',
-        'project_name': '',
-        'flow_uuid': '',
-        'flow_name': '',
-        'user': {},
-        'allowlist': {},
-        'version': KSKP_VER,
-        'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
-    }
-
-    flow_uuid = request.args.get('flow_uuid')
-    project_uuid = request.args.get('project_uuid')
-
-
-    if g.user is not None:
-        navigation['userId'] = g.user.id
-        navigation['user_name'] = g.user.name
-        navigation['user'] = g.user.to_json()
-        navigation['allowlist'] = g.user.get_allowlist()
-
-    # TODO: フローエディタの表示でクリティカルパスになっているので
-    # 以下の処理を省略してフローエディタに影響がないか検証する
-    # if flow_uuid is not None :
-    #     flow = g.factory.data.find_by_uuid(flow_uuid)
-    #     parent = flow.find_parent()
-    #     navigation['project_uuid'] = parent.uuid
-    #     navigation['project_name'] = parent.label
-    #     navigation['flow_uuid'] = flow_uuid
-    #     navigation['flow_name'] = flow.label
-        
-    # プロジェクトが指定された場合
-    if project_uuid is not None:
-        project = g.factory.data.find_by_uuid(project_uuid)
-        navigation['project_uuid'] = project.uuid
-        navigation['project_name'] = project.label
-
-    return navigation
 
 
 @mod.errorhandler(400)

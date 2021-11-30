@@ -26,8 +26,8 @@ type NavigationUser = {
  * Navigationを格納するオブジェクト型
  */
 export type NavigationType = {
-  allowlist: NavigationAllowlist;
-  user: NavigationUser;
   version: string;
   depo_name: string;
+  user: NavigationUser;
+  allowlist: NavigationAllowlist;
 }
