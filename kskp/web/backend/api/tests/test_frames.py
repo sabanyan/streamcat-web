@@ -139,7 +139,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
         # contentsを取得する処理にかかる時間により、createdAtとnowは1秒程度の差が出る場合がある
-        self.assertGreaterEqual(result['data']['createdAt'], now)
+        self.assertLessEqual(result['data']['createdAt'], now)
 
         self.assertIsNotNone(result['data'].get('args'))
         self.assertIsNotNone(result['data'].get('contents'))
