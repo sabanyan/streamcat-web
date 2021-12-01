@@ -246,6 +246,157 @@ def empty_all():
     trash_folder.trash_all()
 
 
+@mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
+@login_required_api
+@update_projects_info
+@api_base
+def fetch_remote_folder(folder_uuid):
+    """
+    リモートフォルダを返却する
+    """
+    folder = g.factory.data.find_by_uuid(folder_uuid)
+    return folder
+
+@mod.route('/remote-folders', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_remote_folder():
+    """
+    リモートフォルダを作成する
+    """
+    remote_folder_conn = RemoteFolderConn(request.json)
+
+    # 接続情報に漏れがあれば例外を送出する
+    remote_folder_conn.valid_or_raise()
+
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_folder = parent.create_remote_folder(request.json['label'],
+                                             remote_folder_conn)
+    ret = new_folder.to_json()
+    new_folder.save()
+    return ret
+
+@mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_remote_folder(folder_uuid):
+    """
+    リモートフォルダを修正する、またはリモートフォルダを移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has_no_all('label', 'parent'):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif req.has_all('label', 'parent'):
+        raise Exception('labelとはparent属性は同時に指定できません')
+
+    if req.has('label'):
+        label = req['label']
+        folder = g.factory.data.find_by_uuid(folder_uuid)
+        if len(req) == 1:
+            # ラベル名を変更する
+            return folder.update_label(label)
+        else:
+            # リモートフォルダを修正する
+            remote_folder_conn = RemoteFolderConn(request.json)
+            # 接続情報に漏れがあれば例外を送出する
+            remote_folder_conn.valid_or_raise()
+            return folder.update_data(label, remote_folder_conn)
+    elif req.has('parent'):
+        # リモートフォルダを移動する
+        new_parent = req['parent']
+        folder = g.factory.data.find_by_uuid(folder_uuid)
+        return folder.move(new_parent)
+    else:
+        raise Exception('update_remote_folder parameter error!')
+
+@mod.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_remote_folder(folder_uuid):
+    """
+    リモートフォルダをほかす
+    """
+    folder = g.factory.data.find_by_uuid(folder_uuid)
+    # リモートフォルダレコードをDBから削除する
+    folder.throw_away()
+
+
+@mod.route('/databases/<database_uuid>', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_database(database_uuid):
+    """
+    データベースを返却する
+    """
+    database = g.factory.data.find_by_uuid(database_uuid)
+    return database
+
+@mod.route('/databases', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_database():
+    """
+    データベースを作成する
+    """
+    database_conn = DatabaseConn(request.json)
+
+    # 接続情報に漏れがあれば例外を送出する
+    database_conn.valid_or_raise()
+
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_database= parent.create_database(request.json['label'],
+                                         database_conn)
+    ret = new_database.to_json()
+    new_database.save()
+    return ret
+
+@mod.route('/databases/<database_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_database(database_uuid):
+    """
+    データベースを修正する、またはデータベースを移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has_no_all('label', 'parent'):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif req.has_all('label', 'parent'):
+        raise Exception('labelとはparent属性は同時に指定できません')
+
+    if req.has('label'):
+        label = req['label']
+        database = g.factory.data.find_by_uuid(database_uuid)
+        if len(req) == 1:
+            # ラベル名を変更する
+            return database.update_label(label)
+        else:
+            # データベースを修正する
+            database_conn = DatabaseConn(request.json)
+            # 接続情報に漏れがあれば例外を送出する
+            database_conn.valid_or_raise()
+            return database.update_data(label, database_conn)
+    elif req.has('parent'):
+        # データベースを移動する
+        new_parent = req['parent']
+        database = g.factory.data.find_by_uuid(database_uuid)
+        return database.move(new_parent)
+    else:
+        raise Exception('update_database parameter error!')
+
+@mod.route('/databases/<database_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_database(database_uuid):
+    """
+    データベースをほかす
+    """
+    database = g.factory.data.find_by_uuid(database_uuid)
+    # DatabaseレコードをDBから削除する
+    database.throw_away()
+
+
 @mod.route('/frames', methods=['POST'])
 @login_required_api
 @api_base
@@ -445,155 +596,4 @@ def throw_away_awss3(awss3_uuid):
 
     folder = g.factory.data.find_by_uuid(awss3_uuid)
     # AWS S3 folderレコードをDBから削除する
-    folder.throw_away()
-
-
-@mod.route('/databases/<database_uuid>', methods=['GET'])
-@login_required_api
-@api_base
-def fetch_database(database_uuid):
-    """
-    データベースを返却する
-    """
-    database = g.factory.data.find_by_uuid(database_uuid)
-    return database
-
-@mod.route('/databases', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_database():
-    """
-    データベースを作成する
-    """
-    database_conn = DatabaseConn(request.json)
-
-    # 接続情報に漏れがあれば例外を送出する
-    database_conn.valid_or_raise()
-
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_database= parent.create_database(request.json['label'],
-                                         database_conn)
-    ret = new_database.to_json()
-    new_database.save()
-    return ret
-
-@mod.route('/databases/<database_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def update_database(database_uuid):
-    """
-    データベースを修正する、またはデータベースを移動する
-    """
-    req = RequestJson(request.json)
-
-    if req.has_no_all('label', 'parent'):
-        raise Exception('labelまたはparent属性を指定してください')
-    elif req.has_all('label', 'parent'):
-        raise Exception('labelとはparent属性は同時に指定できません')
-
-    if req.has('label'):
-        label = req['label']
-        database = g.factory.data.find_by_uuid(database_uuid)
-        if len(req) == 1:
-            # ラベル名を変更する
-            return database.update_label(label)
-        else:
-            # データベースを修正する
-            database_conn = DatabaseConn(request.json)
-            # 接続情報に漏れがあれば例外を送出する
-            database_conn.valid_or_raise()
-            return database.update_data(label, database_conn)
-    elif req.has('parent'):
-        # データベースを移動する
-        new_parent = req['parent']
-        database = g.factory.data.find_by_uuid(database_uuid)
-        return database.move(new_parent)
-    else:
-        raise Exception('update_database parameter error!')
-
-@mod.route('/databases/<database_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def throw_away_database(database_uuid):
-    """
-    データベースをほかす
-    """
-    database = g.factory.data.find_by_uuid(database_uuid)
-    # DatabaseレコードをDBから削除する
-    database.throw_away()
-
-
-@mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
-@login_required_api
-@update_projects_info
-@api_base
-def fetch_remote_folder(folder_uuid):
-    """
-    リモートフォルダを返却する
-    """
-    folder = g.factory.data.find_by_uuid(folder_uuid)
-    return folder
-
-@mod.route('/remote-folders', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_remote_folder():
-    """
-    リモートフォルダを作成する
-    """
-    remote_folder_conn = RemoteFolderConn(request.json)
-
-    # 接続情報に漏れがあれば例外を送出する
-    remote_folder_conn.valid_or_raise()
-
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_folder = parent.create_remote_folder(request.json['label'],
-                                             remote_folder_conn)
-    ret = new_folder.to_json()
-    new_folder.save()
-    return ret
-
-@mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def update_remote_folder(folder_uuid):
-    """
-    リモートフォルダを修正する、またはリモートフォルダを移動する
-    """
-    req = RequestJson(request.json)
-
-    if req.has_no_all('label', 'parent'):
-        raise Exception('labelまたはparent属性を指定してください')
-    elif req.has_all('label', 'parent'):
-        raise Exception('labelとはparent属性は同時に指定できません')
-
-    if req.has('label'):
-        label = req['label']
-        folder = g.factory.data.find_by_uuid(folder_uuid)
-        if len(req) == 1:
-            # ラベル名を変更する
-            return folder.update_label(label)
-        else:
-            # リモートフォルダを修正する
-            remote_folder_conn = RemoteFolderConn(request.json)
-            # 接続情報に漏れがあれば例外を送出する
-            remote_folder_conn.valid_or_raise()
-            return folder.update_data(label, remote_folder_conn)
-    elif req.has('parent'):
-        # リモートフォルダを移動する
-        new_parent = req['parent']
-        folder = g.factory.data.find_by_uuid(folder_uuid)
-        return folder.move(new_parent)
-    else:
-        raise Exception('update_remote_folder parameter error!')
-
-@mod.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def throw_away_remote_folder(folder_uuid):
-    """
-    リモートフォルダをほかす
-    """
-    folder = g.factory.data.find_by_uuid(folder_uuid)
-    # リモートフォルダレコードをDBから削除する
     folder.throw_away()

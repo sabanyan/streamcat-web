@@ -2,7 +2,11 @@
 # システム管理者向けのAPIを定義する
 # 
 
-from flask import Blueprint, request, g
+from flask import (
+    Blueprint,
+    request,
+    g
+)
 from .utils import (
     RequestJson,
     api_base,
