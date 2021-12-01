@@ -206,6 +206,54 @@ def upload_flow():
     flow_dumper.restore_archive(parent, folder_label, file_name, stream)
 
 
+@mod.route('/dump', methods=['GET'])
+@login_required_api
+def get_dump():
+    """
+    KSKPのDumpファイルを取得する
+    """
+    from datetime import datetime
+    from kskp.core import Tmp
+    from kskp.engine import execute
+    from kskp.depo.std.commands.scmd.script import DumpCommand
+
+    try:
+        # Dumpコマンドを実行する
+        outs = execute(DumpCommand(), args={'datum_factory': g.factory.data})
+        if 'o' not in outs or isinstance(outs['o'], Exception):
+            raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
+
+        # Dumpファイルをクライアントに返す
+        archive_path = outs['o']
+        archive_name = 'backup_' + datetime.now().strftime('%Y%m%d') + '.tgz'
+        return send_from_directory(archive_path.parent, archive_path.name, as_attachment=True,
+                                   download_name=archive_name, mimetype='application/x-tar')
+    finally:
+        # Dumpコマンドで作成した一時ファイルを削除する
+        Tmp.remove_files()
+    
+@mod.route('/dump', methods=['POST'])
+@login_required_api
+@api_base
+def upload_dump():
+    """
+    KSKPのDumpファイルをリストアする
+    """
+    from kskp.engine import execute
+    from kskp.depo.std.commands.scmd.script import RestoreCommand
+
+    if 'file' not in request.files or request.files.get('file') is None:
+        raise Exception('Dumpファイルを指定してください')
+
+    # 入力ストリームを取得する
+    stream = request.files.get('file').stream
+
+    # Restoreコマンドを実行する
+    outs = execute(RestoreCommand(), args={'factory': g.factory}, inputs={'i':stream})
+    if 'o' not in outs or isinstance(outs['o'], Exception):
+        raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
+
+
 @mod.errorhandler(400)
 def handle_bad_request(error):
     """
