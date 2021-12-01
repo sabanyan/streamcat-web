@@ -185,22 +185,21 @@ def update_folder(folder_uuid):
     """
     フォルダのラベルを修正する、またはフォルダを移動する
     """
-    if ('label'  not in request.json or request.json['label']  == '') and \
-       ('parent' not in request.json or request.json['parent'] == ''):
+    req = RequestJson(request.json)
+
+    if req.has_no_all('parent', 'label'):
         raise Exception('labelまたはparent属性を指定してください')
-    elif 'label' in request.json and 'parent' in request.json:
-        raise Exception('labelとはparent属性は同時に指定できません')
+    elif req.has_all('parent', 'label'):
+        raise Exception('labelとparent属性は同時に指定できません')
         
-    if 'label' in request.json and request.json['label'] != '':
+    if req.has('label'):
         # フォルダのラベルを修正する
-        label = request.json['label']
         folder = g.factory.data.find_by_uuid(folder_uuid)
-        return folder.update_label(label)
-    elif 'parent' in request.json and request.json['parent'] != '':
+        return folder.update_label(req['label'])
+    elif req.has('parent'):
         # フォルダを移動する
-        new_parent = request.json['parent']
         folder = g.factory.data.find_by_uuid(folder_uuid)
-        return folder.move(new_parent)
+        return folder.move(req['parent'])
     else:
         raise Exception('update_folder parameter error!')
 

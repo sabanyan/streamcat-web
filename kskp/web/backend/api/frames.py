@@ -27,15 +27,13 @@ def make_new_lock():
     if req.has('lastModifiedAt'):
         # 排他ロックの再取得の場合
         from datetime import datetime
-        target_uuid = request.json['target']
-        target = g.factory.data.find_by_uuid(target_uuid)
+        target = g.factory.data.find_by_uuid(req['target'])
         last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
         lock = lock_manager.relock(target, lastModifiedAt=last_modified_at, creator=g.user)
     else:
         # 排他ロックの新規取得の場合
         # (新規取得の場合はfind_by_uuid()の実行で遅くしたくない)
-        target_uuid = request.json['target']
-        lock = lock_manager.lock(target_uuid, creator=g.user)
+        lock = lock_manager.lock(req['target'], creator=g.user)
     
     return lock.to_json()
 
@@ -405,31 +403,24 @@ def update_flow(flow_uuid):
     if not req.has('lock'):
         raise Exception('ロックのUUIDを指定してください')
 
-    if 'parent' in request.json:
-        if 'label' in request.json:
+    if req.has('parent'):
+        if req.has('label'):
             raise Exception('labelとはparent属性は同時に指定できません')
         # flowを移動する
-        new_parent = request.json['parent']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        return flow.move(new_parent, lock_uuid=req['lock'])
-    elif 'editLock' in request.json:
-        edit_lock_value = request.json['editLock']
+        return flow.move(req['parent'], lock_uuid=req['lock'])
+    elif req.has('editLock'):
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        flow.set_edit_lock(edit_lock_value, lock_uuid=req['lock'])
+        flow.set_edit_lock(req['editLock'], lock_uuid=req['lock'])
         return flow
-    elif 'flow' in request.json:
+    elif req.has('flow'):
         from kskp.store import FlowData
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        if 'label' in request.json:
-            label = request.json['label']
-        else:
-            label = flow.label
-        flow_data = FlowData(request.json['flow'])
-        return flow.update_data(label, flow_data, lock_uuid=req['lock'])
-    elif 'label' in request.json:
-        label = request.json['label']
+        flow_data = FlowData(req['flow'])
+        return flow.update_data(req.get('label') or flow.label, flow_data, lock_uuid=req['lock'])
+    elif req.has('label'):
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        return flow.update_label(label, lock_uuid=req['lock'])
+        return flow.update_label(req['label'], lock_uuid=req['lock'])
     else:
         raise Exception('parent,editlock,label,flowのいずれか一つを指定してください')
 
@@ -598,6 +589,33 @@ def _make_new_acitivity(flow:object, lock_uuid:str=None, args:dict={}) -> dict:
                       ]
     }
 
+def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
+    """
+    指定されたフローを実行し実行結果を取得する
+    """
+    from kskp.store import Activity, NoResultsException
+    from kskp.engine import execute, FlowCommand
+
+    args = args.copy()
+    args.update(vis_args)
+    outs = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
+
+    # Activityを取得して返り値とする
+    for datum in outs.values():
+        if isinstance(datum, Activity):
+            activity = datum
+            # 実行に失敗した場合、例外を送出する
+            activity.is_success or activity.raise_one()
+            # 実行結果が出力されなかった場合、例外を送出する
+            if activity.count_outs() == 0:
+                break
+            # 実行に成功した場合、Activityを返す
+            return activity
+
+    # Activityを取得できなかった場合
+    raise NoResultsException('実行結果は出力されませんでした.')
+
+
 @mod.route('/schedules', methods=['POST'])
 @login_required_api
 @api_base
@@ -621,36 +639,3 @@ def throw_away_schedule(schedule_uuid):
     """
     schedule = g.factory.data.find_by_uuid(schedule_uuid)
     schedule.throw_away()
-
-def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
-    """
-    指定されたフローを実行し実行結果を取得する
-    """
-    try:
-        from kskp.store import Activity, NoResultsException
-        from kskp.engine import execute, FlowCommand
-
-        args = args.copy()
-        args.update(vis_args)
-        outs = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
-
-        # Activityを取得して返り値とする
-        for port_label, datum in outs.items():
-            if isinstance(datum, Activity):
-                activity = datum
-                # 実行に失敗した場合、例外を送出する
-                activity.is_success or activity.raise_one()
-                # 実行結果が出力されなかった場合、例外を送出する
-                if activity.count_outs() == 0:
-                     break
-                # 実行に成功した場合、Activityを返す
-                return activity
-
-        # Activityを取得できなかった場合
-        raise NoResultsException('実行結果は出力されませんでした.')
-
-    except Exception as e:
-        # import traceback
-        # traceback.print_exc()
-        # raise Exception(str(e))
-        raise
