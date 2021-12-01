@@ -349,9 +349,9 @@ class TrashTestCase(ApiTestCaseBase):
             "label": "test"
         }
         data = {
-            'project_uuid': folder1_uuid,
-            'name': 'フロー',
-            'datasource': data_source
+            'parent': folder1_uuid,
+            'label': 'フロー',
+            'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -423,9 +423,9 @@ class TrashTestCase(ApiTestCaseBase):
             "label": "test"
         }
         data = {
-            'project_uuid': folder3_uuid,
-            'name': 'フロー',
-            'datasource': data_source
+            'parent': folder3_uuid,
+            'label': 'フロー',
+            'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 

@@ -42,9 +42,9 @@ class FlowTestCase(ApiTestCaseBase):
         }
 
         data1 = {
-            'project_uuid': root.uuid,
-            'name': '新しいフローです',
-            'datasource': data_source
+            'parent': root.uuid,
+            'label': '新しいフローです',
+            'flow': {'nodes':[data_source]}
         }
 
         result = self.post_uri('/api/v0/flows', data1, self.USER1)
@@ -83,8 +83,9 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertIsNotNone(project_uuid)
 
         data = {
-            'project_uuid': project_uuid,
-            'name': '新しいフローです'
+            'parent': project_uuid,
+            'label': '新しいフローです',
+            'flow': {}
         }
 
         # フローを作成する
@@ -281,7 +282,7 @@ class FlowTestCase(ApiTestCaseBase):
         test_flow_uuid = setUpFlow(self, flow_json=flow_json)
 
         # 新規作成したフローを実行してキャッシュを生成する
-        self.get_uri(f'/api/v0/frames?from={test_flow_uuid}', self.USER1)
+        self.post_uri('/api/v0/activities', {'uuid':test_flow_uuid}, self.USER1)
 
         # 生成したキャッシュのUUIDを取得する
         result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
@@ -331,9 +332,9 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['flow']['params'], [])
         self.assertEqual(result['data']['flow']['ports'], [[],[]])
 
-    def test_fetch_flows(self):
+    def test_fetch_flow2(self):
         """
-        fecth_flowsをテストする
+        fecth_flowをテストする
         """
         # まずユーザとプロジェクトを作る
         with app.app_context():
@@ -362,31 +363,16 @@ class FlowTestCase(ApiTestCaseBase):
         self.post_frames('適当なフレーム', flow_folder.uuid, f, self.USER1)
 
         # GET /Flows
-        results = self.get_uri('/api/v0/flows?project=%s' % flow_folder.uuid, self.USER1)
-
-        # 結果の件数は1件以上である
-        self.assertGreater(len(results['data']), 0)
+        result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
 
         # 格納したフローが取得できることを検証する
         # self.assertEqual(results['data'][0]['projectId'], 1)
-        self.assertEqual(results['data'][0]['label'], 'テストフロー！(FlowTestCase)')
+        self.assertIsNotNone(result['data']['label'])
         # self.assertEqual(results['data'][0]['description'],'')
         # self.assertEqual(results['data'][0]['params'], [])
         # self.assertEqual(results['data'][0]['ports'], [[],[]])
-        self.assertEqual(results['data'][0]['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(results['data'][0]['createdAt'])
-
-    def test_fetch_flows_project_uuid_Nothing(self):
-        """
-        fetch_flowのprojectuuidが指定されていない場合のテスト
-        """
-        # 実際のAPIを投げるテストを開始する
-        result = self.get_uri('/api/v0/flows', self.USER1)
-
-        # Projectを指定しなかった場合、例外が発生するかしないかのテスト
-        # ここではとりあえず空のリストが返って来ることを期待している
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'], [])
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
 
     def test_update_flow(self):
         """
@@ -453,9 +439,9 @@ class FlowTestCase(ApiTestCaseBase):
 
         # プロジェクトの下にフローを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '金さん',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '金さん',
+            'flow': {'label':'金さん'}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
         # POST /flowsの戻り値を検証する
@@ -471,12 +457,6 @@ class FlowTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # GET /flowsの戻り値を検証する
         self.assertEqual(result['data']['flow']['label'], '金さん')
-
-        flow_json_ports = result['data']['flow']['ports']
-        flow_json_params = result['data']['flow']['params']
-        flow_json_description = result['data']['flow']['description']
-        flow_json_creator = result['data']['flow']['creator']
-        flow_json_created_at = result['data']['flow']['createdAt']
 
         # フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
@@ -503,11 +483,11 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['flow']['label'], '遠山金四郎🌸')
         # label以外のフローJsonは変更されないこと
         self.assertNotIn('nodes', result['data']['flow'])
-        self.assertEqual(result['data']['flow']['ports'], flow_json_ports)
-        self.assertEqual(result['data']['flow']['params'], flow_json_params)
-        self.assertEqual(result['data']['flow']['description'], flow_json_description)
-        self.assertEqual(result['data']['flow']['creator'], flow_json_creator)
-        self.assertEqual(result['data']['flow']['createdAt'], flow_json_created_at)
+        self.assertNotIn('ports', result['data']['flow'])
+        self.assertNotIn('params', result['data']['flow'])
+        self.assertNotIn('description', result['data']['flow'])
+        self.assertNotIn('creator', result['data']['flow'])
+        self.assertNotIn('createdAt', result['data']['flow'])
 
         # プロジェクトフォルダを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
@@ -590,7 +570,7 @@ class FlowTestCase(ApiTestCaseBase):
             project_uuid = self.factory.data.load_root().uuid
 
             flow1_datasource_name = str(uuid.uuid4())
-            data1 = {'project_uuid': project_uuid, 'name': 'サブフローテスト用', 'datasource': None}
+            data1 = {'project_uuid': project_uuid, 'name': 'サブフローテスト用', 'flow': {}}
             created_flow = Flow.create_flow(data1, self.USER1, flow1_datasource_name)
 
             # サブフロー化
@@ -750,9 +730,9 @@ class FlowTestCase(ApiTestCaseBase):
 
         # プロジェクト1の下にフローを作成する
         data = {
-            'project_uuid': project1_uuid,
-            'name': 'INPUTだけがあるサブフロー',
-            'datasource': None
+            'parent': project1_uuid,
+            'label': 'INPUTだけがあるサブフロー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -784,9 +764,9 @@ class FlowTestCase(ApiTestCaseBase):
 
         # プロジェクト2の下にフロー2を作成する
         data = {
-            'project_uuid': project2_uuid,
-            'name': 'OUTPUTだけがあるサブフロー',
-            'datasource': None
+            'parent': project2_uuid,
+            'label': 'OUTPUTだけがあるサブフロー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 

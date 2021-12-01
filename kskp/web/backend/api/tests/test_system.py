@@ -2399,9 +2399,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '私のフロー',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '私のフロー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -2515,9 +2515,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'なか卯',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'なか卯',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -2863,9 +2863,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトC編集者は、プロジェクトC内にデータデストを作成する
         data = {
-            'project_uuid': project_uuid3,
-            'name': 'データデスト!',
-            'datasource': None
+            'parent': project_uuid3,
+            'label': 'データデスト!',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
         datadest_uuid = result['data']['uuid']
@@ -2880,9 +2880,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトB編集者は、プロジェクトB内にサブフローを作成する
         data = {
-            'project_uuid': project_uuid2,
-            'name': '私のSubフロー',
-            'datasource': None
+            'parent': project_uuid2,
+            'label': '私のSubフロー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
         sub_flow_uuid = result['data']['uuid']
@@ -2898,9 +2898,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトA編集者は、プロジェクトA内にFlowを作成する
         data = {
-            'project_uuid': project_uuid1,
-            'name': '私のフロー',
-            'datasource': None
+            'parent': project_uuid1,
+            'label': '私のフロー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER0)
         flow_uuid = result['data']['uuid']
@@ -2980,9 +2980,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '山法師と鴨川と賽子',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '山法師と鴨川と賽子',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -3066,9 +3066,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'うにゃあ',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'うにゃあ',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -3176,9 +3176,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '隠岐に島流し',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '隠岐に島流し',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3328,9 +3328,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'ニャお〜ん',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'ニャお〜ん',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3415,9 +3415,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '足利髙氏',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '足利髙氏',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3477,9 +3477,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '出逢え出逢え！',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '出逢え出逢え！',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3572,9 +3572,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '諸行無常の響きあり',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '諸行無常の響きあり',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3734,9 +3734,9 @@ class SystemTestCase(ApiTestCaseBase):
         # フォルダの下にフローを作成する
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': '遠山の金さん',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': '遠山の金さん',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
         # フローのUUIDを取得する

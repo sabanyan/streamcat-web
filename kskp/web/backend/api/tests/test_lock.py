@@ -19,9 +19,9 @@ class LockTestCase(ApiTestCaseBase):
         }
 
         data1 = {
-            'project_uuid': parent_uuid,
-            'name': new_flow_name,
-            'datasource': data_source
+            'parent': parent_uuid,
+            'label': new_flow_name,
+            'flow': {'nodes':[data_source]}
         }
         return self.post_uri('/api/v0/flows', data1, self.USER1)
 
@@ -197,9 +197,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': 'ビタミンD',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': 'ビタミンD',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -257,9 +257,9 @@ class LockTestCase(ApiTestCaseBase):
             "label": "test"
         }
         data = {
-            'project_uuid': project_uuid,
-            'name': 'Catalina',
-            'datasource': data_source
+            'parent': project_uuid,
+            'label': 'Catalina',
+            'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
         flow_uuid = result['data']['uuid']
@@ -314,9 +314,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': '🐱😽',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': '🐱😽',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -364,9 +364,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': 'Anker',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': 'Anker',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -423,9 +423,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'Anker',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'Anker',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -479,9 +479,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': 'お〜いお茶',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': 'お〜いお茶',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -524,9 +524,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': '養老サイダー',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': '養老サイダー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 

@@ -138,7 +138,8 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
-        self.assertEqual(result['data']['createdAt'], now)
+        # contentsを取得する処理にかかる時間により、createdAtとnowは1秒程度の差が出る場合がある
+        self.assertGreaterEqual(result['data']['createdAt'], now)
 
         self.assertIsNotNone(result['data'].get('args'))
         self.assertIsNotNone(result['data'].get('contents'))
@@ -298,15 +299,15 @@ class FrameTestCase(ApiTestCaseBase):
         flow = self.save_flow(self.root, 'test', flow_json)
 
         # フローの実行
-        result = self.get_uri(f'/api/v0/frames?from={flow.uuid}', self.USER1)
-        lasts = result['data']
+        result = self.post_uri('/api/v0/activities', {'uuid':flow.uuid}, self.USER1)
+        data = result['data']
 
         # DBにframeデータが生成されているか
-        self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
+        self.assertIsNotNone(self.factory.data.find_by_uuid(data['outs'][0]['uuid']))
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
-        self.assertEqual(lasts[0]['label'], '出力結果')
+        self.assertEqual(data['outs'][0]['id'], 'd1')
+        self.assertEqual(data['outs'][0]['label'], '出力結果')
 
     # @unittest.skip
     def test_flow_vis(self):

@@ -2,15 +2,15 @@
 # システム管理者向けのAPIを定義する
 # 
 
-from flask import Blueprint, send_from_directory, request, g
+from flask import Blueprint, request, g
 from .utils import (
     RequestJson,
     api_base,
+    login_required_api,
     update_user_info,
     update_users_info,
     update_role_info,
-    update_roles_info,
-    login_required_api
+    update_roles_info
 )
 mod = Blueprint('system', __name__)
 

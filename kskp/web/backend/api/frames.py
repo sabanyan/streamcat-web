@@ -353,37 +353,6 @@ def fetch_visualizers():
     return link.resolve()
 
 
-@mod.route('/flows', methods=['GET'])
-@login_required_api
-@api_base
-def fecth_flows():
-    """
-    パラメータで指定されたプロジェクトが持つフローの一覧を取得する
-    """
-    flow_list = []
-
-    parent_uuid = request.args.get('project')
-
-    # projectが指定されていない場合は空のフロー一覧を返す
-    if parent_uuid is None:
-        return flow_list
-
-    parent = g.factory.data.find_by_uuid(parent_uuid)
-    children = parent.find_children()
-
-    for datum in children:
-        if datum.type != Datum.FLOW_TYPE:
-            continue
-        # flow_data = datum.data2['flow']
-        # flow_data['uuid'] = datum.uuid
-        flow_data = {'uuid':datum.uuid,
-                    'label':datum.label,
-                    'creator':datum.creator_str,
-                    'createdAt':datum.created_at_str}
-        flow_list.append(flow_data)
-
-    return flow_list
-
 @mod.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
 @api_base
@@ -419,18 +388,6 @@ def new_flow():
         from kskp.store import FlowData
         parent = g.factory.data.find_by_uuid(req['parent'])
         new_flow = parent.create_flow(req['label'], FlowData(req['flow']))
-        # flowをDBに格納する
-        new_flow.save()
-        return new_flow.reload()
-    elif req.has('project_uuid'):
-        # 
-        # TODO: 古いパラメタ形式なので廃止したい
-        # 
-        from kskp.store import Flow
-        flow_data = Flow.create_flow(request.json, g.user)
-        # flowを作成する
-        parent = g.factory.data.find_by_uuid(req['project_uuid'])
-        new_flow = parent.create_flow(req['name'], flow_data)
         # flowをDBに格納する
         new_flow.save()
         return new_flow.reload()
@@ -537,37 +494,6 @@ def _get_vis(frame_uuid:str, args={}):
     if activity is None or len(activity.outs)==0:
         raise Exception('No out exists in activity')
     return activity.outs[0][1]
-
-@mod.route('/frames', methods=['GET'])
-@login_required_api
-@api_base
-def make_new_frames():
-    """
-    フローを実行してフレームを取得する
-    TODO: 廃止予定
-    """
-    step_ids = []
-
-    if 'from' not in request.args:
-        raise Exception('No frame parameter is designated')
-
-    if '.' in request.args['from']:
-        # Vis
-        # ドットで区切って、具体的に一つだけstepを指定することができる
-        # TODO: 後々この部分は文法を拡張していく予定
-        froms = request.args['from'].split('.')
-        flow_uuid = froms[0]
-        step_ids.append(froms[1])
-    else:
-        # 普通の実行
-        flow_uuid = request.args['from']
-
-    flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = _execute_flow(flow)
-    return _format_result(activity)
-
-def _format_result(activity):
-    return [{'id':point.id, 'parent':frame.parent_uuid, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.outs]
 
 
 @mod.route('/vizs', methods=['POST'])
