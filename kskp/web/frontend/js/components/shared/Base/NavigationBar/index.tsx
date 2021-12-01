@@ -27,10 +27,10 @@ const NavigationBar = (props: Props) => {
     const renderUserNavigationItem = () => {
         const {navigation} = props;
         let depoName;
-        if (navigation && navigation.depo_name !== "master") {
+        if (navigation && navigation.depoName !== "master") {
             depoName = <div className="depo-name">
                 <div className="dropdown-item">
-                    {navigation.depo_name}
+                    {navigation.depoName}
                 </div>
                 <div className="dropdown-divider"/>
             </div>;

@@ -27,7 +27,7 @@ type NavigationUser = {
  */
 export type NavigationType = {
   version: string;
-  depo_name: string;
+  depoName: string;
   user: NavigationUser;
   allowlist: NavigationAllowlist;
 }

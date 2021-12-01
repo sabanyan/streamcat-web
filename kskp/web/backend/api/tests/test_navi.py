@@ -11,7 +11,7 @@ class NavigationTestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/navigation', self.USER0)
         data = result['data']
         self.assertEqual(data['version'], KSKP_VER)
-        self.assertEqual(data['depo_name'], 'Unit Test')
+        self.assertEqual(data['depoName'], 'Unit Test')
         self.assertDictEqual(data['user'], self.USER0.to_json())
         self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
         # ユーザ操作のallowlistを検証する
@@ -29,7 +29,7 @@ class NavigationTestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/navigation', self.USER1)
         data = result['data']
         self.assertEqual(data['version'], KSKP_VER)
-        self.assertEqual(data['depo_name'], 'Unit Test')
+        self.assertEqual(data['depoName'], 'Unit Test')
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
         # ユーザ操作のallowlistを検証する

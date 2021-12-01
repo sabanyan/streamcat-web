@@ -18,11 +18,14 @@ mod = Blueprint('api', __name__)
 @login_required_api
 @api_base
 def get_navigation():
+    """
+    ナビゲーションバーに表示する情報などを取得する
+    """
     from kskp.core import KSKP_VER
 
     navigation = {
         'version': KSKP_VER,
-        'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test',
+        'depoName': os.environ.get('KSKP_DEPO') or 'Unit Test',
         'user': {},
         'allowlist': {}
     }
