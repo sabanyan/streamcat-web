@@ -12,15 +12,15 @@ class ProjectTestCase(ApiTestCaseBase):
     def tearDown(self):
         pass
 
-    def get_record_by_sql(self, sql):
+    def get_row_by_sql(self, sql):
         """
         指定したSQL文を発行し、一つの結果行を取得する
         """
         from sqlalchemy import text
-        results = self.factory._session.execute(text(sql))
+        rows = self.factory._session.execute(text(sql))
         # 結果行の最初の1件目を返す
-        for result in results:
-            return result
+        for row in rows:
+            return row
         # 結果行が0件の場合はNoneを返す
         return None
 
@@ -52,19 +52,19 @@ class ProjectTestCase(ApiTestCaseBase):
                         and P.uuid = '{root.uuid}')
         order by id
         """
-        result = self.get_record_by_sql(sql)
+        row = self.get_row_by_sql(sql)
 
         # フォルダが期待どうりに保存されていることを検証する
-        self.assertIsNotNone(result['id'])
-        self.assertEqual(result['parent_id'], root.id)
-        self.assertIsNotNone(result['uuid'])
-        self.assertEqual(result['path'], (Datum._to_rel_path(root.path) / 'プロジェクトです').as_posix())
-        self.assertEqual(result['type'], 'project')
-        self.assertEqual(result['label'], project_name)
-        self.assertEqual(result['creator'], self.USER1.id)
-        self.assertEqual(result['modifier'], self.USER1.id)
-        self.assertIsNotNone(result['created_at'])
-        self.assertIsNotNone(result['modified_at'])
+        self.assertIsNotNone(row.id)
+        self.assertEqual(row.parent_id, root.id)
+        self.assertIsNotNone(row.uuid)
+        self.assertEqual(row.path, (Datum._to_rel_path(root.path) / 'プロジェクトです').as_posix())
+        self.assertEqual(row.type, 'project')
+        self.assertEqual(row.label, project_name)
+        self.assertEqual(row.creator, self.USER1.id)
+        self.assertEqual(row.modifier, self.USER1.id)
+        self.assertIsNotNone(row.created_at)
+        self.assertIsNotNone(row.modified_at)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
