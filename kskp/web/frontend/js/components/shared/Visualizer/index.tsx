@@ -112,8 +112,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
     // GET /framesでの取得はWebブラウザでのキャッシュを期待できる
     selectApi() {
-        const {stepIds, frameUuid, visualize} = this.props;
-        const args = this.state.args;
+        const {frameUuid, visualize} = this.props;
 
         if(frameUuid && visualize.id == 'csvtohtmltable'){
             // Frameファイルのプレビューする

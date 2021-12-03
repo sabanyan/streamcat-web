@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 import CommonListHeader from './CommonListRow/CommonListHeader/index'
 import CommonListRow from './CommonListRow/index';

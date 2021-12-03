@@ -1,7 +1,7 @@
 import React from 'react';
 import style from "../style.scss";
 import {AddButton, DropDownList} from "Shared/Input";
-import {CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel} from "Model/index";
+import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/index";
 import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {SortableContainer, SortableElement, SortEndHandler} from "react-sortable-hoc";

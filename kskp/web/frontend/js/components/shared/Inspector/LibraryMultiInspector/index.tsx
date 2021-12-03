@@ -18,7 +18,6 @@ class LibraryMultiInspector extends React.Component<Props> {
   renderButtons(datas: DatumType[]) {
     const {onClickDelete, onClickMove } = this.props
     let del,move
-    let isDeletable, isMoveable
 
     if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(datas)} icon={"delete"}>削除する</Button>
     if (onClickMove) move = <Button onClick={(data) => onClickMove(datas)} icon={"open_in_browser"}>移動する</Button>

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import Constants from 'Constants/index'
 import { PreviewModal, EmptyModal, StandardModal } from 'Shared/Modal'
 import { Button } from 'Shared/Input'

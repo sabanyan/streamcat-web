@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import style from "./style.scss";
 import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { CommandModelType, MastType } from "Types/index";
+import { CommandModelType } from "Types/index";
 import { TextField } from "Shared/Input";
-import { addDataDstStepAction, addDataSrcStepAction, flowEditorReducerInitialState } from "Modules/flowEditor";
+import { flowEditorReducerInitialState } from "Modules/flowEditor";
 
 
 type Props = {

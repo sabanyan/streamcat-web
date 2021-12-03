@@ -4,7 +4,7 @@ import {FlowUtil, ModalUtil, ReactDomUtil} from "Utils/index";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
 import {BaseInspector, InputFlowForm, Resizer} from "Shared/Inspector";
-import {RunArgsType, RunResponseType} from "Types/index";
+import {RunArgsType} from "Types/index";
 import moment from "moment/moment";
 import { FlowType } from "Model/Library";
 

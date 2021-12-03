@@ -1,5 +1,5 @@
 //@flow
-import * as React from 'react'
+import React from 'react'
 import style from 'Shared/Input/Button/style.scss'
 import classnames from 'classnames'
 

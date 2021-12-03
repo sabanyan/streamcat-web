@@ -1,6 +1,6 @@
 import React from 'react'
 import { CommandParamType } from 'Types/index'
-import { HttpUtil, APIUtil, APIUtil2 } from 'Utils/index';
+import { HttpUtil, APIUtil2 } from 'Utils/index';
 import style from './style.scss'
 
 type Props = {

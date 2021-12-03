@@ -21,7 +21,6 @@ import { LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "M
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
 import { TrashMenuList } from "Components/LibraryContainer/Libary/TrashMenuList";
-import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";

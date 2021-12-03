@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import {CommandParamType} from 'Types/index'
 import {AddButton, Button} from 'Shared/Input'
 // 循環参照されるため一個一個Importする（ParamBoolean, ParamString, ParamSelect)

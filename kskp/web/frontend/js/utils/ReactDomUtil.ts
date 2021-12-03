@@ -1,6 +1,6 @@
 //@flow
 import { renderToString } from 'react-dom/server'
-import * as React from 'react'
+import React from 'react'
 
 type ReactElementType = React.ReactElement<any, string | React.JSXElementConstructor<any>>
 

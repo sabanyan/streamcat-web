@@ -1,9 +1,7 @@
 import React from 'react'
 
-import { AppBar, Toolbar, IconButton, Tabs, Tab, Card, CardContent } from '@material-ui/core';
+import { AppBar, IconButton, Tabs, Tab } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
-
-import { Param as ParamType, Element } from 'Shared/Inspector/ParamsForm/index'
 
 import style from './style.scss'
 

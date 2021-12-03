@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 // database
 export const database = <svg width="15px" height="17px" viewBox="0 0 15 17" version="1.1">

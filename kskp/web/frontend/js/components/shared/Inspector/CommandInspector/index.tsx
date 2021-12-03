@@ -5,7 +5,6 @@ import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
 import {SubflowCommandModel} from "Model/index";
-import {FlowType} from "Model/Library";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import {APIUtil2} from 'Utils/index';

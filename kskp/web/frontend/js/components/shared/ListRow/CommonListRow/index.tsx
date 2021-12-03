@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import classnames from 'classnames'
 import defaultStyle from './style.scss'
 import { database } from './ListIcons/index'

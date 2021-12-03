@@ -1,5 +1,5 @@
 //@flow
-import * as React from 'react'
+import React from 'react'
 import defaultStyle from './style.scss'
 import classnames from 'classnames'
 
