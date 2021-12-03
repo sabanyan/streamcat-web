@@ -36,7 +36,6 @@ const NavigationBar = (props: Props) => {
             </div>;
         }
 
-
         const renderUserAdminMenu = () => {
             const {navigation} = props;
             const availableUserAdmin = (navigation && navigation.allowlist && navigation.allowlist.findUsers)
@@ -59,7 +58,7 @@ const NavigationBar = (props: Props) => {
             {depoName}
             {renderUserSettingsMenu()}
             {renderUserAdminMenu()}
-            <a href="#!" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
+            <a href="#" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
         </NavigationBarUserMenuItem>
 
     };
