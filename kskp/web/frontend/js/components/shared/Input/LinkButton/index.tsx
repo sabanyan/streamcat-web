@@ -9,7 +9,7 @@ interface Props{
 
 const LinkButton = (props: Props) => {
   const {children,onClick,url} = props;
-  return <a className={style.linkButton} href={(url)?url:"javascript:void(0)"} onClick={(event)=> {
+  return <a className={style.linkButton} href={url||'#'} onClick={(event)=> {
       if(!url){
           event.preventDefault();
       }

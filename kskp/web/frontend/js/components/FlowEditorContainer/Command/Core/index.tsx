@@ -108,7 +108,7 @@ const Command = (props: Props) => {
     if (hasPdfLink) {
         const url = WebUtil.webURL(command.description);
         description =
-            <a className={style.show_detail} href="javascript:return false;" onClick={(e) => onClickPdf(e, url)}
+            <a className={style.show_detail} href="#" onClick={(e) => onClickPdf(e, url)}
                 onMouseDown={e => e.stopPropagation()}>詳細を見る</a>;
     } else {
         description = command.description;

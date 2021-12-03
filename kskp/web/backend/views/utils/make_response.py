@@ -11,9 +11,10 @@ def make_response(template_name, is_preview:bool=False, **context):
         Bokehが使用するJavaScriptにnonce値を設定する
         """
         from bokeh.resources import CDN
+        # CDN : Content Delivery Network
         render_js = ''
         for file_path in CDN.js_files:
-            render_js += f'<script type="text/javascript" src="{file_path}" nonce="{nonce}"></script>'
+            render_js += f'<script src="{file_path}" nonce="{nonce}" crossorigin="anonymous"></script>'
         return render_js
 
     # Nonce値を生成する

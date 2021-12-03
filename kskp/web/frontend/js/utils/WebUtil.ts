@@ -9,11 +9,17 @@ export default class WebUtil {
     }
 
     static logout(){
-        let logoutParam = "?session=off";
-        if (location.href.indexOf("?") !== -1) {
-            logoutParam = logoutParam.replace("?", "&");
+        const currentUrl = location.href;
+        let logoutUrl: string;
+
+        if(currentUrl.endsWith('#')){
+            logoutUrl = currentUrl.slice(0, -1) + '?';
+        }else if(currentUrl.indexOf('?') !== -1){
+            logoutUrl = currentUrl + '&';
+        }else{
+            logoutUrl = currentUrl + '?';
         }
-        const url = location.href + logoutParam;
-        WebUtil.navigateURL(url);
+
+        WebUtil.navigateURL(logoutUrl + 'session=off');
     }
 }

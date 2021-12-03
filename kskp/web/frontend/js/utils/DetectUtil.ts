@@ -2,10 +2,10 @@
 
 export default class DetectUtil {
   static isMac (): boolean {
-    return (navigator.appVersion.indexOf('Mac') != -1)
+    return (navigator.userAgent.indexOf('Mac') !== -1)
   }
 
   static isWin (): boolean {
-    return (navigator.appVersion.indexOf('Win') != -1)
+    return (navigator.userAgent.indexOf('Win') !== -1)
   }
 }

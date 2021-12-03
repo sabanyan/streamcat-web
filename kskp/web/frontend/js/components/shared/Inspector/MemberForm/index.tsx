@@ -27,7 +27,7 @@ export function MemberForm(props: Props) {
 
   const searchedList = searchedRows.map((row) => {
     return <a key={row.email}
-      href="javascript:void(0)"
+      href="#"
       onClick={(e) => onSearchedMemberClicked(e, row)}>{row.name + " (" + row.email + ")"}</a>
   })
 

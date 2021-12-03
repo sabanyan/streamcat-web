@@ -76,7 +76,7 @@ export function Helper(props: Props) {
       result.push(
         <div key={index} className={style.shortcut}>
           {v.label + " : "}
-          <a href={"javascript:void(0)"}
+          <a href={"#"}
             onClick={(event) => onClickShortcut(event, v.value, v.delimiter)}
           >
             {v.link}
