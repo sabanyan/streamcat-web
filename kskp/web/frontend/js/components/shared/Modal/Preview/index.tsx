@@ -90,12 +90,6 @@ export default class PreviewModal extends React.Component<Props, State> {
     
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps){
-    this.setState({
-      selected_tab_id:0,
-      results: []
-    })
-  }
 
   isDialog () {
     return (HttpUtil.getURLParam('dialog'))

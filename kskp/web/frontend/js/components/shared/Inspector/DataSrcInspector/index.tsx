@@ -37,9 +37,6 @@ export class DataSrcInspector extends React.Component<Props, State> {
     }
   }
 
-  componentWillMount() {
-  }
-
   getSelectedStep(): any {
     let { selected_step_ids, nodes } = this.props
     return GraphUtil.getNode(nodes, selected_step_ids[0])
