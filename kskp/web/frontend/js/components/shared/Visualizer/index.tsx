@@ -76,16 +76,33 @@ export default class Visualizer extends React.Component<Props, State> {
         return result;
     }
 
+    // 入力必須の引数に値が入力されているかチェックする
+    requiredArgsIsEmpty(visualize: VisualizeModel<VisualizeModelProps>, args: {}) {
+        const command = {...visualize};
+        const rules = (command.rules) ? command.rules : {};
+
+        return !!command.params.find((param:CommandParamType) => {
+            // コマンド引数の入力規則を取得する
+            const rule = rules[param.name];
+            // 必須入力(allowEmpty=false)、かつ引数に値が入力されていない場合、そのparamを返す
+            if(rule && rule["presence"] && !rule["presence"]["allowEmpty"] && !args[param.name]){
+                console.log(param.name);
+                return param;
+            }
+        });
+    }
+
     componentWillMount() {
         this.onLoad();
     }
 
     onLoad() {
-        const {result, visualize} = this.props;
-        const args = this.state.args;
+        const {index, result, visualize, onSaveResult} = this.props;
+
         this.setState({
             isLoading: true
-        }, () => {
+        },
+        () => {
             // 保存された結果がある場合、
             if (result) {
                 this.setState({
@@ -98,13 +115,23 @@ export default class Visualizer extends React.Component<Props, State> {
                 this.setState({
                     html: null,
                     args: this.initArgs(visualize, {})
-                }, () => {
-                    this.selectApi()
-                        .then(() => {
+                },
+                () => {
+                    if(this.requiredArgsIsEmpty(visualize, this.state.args)){
+                        // 入力必須の引数に値が入力されていない場合
+                        const result = {
+                            html: null,
+                            args: this.state.args
+                        };
+                        onSaveResult(index, result, []);
+                        this.setState(result);
+                    }else{
+                        this.selectApi().then(() => {
                             this.setState({
                                 isLoading: false
                             });
                         });
+                    }
                 });
             }
         });
@@ -231,16 +258,12 @@ export default class Visualizer extends React.Component<Props, State> {
                     closeButton: true
                 });
             }
-            const args = this.state.args;
             const result = {
                 html: null,
-                args: args
+                args: this.state.args
             };
             onSaveResult(index, result, []);
-            this.setState({
-                html: null,
-                args: this.state.args
-            });
+            this.setState(result);
         }).then(() => {
             const {afterViz} = this.props;
             if (afterViz) afterViz();
