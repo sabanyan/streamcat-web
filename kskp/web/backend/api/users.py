@@ -16,7 +16,7 @@ from .utils import (
     update_role_info,
     update_roles_info
 )
-mod = Blueprint('system', __name__)
+mod = Blueprint('users', __name__)
 
 # 
 # User
