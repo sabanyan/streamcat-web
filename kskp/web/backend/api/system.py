@@ -7,12 +7,15 @@ from flask import (
     g
 )
 from .utils import (
+    RequestJson,
     Constraints,
     api_base,
-    login_required_api
+    login_required_api,
+    make_refresh_token,
+    make_access_token
 )
 
-mod = Blueprint('api', __name__)
+mod = Blueprint('system', __name__)
 
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
@@ -255,6 +258,34 @@ def upload_dump():
     outs = execute(RestoreCommand(), args={'factory': g.factory}, inputs={'i':stream})
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
+
+
+@mod.route('/tokens/refresh', methods=["POST"])
+@login_required_api
+@api_base
+def get_refresh_token():
+    """
+    リフレッシュトークンを発給する
+    """
+    req = RequestJson(request.json)
+
+    if not req.has('currentPassword'):
+        raise Exception('現在のパスワードを指定してください')
+    if not g.user.authenticate(req['currentPassword']):
+        raise Exception('現在のパスワードが誤っています')
+
+    return make_refresh_token(g.user.uuid)
+
+@mod.route('/tokens/access', methods=["POST"])
+@login_required_api
+@api_base
+def get_access_token():
+    """
+    アクセストークンを発給する
+    """
+    # アクセストークンを用いて新たなアクセストークンを
+    # 発給できるが脆弱性にはならないだろう
+    return make_access_token(g.user.uuid)
 
 
 @mod.errorhandler(400)

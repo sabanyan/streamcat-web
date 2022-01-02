@@ -38,9 +38,9 @@ def after_request(response:Response):
     # レスポンスを返す
     return response
 
-# 
+#
 # ログ出力の設定
-# 
+#
 import logging
 from flask.logging import default_handler
 from .api.utils import KSKPLogFormatter, XHRFilter
@@ -68,30 +68,28 @@ app.logger.addFilter(XHRFilter())
 from .api.utils import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
 
-# 
-# End points of HTML
-# 
-from .views import basic
-from .views import auth
-app.register_blueprint(basic.mod)
-app.register_blueprint(auth.mod, url_prefix='/signup')
-
-# 
+#
 # End points of API
-# 
+#
 PREFIX = '/api/v0'
 from .api import domain
-from .api import basic
 from .api import frames
-from .api import lib
+from .api import library
 from .api import system
-from .api import token
+from .api import users
 app.register_blueprint(domain.mod)
-app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
-app.register_blueprint(lib.mod, url_prefix=PREFIX)
+app.register_blueprint(library.mod, url_prefix=PREFIX)
 app.register_blueprint(system.mod, url_prefix=PREFIX)
-app.register_blueprint(token.mod, url_prefix=PREFIX)
+app.register_blueprint(users.mod, url_prefix=PREFIX)
+
+#
+# End points of HTML
+#
+from .views import auth
+from .views import basic
+app.register_blueprint(auth.mod, url_prefix='/signup')
+app.register_blueprint(basic.mod)
 
 # static用
 from ..frontend import mod
