@@ -28,7 +28,7 @@ mod = Blueprint('system', __name__)
 @api_base
 def get_users():
     """
-    全てのユーザ、またはキーワードに一致するユーザを返す
+    全てのユーザ、または指定したキーワードに含むユーザを取得する
     """
     search_keyword = request.args.get('q')
     states = _get_except_states(request.args)
@@ -43,7 +43,7 @@ def get_users():
 @api_base
 def get_user(user_uuid):
     """
-    ユーザを返却する
+    指定したユーザを取得する
     """
     states = _get_except_states(request.args)
     return g.factory.user.find_by_uuid(user_uuid, except_states=states)
@@ -54,7 +54,7 @@ def get_user(user_uuid):
 @api_base
 def get_self():
     """
-    自分ユーザを返却する
+    自身のユーザを取得する
     """
     states = _get_except_states(request.args)
     return g.factory.user.find_by_id(g.user.id, except_states=states)
@@ -64,7 +64,7 @@ def get_self():
 @api_base
 def make_new_user():
     """
-    ユーザを作成する
+    新しいユーザを作成する
     """
     req = RequestJson(request.json)
     if not req.has_all('email', 'name'):
@@ -80,7 +80,7 @@ def make_new_user():
 @api_base
 def update_user(user_uuid):
     """
-    ユーザを修正する
+    指定したユーザを変更する
     'password':Noneの場合はパスワードを自動生成する
     """
     req = RequestJson(request.json)
@@ -92,7 +92,7 @@ def update_user(user_uuid):
 @api_base
 def update_self():
     """
-    自分ユーザを修正する
+    自身のユーザを変更する
     """
     req = RequestJson(request.json)
     user = g.factory.user.find_by_id(g.user.id)
@@ -101,7 +101,7 @@ def update_self():
         if not user.authenticate(req['currentPassword']):
             raise Exception('現在のパスワードが誤っています')
     elif req.has_at_least('email','password') or req.isnull('password'):
-        # emailまたはpasswordを修正する場合は、現在のパスワードによる認証が必要である
+        # emailまたはpasswordを変更する場合は、現在のパスワードによる認証が必要である
         raise Exception('現在のパスワードを指定してください')
 
     return _update_user_inner(user, req)
@@ -133,7 +133,7 @@ def _update_user_inner(user, req):
 @api_base
 def put_back_user(user_uuid):
     """
-    論理削除されたユーザを登録状態に戻す
+    指定したユーザを論理削除から登録状態に戻す
     """
     user = g.factory.user.find_by_uuid(user_uuid)
     return user.put_back()
@@ -143,7 +143,7 @@ def put_back_user(user_uuid):
 @api_base
 def delete_user(user_uuid):
     """
-    登録ユーザを論理削除する
+    指定した登録状態のユーザを論理削除する
     (仮登録ユーザは物理削除する)
     """
     user = g.factory.user.find_by_uuid(user_uuid)
@@ -159,7 +159,7 @@ def delete_user(user_uuid):
 @api_base
 def get_roles():
     """
-    全てのロールを返却する
+    全てのロールを取得する
     """
     return g.factory.role.find_all()
 
@@ -169,7 +169,7 @@ def get_roles():
 @api_base
 def get_role(role_uuid):
     """
-    ロールを返却する
+    指定したロールを取得する
     """
     return g.factory.role.find_by_uuid(role_uuid)
 
@@ -178,7 +178,7 @@ def get_role(role_uuid):
 @api_base
 def make_new_role():
     """
-    ロールを作成する
+    新しいロールを作成する
     """
     req = RequestJson(request.json)
     if not req.has_all('name'):
@@ -193,7 +193,7 @@ def make_new_role():
 @api_base
 def update_role(role_uuid):
     """
-    ロールを修正する
+    指定したロールを変更する
     """
     from kskp.store.auth import Role, NoRoleOwnerException
 
@@ -230,7 +230,7 @@ def update_role(role_uuid):
 @api_base
 def delete_role(role_uuid):
     """
-    ロールを削除する
+    指定したロールを削除する
     """
     role = g.factory.role.find_by_uuid(role_uuid)
     role.delete()

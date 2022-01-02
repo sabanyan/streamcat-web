@@ -48,7 +48,7 @@ def _jsonify_folder(folder, prev_folder_path=False):
 @api_base
 def fecth_library():
     """
-    ルートデータストアを返却する
+    ルートデータストアを取得する
     """
     root = g.factory.data.load_root()
     return _jsonify_folder(root)
@@ -60,7 +60,7 @@ def fecth_library():
 @api_base
 def get_projects():
     """
-    全てのプロジェクトを返却する
+    全てのプロジェクトを取得する
     """
     if request.args.get('except_myproject') == 'on':
         except_label = MY_PROJECT
@@ -75,7 +75,7 @@ def get_projects():
 @api_base
 def fetch_project(project_uuid):
     """
-    プロジェクトを返却する
+    指定したプロジェクトを取得する
     """
     from .lib import _jsonify_folder
     project = g.factory.data.find_by_uuid(project_uuid)
@@ -86,7 +86,7 @@ def fetch_project(project_uuid):
 @api_base
 def new_project():
     """
-    プロジェクトを作成する
+    新しいプロジェクトを作成する
     """
     if 'parent' not in request.json:
         raise Exception('parent属性を指定してください')
@@ -101,9 +101,9 @@ def new_project():
 @api_base
 def update_project(project_uuid):
     """
-    プロジェクトのラベルを修正する
-    プロジェクトを移動する
-    プロジェクトメンバを設定する
+    指定したプロジェクトのラベル名を変更する
+    指定したプロジェクトを移動する
+    指定したプロジェクトにプロジェクトメンバを設定する
     """
     req = RequestJson(request.json)
 
@@ -115,7 +115,7 @@ def update_project(project_uuid):
     project = g.factory.data.find_by_uuid(project_uuid)
 
     if req.has('label'):
-        # プロジェクトのラベルを修正する
+        # プロジェクトのラベルを変更する
         return project.update_label(req['label'])
     elif req.has('parent'):
         # プロジェクトを移動する
@@ -161,7 +161,7 @@ def throw_away_project(project_uuid):
 @api_base
 def fetch_folder(folder_uuid):
     """
-    フォルダを返却する
+    指定したフォルダを取得する
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     return _jsonify_folder(folder)
@@ -171,7 +171,7 @@ def fetch_folder(folder_uuid):
 @api_base
 def make_new_folder():
     """
-    フォルダを作成する
+    新しいフォルダを作成する
     """
     parent = g.factory.data.find_by_uuid(request.json['parent'])
     new_folder = parent.create_folder(request.json['label'])
@@ -183,7 +183,7 @@ def make_new_folder():
 @api_base
 def update_folder(folder_uuid):
     """
-    フォルダのラベルを修正する、またはフォルダを移動する
+    指定したフォルダのラベルを変更する、またはフォルダを移動する
     """
     req = RequestJson(request.json)
 
@@ -193,7 +193,7 @@ def update_folder(folder_uuid):
         raise Exception('labelとparent属性は同時に指定できません')
         
     if req.has('label'):
-        # フォルダのラベルを修正する
+        # フォルダのラベルを変更する
         folder = g.factory.data.find_by_uuid(folder_uuid)
         return folder.update_label(req['label'])
     elif req.has('parent'):
@@ -208,7 +208,7 @@ def update_folder(folder_uuid):
 @api_base
 def throw_away_folder(folder_uuid):
     """
-    フォルダをほかす
+    指定したフォルダをほかす
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     folder.throw_away()
@@ -219,7 +219,7 @@ def throw_away_folder(folder_uuid):
 @api_base
 def fetch_trashes():
     """
-    ゴミ箱を返却する
+    ゴミ箱を取得する
     """
     trash_folder = g.factory.data.find_trashcan()
     return _jsonify_folder(trash_folder, prev_folder_path=True)
@@ -229,7 +229,7 @@ def fetch_trashes():
 @api_base
 def return_trashes(datum_uuid):
     """
-    ゴミを捨てる前の場所に戻す
+    ゴミを元のフォルダに戻す
     """
     datum = g.factory.data.find_by_uuid(datum_uuid)
     return datum.put_back()
@@ -251,7 +251,7 @@ def empty_all():
 @api_base
 def fetch_remote_folder(folder_uuid):
     """
-    リモートフォルダを返却する
+    指定したリモートフォルダを取得する
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     return folder
@@ -261,7 +261,7 @@ def fetch_remote_folder(folder_uuid):
 @api_base
 def make_new_remote_folder():
     """
-    リモートフォルダを作成する
+    新しいリモートフォルダを作成する
     """
     remote_folder_conn = RemoteFolderConn(request.json)
 
@@ -280,7 +280,7 @@ def make_new_remote_folder():
 @api_base
 def update_remote_folder(folder_uuid):
     """
-    リモートフォルダを修正する、またはリモートフォルダを移動する
+    指定したリモートフォルダを変更する、またはリモートフォルダを移動する
     """
     req = RequestJson(request.json)
 
@@ -296,7 +296,7 @@ def update_remote_folder(folder_uuid):
             # ラベル名を変更する
             return folder.update_label(label)
         else:
-            # リモートフォルダを修正する
+            # リモートフォルダを変更する
             remote_folder_conn = RemoteFolderConn(request.json)
             # 接続情報に漏れがあれば例外を送出する
             remote_folder_conn.valid_or_raise()
@@ -314,7 +314,7 @@ def update_remote_folder(folder_uuid):
 @api_base
 def throw_away_remote_folder(folder_uuid):
     """
-    リモートフォルダをほかす
+    指定したリモートフォルダをほかす
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     # リモートフォルダレコードをDBから削除する
@@ -326,7 +326,7 @@ def throw_away_remote_folder(folder_uuid):
 @api_base
 def fetch_database(database_uuid):
     """
-    データベースを返却する
+    指定したデータベースを取得する
     """
     database = g.factory.data.find_by_uuid(database_uuid)
     return database
@@ -336,7 +336,7 @@ def fetch_database(database_uuid):
 @api_base
 def make_new_database():
     """
-    データベースを作成する
+    新しいデータベースを作成する
     """
     database_conn = DatabaseConn(request.json)
 
@@ -355,7 +355,7 @@ def make_new_database():
 @api_base
 def update_database(database_uuid):
     """
-    データベースを修正する、またはデータベースを移動する
+    指定したデータベースを変更する、またはデータベースを移動する
     """
     req = RequestJson(request.json)
 
@@ -371,7 +371,7 @@ def update_database(database_uuid):
             # ラベル名を変更する
             return database.update_label(label)
         else:
-            # データベースを修正する
+            # データベースを変更する
             database_conn = DatabaseConn(request.json)
             # 接続情報に漏れがあれば例外を送出する
             database_conn.valid_or_raise()
@@ -389,7 +389,7 @@ def update_database(database_uuid):
 @api_base
 def throw_away_database(database_uuid):
     """
-    データベースをほかす
+    指定したデータベースをほかす
     """
     database = g.factory.data.find_by_uuid(database_uuid)
     # DatabaseレコードをDBから削除する
@@ -401,7 +401,7 @@ def throw_away_database(database_uuid):
 @api_base
 def create_frame():
     """
-    Frameをアップロードする
+    新しいフレームを作成する
     """
     if request.files.get('file') is None:
         raise Exception('No frame file found.')
@@ -422,7 +422,7 @@ def create_frame():
 @api_base
 def update_frame(frame_uuid):
     """
-    frameのラベルを修正する、またはframeを移動する
+    指定したフレームのラベルを変更する、またはフレームを移動する
     """
     req = RequestJson(request.json)
 
@@ -440,7 +440,7 @@ def update_frame(frame_uuid):
 
     else:
         if req.has('label'):
-            # frameのラベルを修正する
+            # frameのラベルを変更する
             label = req['label']
             # ret = Frame.update_label(frame_uuid, label, modifier)
             ret = frame.update_label(label)
@@ -460,7 +460,7 @@ def update_frame(frame_uuid):
 @api_base
 def throw_away_frame(frame_uuid):
     """
-    指定したframeをほかす
+    指定したフレームをほかす
     """
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
@@ -472,7 +472,7 @@ def throw_away_frame(frame_uuid):
 @login_required_api
 def fetch_document(document_uuid):
     """
-    ドキュメントを返却する
+    指定したドキュメントを取得する
     """
     document = g.factory.data.find_by_uuid(document_uuid)
     return send_from_directory(document.path.parent,
@@ -486,7 +486,7 @@ def fetch_document(document_uuid):
 def make_new_document():
     """
     ファイルストリームからファイルタイプを判定して
-    FrameまたはDocumentを作成する
+    新しいフレームまたはドキュメントを作成する
     """
     if request.files.get('file') is None:
         raise Exception('No file found.')
@@ -513,7 +513,7 @@ def make_new_document():
 @api_base
 def update_document(document_uuid):
     """
-    指定したdocumentのラベル名を変更する、または移動する
+    指定したドキュメントのラベル名を変更する、または移動する
     """
     req = RequestJson(request.json)
 
@@ -529,7 +529,7 @@ def update_document(document_uuid):
         new_parent = req['parent']
         return document.move(new_parent)
     elif req.has('label'):
-        # ドキュメントのラベルを修正する
+        # ドキュメントのラベルを変更する
         label = req['label']
         return document.update_label(label)
     else:
@@ -540,7 +540,7 @@ def update_document(document_uuid):
 @api_base
 def throw_away_document(document_uuid):
     """
-    指定したdocumentをほかす
+    指定したドキュメントをほかす
     """
     document = g.factory.data.find_by_uuid(document_uuid)
     document.throw_away()
@@ -552,7 +552,7 @@ def throw_away_document(document_uuid):
 @api_base
 def fetch_awss3_folder(awss3_uuid):
     """
-    AWS S3フォルダを返却する
+    指定したAWS S3フォルダを取得する
     """
     folder = g.factory.data.find_by_uuid(awss3_uuid)
     return _jsonify_folder(folder)
@@ -562,7 +562,7 @@ def fetch_awss3_folder(awss3_uuid):
 @api_base
 def make_new_awss3_folder():
     """
-    AWS S3フォルダを作成する
+    新しいAWS S3フォルダを作成する
     """
     parent = g.factory.data.find_by_uuid(request.json['parent'])
     new_folder = parent.create_awss3(request.json['label'],
@@ -576,7 +576,7 @@ def make_new_awss3_folder():
 @api_base
 def update_awss3_folder(awss3_uuid):
     """
-    AWS S3フォルダを修正する
+    指定したAWS S3フォルダを変更する
     """
     label = request.json['label']
     bucket_name = request.json['bucket']
@@ -588,7 +588,7 @@ def update_awss3_folder(awss3_uuid):
 @api_base
 def throw_away_awss3(awss3_uuid):
     """
-    AWS S3フォルダをほかす
+    指定したAWS S3フォルダをほかす
     """
     # AWS S3ディレクトリ直下のファイルをDBから登録解除する
     pass

@@ -114,7 +114,7 @@ def delete_cache():
 @api_base
 def fetch_datasrcs():
     """
-    データソースの一覧を取得する
+    全てのデータソースを取得する
     """
     from kskp.depo.std.commands import CommandLink
 
@@ -206,7 +206,7 @@ def fetch_datasrcs():
 @api_base
 def fetch_datadsts():
     """
-    データデストの一覧を取得する
+    全てのデータデストを取得する
     """
     from kskp.depo.std.commands import CommandLink
 
@@ -291,7 +291,7 @@ def fetch_datadsts():
 @api_base
 def fetch_subflows():
     """
-    サブフロー一覧を取得する
+    実行可能な全てのサブフローを取得する
     """
     subflow_data_list = []
     for subflow in g.factory.data.find_all_subflows():
@@ -313,7 +313,7 @@ def fetch_subflows():
 @api_base
 def fetch_commands():
     """
-    コマンド定義の一覧を返す
+    全てのコマンドJSONを取得する
     """
     visible_commands_json = []
     if len(request.args) == 0 or request.args.get('all') == 'on':
@@ -343,7 +343,7 @@ def fetch_commands():
 @api_base
 def fetch_visualizers():
     """
-    ビジュアライズ用コマンド定義の一覧を返す
+    全てのVコマンドのコマンドJSONを取得する
     """
     from kskp.depo.std.commands import CommandsPathLink, CommandsPathFileSource
 
@@ -356,7 +356,7 @@ def fetch_visualizers():
 @api_base
 def fetch_flow(flow_uuid):
     """
-    指定されたフローを取得する
+    指定したフローを取得する
     """
     minimize = request.args.get('mini') is not None
     flow = g.factory.data.find_by_uuid(flow_uuid, folder_path=True)
@@ -397,7 +397,7 @@ def new_flow():
 @api_base
 def update_flow(flow_uuid):
     """
-    フローのラベルを修正する、またはフローを移動する
+    フローのラベルを変更する、またはフローを移動する
     """
     req = RequestJson(request.json)
     if not req.has('lock'):
@@ -429,7 +429,7 @@ def update_flow(flow_uuid):
 @api_base
 def throw_away_flow(flow_uuid):
     """
-    指定されたフローをほかす
+    指定したフローをほかす
     """
     try:
         req = RequestJson(request.json)
@@ -510,7 +510,7 @@ def make_new_vis():
 @api_base
 def fetch_activity(activity_uuid):
     """
-    指定されたActivityを取得する
+    指定したActivityを取得する
     """
     return g.factory.data.find_by_uuid(activity_uuid)
 
@@ -519,7 +519,7 @@ def fetch_activity(activity_uuid):
 @api_base
 def make_new_acitivity():
     """
-    フローを実行してActivityを作成する
+    指定したフローを実行してActivityを作成する
     """
     # Activityを作成する
     req = RequestJson(request.json)
@@ -635,7 +635,7 @@ def make_new_schedule():
 @api_base
 def throw_away_schedule(schedule_uuid):
     """
-    スケジュールをほかす
+    指定したスケジュールをほかす
     """
     schedule = g.factory.data.find_by_uuid(schedule_uuid)
     schedule.throw_away()
