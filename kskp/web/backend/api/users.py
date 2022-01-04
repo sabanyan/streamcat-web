@@ -28,7 +28,7 @@ mod = Blueprint('users', __name__)
 @api_base
 def get_users():
     """
-    全てのユーザ、または指定したキーワードに含むユーザを取得する
+    全てのユーザ、または指定したキーワードを含むユーザを取得する
     """
     search_keyword = request.args.get('q')
     states = _get_except_states(request.args)

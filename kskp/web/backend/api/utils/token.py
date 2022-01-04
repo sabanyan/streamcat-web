@@ -69,7 +69,7 @@ def decode_token(token):
                 algorithms=['HS256'],
                 options={'verify_signature': True})
     except jwt.exceptions.ExpiredSignatureError as e:
-        # トークンの有効が切れている場合
+        # トークンの有効期限が切れている場合
         raise e
     except jwt.exceptions.InvalidSignatureError as e:
         # トークンの署名が不正な場合

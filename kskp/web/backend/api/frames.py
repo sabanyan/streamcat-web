@@ -18,21 +18,21 @@ mod = Blueprint('frames', __name__)
 @api_base
 def make_new_lock():
     """
-    ロックを獲得する
+    排他ロックを獲得する
     """
     req = RequestJson(request.json)
     if not req.has('target'):
         raise Exception('排他ロック対象データのuuidを指定してください')
 
     if req.has('lastModifiedAt'):
-        # 排他ロックの再取得の場合
+        # 排他ロックの再獲得の場合
         from datetime import datetime
         target = g.factory.data.find_by_uuid(req['target'])
         last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
         lock = lock_manager.relock(target, lastModifiedAt=last_modified_at, creator=g.user)
     else:
-        # 排他ロックの新規取得の場合
-        # (新規取得の場合はfind_by_uuid()の実行で遅くしたくない)
+        # 排他ロックの新規獲得の場合
+        # (新規獲得の場合はfind_by_uuid()の実行で遅くしたくない)
         lock = lock_manager.lock(req['target'], creator=g.user)
     
     return lock.to_json()
@@ -42,7 +42,7 @@ def make_new_lock():
 @api_base
 def extend_lock(lock_uuid):
     """
-    ロックの有効期間を延長する
+    排他ロックの有効期間を延長する
     """
     from kskp.store.lock import LockedDatumException
     if not lock_manager.contains(lock_uuid):
@@ -53,8 +53,8 @@ def extend_lock(lock_uuid):
 @api_base
 def delete_all_locks():
     """
-    指定したuuidのロックを解除する
-    全てのロックを解除する
+    指定したuuidの排他ロックを解除する
+    全ての排他ロックを解除する
     """
     if 'of' in request.args:
         target_uuid = request.args['of']
@@ -72,7 +72,7 @@ url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
 @api_base
 def delete_lock(lock_uuid):
     """
-    ロックを解除する
+    排他ロックを解除する
     """ 
     return lock_manager.unlock(lock_uuid)
 
@@ -89,7 +89,7 @@ def delete_cache():
     flow_uuid = ofs[0]
     node_id = ofs[1]
 
-    # 対象のフローのロックのUUIDを取得する
+    # 対象のフローの排他ロックのUUIDを取得する
     if request.json is None:
         lock_uuid = None
     else:
@@ -401,7 +401,7 @@ def update_flow(flow_uuid):
     """
     req = RequestJson(request.json)
     if not req.has('lock'):
-        raise Exception('ロックのUUIDを指定してください')
+        raise Exception('排他ロックのUUIDを指定してください')
 
     if req.has('parent'):
         if req.has('label'):
@@ -435,7 +435,7 @@ def throw_away_flow(flow_uuid):
         req = RequestJson(request.json)
         lock_uuid = req['lock']
     except Exception:
-        raise Exception('ロックのUUIDを指定してください')
+        raise Exception('排他ロックのUUIDを指定してください')
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
     flow.throw_away(lock_uuid=lock_uuid)
