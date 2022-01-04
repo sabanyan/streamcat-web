@@ -85,7 +85,7 @@ def delete_store(store_id):
     store.delete()
 
 
-@mod.route('/files')
+@mod.route('/files', methods=['GET'])
 @login_required_api
 @Constraints.allow_download_only_with_writable
 def download_file():
@@ -183,7 +183,7 @@ def download_flow(uuid):
 
     # アーカイブファイルを返す
     ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
-                              download_name = archive_name + '.tgz', mimetype = 'application/x-tar')
+                              download_name = archive_name + '.tgz', mimetype = 'application/gzip')
     archive_path.unlink()
     return ret
 
@@ -233,7 +233,7 @@ def get_dump():
         archive_path = outs['o']
         archive_name = 'backup_' + datetime.now().strftime('%Y%m%d') + '.tgz'
         return send_from_directory(archive_path.parent, archive_path.name, as_attachment=True,
-                                   download_name=archive_name, mimetype='application/x-tar')
+                                   download_name=archive_name, mimetype='application/gzip')
     finally:
         # Dumpコマンドで作成した一時ファイルを削除する
         Tmp.remove_files()
