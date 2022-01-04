@@ -243,7 +243,7 @@ def get_dump():
 @api_base
 def upload_dump():
     """
-    KSKPのDumpファイルをリストアする
+    KSKPのDumpファイルを復元する
     """
     from kskp.engine import execute
     from kskp.depo.std.commands.scmd.script import RestoreCommand
