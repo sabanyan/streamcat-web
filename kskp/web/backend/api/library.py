@@ -507,6 +507,7 @@ def make_new_document():
                                   maybe_csv=maybe_csv)
     # ファイルをDBに格納する
     new_file.save()
+    return new_file
 
 @mod.route('/documents/<document_uuid>', methods=['PUT'])
 @login_required_api
