@@ -73,12 +73,12 @@ app.json_encoder = KSKPJSONEncoder
 #
 PREFIX = '/api/v0'
 from .api import domain
-from .api import frames
+from .api import flows
 from .api import library
 from .api import system
 from .api import users
 app.register_blueprint(domain.mod)
-app.register_blueprint(frames.mod, url_prefix=PREFIX)
+app.register_blueprint(flows.mod, url_prefix=PREFIX)
 app.register_blueprint(library.mod, url_prefix=PREFIX)
 app.register_blueprint(system.mod, url_prefix=PREFIX)
 app.register_blueprint(users.mod, url_prefix=PREFIX)

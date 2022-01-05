@@ -11,7 +11,7 @@ from .utils import (
     login_required_api
 )
 
-mod = Blueprint('frames', __name__)
+mod = Blueprint('flows', __name__)
 
 @mod.route('/locks', methods=['POST'])
 @login_required_api
