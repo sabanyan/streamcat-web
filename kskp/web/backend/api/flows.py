@@ -34,7 +34,7 @@ def make_new_lock():
         # 排他ロックの新規獲得の場合
         # (新規獲得の場合はfind_by_uuid()の実行で遅くしたくない)
         lock = lock_manager.lock(req['target'], creator=g.user)
-    
+
     return lock.to_json()
 
 @mod.route('/extend-locks/<lock_uuid>', methods=['POST'])
@@ -53,7 +53,7 @@ def extend_lock(lock_uuid):
 @api_base
 def delete_all_locks():
     """
-    指定したuuidの排他ロックを解除する
+    指定したDatumの排他ロックを解除する
     全ての排他ロックを解除する
     """
     if 'of' in request.args:
@@ -72,7 +72,7 @@ url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
 @api_base
 def delete_lock(lock_uuid):
     """
-    排他ロックを解除する
+    指定した排他ロックを解除する
     """ 
     return lock_manager.unlock(lock_uuid)
 
@@ -82,7 +82,7 @@ def delete_lock(lock_uuid):
 @api_base
 def delete_cache():
     """
-    キャッシュを削除する
+    指定したフローのキャッシュを削除する
     """
     # 引数から削除対象のノードidを取得する
     ofs = request.args['of'].split('.')
@@ -257,7 +257,7 @@ def fetch_datadsts():
                     "optional": False
                 }
             ]
-            
+
         elif store.type == Datum.RFOLDER_TYPE:
             # リモートフォルダデータデストを作成する
             label = store.label
