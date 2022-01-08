@@ -114,7 +114,7 @@ def delete_cache():
 @api_base
 def fetch_datasrcs():
     """
-    全てのデータソースを取得する
+    実行可能な全てのデータソースを取得する
     """
     from kskp.depo.std.commands import CommandLink
 
@@ -206,7 +206,7 @@ def fetch_datasrcs():
 @api_base
 def fetch_datadsts():
     """
-    全てのデータデストを取得する
+    実行可能な全てのデータデストを取得する
     """
     from kskp.depo.std.commands import CommandLink
 
@@ -446,7 +446,7 @@ def throw_away_flow(flow_uuid):
 @api_base
 def fetch_frame(frame_uuid):
     """
-    Frameを取得する
+    指定したフレームを取得する
     """
     contents = request.args.get('contents') is not None
     offset = request.args.get('offset') or 0

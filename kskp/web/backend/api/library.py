@@ -48,7 +48,7 @@ def _jsonify_folder(folder, prev_folder_path=False):
 @api_base
 def fecth_library():
     """
-    ルートデータストアを取得する
+    ルートフォルダを取得する
     """
     root = g.factory.data.load_root()
     return _jsonify_folder(root)
