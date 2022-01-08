@@ -3,7 +3,7 @@ import copy
 import unittest
 import pprint
 from kskp.core.datum import Datum
-from kskp.store.auth import Role
+from kskp.store.auth import User, Role
 from .api_test_case_base import ApiTestCaseBase
 
 class SystemTestCase(ApiTestCaseBase):
@@ -742,7 +742,6 @@ class SystemTestCase(ApiTestCaseBase):
         失効状態になること
         """
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
-        from kskp.store.auth import User
         devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
         User.TMP_PASS_EXPIRE_SECONDS = 0
 
@@ -781,7 +780,6 @@ class SystemTestCase(ApiTestCaseBase):
         失効状態のユーザはログインできないこと
         """
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
-        from kskp.store.auth import User
         devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
         User.TMP_PASS_EXPIRE_SECONDS = 0
 
@@ -834,7 +832,6 @@ class SystemTestCase(ApiTestCaseBase):
         self.post_register_complete(user_uuid, 'pokemon-get-daze')
 
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
-        from kskp.store.auth import User
         devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
         User.TMP_PASS_EXPIRE_SECONDS = 0
 
@@ -1220,7 +1217,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
 
         # 論理削除ユーザを登録ユーザに戻す
-        result = self.put_uri(f'/api/v0/users/{user_uuid}/undelete', {}, self.USER1)
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', {'state':User.ACTIVE_STATE}, self.USER1)
 
         # 登録ユーザに戻っていること
         self.assertEqual(result['data']['state'], 'active')
@@ -1281,7 +1278,7 @@ class SystemTestCase(ApiTestCaseBase):
         importlib.reload(kskp_store)
 
         # 論理削除ユーザを登録ユーザに戻す
-        result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}/undelete', {}, self.USER1)
+        result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}', {'state':User.ACTIVE_STATE}, self.USER1)
 
         # 管理者権限を再び与える
         result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
@@ -1337,7 +1334,7 @@ class SystemTestCase(ApiTestCaseBase):
         importlib.reload(kskp_store)
 
         # 論理削除ユーザを登録ユーザに戻す
-        result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}/undelete', {}, new_user)
+        result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}', {'state':User.ACTIVE_STATE}, new_user)
 
         # 管理者権限を再び与える
         result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, new_user)

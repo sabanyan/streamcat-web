@@ -113,9 +113,14 @@ def _get_except_states(request_args):
     else:
         return None
 
-def _update_user_inner(user, req):
-    if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
-        raise Exception('email,nameまたはpassword属性を指定してください')
+def _update_user_inner(user, req:RequestJson):
+    from kskp.store.auth import User
+    if req.has_no_all('email', 'name', 'state', 'password') and not req.isnull('password'):
+        raise Exception('email,name,stateまたはpassword属性を指定してください')
+    if req.has('state') and req.get('state') != User.ACTIVE_STATE:
+        raise Exception('state属性にactive以外の値を指定できません')
+    if (req.has('password') or req.isnull('password')) and req.isnull('state'):
+        raise Exception('passwordとstate属性は同時に指定できません')
 
     if req.has('email'):
         user = user.update_email(req['email'])
@@ -125,6 +130,8 @@ def _update_user_inner(user, req):
         user = user.update_password(req['password'])
     elif req.isnull('password'):
         user = user.reset_password()
+    elif req.get('state') == User.ACTIVE_STATE:
+        user = user.put_back()
 
     return user
 

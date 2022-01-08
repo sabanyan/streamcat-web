@@ -108,8 +108,8 @@ const UserListInspector = (props: Props) => {
     }, [selectedData,systemAdminChecked,userAdminChecked])
 
     const unDeleteUser = async (uuid:string)=>{
-        const url = 'users/' + uuid + "/undelete";
-        return APIUtil.put(url).then((response)=>{
+        const url = 'users/' + uuid;
+        return APIUtil.put(url, {state:'active'}).then((response)=>{
             if(response.data.success){
                 return Promise.resolve(response)
             }else {
