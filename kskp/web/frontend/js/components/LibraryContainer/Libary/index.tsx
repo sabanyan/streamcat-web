@@ -536,7 +536,7 @@ const Library = () => {
 
     // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
     const getVisualizers = () => {
-        APIUtil2.findVisualizers().then(visualizers => {
+        APIUtil2.findVCommands().then(visualizers => {
             const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
             setVisualizers(visualizerModels);
         });

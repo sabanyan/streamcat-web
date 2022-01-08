@@ -594,7 +594,7 @@ const FlowEditor = () => {
 
         // VCommandの一覧を取得する
         preRequest.push(
-            APIUtil2.findVisualizers().then(visualizers => {
+            APIUtil2.findVCommands().then(visualizers => {
                 const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
                 window.visualizers = visualizerModels;
                 addMaster({ visualizers: visualizerModels });

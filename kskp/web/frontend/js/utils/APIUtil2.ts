@@ -505,10 +505,10 @@ export class APIUtil2 {
     };
 
     /**
-     * GET /visualizersを発行してVCommandを取得する
+     * GET /vcommandsを発行してVCommandを取得する
      */
-    static findVisualizers = () => {
-        return get<Command[]>('/api/v0/visualizers');
+    static findVCommands = () => {
+        return get<Command[]>('/api/v0/vcommands');
     };
 
     /**

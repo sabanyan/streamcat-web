@@ -339,7 +339,7 @@ def fetch_commands():
 
     return commands_list
 
-@mod.route('/visualizers')
+@mod.route('/vcommands')
 @api_base
 def fetch_visualizers():
     """

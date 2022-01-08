@@ -32,7 +32,7 @@ const Preview = () => {
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
 
     const getVisualizers = () => {
-        APIUtil2.findVisualizers().then(visualizers => {
+        APIUtil2.findVCommands().then(visualizers => {
             const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
             setVisualizers(SortUtil.getSortedContents(visualizerModels));
             window.visualizers = visualizerModels;
