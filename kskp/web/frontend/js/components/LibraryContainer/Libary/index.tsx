@@ -1240,7 +1240,7 @@ const Library = () => {
             if (data.type == "flow") {
                 ModalUtil.registerModal({
                     id: Constants.modal.CONFIRM, onClickDone: () => {
-                        APIUtil.post("flows", { original_flow_uuid: data.uuid }).then((response) => {
+                        APIUtil.post("flows", { source: data.uuid }).then((response) => {
                             if (response.data.success) {
                                 fetchFolder();
                                 notify({

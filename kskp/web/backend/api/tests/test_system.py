@@ -3625,7 +3625,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、フローを複製する
         data = {
-            'original_flow_uuid': flow_uuid
+            'source': flow_uuid
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 

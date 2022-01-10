@@ -114,7 +114,7 @@ class FlowTestCase(ApiTestCaseBase):
             test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
         # フローをコピーする
-        data_copy_flow = {'original_flow_uuid': test_flow_uuid}
+        data_copy_flow = {'source': test_flow_uuid}
         result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
 
         # APIの返り値を検証する
@@ -155,7 +155,7 @@ class FlowTestCase(ApiTestCaseBase):
             test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
         # フローをコピーする
-        data_copy_flow = {'original_flow_uuid': test_flow_uuid}
+        data_copy_flow = {'source': test_flow_uuid}
         result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
 
         # コピーされていることを検証する
@@ -288,7 +288,7 @@ class FlowTestCase(ApiTestCaseBase):
         cache_uuid1 = result['data']['flow']['nodes'][1]['uuid']
 
         # フローをコピーする
-        data_copy_flow = {'original_flow_uuid': test_flow_uuid}
+        data_copy_flow = {'source': test_flow_uuid}
         result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
         flow_uuid = result['data']['uuid']
 

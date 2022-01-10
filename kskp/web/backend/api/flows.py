@@ -373,20 +373,20 @@ def new_flow():
     """
     req = RequestJson(request.json)
 
-    if req.has('original_flow_uuid'):
-        original_flow = g.factory.data.find_by_uuid(req['original_flow_uuid'])
-        original_label = original_flow.label + ' のコピー'
+    if req.has('source'):
+        source_flow = g.factory.data.find_by_uuid(req['source'])
+        source_label = source_flow.label + ' のコピー'
         # 同じフォルダ内の他データと重複しないラベル名を取得する
-        parent = original_flow.find_parent()
-        new_label = parent.make_unique_label(original_label)
+        parent = source_flow.find_parent()
+        new_label = parent.make_unique_label(source_label)
         # フローを複製する
-        return original_flow.duplicate(new_label)
+        return source_flow.duplicate(new_label)
     elif req.has_all('parent', 'label', 'flow'):
-        # flowを作成する
+        # フローを作成する
         from kskp.store import FlowData
         parent = g.factory.data.find_by_uuid(req['parent'])
         new_flow = parent.create_flow(req['label'], FlowData(req['flow']))
-        # flowをDBに格納する
+        # フローをDBに格納する
         new_flow.save()
         return new_flow.reload()
     else:
