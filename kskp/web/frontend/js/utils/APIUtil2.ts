@@ -76,6 +76,40 @@ const get = <TDatumType>(url: string, params?: {}) => {
 }
 
 /**
+ * GET APIを発行する
+ * @param url 
+ */
+ const download = (url: string, accept: string, fileName: string, params?: {}) => {
+    if(params) {
+        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+    }
+    return fetch(
+        url,
+        {
+            method: 'GET',
+            headers: {
+                'Accept': accept
+            }
+        }
+    ).then(
+        res => res.blob()
+    ).then(
+        // Fetch API to force download file
+        //  https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
+        blob => {
+            const href = window.URL.createObjectURL(blob);
+            Object.assign(
+                document.createElement('a'),
+                {
+                    href,
+                    download: fileName
+                }
+            ).click();
+        }
+    );
+}
+
+/**
  * POST APIを発行する
  * @param url 
  */
@@ -474,6 +508,24 @@ export class APIUtil2 {
             frame = (new DatumArray([frame])).shift();
             return frame;
         });
+    };
+
+    /**
+     * GET /framesを発行してフレームのファイルを取得する
+     * @param uuid 取得するフレームのUUID
+     */
+     static downloadFrame = (uuid: string, label: string, encoding?: string) => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        const params = {contents:true};
+        const accept = `text/csv; charset=${encoding||'utf-8'}`;
+        // ダウンロードファイル名を作成する
+        let fileName: string;;
+        if(label.endsWith('.csv') || label.endsWith('.txt')){
+            fileName = label;
+        }else{
+            fileName = label + '.csv';
+        }
+        return download(`/api/v0/frames/${uuid}`, accept, fileName, params);
     };
 
     /**

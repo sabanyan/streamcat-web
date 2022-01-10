@@ -42,7 +42,7 @@ class FileTestCase(ApiTestCaseBase):
         frame_uuid = self.create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
         # テストデータをダウンロードする
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER1)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
 
         # 作成したテストデータとダウンロードしたデータが一致すること
         self.assertEqual(result,
@@ -69,7 +69,7 @@ class FileTestCase(ApiTestCaseBase):
         os.environ['KSKP_FRAME_CHARACTER_CODE'] = 'cp932'
         
         # テストデータをダウンロードする
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER1)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
 
         # 作成したテストデータがS_JISに変換されていること
         self.assertEqual(result,

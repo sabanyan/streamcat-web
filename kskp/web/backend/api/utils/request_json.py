@@ -1,7 +1,5 @@
 class RequestJson():
 
-    _request_json = {}
-
     def __init__(self, request_json):
         if request_json is None:
             raise Exception('リクエストJsonが指定されていません')

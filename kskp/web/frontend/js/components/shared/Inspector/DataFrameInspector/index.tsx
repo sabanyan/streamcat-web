@@ -306,8 +306,8 @@ const DataFrameInspector = (props: Props) => {
         preview = <Button onClick={() => onClickPreview()}
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {
-            const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label;
-            download = <DownloadButton href={href} disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
+            const onClick = () => APIUtil2.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
+            download = <DownloadButton onClick={onClick} download disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }
 

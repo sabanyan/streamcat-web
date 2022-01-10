@@ -5,7 +5,7 @@ import {LibraryListDataType} from 'Types/index';
 import moment from 'moment/moment';
 import Constants from 'Constants/index';
 import {Button, DownloadButton} from 'Shared/Input';
-import {APIUtil, ModalUtil, StringUtil} from "Utils/index";
+import {APIUtil, APIUtil2, ModalUtil, StringUtil} from "Utils/index";
 import {DatumType, FlowType, FrameType} from 'Model/Library';
 import {ProjectInfo} from 'Components/LibraryContainer/Libary/index';
 
@@ -69,8 +69,8 @@ const LibraryInspector = (props: Props) => {
 
         // download button
         if (data.allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
-            const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label;
-            download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>;
+            const onClick = () => APIUtil2.downloadFrame(data.uuid, data.label);
+            download = <DownloadButton onClick={onClick} download icon={"get_app"}>CSVをダウンロードする</DownloadButton>;
         }
 
         // edit

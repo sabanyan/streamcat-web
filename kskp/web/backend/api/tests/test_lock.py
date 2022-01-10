@@ -274,7 +274,7 @@ class LockTestCase(ApiTestCaseBase):
         flow_data = result['data']['flow']
 
         # Frameをダウンロードする
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER2)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER2)
 
         # Flowを更新する
         data = {

@@ -6,7 +6,9 @@ from flask import (
 from kskp.core import Datum
 from kskp.store.lock import lock_manager
 from .utils import (
+    RequestHeaders,
     RequestJson,
+    Constraints,
     api_base,
     login_required_api
 )
@@ -448,6 +450,8 @@ def fetch_frame(frame_uuid):
     """
     指定したフレームを取得する
     """
+    import os
+
     contents = request.args.get('contents') is not None
     offset = request.args.get('offset') or 0
     limit = request.args.get('limit') or 100
@@ -456,15 +460,108 @@ def fetch_frame(frame_uuid):
     frame = g.factory.data.find_by_uuid(frame_uuid)
 
     if contents:
-        from .utils import VisConverter
-        result_json = frame.to_json()
-        # frameの内容を取得する
-        vis = _get_vis(frame_uuid, args={'offset':offset, 'limit':limit})
-        result_json['args'] = {'column_names':vis.column_names}
-        result_json['contents'] = VisConverter(vis)
-        return result_json
+        # リクエストヘッダを取得する
+        headers = RequestHeaders(request.headers)
+        if headers.accept_mimetype == 'text/csv':
+            # Acceptヘッダから文字コードの指定を取得する
+            # 指定がない場合は環境変数から取得する、環境変数の設定値もない場合は'UTF-8'とする
+            target_encoding = headers.accept_charset or os.getenv('KSKP_FRAME_CHARACTER_CODE', 'UTF-8').lower()
+            # フレームの内容をCSVファイルで返す
+            return _convert_file(frame_uuid, target_encoding=target_encoding)
+        else:
+            # フレームの内容をHTMLで返す
+            from .utils import VisConverter
+            result_json = frame.to_json()
+            # frameの内容を取得する
+            vis = _get_vis(frame_uuid, args={'offset':offset, 'limit':limit})
+            result_json['args'] = {'column_names':vis.column_names}
+            result_json['contents'] = VisConverter(vis)
+            return result_json
     else:
         return frame
+
+@Constraints.allow_download_only_with_writable
+def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
+
+    def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
+        """
+        指定されたファイルの文字コードと改行コードを変換する
+        """
+        with file_path.open(encoding=source_encoding, newline=source_newline, errors='replace') as f:
+            for line in f:
+                if source_encoding == target_encoding and source_newline == target_newline:
+                    # 変換処理が必要ない場合は処理を軽くする
+                    yield line
+                else:
+                    # 変換できない文字があれば、
+                    # UTF-8への変換の場合は�(U+FFFD)に置き換える
+                    # CP932への変換の場合は?(3F)に置き換える
+                    line = line.rstrip(source_newline) + target_newline
+                    yield line.encode(target_encoding, errors='replace')
+
+    def error(message):
+        from flask import jsonify
+        return jsonify({'success':False, 'code':-1, 'message': message})
+
+    if target_encoding.lower() not in ('utf-8', 'cp932'):
+        return error(f'Acceptヘッダに指定された文字コード({target_encoding})には対応していません')
+
+    try:
+        frame = g.factory.data.find_by_uuid(frame_uuid)
+    except Exception as e:
+        return error(str(e))
+
+    frame_path = frame.path
+    if not frame_path.exists():
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
+
+    # frameの文字コードと改行コードを識別する
+    source_encoding = 'utf-8' if frame.encoding == 'UNKNOWN' else frame.encoding
+    source_newline = '\n' if frame.newline == 'UNKNOWN' else frame.newline
+
+    # ダウンロードファイルの改行コードを決定する
+    target_newline = '\r\n' if target_encoding in ('cp932', 'CP932') else '\n'
+
+    # ダウンロードファイルのサイズを計算する
+    if source_encoding == target_encoding and source_newline == target_newline:
+        # 変換処理がない場合は元ファイルサイズがダウンロードファイルのサイズである
+        downloadFileSize = frame.file_size
+    else:
+        downloadFileSize = None
+
+    # ダウンロードファイル名を作成する
+    if frame.label.endswith('.csv') or frame.label.endswith('.txt'):
+        downloadFileName = frame.label
+    else:
+        downloadFileName = frame.label + '.csv'
+
+    # ファイル名をURLエンコードする
+    import urllib.parse
+    downloadFileName = urllib.parse.quote(downloadFileName)
+
+    # frameを返す
+    # ・文字コード変換と改行コード変換をしながら返す
+    # ・Streamで返すため一時ファイルは作成されない
+    # ・変換に失敗した文字は代替する文字に置き換える
+    from flask import Response
+    try:
+        response = Response(convert(frame_path, source_encoding, source_newline, target_encoding, target_newline))
+        response.content_type = f'text/csv; {target_encoding}'
+        if downloadFileSize is not None:
+            # 設定することでWebブラウザがダウンロードの進捗状況を表示してくれるかも
+            response.content_length = downloadFileSize
+        # filename*=はFirefox用
+        response.headers['Content-Disposition'] = f'attachment; filename={downloadFileName}; filename*={downloadFileName}'
+        return response
+    except UnicodeDecodeError:
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
+    except UnicodeEncodeError:
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return error(str(e))
+
 
 def _get_vis(frame_uuid:str, args={}):
     """

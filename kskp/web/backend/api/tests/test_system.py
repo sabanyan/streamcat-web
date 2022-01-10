@@ -3667,7 +3667,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトのメンバでないユーザは、フレームをダウンロードできないこと
         with self.assertRaises(AssertionError):
-            result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+            result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER3)
 
         # USER3を閲覧者メンバとして参加させる
         data = {
@@ -3679,7 +3679,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 閲覧者メンバはフレームをダウンロードできないこと
         with self.assertRaises(AssertionError):
-            self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+            self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER3)
 
         # USER3を編集者メンバとして参加させる
         data = {
@@ -3690,11 +3690,11 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
         # 編集者メンバはフレームをダウンロードできること
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER3)
         self.assertEqual(result, b'Every cup has a story\n')
 
         # プロジェクト管理者はフレームーをダウンロードできること
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER2)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER2)
         self.assertEqual(result, b'Every cup has a story\n')
 
         # プロジェクトを削除する

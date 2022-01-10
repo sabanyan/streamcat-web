@@ -107,7 +107,7 @@ class ApiTestCaseBase(TestCaseBase):
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
             # response = client.get(uri)
-            with client.get(uri) as response:
+            with client.get(uri, headers={'Accept':'text/csv'}) as response:
                 self.assertLess(response.status_code, 500, msg=f'GET {uri} is failed. response status: {response.status}')
 
                 if response.content_type == 'application/json':

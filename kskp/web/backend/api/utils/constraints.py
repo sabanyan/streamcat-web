@@ -11,8 +11,7 @@ class Constraints():
         """
         実行可否を更新権限で判定する
         """
-
-        from flask import request, g, jsonify
+        from flask import jsonify, g
 
         def error(message):
             return jsonify({'success':False, 'code':-1, 'message': message})
@@ -20,8 +19,8 @@ class Constraints():
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
 
-            # frameのuuidと拡張子指定を取得する
-            frame_uuid = request.args.get('uuid')
+            # frameのuuidを取得する
+            frame_uuid = args[0]
             try:
                 frame = g.factory.data.find_by_uuid(frame_uuid)
             except Exception as e:

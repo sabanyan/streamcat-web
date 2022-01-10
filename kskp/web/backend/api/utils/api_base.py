@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import Response, jsonify
 import functools
 
 def api_base(func):
@@ -49,6 +49,8 @@ def api_base(func):
             result = func(**kwargs)
             if result is None:
                 return jsonify({'success': True}), OK
+            elif isinstance(result, Response):
+                return result
             else:
                 return jsonify({'success': True, 'data': result}), OK
         except LockedDatumException as e:
