@@ -92,7 +92,7 @@ def download_flow(uuid):
 
     # アーカイブファイルを返す
     ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
-                              download_name = archive_name + '.tgz', mimetype = 'application/gzip')
+                              download_name=archive_name + '.tgz', mimetype='application/gzip')
     archive_path.unlink()
     return ret
 

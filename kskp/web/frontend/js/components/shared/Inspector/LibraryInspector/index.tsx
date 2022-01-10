@@ -5,7 +5,7 @@ import {LibraryListDataType} from 'Types/index';
 import moment from 'moment/moment';
 import Constants from 'Constants/index';
 import {Button, DownloadButton} from 'Shared/Input';
-import {APIUtil, APIUtil2, ModalUtil, StringUtil} from "Utils/index";
+import {APIUtil2, ModalUtil, StringUtil} from "Utils/index";
 import {DatumType, FlowType, FrameType} from 'Model/Library';
 import {ProjectInfo} from 'Components/LibraryContainer/Libary/index';
 
@@ -118,8 +118,8 @@ const LibraryInspector = (props: Props) => {
         }
 
         if (data.allowlist.export && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project)) {
-            const href = APIUtil.apiUrl("flow_files") + "/" + data.uuid;
-            flowExport = <DownloadButton href={href} icon={"get_app"}>フローをダウンロードする</DownloadButton>;
+            const onClick = () => APIUtil2.downloadFlow(data.uuid, data.label);
+            download = <DownloadButton onClick={onClick} download icon={"get_app"}>フローをダウンロードする</DownloadButton>;
         }
 
         return <React.Fragment>
