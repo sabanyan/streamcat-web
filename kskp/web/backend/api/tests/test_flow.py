@@ -423,7 +423,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
 
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
     def test_update_flow_label(self):
         """
@@ -465,7 +465,7 @@ class FlowTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', {'label':'遠山金四郎🌸', 'lock':lock_uuid}, self.USER3)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # フローを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
@@ -529,7 +529,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
     def test_delete_flow(self):
         """
@@ -550,7 +550,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
             
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
  
         # フローはゴミ箱に移動していること
         flow = self.factory.data.find_by_uuid(test_flow_uuid)
@@ -755,7 +755,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/flows/{flow1_uuid}', data, self.USER3)
 
         # サブフロー1の排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock1_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock1_uuid}', self.USER3)
 
         # ROOTの下にプロジェクト2を作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows2'}, self.USER3)
@@ -789,7 +789,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/flows/{flow2_uuid}', data, self.USER3)
 
         # サブフロー2の排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock2_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock2_uuid}', self.USER3)
 
         # 全てのサブフローを取得する
         # (no_inputs=onの引数指定はおかしい気がする)
@@ -841,10 +841,10 @@ class FlowTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/flows/{flow2_uuid}', data, self.USER3)
 
         # サブフロー1の排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock1_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock1_uuid}', self.USER3)
 
         # サブフロー2の排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock2_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock2_uuid}', self.USER3)
 
         # プロジェクトフォルダを削除する
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER3)

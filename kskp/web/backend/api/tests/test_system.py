@@ -2431,7 +2431,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER3)
 
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -2934,9 +2934,9 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{datadest_uuid}', {'lock':lock_uuid3}, self.USER3)
 
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid1}', {}, self.USER0)
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid2}', {}, self.USER2)
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid3}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid1}', self.USER0)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid2}', self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid3}', self.USER3)
 
         # プロジェクト管理者はプロジェクトをゴミ箱へほかす
         self.delete_uri(f'/api/v0/projects/{project_uuid3}', self.USER1)
@@ -3006,7 +3006,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER1)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # 編集ロックはTrueであること
         # allowlistのlockとcopyは編集ロックの値に影響されないこと
@@ -3027,7 +3027,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER1)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # 編集ロックはFalseであること
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
@@ -3093,7 +3093,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['editLock'])
 
         # 閲覧者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
 
         # プロジェクト管理者は、フローの排他ロックを取得する
@@ -3114,7 +3114,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertTrue(result['data']['editLock'])
 
         # プロジェクト管理者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
 
         # 閲覧者は、フローの排他ロックを取得する
@@ -3143,7 +3143,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 閲覧者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
@@ -3204,7 +3204,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、編集ロックされた、かつキャッシュ出力をするフローをプレビューできること
         # (編集ロックによりキャッシュ出力をしない)
@@ -3258,7 +3258,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
         # プロジェクト管理者は、編集ロックされたフローをプレビューできること
         vis_args = {"uuid": flow_uuid,
@@ -3295,7 +3295,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3348,7 +3348,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # 編集者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
@@ -3364,7 +3364,7 @@ class SystemTestCase(ApiTestCaseBase):
             self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -3382,7 +3382,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3439,7 +3439,7 @@ class SystemTestCase(ApiTestCaseBase):
             self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3537,7 +3537,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
         # プロジェクトとキャッシュを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3621,7 +3621,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
 
         # 編集者は、フローのロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、フローを複製する
         data = {

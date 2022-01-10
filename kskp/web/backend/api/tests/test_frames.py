@@ -796,7 +796,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
 
         # フローのロックを解除する
-        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        result = self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
     def test_activity_with_lock(self):
         """
@@ -945,7 +945,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
 
         # フローのロックを解除する
-        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        result = self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
     def test_activity_with_datasrcs_dsts(self):
         """

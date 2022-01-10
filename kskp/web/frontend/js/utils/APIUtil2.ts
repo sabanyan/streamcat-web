@@ -595,10 +595,10 @@ export class APIUtil2 {
         let body: {target:string, lastModifiedAt?:string} = {target: flowUUID};
         lastModifiedAt && (body.lastModifiedAt = lastModifiedAt);
         return post<LockType>('/api/v0/locks', body).then(lock => {
-            lock.delete = () =>
-                post(`/api/v0/delete-locks/${lock.uuid}`, {});
             lock.extend = () =>
-                post(`/api/v0/extend-locks/${lock.uuid}`, {});
+                put(`/api/v0/locks/${lock.uuid}`, {});
+            lock.delete = () =>
+                del(`/api/v0/locks/${lock.uuid}`, {});
             return lock;
         });
     }

@@ -39,7 +39,7 @@ def make_new_lock():
 
     return lock.to_json()
 
-@mod.route('/extend-locks/<lock_uuid>', methods=['POST'])
+@mod.route('/locks/<lock_uuid>', methods=['PUT'])
 @login_required_api
 @api_base
 def extend_lock(lock_uuid):
@@ -50,7 +50,7 @@ def extend_lock(lock_uuid):
     if not lock_manager.contains(lock_uuid):
         raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
 
-@mod.route('/delete-locks', methods=['POST'])
+@mod.route('/locks', methods=['DELETE'])
 @login_required_api
 @api_base
 def delete_all_locks():
@@ -64,17 +64,22 @@ def delete_all_locks():
     else:
         return lock_manager.unlock_all()
 
-"""
-frontendのNavagator.sendBeacon()に対応するため、下記のように変更
-methods: DELETE => POST
-url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
-"""
-@mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
+@mod.route('/locks/<lock_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
 def delete_lock(lock_uuid):
     """
     指定した排他ロックを解除する
+    """ 
+    return lock_manager.unlock(lock_uuid)
+
+@mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
+@login_required_api
+@api_base
+def delete_lock_by_post(lock_uuid):
+    """
+    指定した排他ロックを解除する
+    (frontendのNavagator.sendBeacon()で発行する為、POSTで定義する必要がある)
     """ 
     return lock_manager.unlock(lock_uuid)
 

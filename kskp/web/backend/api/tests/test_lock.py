@@ -177,7 +177,7 @@ class LockTestCase(ApiTestCaseBase):
         # 正しいロックUUIDで更新する
         result = self.update_flow(flow_uuid, source_uuid=frame_uuid, lock_uuid=lock_uuid)
         # フローのUUIDでロックを解除する
-        result = self.post_uri(f'/api/v0/delete-locks?of={flow_uuid}', {}, self.USER1)
+        result = self.delete_uri(f'/api/v0/locks?of={flow_uuid}', self.USER1)
 
     def test_expire_lock(self):
         """
@@ -334,8 +334,8 @@ class LockTestCase(ApiTestCaseBase):
             # 少し待つ
             time.sleep(0.4)
             # ロックの有効期間を延長する
-            self.post_locks(f'/api/v0/extend-locks/{lock_uuid}', {}, self.USER1)
-            self.assertTrue(result['success'], 'POST extend-locks is failed.')
+            self.put_uri(f'/api/v0/locks/{lock_uuid}', {}, self.USER1)
+            self.assertTrue(result['success'], 'PUT locks is failed.')
 
         # ロックの有効期間が延長されたため、フローを更新できること
         self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid) 
