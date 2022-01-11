@@ -697,7 +697,7 @@ const Library = () => {
     };
 
     const onClickImportFlow = () => {
-        let url = location.protocol + "//" + location.host + "/api/v0/flow_files";
+        let url = location.protocol + "//" + location.host + "/api/v0/archives/flows";
         ModalUtil.emitModal({
             id: Constants.modal.IMPORT_FLOW,
             visible: true,

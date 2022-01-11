@@ -170,7 +170,7 @@ class ApiTestCaseBase(TestCaseBase):
 
     def post_flows(self, label, parent_uuid, stream, user):
         """
-        URI(/api/v0/flow_files)へPOSTする
+        URI(/api/v0/archives/flows)へPOSTする
         指定するストリームをフローとしてアップロードする
         """
         data = {
@@ -183,13 +183,13 @@ class ApiTestCaseBase(TestCaseBase):
         with app.test_client() as client:
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
-            response = client.post('/api/v0/flow_files',
+            response = client.post('/api/v0/archives/flows',
                                    content_type='multipart/form-data',
                                    data=data
                                   )
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/flow_files', error_detail))
+        self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/archives/flows', error_detail))
         return result
 
     def put_uri(self, uri, json_data, user):

@@ -107,7 +107,7 @@ class FileTestCase(ApiTestCaseBase):
         flow.save()
 
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/flow_files/{flow.uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{flow.uuid}', self.USER1)
         self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
 
         # インポート先のフォルダを作成する
@@ -193,7 +193,7 @@ class FileTestCase(ApiTestCaseBase):
         flow2.save()
 
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/flow_files/{project1.uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{project1.uuid}', self.USER1)
         self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
 
         # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
@@ -342,7 +342,7 @@ class FileTestCase(ApiTestCaseBase):
         flow_uuid = result['data']['uuid']
 
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/flow_files/{flow_uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{flow_uuid}', self.USER1)
         self._save_file(root.path/'電車🚃.tgz', io.BytesIO(result))
 
         # インポート先のプロジェクトを作成する

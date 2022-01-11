@@ -83,7 +83,7 @@ def delete_store(store_id):
     store.delete()
 
 
-@mod.route('/flow_files/<uuid>', methods=['GET'])
+@mod.route('/archives/flows/<uuid>', methods=['GET'])
 @login_required_api
 def download_flow(uuid):
     from kskp.store import FlowDumper
@@ -96,7 +96,7 @@ def download_flow(uuid):
     archive_path.unlink()
     return ret
 
-@mod.route('/flow_files', methods=['POST'])
+@mod.route('/archives/flows', methods=['POST'])
 @login_required_api
 @api_base
 def upload_flow():

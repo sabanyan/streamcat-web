@@ -495,20 +495,14 @@ export class APIUtil2 {
     };
 
     /**
-     * GET /flow_filesを発行してフローのファイルを取得する
+     * GET /archives/flowsを発行してフローのファイルを取得する
      * @param uuid 取得するフローまたはフォルダのUUID
      */
-         static downloadFlow = (uuid: string, label: string) => {
-            const accept = `application/gzip`;
-            // ダウンロードファイル名を作成する
-            let fileName: string;;
-            if(label.endsWith('.csv') || label.endsWith('.txt')){
-                fileName = label;
-            }else{
-                fileName = label + '.csv';
-            }
-            return download(`/api/v0/flow_files/${uuid}`, accept, fileName);
-        };
+    static downloadFlow = (uuid: string, label: string) => {
+        const accept = `application/gzip`;
+        const fileName = label + '.tgz';
+        return download(`/api/v0/archives/flows/${uuid}`, accept, fileName);
+    };
 
     /**
      * GET /framesを発行してフレームを取得する
