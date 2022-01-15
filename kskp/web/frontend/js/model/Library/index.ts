@@ -64,7 +64,7 @@ export type FolderAllowlist = Allowlist & {
 /**
  * ProjectのMember
  */
-type Member = {
+export type Member = {
   uuid: string;
   email: string;
   name: string;
@@ -162,7 +162,7 @@ export type ProjectType = FolderType & {
   modifiedAt: string;
 
   initMembers:(
-    members: [{uuid:string, type:MemberType}],
+    members: {uuid:string, type:MemberType}[],
     lastModifiedAt: string
   ) => Promise<ProjectType>;
 };
@@ -286,6 +286,10 @@ export type Command = {
   modifiedAt: string;
   flow: Flow;
 
+  updateLock:(
+    editLock: boolean,
+    lockUUID?: string
+  ) => Promise<FlowType>;
   update:(
     flow:Flow,
     lockUUID?:string

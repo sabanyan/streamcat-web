@@ -18,7 +18,7 @@ import {
     Flow,
     Command
 } from 'Model/Library';
-import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import {LockType} from 'Model/Locks';
 
 
@@ -95,7 +95,7 @@ const get = <TDatumType>(url: string, params?: {}) => {
         res => res.blob()
     ).then(
         // Fetch API to force download file
-        //  https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
+        // https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
         blob => {
             const href = window.URL.createObjectURL(blob);
             Object.assign(
@@ -318,8 +318,14 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label, lock:lockUUID});
                 d.delete = (lockUUID) =>
                     del(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
+                d.updateLock = (editLock, lockUUID) => {
+                    return put<FlowType>(`/api/v0/flows/${d.uuid}`, {editLock:editLock, lock:lockUUID}).then(flow => {
+                        // TODO: 他の全ての関数についても、postやputで返されるDatumに関数を設定する必要がある
+                       return (new DatumArray([flow])).shift();
+                    });
+                };
                 d.update = (flow, lockUUID) =>
-                    put(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
+                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
             }else if(datum.type === 'schedule') {
                 const d = datum as ScheduleType;
                 d.move = (parent) => 
@@ -357,6 +363,12 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
     return Array.prototype.map.apply(this, [wrapCallbackfn, thisArg]);
 }
 
+DatumArray.prototype.find = function(callbackfn: (value: DatumType, index: number, array: DatumType[]) => boolean,
+                                     thisArg?: any) {
+    // this: new DatumArray()で生成するオブジェクト
+    return DatumArray.prototype.map.apply(this, [datum => datum]).find(callbackfn, thisArg);
+}
+
 DatumArray.prototype.slice = function(start?: number, end?: number) {
     // this: new DatumArray()で生成するオブジェクト
     return DatumArray.prototype.map.apply(this, [datum => datum]).slice(start, end);
@@ -365,6 +377,61 @@ DatumArray.prototype.slice = function(start?: number, end?: number) {
 DatumArray.prototype.shift = function() {
     // this: new DatumArray()で生成するオブジェクト
     return DatumArray.prototype.map.apply(this, [datum => datum]).shift();
+}
+
+/**
+ * UserにWebAPIを発行する関数を付与する
+ * @param users Userのリスト
+ */
+ const UserArray = function(this: any, users: UserType[]) {
+    // this: new UserArray()で生成するオブジェクト
+    Array.prototype.push.apply(this, users);
+};
+
+// UserArrayはArrayオブジェクトを継承する
+UserArray.prototype = Object.create(Array.prototype);
+UserArray.prototype.constructor = UserArray;
+
+// map関数をオーバーライドする
+UserArray.prototype.map = function<U>(callbackfn: (user: UserType, index: number, array: UserType[]) => U,
+                                       thisArg?: any) : any {
+
+    // Arrayのmap関数に渡すコールバック関数
+    let wrapCallbackfn;
+
+    if(this.__isWrapped) {
+        // 既にラッパー処理済みの場合は何もしない
+        wrapCallbackfn = callbackfn;
+    }else{
+        // 未ラッパーの場合はラッパー処理を行う
+        this.__isWrapped = true;
+
+        // ラッパー処理をする関数を作成する
+        wrapCallbackfn = (user: UserType, index: number, array: UserType[]) => {
+            //
+            // Userオブジェクトに、WebAPIを発行する関数を付与する
+            //
+            user.rename = (name) => 
+                put<UserType>(`/api/v0/users/${user.uuid}`, {name:name});
+            user.updateEMail = (email) => 
+                put<UserType>(`/api/v0/users/${user.uuid}`, {email:email});
+            user.updatePassword = (password) => 
+                put<UserType>(`/api/v0/users/${user.uuid}`, {password:password || null});
+            user.undelete = () =>
+                put<UserType>(`/api/v0/users/${user.uuid}`, {state:'active'});
+            user.delete = () =>
+                del(`/api/v0/users/${user.uuid}`);
+            // map関数に渡されたコールバック関数を実行する
+            return callbackfn(user, index, array);
+        }
+    }
+
+    // Arrayのmapメソッドを、this=[UserArrayのインスタンス]で呼び出す
+    return Array.prototype.map.apply(this, [wrapCallbackfn, thisArg]);
+}
+
+UserArray.prototype.shift = function() {
+    return UserArray.prototype.map.apply(this, [user => user]).shift();
 }
 
 /**
@@ -426,8 +493,11 @@ export class APIUtil2 {
     /**
      * GET /libraryを発行してルートフォルダを取得する
      */
-     static findLibrary = () => {
-        return get<ParentFolderType>('/api/v0/libray').then(folder => {
+     static findLibrary = (members?: boolean) => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        let params: {members?:string} = {};
+        members && (params.members = 'on');
+        return get<ParentFolderType>('/api/v0/library', params).then(folder => {
             folder = (new DatumArray([folder])).shift();
             folder.children = new DatumArray(folder.children);
             return folder;
@@ -446,11 +516,28 @@ export class APIUtil2 {
     };
 
     /**
+     * GET /projectwを発行して全てのプロジェクトを取得する
+     */
+    static findProjects = (onRoot?: boolean, exceptMyProject?: boolean, members?: boolean):Promise<ProjectType[]> => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        let params: {on_root?:string, except_myproject?:string, members?:string} = {};
+        onRoot && (params.on_root = 'on');
+        exceptMyProject && (params.except_myproject = 'on');
+        members && (params.members = 'on');
+        return get<ProjectType[]>('/api/v0/projects', params).then(projects => {
+            return new DatumArray(projects);
+        });
+    };
+
+    /**
      * GET /projectsを発行してプロジェクトを取得する
      * @param uuid 取得するプロジェクトのUUID
      */
-    static findProject = (uuid: string) => {
-        return get<ParentProjectType>(`/api/v0/projects/${uuid}`).then(project => {
+    static findProject = (uuid: string, members?: boolean) => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        let params: {members?:string} = {};
+        members && (params.members = 'on');
+        return get<ParentProjectType>(`/api/v0/projects/${uuid}`, params).then(project => {
             project = (new DatumArray([project])).shift();
             project.children = new DatumArray(project.children);
             return project;
@@ -510,8 +597,8 @@ export class APIUtil2 {
      */
     static findFrame = (uuid: string, contents?: boolean, offset?: number, limit?: number) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
-        let params: {contents?:boolean, offset?:number, limit?:number} = {};
-        contents && (params.contents = contents);
+        let params: {contents?:string, offset?:number, limit?:number} = {};
+        contents && (params.contents = 'on');
         offset && (params.offset = offset);
         limit && (params.limit = limit);
         return get<FrameType>(`/api/v0/frames/${uuid}`, params).then(frame => {
@@ -623,4 +710,19 @@ export class APIUtil2 {
         const body = {uuid:flowUUID, args:args, lock:lockUUID};
         return post<ActivityType>('/api/v0/activities', body);
     };
+
+    /**
+     * GET /usersを発行してUserを取得する
+     */
+     static findUsers = (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        let params: {q?:string, except_inactive?:string, roles?:string, projects?:string} = {};
+        q && (params.q = q);
+        exceptInactive && (params.except_inactive = 'on');
+        roles && (params.roles = 'on');
+        projects && (params.projects = 'on');
+        return get<UserType[]>('/api/v0/users', params).then(users => {
+            return new UserArray(users);
+        });
+    }
 }

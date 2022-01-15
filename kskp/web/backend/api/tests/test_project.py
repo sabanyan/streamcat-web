@@ -124,17 +124,20 @@ class ProjectTestCase(ApiTestCaseBase):
         # 作成したプロジェクトが取得できること
         results = self.get_uri('/api/v0/projects?except_myproject=off', self.USER1)
         self.assertEqual(len(results['data']), 4)
-        self.assertEqual(results['data'][0]['label'], 'MyProject ')
-        self.assertEqual(results['data'][1]['label'], 'myproject')
-        self.assertEqual(results['data'][2]['label'], 'MyProject')
-        self.assertEqual(results['data'][3]['label'], 'データデスト📂')
+        # GET /projectsの結果はソートされない
+        result_labels = [result_data['label'] for result_data in results['data']]
+        result_labels.sort()
+        expect_labels = ['MyProject', 'MyProject ', 'myproject', 'データデスト📂']
+        self.assertListEqual(result_labels, expect_labels)
 
         # MyProjectを除外して取得できること
         results = self.get_uri('/api/v0/projects?except_myproject=on', self.USER1)
         self.assertEqual(len(results['data']), 3)
-        self.assertEqual(results['data'][0]['label'], 'MyProject ')
-        self.assertEqual(results['data'][1]['label'], 'myproject')
-        self.assertEqual(results['data'][2]['label'], 'データデスト📂')
+        # GET /projectsの結果はソートされない
+        result_labels = [result_data['label'] for result_data in results['data']]
+        result_labels.sort()
+        expect_labels = ['MyProject ', 'myproject', 'データデスト📂']
+        self.assertListEqual(result_labels, expect_labels)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER2)

@@ -62,12 +62,12 @@ def get_projects():
     """
     全てのプロジェクトを取得する
     """
+    on_root = request.args.get('on_root') == 'on'
     if request.args.get('except_myproject') == 'on':
         except_label = MY_PROJECT
     else:
         except_label = None
-
-    return g.factory.data.find_all(type=Datum.PROJECT_TYPE, except_label=except_label)
+    return g.factory.data.find_all_projects(on_root=on_root, except_label=except_label)
 
 @mod.route('/projects/<project_uuid>', methods=['GET'])
 @login_required_api

@@ -26,11 +26,8 @@ def admin_users():
 
 @mod.route('/library', methods=['GET', 'POST'])
 @login_required
-@login_required_api
 def library():
-    from flask import g
-    uuid = g.factory.data.load_root().uuid
-    return make_response('library.html', folder_uuid=uuid, is_project='false', is_trash='false')
+    return make_response('library.html', is_project='false', is_trash='false')
 
 @mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
 @login_required

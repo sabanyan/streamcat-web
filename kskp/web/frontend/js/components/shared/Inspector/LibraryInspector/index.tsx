@@ -6,13 +6,10 @@ import moment from 'moment/moment';
 import Constants from 'Constants/index';
 import {Button, DownloadButton} from 'Shared/Input';
 import {APIUtil2, ModalUtil, StringUtil} from "Utils/index";
-import {DatumType, FlowType, FrameType} from 'Model/Library';
-import {ProjectInfo} from 'Components/LibraryContainer/Libary/index';
+import {DatumType, FlowType, FrameType, ParentProjectType, ProjectType} from 'Model/Library';
 
 type Props = {
-    // TODO: currentProjectの退治はLibraryコンポーネントの改修が複雑なので保留する
-    currentProject: ProjectInfo;
-    // allowlist: Allowlist;
+    projectsReader: () => ProjectType[] | null;
     selectedData: DatumType;
     onClickDelete?: Function;
     onClickApply?: Function;
@@ -20,9 +17,9 @@ type Props = {
     onBlurTitle?: ((e:any, selectedData: DatumType) => void) | null;
     onClickEdit?: Function;
     onClickEditEncoding?: Function;
+    onChangEditLock?: Function;
     onClickCleanTrash?: Function;
-    onClickMemberInfo?: Function;
-    onChangeFlowLock?: Function;
+    onClickMemberInfo?: (project:ParentProjectType) => void;
     onClickCopy?: Function;
 }
 
@@ -33,7 +30,7 @@ const LibraryInspector = (props: Props) => {
         newline: '改行コード',
         creator: '作成者',
         createdAt: '作成日時',
-        prevFolderPath: "捨てる前の場所",
+        prevFolderPath: '捨てる前の場所',
         fileSize: 'ファイルサイズ'
     };
 
@@ -58,7 +55,7 @@ const LibraryInspector = (props: Props) => {
 
     const renderButtons = (data: DatumType) => {
         const { selectedData, onClickDelete, onClickApply, onClickMove, onClickEdit,
-                onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy} = props;
+                onClickEditEncoding, onClickCleanTrash, onChangEditLock, onClickCopy} = props;
 
         let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, copy, flowExport;
 
@@ -91,10 +88,10 @@ const LibraryInspector = (props: Props) => {
             trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>;
 
         // flow lock button
-        if (data.allowlist.lock && data && data.type == Constants.library.type.flow && onChangeFlowLock) {
+        if (data.allowlist.lock && data && data.type == Constants.library.type.flow && onChangEditLock) {
             const flow = data as FlowType;
             lock = <div className={style.flowLock}>
-                <input id="flowLock" type="checkbox" checked={flow.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, flow)}></input>
+                <input id="flowLock" type="checkbox" checked={flow.editLock ? true : false} onChange={(e) => onChangEditLock(e, flow)}></input>
                 <label htmlFor="flowLock">編集ロック</label>
             </div>;
         }
@@ -138,7 +135,7 @@ const LibraryInspector = (props: Props) => {
     };
 
     const renderDetail = (data: DatumType) => {
-        let result: any = [];
+        let result: JSX.Element[] = [];
         if (!data) return result;
 
         // ラベルがあれば、表示する
@@ -206,9 +203,19 @@ const LibraryInspector = (props: Props) => {
             result.push(createdAt);
         }
 
+        // プロジェクトメンバとメンバ編集ボタンを表示する
         if (data && data.type == "project") {
-            const projectInfo = renderProjectInfo(data);
-            result.push(projectInfo);
+            const {projectsReader} = props;
+            // ルートフォルダにある全てのプロジェクトを取得する
+            const projects = projectsReader();
+            if(projects){
+                // 選択中のプロジェクトを取得する
+                const project = projects.find(child => child.uuid === data.uuid);
+                if(project){
+                    const projectInfo = renderProjectInfo(project as ParentProjectType);
+                    result.push(projectInfo || <></>);
+                }
+            }
         }
 
         return <React.Fragment>
@@ -249,10 +256,13 @@ const LibraryInspector = (props: Props) => {
         return result;
     };
 
-    const renderProjectInfo = (project: DatumType) => {
-        const {currentProject, onClickMemberInfo} = props;
+    /**
+     * プロジェクトメンバ一覧とメンバ編集ボタンを表示する
+     */
+    const renderProjectInfo = (project: ParentProjectType) => {
+        const {onClickMemberInfo} = props;
         if (!onClickMemberInfo) return null;
-        const members = currentProject.members;
+        const members = project.members;
         const memberCount = members ? members.length : 0;
         let membersForm: any = null;
         if (members) {
@@ -264,7 +274,13 @@ const LibraryInspector = (props: Props) => {
         return <React.Fragment key={"project-info"}>
             <div className={style.full_hr} />
             <label>{"このプロジェクトのメンバー(" + memberCount + ")"}</label>
-            {(project.allowlist && project.allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
+            {
+                (project.allowlist && project.allowlist.updateMember && onClickMemberInfo) ?
+                <Button onClick={(e) => onClickMemberInfo(project)} icon={"people"}>
+                    メンバーを編集する
+                </Button>
+                : null
+            }
             <div className={style.memberList}>
                 {project.allowlist && project.allowlist.findMember && members ? membersForm : null}
             </div>
@@ -276,7 +292,10 @@ const LibraryInspector = (props: Props) => {
 
     const enabled = selectedData.allowlist && selectedData.allowlist.update;
     return <Resizer>
-        <BaseInspector key={selectedData.uuid} label={selectedData.label} onBlurTitle={(onBlurTitle) ? (e) => {onBlurTitle(e, selectedData)} : null} disabled={!enabled}>
+        <BaseInspector key={selectedData.uuid}
+                       label={selectedData.label}
+                       onBlurTitle={onBlurTitle ? (e) => onBlurTitle(e, selectedData) : null}
+                       disabled={!enabled}>
             {renderSelect(selectedData)}
         </BaseInspector>
     </Resizer>;

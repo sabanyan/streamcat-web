@@ -131,19 +131,10 @@ def _update_user_inner(user, req:RequestJson):
     elif req.isnull('password'):
         user = user.reset_password()
     elif req.get('state') == User.ACTIVE_STATE:
+        # 指定したユーザを論理削除から登録状態に戻す
         user = user.put_back()
 
     return user
-
-@mod.route('/users/<user_uuid>/undelete', methods=['PUT'])
-@login_required_api
-@api_base
-def put_back_user(user_uuid):
-    """
-    指定したユーザを論理削除から登録状態に戻す
-    """
-    user = g.factory.user.find_by_uuid(user_uuid)
-    return user.put_back()
 
 @mod.route('/users/<user_uuid>', methods=['DELETE'])
 @login_required_api

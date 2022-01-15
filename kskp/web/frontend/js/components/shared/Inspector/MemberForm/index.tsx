@@ -2,40 +2,34 @@ import React from 'react'
 import { Paper, TextField, TableContainer, Table, TableRow, TableCell, TableBody, Select } from '@material-ui/core';
 import style from './style.scss'
 import Constants from 'Constants/index';
-
-type Row = {
-  createdAt: string;
-  creator: string;
-  email: string;
-  name: string;
-  state: string;
-  type: string;
-  uuid: string;
-}
+import { UserType } from 'Model/Navigation/NavigationModel';
+import { Member } from 'Model/Library';
 
 type Props = {
-  rows: Row[];
-  searchedRows: Row[];
-  onSearchTextInputed: Function;
-  onSearchedMemberClicked: Function;
-  onMemberRoleChanged: Function;
+  members: Member[];
+  searchedUsers: UserType[];
+  onSearchTextInputed: (e, members:Member[]) => void;
+  onSearchedMemberClicked: (e, members:Member[], newUser:UserType) => void;
+  onMemberRoleChanged: (e, members:Member[], editMember:Member) => void;
 }
 
 export function MemberForm(props: Props) {
-  const { rows, searchedRows } = props
+  const { members, searchedUsers } = props
   const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged } = props
 
-  const searchedList = searchedRows.map((row) => {
-    return <a key={row.email}
-      href="#"
-      onClick={(e) => onSearchedMemberClicked(e, row)}>{row.name + " (" + row.email + ")"}</a>
+  const searchedUserLinks = searchedUsers.map(user => {
+    return <a key={user.email}
+              href="#"
+              onClick={(e) => onSearchedMemberClicked(e, members, user)}>
+      {user.name + " (" + user.email + ")"}
+    </a>
   })
 
-  const roleForm = (row) => {
+  const roleForm = (editMember:Member) => {
     return <Select
       native
-      value={row.type ? row.type : "Reader"}
-      onChange={(e) => onMemberRoleChanged(e, row)}
+      value={editMember.type ? editMember.type : "Reader"}
+      onChange={(e) => onMemberRoleChanged(e, members, editMember)}
       className={style.role}>
       <option value="Owner">{Constants.projectMemberRole.OWNER}</option>
       <option value="Writer">{Constants.projectMemberRole.WRITER}</option>
@@ -49,11 +43,11 @@ export function MemberForm(props: Props) {
       <TextField
         id="seachFiled"
         label="追加するユーザーの名前、Email"
-        onChange={(e) => onSearchTextInputed(e)}
+        onChange={(e) => onSearchTextInputed(e, members)}
         className={style.searchField}
       />
       <div className={style.dropdown}>
-        {searchedList}
+        {searchedUserLinks}
       </div>
 
       <TableContainer component={Paper} className={style.table}>
@@ -68,13 +62,13 @@ export function MemberForm(props: Props) {
           </TableHead>
           */}
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.email}>
+            {members.map((member) => (
+              <TableRow key={member.email}>
                 <TableCell component="th" scope="row">
-                  {row.name}
+                  {member.name}
                 </TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>{roleForm(row)}</TableCell>
+                <TableCell>{member.email}</TableCell>
+                <TableCell>{roleForm(member)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -83,35 +77,3 @@ export function MemberForm(props: Props) {
     </div>
   </React.Fragment>
 }
-
-
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array: Row[], comparator) {
-  /*
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-  */
-}
-
-
