@@ -204,5 +204,12 @@ def _make_login_response(last_url=None, email='', login_failed=False, alert_mess
                             google_login=GOOGLE_LOGIN,
                             original_url=original_url,
                             args=args)
+    # OK
+    OK = 200
+    # 認証が必要である
+    UNAUTHORIZED = 401
+
+    # ログインに失敗した場合は、UNAUTHORIZED(401)を返す
+    status_code = UNAUTHORIZED if login_failed else OK
     # ログアウト時のURLの指定があれば、Set-Cookieヘッダにログアウト時のURLを設定し、Webブラウザに渡す
-    return _make_response_with_last_url(response, last_url)
+    return _make_response_with_last_url(response, last_url), status_code
