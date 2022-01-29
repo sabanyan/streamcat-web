@@ -147,15 +147,14 @@ class ApiTestCaseBase(TestCaseBase):
         error_detail = result['message'] if 'message' in result else ''
         return result
 
-    def post_frames(self, label, parent_uuid, frame_stream, user):
+    def post_files(self, uri, label, parent_uuid, frame_stream, user):
         """
-        URI(/api/v0/frames)へPOSTする
-        指定するストリームをフレームデータとしてアップロードする
+        指定するストリームをアップロードする
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
-            response = client.post('/api/v0/frames',
+            response = client.post(uri,
                                    content_type='multipart/form-data',
                                    data={
                                         'label' : label,
@@ -165,8 +164,20 @@ class ApiTestCaseBase(TestCaseBase):
                                   )
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/frames', error_detail))
+        self.assertTrue(result['success'], msg=f'POST {uri} is failed. {error_detail}')
         return result
+
+    def post_frames(self, label, parent_uuid, frame_stream, user):
+        """
+        URI(/api/v0/frames)へPOSTする
+        """
+        return self.post_files('/api/v0/frames', label, parent_uuid, frame_stream, user)
+
+    def post_documents(self, label, parent_uuid, frame_stream, user):
+        """
+        URI(/api/v0/documents)へPOSTする
+        """
+        return self.post_files('/api/v0/documents', label, parent_uuid, frame_stream, user)
 
     def post_flows(self, label, parent_uuid, stream, user):
         """

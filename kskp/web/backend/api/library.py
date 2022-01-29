@@ -498,7 +498,7 @@ def make_new_document():
     # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
     content_type = request.files['file'].content_type
     maybe_csv = content_type == 'text/csv'
-    
+
     # 格納先フォルダを取得する
     parent = g.factory.data.find_by_uuid(request.form.get('parent'))
     # ファイルを作成する
