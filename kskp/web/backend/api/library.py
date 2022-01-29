@@ -4,7 +4,6 @@ from flask import (
     request,
     g
 )
-from kskp.core import Datum
 from kskp.store import (
     ProjectFolder,
     DatabaseConn,
@@ -470,15 +469,24 @@ def throw_away_frame(frame_uuid):
 
 @mod.route('/documents/<document_uuid>', methods=['GET'])
 @login_required_api
+@api_base
 def fetch_document(document_uuid):
     """
     指定したドキュメントを取得する
     """
+    contents = request.args.get('contents') is not None
+
+    # ドキュメントを取得する
     document = g.factory.data.find_by_uuid(document_uuid)
-    return send_from_directory(document.path.parent,
-                               document.path.name,
-                               download_name=document.label,
-                               mimetype=document.content_type)
+
+    if contents:
+        # ドキュメントの内容を返す
+        return send_from_directory(document.path.parent,
+                                document.path.name,
+                                download_name=document.label,
+                                mimetype=document.content_type)
+    else:
+        return document
 
 @mod.route('/documents', methods=['POST'])
 @login_required_api

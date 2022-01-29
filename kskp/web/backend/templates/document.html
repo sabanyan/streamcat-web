@@ -4,7 +4,7 @@
   <title>{{ label }}</title>
 </head>
 <body style="height:100%;margin:0;">
-  <object data="/api/v0/documents/{{ document_uuid }}" name="{{ label }}" style="width:100%;height:100%"/>
+  <object data="/api/v0/documents/{{ document_uuid }}?contents=on" name="{{ label }}" style="width:100%;height:100%"/>
 </body>
 </html>
 

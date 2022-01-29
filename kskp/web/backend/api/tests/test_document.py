@@ -16,28 +16,34 @@ class DocumentTest(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"thisIsDocumentFile"), 'foo.csv')
+        f = (io.BytesIO(b"thisIsDocumentFile"), 'foo.doc')
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント', project_uuid, f, self.USER3)
         document_uuid = result['data']['uuid']
 
-        # # ドキュメントを取得する(GET /documents)
-        # result = self.get_uri(f'/api/v0/documents/{document_uuid}?contents=on', self.USER3)
+        # ドキュメントを取得する(GET /documents)
+        result = self.get_uri(f'/api/v0/documents/{document_uuid}', self.USER3)
 
-        # # 期待するAPIの戻り値
-        # expected_result = {
-        #      'label'    : '新しいドキュメント'
-        #     ,'type'     : 'document'
-        #     ,'creator'  : self.USER3.name
-        # }
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいドキュメント'
+            ,'type'     : 'document'
+            ,'creator'  : self.USER3.name
+        }
 
-        # # GET /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
-        # self.assertNotEqual(result['data']['uuid'], None)
-        # self.assertEqual(result['data']['label'], expected_result['label'])
-        # self.assertEqual(result['data']['type'], expected_result['type'])
-        # self.assertEqual(result['data']['creator'], expected_result['creator'])
-        # self.assertNotEqual(result['data']['createdAt'], None)
+        # GET /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
+        self.assertNotEqual(result['data']['uuid'], None)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # ドキュメントの内容を取得する(GET /documents)
+        result = self.get_file(f'/api/v0/documents/{document_uuid}?contents=on', self.USER3)
+
+        # ドキュメントの内容が取得できること
+        self.assertEqual(result, b'thisIsDocumentFile')
 
         # 中のファイルをほかす(DELETE /documents)
         self.delete_uri(f'/api/v0/documents/{document_uuid}', self.USER3)
