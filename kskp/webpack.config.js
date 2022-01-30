@@ -53,7 +53,14 @@ module.exports = (env) => {
           },
           {
             test: /\.s?css$/,
-            use: ['style-loader', 'css-loader?modules', 'sass-loader'],
+            use: [
+              {
+                loader: "style-loader",
+                options: {esModule: false},
+              }, 
+              'css-loader?modules',
+              'sass-loader'
+            ],
             exclude: /node_modules/,
           },
         ],
