@@ -1,0 +1,371 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LibraryInspector render with flow type 1`] = `
+<div
+  className=""
+  style={
+    Object {
+      "width": 400,
+    }
+  }
+>
+  <div
+    className=""
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+  <div
+    className="inspector-container"
+  >
+    <div />
+    <div>
+      <div>
+        <input
+          className=""
+          defaultValue="私のフロー"
+          disabled={false}
+          onBlur={[Function]}
+          type="text"
+        />
+      </div>
+      <div>
+        <div>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "settings",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              設定を開く
+            </div>
+          </button>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "content_copy",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              複製する
+            </div>
+          </button>
+          <button
+            className="undefined"
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <div
+              className=""
+            >
+              選択する
+            </div>
+          </button>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "delete",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              ゴミ箱を空にする
+            </div>
+          </button>
+          <a
+            className=""
+            href="/api/v0/flow_files/1c7dd3fe-88b1-4676-a724-dba791165cc5"
+            target="_blank"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "get_app",
+                }
+              }
+            />
+            <div>
+              フローをダウンロードする
+            </div>
+          </a>
+          <div>
+            <input
+              checked={false}
+              id="flowLock"
+              onChange={[Function]}
+              type="checkbox"
+            />
+            <label
+              htmlFor="flowLock"
+            >
+              編集ロック
+            </label>
+          </div>
+        </div>
+        <div />
+        <div>
+          <div>
+            <label>
+              名称
+            </label>
+          </div>
+          <div
+            className="mb-8px"
+          >
+            私のフロー
+          </div>
+          <div>
+            <label>
+              作成者
+            </label>
+          </div>
+          <div
+            className="mb-8px"
+          >
+            😿
+          </div>
+          <div>
+            <label>
+              作成日時
+            </label>
+          </div>
+          <div
+            className="mb-8px"
+          >
+            2022-01-07 06:30
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`LibraryInspector render with frame type 1`] = `
+<div
+  className=""
+  style={
+    Object {
+      "width": 400,
+    }
+  }
+>
+  <div
+    className=""
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+  <div
+    className="inspector-container"
+  >
+    <div />
+    <div>
+      <div>
+        <input
+          className=""
+          defaultValue="テストフレームファイル"
+          disabled={false}
+          onBlur={[Function]}
+          type="text"
+        />
+      </div>
+      <div>
+        <div>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "visibility",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              プレビューする
+            </div>
+          </button>
+          <a
+            className=""
+            href="/api/v0/files?type=frame&uuid=3f0e40ba-8df7-4662-94ab-5a1d1d88c94a&ext=csv&label=テストフレームファイル"
+            target="_blank"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "get_app",
+                }
+              }
+            />
+            <div>
+              CSVをダウンロードする
+            </div>
+          </a>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "settings",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              設定を開く
+            </div>
+          </button>
+          <button
+            className="undefined"
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <div
+              className=""
+            >
+              選択する
+            </div>
+          </button>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "edit",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              文字コードを編集する
+            </div>
+          </button>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "delete",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              ゴミ箱を空にする
+            </div>
+          </button>
+          <a
+            className=""
+            href="/api/v0/flow_files/3f0e40ba-8df7-4662-94ab-5a1d1d88c94a"
+            target="_blank"
+          >
+            <i
+              className="material-icons"
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "get_app",
+                }
+              }
+            />
+            <div>
+              フローをダウンロードする
+            </div>
+          </a>
+        </div>
+        <div />
+        <div>
+          <div>
+            <label>
+              名称
+            </label>
+          </div>
+          <div
+            className="mb-8px"
+          >
+            テストフレームファイル
+          </div>
+          <div>
+            <label>
+              作成者
+            </label>
+          </div>
+          <div
+            className="mb-8px"
+          >
+            (=^ェ^=)
+          </div>
+          <div>
+            <label>
+              作成日時
+            </label>
+          </div>
+          <div
+            className="mb-8px"
+          >
+            2021-10-04 11:57
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

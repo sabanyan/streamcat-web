@@ -349,9 +349,9 @@ class TrashTestCase(ApiTestCaseBase):
             "label": "test"
         }
         data = {
-            'project_uuid': folder1_uuid,
-            'name': 'フロー',
-            'datasource': data_source
+            'parent': folder1_uuid,
+            'label': 'フロー',
+            'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -383,7 +383,7 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -423,9 +423,9 @@ class TrashTestCase(ApiTestCaseBase):
             "label": "test"
         }
         data = {
-            'project_uuid': folder3_uuid,
-            'name': 'フロー',
-            'datasource': data_source
+            'parent': folder3_uuid,
+            'label': 'フロー',
+            'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -442,7 +442,7 @@ class TrashTestCase(ApiTestCaseBase):
             self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
 
         # プロジェクトを丸ごとほかせること
-        self.delete_uri(f'/api/v0/folders/{project1_uuid}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
                          
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -926,7 +926,7 @@ class TrashTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
@@ -942,7 +942,7 @@ class TrashTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         self.put_uri(f'/api/v0/databases/{database_uuid}', data, self.USER1)
@@ -969,9 +969,13 @@ class TrashTestCase(ApiTestCaseBase):
         project1_uuid = project1['data']['uuid']
         project1 = self.factory.data.find_by_uuid(project1_uuid)
 
+        # 参照先フレームを作成する
+        import io
+        frame1 = root.create_frame('CSV1', io.BytesIO(b''))
+        frame1.save()
+
         # フローを作成する
-        import uuid
-        flow = project1.create_flow('サブフロー1', self.get_flow_with_source(str(uuid.uuid4())))
+        flow = project1.create_flow('サブフロー1', self.get_flow_with_source(frame1.uuid))
         flow.save()
         flow = self.factory.data.find_by_uuid(flow.uuid)
 
@@ -991,7 +995,7 @@ class TrashTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/flows/{flow.uuid}', data, self.USER1)
 
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{flow.uuid}', {}, self.USER1)
@@ -1036,7 +1040,6 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
 
-    @unittest.skip('権限機能実装後のリモートフォルダの修正ができてからテストする')
     def test_update_then_return_remote_folder(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -1045,16 +1048,21 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        # ファイルパスに空白が含まれていてもエラーにならないこと
+        project1 = self.post_uri('/api/v0/projects', {"label" : "iPhone12 mini", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
-            "parent"   : root.uuid,
+            "parent"   : project1_uuid,
             "label"    : "リモートフォルダ1",
-            "protocol" : "smb",
-            "hostname" : "kskds-HP-Workstation-z620.local",
-            "domain"   : "WORKGROUP",
-            "directory": "share",
-            "user_id"  : "ksk-ds",
-            "password" : "kskanalytics"
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'userId'  : "samba",
+            'password' : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
         folder_uuid = result['data']['uuid']
@@ -1065,12 +1073,12 @@ class TrashTestCase(ApiTestCaseBase):
         # リモートフォルダを変更する
         data = {
             "label"    : "リモートフォルダ2",
-            "protocol" : "smb",
-            "hostname" : "kskds-HP-Workstation-z620.local",
-            "domain"   : "WORKGROUP",
-            "directory": "share",
-            "user_id"  : "ksk-ds",
-            "password" : "kskanalytics"
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'userId'  : "samba",
+            'password' : "kskanalytics"
         }
         self.put_uri(f'/api/v0/remote-folders/{folder_uuid}', data, self.USER1)
 
@@ -1101,8 +1109,9 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
 
         # フレーム1を参照するフローを作成する
+        flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         with self.assertRaises(Exception):
-            flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
+            flow.save()
 
         # ゴミ箱を空にする
         trash_can = self.factory.data.load_trash_folder()
@@ -1136,11 +1145,13 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{subflow.uuid}', {'lock':lock_uuid}, self.USER1)
             
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # サブフローを参照するフローを作成する
+        from kskp.store import FlowData
+        flow = root.create_flow('フロー', FlowData(self.get_flow_with_subflow(subflow.uuid)))
         with self.assertRaises(Exception):
-            flow = root.create_flow(root.uuid, 'フロー', self.get_flow_with_subflow(subflow.uuid))
+            flow.save()
 
         # ゴミ箱を空にする
         trash_can = self.factory.data.load_trash_folder()

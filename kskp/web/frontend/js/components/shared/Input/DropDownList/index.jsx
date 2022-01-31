@@ -1,5 +1,5 @@
 //@flow
-import * as React from 'react'
+import React from 'react'
 import style from './style.scss'
 import classnames from 'classnames'
 import type { dropDownListItem } from 'Types/index'
@@ -13,6 +13,7 @@ type Props = {
   hiddenNoSelect?: boolean;
   onClickAction?: Function;
   actionLabel?: string;
+  disabled?: boolean;
 }
 
 export default class DropDownList extends React.Component<Props> {
@@ -65,7 +66,7 @@ export default class DropDownList extends React.Component<Props> {
       options.unshift(<option key={0} value={null}>選択してください</option>)
     }
     if (onClickAction) {
-      action = <a href="javascript:void(0)" onClick={(e) => onClickAction(e)} className={style.actionLabel}>{actionLabel}</a>
+      action = <a href="#" onClick={(e) => onClickAction(e)} className={style.actionLabel}>{actionLabel}</a>
     }
     let select = <div className={classnames(style.dropdownListContainer, {[style.action]: (onClickAction)})}>
       {labelElement}

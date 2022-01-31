@@ -3,7 +3,7 @@ import copy
 import unittest
 import pprint
 from kskp.core.datum import Datum
-from kskp.store.auth import Role
+from kskp.store.auth import User, Role
 from .api_test_case_base import ApiTestCaseBase
 
 class SystemTestCase(ApiTestCaseBase):
@@ -149,10 +149,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 金さんを作成する
         result = self.post_uri('/api/v0/users', {'email':'kin@kitamchi.go.jp', 'name':'遠山　金四郎', 'password':'sakurafubuki'}, self.USER1)
         user_uuid = result['data']['uuid']
-        user_email = result['data']['email']
 
         # 金さんを登録状態にする
-        self.post_register_complete(user_email, 'ououou_sakkikaradamatte_kiiterayou', self.USER1)
+        self.post_register_complete(user_uuid, 'ououou_sakkikaradamatte_kiiterayou')
 
         # 金さんを取得する
         result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
@@ -295,7 +294,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujurujuru', new_user)
+        self.post_register_complete(user_uuid, 'jurujurujuru')
 
         # 名前だけの変更であればパスワード認証は必要ないこと
         expected = {
@@ -503,7 +502,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'システム管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
-        self.assertEqual(len(result['data']['roles']), 4)
+        self.assertEqual(len(result['data']['roles']), 5)
         self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
         self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
         self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
@@ -527,6 +526,13 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['roles'][3]['systemRole'], '')
         self.assertIsNotNone(result['data']['roles'][3]['creator'])
         self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
+        # データデストプロジェクトのロール
+        self.assertIsNotNone(result['data']['roles'][4]['uuid'])
+        self.assertEqual(result['data']['roles'][4]['name'], 'データデスト📂_readers')
+        self.assertEqual(result['data']['roles'][4]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][4]['creator'])
+        self.assertIsNotNone(result['data']['roles'][4]['createdAt'])
+
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -540,7 +546,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'ユーザー管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
-        self.assertEqual(len(result['data']['roles']), 4)
+        self.assertEqual(len(result['data']['roles']), 7)
         self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
         self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
         self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
@@ -558,12 +564,30 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['roles'][2]['systemRole'], self.expected_usr_admin['systemRole'])
         self.assertIsNotNone(result['data']['roles'][2]['creator'])
         self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
-        # 本人ロール
+        # データデストプロジェクトのロール
         self.assertIsNotNone(result['data']['roles'][3]['uuid'])
-        self.assertEqual(result['data']['roles'][3]['name'], 'ユーザー管理者')
+        self.assertEqual(result['data']['roles'][3]['name'], 'データデスト📂_owners')
         self.assertEqual(result['data']['roles'][3]['systemRole'], '')
         self.assertIsNotNone(result['data']['roles'][3]['creator'])
         self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
+        # データデストプロジェクトのロール
+        self.assertIsNotNone(result['data']['roles'][4]['uuid'])
+        self.assertEqual(result['data']['roles'][4]['name'], 'データデスト📂_readers')
+        self.assertEqual(result['data']['roles'][4]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][4]['creator'])
+        self.assertIsNotNone(result['data']['roles'][4]['createdAt'])
+        # データデストプロジェクトのロール
+        self.assertIsNotNone(result['data']['roles'][5]['uuid'])
+        self.assertEqual(result['data']['roles'][5]['name'], 'データデスト📂_writers')
+        self.assertEqual(result['data']['roles'][5]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][5]['creator'])
+        self.assertIsNotNone(result['data']['roles'][5]['createdAt'])
+        # 本人ロール
+        self.assertIsNotNone(result['data']['roles'][6]['uuid'])
+        self.assertEqual(result['data']['roles'][6]['name'], 'ユーザー管理者')
+        self.assertEqual(result['data']['roles'][6]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][6]['creator'])
+        self.assertIsNotNone(result['data']['roles'][6]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -575,22 +599,31 @@ class SystemTestCase(ApiTestCaseBase):
         # ROOTを取得する
         root = self.factory.data.load_root()
 
+        # ユーザを作成する
+        USER_X = self.factory.user.create('test-x@kskp.io', 'TestX', '~!@#$%^&*()')
+        USER_X.save()
+
+        # 仮登録状態から登録状態にする
+        USER_X.update_password('_)(*&^%$#@!')
+
         # ユーザ2は、本登録処理をする
         # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
-        self.post_register_complete(self.USER2.email, 'adminpass0', self.USER2)
+        self.post_register_complete(self.USER2.uuid, 'adminpass0')
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : 'プロジェクトX'}
-        self.post_uri('/api/v0/projects', data, self.USER2)
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project_uuid1 = result['data']['uuid']
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : 'プロジェクトY'}
-        self.post_uri('/api/v0/projects', data, self.USER2)
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project_uuid2 = result['data']['uuid']
 
         # プロジェクトメンバでないユーザが、プロジェクト管理者を取得する
-        result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', self.USER3)
+        result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', USER_X)
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
@@ -607,23 +640,38 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'test@kskp.io')
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
-        # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
-        self.assertEqual(len(result['data']['projects']), 2, msg=result['data']['projects'])
-        # プロジェクトX
+        # 自分が所属するプロジェクトの数を取得する
+        # (TestCaseBaseで'全員がメンバのデータデスト📂'プロジェクトを作成していることに注意)
+        self.assertEqual(len(result['data']['projects']), 3, msg=result['data']['projects'])
+        # データデスト📂
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
+        self.assertEqual(result['data']['projects'][0]['label'], 'データデスト📂')
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
-        # プロジェクトY
+        # プロジェクトX
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
+        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
+        # プロジェクトY
+        self.assertIsNotNone(result['data']['projects'][2]['uuid'])
+        self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
+        self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][2]['creator'])
+        self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
 
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER2)
+        self.delete_uri(f'/api/v0/projects/{project_uuid2}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+        
     def test_get_tmp_user_with_roles(self):
         """
         一度も登録状態になっていないUserの本人ロールは存在しない
@@ -694,7 +742,6 @@ class SystemTestCase(ApiTestCaseBase):
         失効状態になること
         """
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
-        from kskp.store.auth import User
         devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
         User.TMP_PASS_EXPIRE_SECONDS = 0
 
@@ -733,7 +780,6 @@ class SystemTestCase(ApiTestCaseBase):
         失効状態のユーザはログインできないこと
         """
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
-        from kskp.store.auth import User
         devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
         User.TMP_PASS_EXPIRE_SECONDS = 0
 
@@ -765,7 +811,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_passwd = result['data']['password']
 
         # ユーザを登録状態にできること
-        self.post_register_complete(user_email, 'hohho-hhoho-', self.USER1)
+        self.post_register_complete(user_uuid, 'hohho-hhoho-')
 
         # ユーザはログインできること
         result = self.post_login(user_email, 'hohho-hhoho-')
@@ -783,10 +829,9 @@ class SystemTestCase(ApiTestCaseBase):
         user_email = result['data']['email']
 
         # ユーザを登録状態にする
-        self.post_register_complete(user_email, 'pokemon-get-daze', self.USER1)
+        self.post_register_complete(user_uuid, 'pokemon-get-daze')
 
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
-        from kskp.store.auth import User
         devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
         User.TMP_PASS_EXPIRE_SECONDS = 0
 
@@ -810,7 +855,7 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザは失効状態なのでパスワードを登録できないこと
         # TODO: メールアドレスをSessionに格納すれば誰でも(失効状態でも)パスワード登録できてしまう
         # with self.assertRaises(AssertionError):
-        #     self.post_register_complete(user_email, 'i-love-peach-princess', self.USER1)
+        #     self.post_register_complete(user_uuid, 'i-love-peach-princess')
 
         # 他のテストケースに影響しないよう有効日数を初期値に戻す
         User.TMP_PASS_EXPIRE_SECONDS = devault_seconds
@@ -832,7 +877,7 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
 
         # 桃太郎侍を本登録処理をする
-        self.post_register_complete(user_email, 'momotarou!', self.USER1)
+        self.post_register_complete(user_uuid, 'momotarou!')
 
         # 桃太郎侍を削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}?except_inactive=on', self.USER1)
@@ -867,7 +912,7 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
 
         # ユーザを登録状態にする
-        self.post_register_complete(new_user.email, 'password012345', new_user)
+        self.post_register_complete(user_uuid, 'password012345')
 
         # ユーザのパスワードをリセットする
         # (ユーザを仮登録状態にする)
@@ -1172,7 +1217,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
 
         # 論理削除ユーザを登録ユーザに戻す
-        result = self.put_uri(f'/api/v0/users/{user_uuid}/undelete', {}, self.USER1)
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', {'state':User.ACTIVE_STATE}, self.USER1)
 
         # 登録ユーザに戻っていること
         self.assertEqual(result['data']['state'], 'active')
@@ -1212,6 +1257,8 @@ class SystemTestCase(ApiTestCaseBase):
         """
         # デフォルトのシステム管理者を取得する
         user0_result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
+        # データデストを入れたプロジェクトへのロールを取得する
+        data_dst_role_uuid = user0_result['data']['roles'][4]['uuid']
         
         # デフォルトのユーザを削除する
         self.delete_uri(f'/api/v0/users/{self.USER0.uuid}', self.USER1)
@@ -1231,10 +1278,13 @@ class SystemTestCase(ApiTestCaseBase):
         importlib.reload(kskp_store)
 
         # 論理削除ユーザを登録ユーザに戻す
-        result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}/undelete', {}, self.USER1)
+        result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}', {'state':User.ACTIVE_STATE}, self.USER1)
 
         # 管理者権限を再び与える
         result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
+
+        # データデストを入れたプロジェクトに再び所属させる
+        result = self.put_uri(f'/api/v0/roles/{data_dst_role_uuid}/users/{self.USER0.uuid}', {'owner':False}, self.USER1)
 
         # デフォルトのシステム管理者を取得する
         result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
@@ -1249,20 +1299,23 @@ class SystemTestCase(ApiTestCaseBase):
         # コッコロちゃんを作成する
         result = self.post_uri('/api/v0/users', {'email':'kokkoro@elf.org', 'name':'コッコロちゃん', 'password':'seikatsuhi0'}, self.USER1)
         user_uuid = result['data']['uuid']
-        user_email = result['data']['email']
 
         # コッコロちゃんを取得する
         new_user = self.factory.user.find_by_uuid(user_uuid)
 
         # コッコロちゃんを本登録処理をする
-        self.post_register_complete(user_email, 'adminpass0', self.USER1)
+        self.post_register_complete(user_uuid, 'adminpass0')
 
         # コッコロちゃんに管理者権限を与える
         result = self.put_uri(f'/api/v0/roles/usr_admin/users/{user_uuid}', {}, self.USER1)
 
         # デフォルトのユーザ管理者を取得する
         user1_result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
-        
+        # データデストを入れたプロジェクトへのロールを取得する
+        data_dst_o_role_uuid = user1_result['data']['roles'][3]['uuid']
+        data_dst_r_role_uuid = user1_result['data']['roles'][4]['uuid']
+        data_dst_w_role_uuid = user1_result['data']['roles'][5]['uuid']
+
         # デフォルトのユーザを削除する
         self.delete_uri(f'/api/v0/users/{self.USER1.uuid}', self.USER1)
 
@@ -1281,10 +1334,15 @@ class SystemTestCase(ApiTestCaseBase):
         importlib.reload(kskp_store)
 
         # 論理削除ユーザを登録ユーザに戻す
-        result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}/undelete', {}, new_user)
+        result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}', {'state':User.ACTIVE_STATE}, new_user)
 
         # 管理者権限を再び与える
         result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, new_user)
+
+        # データデストを入れたプロジェクトに再び所属させる
+        result = self.put_uri(f'/api/v0/roles/{data_dst_o_role_uuid}/users/{self.USER1.uuid}', {'owner':True}, new_user)
+        result = self.put_uri(f'/api/v0/roles/{data_dst_r_role_uuid}/users/{self.USER1.uuid}', {'owner':True}, new_user)
+        result = self.put_uri(f'/api/v0/roles/{data_dst_w_role_uuid}/users/{self.USER1.uuid}', {'owner':True}, new_user)
 
         # デフォルトのユーザ管理者を取得する
         result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
@@ -1829,22 +1887,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
-        # 参加ユーザ(USER3)
-        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
-        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
-        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
-        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
-        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
-        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
-        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
         # 参加ユーザ(USER1)
-        self.assertEqual(result['data']['members'][2]['uuid'], self.USER1.uuid)
-        self.assertEqual(result['data']['members'][2]['email'], self.USER1.email)
-        self.assertEqual(result['data']['members'][2]['name'], self.USER1.name)
-        self.assertEqual(result['data']['members'][2]['state'], self.USER1.state)
-        self.assertEqual(result['data']['members'][2]['creator'], self.USER1.creator_str)
-        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER1.created_at_str)
-        self.assertEqual(result['data']['members'][2]['type'], 'Writer')
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER1.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Writer')
+        # 参加ユーザ(USER3)
+        self.assertEqual(result['data']['members'][2]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][2]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][2]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][2]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][2]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][2]['type'], 'Reader')
 
         # ユーザを脱退させる
         data = {
@@ -1964,7 +2022,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_uuid = result['data']['uuid']
 
         # ユーザを登録状態にする
-        self.post_register_complete('jigen@magnum44', 'abedgiykekd*&()', self.USER1)
+        self.post_register_complete(user_uuid, 'abedgiykekd*&()')
 
         # ユーザのパスワードをリセットする
         # (ユーザを仮登録状態にする)
@@ -2039,7 +2097,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_uuid = result['data']['uuid']
 
         # ユーザを登録状態にする
-        self.post_register_complete('goemon@samurai.jp', 'abedgiykekd*&()', self.USER1)
+        self.post_register_complete(user_uuid, 'abedgiykekd*&()')
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
@@ -2248,14 +2306,14 @@ class SystemTestCase(ApiTestCaseBase):
         user_uuid = result['data']['uuid']
         # 作成したユーザを登録状態にする
         new_user1 = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('donald@mcdonalds.co.jp', 'mcdonald!!!!!!0', new_user1)
+        self.post_register_complete(user_uuid, 'mcdonald!!!!!!0')
 
         # ユーザ2を作成する
         result = self.post_uri('/api/v0/users', {'email':'kernel@kfc.co.jp', 'name':'カーネルサンダース', 'password':'kfc!kfc!kfc!'}, self.USER1)
         user_uuid = result['data']['uuid']
         # 作成したユーザを登録状態にする
         new_user2 = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('kernel@kfc.co.jp', 'kfc!kfc!kfc!0', new_user2)
+        self.post_register_complete(user_uuid, 'kfc!kfc!kfc!0')
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'うにゃあ'}, new_user1)
@@ -2338,9 +2396,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '私のフロー',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '私のフロー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -2373,10 +2431,13 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER3)
 
         # ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
 
         # ゴミ箱を空にする
-        self.delete_uri('/api/v0/trashes', self.USER3)
+        self.delete_uri('/api/v0/trashes', self.USER2)
 
     def test_cannot_update_database_in_project(self):
         """
@@ -2397,7 +2458,7 @@ class SystemTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : "password"
         }
         result = self.post_uri('/api/v0/databases', data, self.USER2)
@@ -2410,7 +2471,7 @@ class SystemTestCase(ApiTestCaseBase):
             "hostname" : "db0",
             "port"     : 2935,
             "database" : "kskp",
-            "user_id"  : "scott",
+            'userId'  : "scott",
             "password" : "tiger"
         }
         with self.assertRaises(AssertionError):
@@ -2451,9 +2512,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'なか卯',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'なか卯',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -2528,16 +2589,8 @@ class SystemTestCase(ApiTestCaseBase):
             self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
 
         # プロジェクトAのメンバは、フレームをプレビューできないこと
-        # Visデータのポイント引数の作成
-        data = {
-            "args" : {
-                "visualizer" : "csvtohtmltable",
-                "offset" : 0,
-                "limit"  : 100
-            }
-        }
         with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER0)
 
         # プロジェクトBのメンバは、フレームの参照・更新ができること
         result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': '水戸光圀公であらせられるぞ'}, self.USER3)
@@ -2594,16 +2647,8 @@ class SystemTestCase(ApiTestCaseBase):
             self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
 
         # プロジェクトAのメンバは、フレームをプレビューできないこと
-        # Visデータのポイント引数の作成
-        data = {
-            "args" : {
-                "visualizer" : "csvtohtmltable",
-                "offset" : 0,
-                "limit"  : 100
-            }
-        }
         with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER0)
 
         # プロジェクトBのメンバは、フレームの参照・更新ができること
         result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': 'カタツムリ大作戦'}, self.USER3)
@@ -2636,27 +2681,283 @@ class SystemTestCase(ApiTestCaseBase):
 
     def test_exec_flow_using_source_outside_project(self):
         """
-        データソースが他のプロジェクトに存在するFlowを実行できること
+        全てのプロジェクトのメンバの場合、データソースが他のプロジェクトに存在するFlowを実行できること
+        全てのプロジェクトのメンバでない場合、実行できないこと
         """
-        pass
+        folder_dst_json = {
+            "label": "Folderデータデスト",
+            "creator": "開発用",
+            "createdAt": "2021-03-20 09:29:00",
+            "projectId": None,
+            "description": "",
+            "params": [],
+            "ports": [
+            [
+                {
+                "type": "frame",
+                "label": "d1",
+                "nodeId": "d1"
+                }
+            ],
+            []
+            ],
+            "nodes": [
+                {
+                    "id": "d1",
+                    "label": "d1",
+                    "type": "frame",
+                    "uuid": None,
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                },
+                {
+                    "id": "c1",
+                    "label": "c1",
+                    "type": "command",
+                    "commandId": "saver",
+                    "args": {},
+                    "srcs": {
+                        "i": "d1"
+                    },
+                    "dsts": {
+                        "o": "d2"
+                    }
+                },
+                {
+                    "id": "d2",
+                    "label": "d2",
+                    "type": "frame",
+                    "uuid": None,
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                }
+            ]
+        }
 
-    def test_exec_flow_using_subflow_outside_project(self):
-        """
-        サブフローが他のプロジェクトに存在するFlowを実行できること
-        """
-        pass
+        sub_flow_json = {
+            "label": "test用",
+            "creator": "開発用",
+            "createdAt": "2021-3-21 11:41:00",
+            "projectId": None,
+            "description": "",
+            "params": [],
+            "ports": [
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ],
+                []
+            ],
+            "nodes": [
+                {
+                    "id": "d",
+                    "label": "d",
+                    "type": "frame",
+                    "uuid": None,
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                },
+                {
+                    "id": "f1",
+                    "label": "Folderデータデスト",
+                    "type": "flow",
+                    "uuid": None,
+                    "args": {},
+                    "srcs": {
+                        "d1": "d"
+                    },
+                    "dsts": {}
+                }
+            ]
+        }
 
-    def test_cannot_exec_flow_using_source_outside_project(self):
-        """
-        データソースが他のプロジェクトに存在するFlowを実行できないこと
-        """
-        pass
+        flow_json = {
+            "label": "main",
+            "params": [],
+            "ports": [[],[]],
+            "nodes": [
+                {
+                    "id": "d",
+                    "label": "d",
+                    "type": "frame",
+                    "uuid": None,
+                    "value": [["顧客", "数量", "金額"],
+                                ["x", 1, 10],
+                                ["x", 2, 20],
+                                ["y", 1, 30],
+                                ["y", 3, 40],
+                                ["z", 1, 50]],
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                },
+                {
+                    "id": "f0",
+                    "label": "f0",
+                    "type": "flow",
+                    "uuid": None,
+                    "args": {},
+                    "srcs": {
+                        "d": "d"
+                    },
+                    "dsts": {},
+                    "srcsOrder": []
+                }
+            ]
+        }
 
-    def test_cannot_exec_flow_using_subflow_outside_project(self):
-        """
-        サブフローが他のプロジェクトに存在するFlowを実行できないこと
-        """
-        pass
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトAを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトA'}, self.USER1)
+        project_uuid1 = result['data']['uuid']
+        project_modified_at1 = result['data']['modifiedAt']
+
+        # プロジェクトBを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトB'}, self.USER1)
+        project_uuid2 = result['data']['uuid']
+        project_modified_at2 = result['data']['modifiedAt']
+
+        # プロジェクトCを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトC'}, self.USER1)
+        project_uuid3 = result['data']['uuid']
+        project_modified_at3 = result['data']['modifiedAt']
+
+        # プロジェクトA管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER0.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at1
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid1}', data, self.USER1)
+
+        # プロジェクトB管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER0.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at2
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid2}', data, self.USER1)
+
+        # プロジェクトC管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER0.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at3
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid3}', data, self.USER1)
+
+
+        # プロジェクトC編集者は、プロジェクトC内にデータデストを作成する
+        data = {
+            'parent': project_uuid3,
+            'label': 'データデスト!',
+            'flow': {}
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+        datadest_uuid = result['data']['uuid']
+
+        # プロジェクトC編集者は、データデストのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':datadest_uuid}, self.USER3)
+        lock_uuid3 = result['data']['uuid']
+
+        # プロジェクトC編集者は、データデストを編集する
+        result = self.put_uri(f'/api/v0/flows/{datadest_uuid}', {'flow':folder_dst_json, 'lock':lock_uuid3}, self.USER3)
+
+
+        # プロジェクトB編集者は、プロジェクトB内にサブフローを作成する
+        data = {
+            'parent': project_uuid2,
+            'label': '私のSubフロー',
+            'flow': {}
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        sub_flow_uuid = result['data']['uuid']
+
+        # プロジェクトB編集者は、サブフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':sub_flow_uuid}, self.USER2)
+        lock_uuid2 = result['data']['uuid']
+
+        # プロジェクトB編集者は、サブフローを編集する
+        sub_flow_json['nodes'][1]['uuid'] = datadest_uuid
+        result = self.put_uri(f'/api/v0/flows/{sub_flow_uuid}', {'flow':sub_flow_json, 'lock':lock_uuid2}, self.USER2)
+
+
+        # プロジェクトA編集者は、プロジェクトA内にFlowを作成する
+        data = {
+            'parent': project_uuid1,
+            'label': '私のフロー',
+            'flow': {}
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER0)
+        flow_uuid = result['data']['uuid']
+
+        # プロジェクトA編集者は、フローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER0)
+        lock_uuid1 = result['data']['uuid']
+
+        # プロジェクトA編集者は、フローを編集する
+        flow_json['nodes'][1]['uuid'] = sub_flow_uuid
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', {'flow':flow_json, 'lock':lock_uuid1}, self.USER0)
+
+        # 
+        # USER0は、Flowを実行できること
+        # 
+        result = self.post_uri('/api/v0/activities', {'uuid':flow_uuid}, self.USER0)
+        activity_uuid = result['data']['uuid']
+
+        # # 
+        # # USER1は、Flowを実行できること
+        # # 
+        # result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER1)
+        # lasts = result['data']
+
+        # 
+        # USER2は、Flowを実行できないこと!
+        # 
+        with self.assertRaises(AssertionError):
+            self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER2)
+
+        # 編集者は、フローをゴミ箱へほかす
+        self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid1}, self.USER0)
+        self.delete_uri_with_json(f'/api/v0/flows/{sub_flow_uuid}', {'lock':lock_uuid2}, self.USER2)
+        self.delete_uri_with_json(f'/api/v0/flows/{datadest_uuid}', {'lock':lock_uuid3}, self.USER3)
+
+        # ロックを解除する
+        self.delete_uri(f'/api/v0/locks/{lock_uuid1}', self.USER0)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid2}', self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid3}', self.USER3)
+
+        # プロジェクト管理者はプロジェクトをゴミ箱へほかす
+        self.delete_uri(f'/api/v0/projects/{project_uuid3}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project_uuid2}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER1)
+
+        # 
+        # プロジェクトAを削除しても、プロジェクトAに属するActivityが残るため、'プロジェクトA_readers'ロールが残る
+        # ここでロールが残るとself.test_get_admin_user()などのテストケースがパスしなくなる
+        # そのため、ここで生成されたActivityを強制的に削除する
+        # 
+        project1 = self.factory.data.find_by_uuid(project_uuid1)
+        activity = self.factory.data.find_by_uuid(activity_uuid)
+        # プロジェクトAに更新権限を付与する
+        project1_writers_role = project1._find_writers_role()
+        project1_writers_role.init_authz(activity.id, read=True, write=True, own=True)
+        # Activityをほかす
+        activity.throw_away()
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     # 
     # Edit Lock
@@ -2676,9 +2977,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '山法師と鴨川と賽子',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '山法師と鴨川と賽子',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -2705,7 +3006,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER1)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # 編集ロックはTrueであること
         # allowlistのlockとcopyは編集ロックの値に影響されないこと
@@ -2726,7 +3027,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER1)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # 編集ロックはFalseであること
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
@@ -2762,9 +3063,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'うにゃあ',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'うにゃあ',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -2792,7 +3093,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['editLock'])
 
         # 閲覧者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
 
         # プロジェクト管理者は、フローの排他ロックを取得する
@@ -2813,7 +3114,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertTrue(result['data']['editLock'])
 
         # プロジェクト管理者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
 
         # 閲覧者は、フローの排他ロックを取得する
@@ -2842,7 +3143,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 閲覧者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
@@ -2872,9 +3173,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '隠岐に島流し',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '隠岐に島流し',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -2903,20 +3204,28 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
-        # プロジェクト管理者は、編集ロックされたフローをプレビューできるない
-        # (キャッシュ出力を行うフローは編集ロックによりエラーになる)
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        # プロジェクト管理者は、編集ロックされた、かつキャッシュ出力をするフローをプレビューできること
+        # (編集ロックによりキャッシュ出力をしない)
+        vis_args = {"uuid": flow_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER2)
+        outs = result['data']['outs']
+
+        # ラベルとIDチェック
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -2949,22 +3258,27 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
         # プロジェクト管理者は、編集ロックされたフローをプレビューできること
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER2)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -2981,7 +3295,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3011,9 +3325,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'ニャお〜ん',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'ニャお〜ん',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3034,7 +3348,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # 編集者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
@@ -3050,7 +3364,7 @@ class SystemTestCase(ApiTestCaseBase):
             self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -3068,7 +3382,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3098,9 +3412,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '足利髙氏',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '足利髙氏',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3125,7 +3439,7 @@ class SystemTestCase(ApiTestCaseBase):
             self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3160,9 +3474,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '出逢え出逢え！',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '出逢え出逢え！',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3184,25 +3498,32 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローをプレビュー実行して、キャッシュファイルを作成する
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "lock": lock_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER3)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # 作成したキャッシュのUUIDを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # プレビューを持つポイントが存在すること
         self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
-        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'])
+        # TODO: POST /vizsでロックのUUIDを指定可能にして、キャッシュを作成できるようにする予定
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
         cache_uuid = result['data']['flow']['nodes'][0]['uuid']
 
         # 編集者をプロジェクトから脱退させる
@@ -3216,7 +3537,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
 
         # フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER2)
 
         # プロジェクトとキャッシュを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3248,9 +3569,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': '諸行無常の響きあり',
-            'datasource': None
+            'parent': project_uuid,
+            'label': '諸行無常の響きあり',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
 
@@ -3272,26 +3593,39 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローをプレビュー実行して、キャッシュファイルを作成する
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "lock": lock_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER3)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
+
+        # 作成したキャッシュのUUIDを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        # プレビューを持つポイントが存在すること
+        self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
+        # TODO: POST /vizsでロックのUUIDを指定可能にして、キャッシュを作成できるようにする予定
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
 
         # 編集者は、フローのロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER3)
 
         # プロジェクト管理者は、フローを複製する
         data = {
-            'original_flow_uuid': flow_uuid
+            'source': flow_uuid
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
 
@@ -3301,12 +3635,12 @@ class SystemTestCase(ApiTestCaseBase):
         flow_uuid = result['data']['children'][0]['uuid']
 
         # 編集者は、複製したフローをプレビュー実行できること
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER3)
+        data = result['data']
 
         # プロジェクトに属さないユーザは、複製したフローをプレビュー実行できないこと
         with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER0)
+            self.post_uri(f'/api/v0/activities', vis_args, self.USER0)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3333,7 +3667,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトのメンバでないユーザは、フレームをダウンロードできないこと
         with self.assertRaises(AssertionError):
-            result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+            result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER3)
 
         # USER3を閲覧者メンバとして参加させる
         data = {
@@ -3345,7 +3679,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 閲覧者メンバはフレームをダウンロードできないこと
         with self.assertRaises(AssertionError):
-            self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+            self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER3)
 
         # USER3を編集者メンバとして参加させる
         data = {
@@ -3356,11 +3690,11 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
         # 編集者メンバはフレームをダウンロードできること
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER3)
         self.assertEqual(result, b'Every cup has a story\n')
 
         # プロジェクト管理者はフレームーをダウンロードできること
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER2)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER2)
         self.assertEqual(result, b'Every cup has a story\n')
 
         # プロジェクトを削除する
@@ -3397,9 +3731,9 @@ class SystemTestCase(ApiTestCaseBase):
         # フォルダの下にフローを作成する
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': '遠山の金さん',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': '遠山の金さん',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
         # フローのUUIDを取得する
@@ -3420,25 +3754,25 @@ class SystemTestCase(ApiTestCaseBase):
             "hostname" : "db",
             "port"     : 5432,
             "database" : "kskp",
-            "user_id"  : "postgres",
+            'userId'  : "postgres",
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER2)
         database_uuid = result['data']['uuid']
 
-        # # フォルダの下にリモートフォルダを作成する
-        # data = {
-        #     "parent"   : folder_uuid,
-        #     "label"    : "中村主水",
-        #     "protocol" : "smb",
-        #     "hostname" : "kskds-HP-Workstation-z620.local",
-        #     "domain"   : "WORKGROUP",
-        #     "directory": "share",
-        #     "user_id"  : "ksk-ds",
-        #     "password" : "kskanalytics"
-        # }
-        # result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
-        # remote_folder_uuid = result['data']['uuid']
+        # フォルダの下にリモートフォルダを作成する
+        data = {
+            "parent"   : folder_uuid,
+            "label"    : "中村主水",
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'userId'  : "samba",
+            'password' : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
+        remote_folder_uuid = result['data']['uuid']
 
         # # フォルダの下にAWS S3を作成する
         # data = {
@@ -3503,6 +3837,25 @@ class SystemTestCase(ApiTestCaseBase):
         # self.assertFalse(result['data']['allowlist']['findMember'])
         # self.assertFalse(result['data']['allowlist']['updateMember'])
         # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 編集者メンバは、アクティビティフォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['import'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['export'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # 編集者メンバは、プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -3594,22 +3947,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 編集者メンバは、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 編集者メンバは、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 編集者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
@@ -3654,6 +4007,25 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 閲覧者メンバは、キャッシュフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['import'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['export'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 閲覧者メンバは、アクティビティフォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
         self.assertFalse(result['data']['allowlist']['createProject'])
         self.assertFalse(result['data']['allowlist']['createFolder'])
@@ -3761,22 +4133,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 閲覧者メンバは、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['update'])
-        # self.assertFalse(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertFalse(result['data']['allowlist']['move'])
-        # self.assertFalse(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 閲覧者メンバは、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 閲覧者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
@@ -3821,6 +4193,25 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、キャッシュフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['import'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['export'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # プロジェクト管理者は、アクティビティフォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
         self.assertFalse(result['data']['allowlist']['createProject'])
         self.assertFalse(result['data']['allowlist']['createFolder'])
@@ -3928,22 +4319,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # プロジェクト管理者は、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # プロジェクト管理者は、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # プロジェクト管理者は、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)

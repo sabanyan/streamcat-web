@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import {useState} from "react";
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
@@ -25,7 +25,7 @@ type Props = {
 }
 
 const PaperScroller = (props: Props) => {
-    const [coords, setCoords] = useState();
+    const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
         const {pasteSteps} = props;
         navigator.clipboard.readText().then((data: any) => {

@@ -8,7 +8,7 @@ import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import {NotificationManager} from 'Shared/Notification';
 import {useForm} from 'react-hook-form';
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
 
 /**
  * ======================================================
@@ -16,7 +16,7 @@ import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
  * ======================================================
  */
 interface Props {
-    navigation?: NavigationModelProps
+    navigation: NavigationType | null;
 }
 
 interface Profile {
@@ -48,13 +48,13 @@ const Profile = (props: Props) => {
     const {navigation} = props;
     const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
 
-    const [isLoading, setIsLoading] = useState<Boolean>(false);
-    const [isFinished, setIsFinished] = useState<Boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
     const [profile, setProfile] = useState<Profile | null>({
         name: '',
         email: ''
     });
-    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs>({
+    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs | any>({
         shouldUnregister: false
     });
     const [editing, setEditing] = useState<EditingMode>(null);

@@ -1,25 +1,20 @@
 import React, {useEffect, useState} from "react";
 import Constants from "Constants/index";
-
-import {APIUtil, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
+import {APIUtil2, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
 import {NotificationManager} from "Shared/Notification";
 import {useDispatch} from "react-redux";
 import {addNotification, removeNotification} from "reapop";
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
 /**
  * ======================================================
  *                      NOT USE REDUX
  * ======================================================
  */
-interface Props {
-    navigation?: NavigationModelProps
-}
 
-const Preview = (_: Props) => {
+const Preview = () => {
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
@@ -37,20 +32,12 @@ const Preview = (_: Props) => {
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
 
     const getVisualizers = () => {
-        setIsLoading(true);
-        APIUtil.get("visualizers").then((response) => {
-            const json = response.data;
-            let visualizers = json.data.map((visualize) => {
-                return new VisualizeModel(visualize);
-            });
-            setVisualizers(SortUtil.getSortedContents(visualizers));
-            window.visualizers = visualizers;
-        }).then((response) => {
-            },
-            (error) => {
-                console.log(error);
-            });
-    };
+        APIUtil2.findVCommands().then(visualizers => {
+            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
+            setVisualizers(SortUtil.getSortedContents(visualizerModels));
+            window.visualizers = visualizerModels;
+        });
+    }
 
     useEffect(() => {
         getVisualizers();
@@ -62,26 +49,32 @@ const Preview = (_: Props) => {
         setIsLoading(false);
         let contents: any[] = [];
         for (const v of visualizers) {
-            let viz = {visualize: v};
             let content: any;
-            let frame_uuid = HttpUtil.getURLParam("frame_uuid");
-            if (frame_uuid) {
+            const viz = {visualize: v};
+            const frameUuid = HttpUtil.getURLParam("frame_uuid");
+            if (frameUuid) {
                 // データが存在している場合（ライブラリ）
-                content = {title: v.label, content: viz, parentProps: parentProps, id: frame_uuid};
-                viz["frame_uuid"] = frame_uuid;
+                content = {title: v.label, content: viz, parentProps: parentProps, id: frameUuid};
+                viz["frameUuid"] = frameUuid;
             } else {
                 // データが存在しなくて生成する必要あり（フローエディターからのプレビュー）
-                let flow_uuid = HttpUtil.getURLParam("flow_uuid");
-                let frame_id = HttpUtil.getURLParam("step_id");
+                const frame_id = HttpUtil.getURLParam("step_id");
+                const flowUuid = HttpUtil.getURLParam("flow_uuid");
+                const lockUuid = HttpUtil.getURLParam("lock_uuid");
                 let step_ids = JSON.parse(StringUtil.urlDecode((HttpUtil.getURLParam("step_ids"))));
                 content = {title: v.label, content: viz, parentProps: parentProps, id: frame_id};
-                viz["frame_uuid"] = frame_uuid;
-                viz["flow_uuid"] = flow_uuid;
+                viz["frameUuid"] = frameUuid;
+                viz["flowUuid"] = flowUuid;
+                viz["lockUuid"] = lockUuid;
                 viz["stepIds"] = step_ids;
             }
             contents.push(content);
         }
         const title = StringUtil.urlDecode(HttpUtil.getURLParam("title"));
+
+        // HTML headのtitleを設定する
+        // アイコンの候補: 👁‍🗨👁
+        document.title = "👁‍🗨" + title;
 
         ModalUtil.emitModal({
             id: Constants.modal.PREVIEW_DATASOURCE,

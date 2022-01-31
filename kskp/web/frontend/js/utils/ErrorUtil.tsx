@@ -1,6 +1,6 @@
 import { ModalUtil, StringUtil } from 'Utils/index'
 import Constants from 'Constants/index'
-import * as React from "react";
+import React from 'react';
 import { ReactDomUtil } from "./index";
 
 export default class ErrorUtil {
@@ -20,7 +20,11 @@ export default class ErrorUtil {
 
   static getErrorBody (error) {
     let errorBody:React.ReactNode;
-    if (error && error.data && error.data['message']) {
+    if (error && error.message) {
+      errorBody = <div className={'modal-server-error-text'}>
+        {error.message}
+      </div>
+    }else if (error && error.data && error.data['message']) {
       errorBody = <div className={'modal-server-error-text'}>
         {error.data['message']}
       </div>
@@ -28,10 +32,10 @@ export default class ErrorUtil {
       errorBody = <div className={'modal-server-error-text'}>
         <div>
           <strong>
-            {error.request.statusText}
+            {error.request && error.request.statusText}
           </strong>
         </div>
-        {StringUtil.stripHtmlToText(error.request.responseText)}
+        {error.reques && StringUtil.stripHtmlToText(error.request.responseText)}
       </div>
     }
     return errorBody

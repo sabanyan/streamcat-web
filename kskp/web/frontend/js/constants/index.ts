@@ -74,7 +74,8 @@ const Constants = {
       boolean: 'boolean',
       select: 'select',
       column: 'column',
-      list: 'list'
+      list: 'list',
+      frame: 'frame',
     }
   },
   data: {
@@ -103,6 +104,8 @@ const Constants = {
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
+    ADD_REMOTE_FOLDER: 'add_remote_folder',
+    EDIT_REMOTE_FOLDER: 'edit_remote_folder',
     ADD_USER: 'add_user',
     ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
@@ -131,7 +134,7 @@ const Constants = {
   },
   format: {
     date: 'YYYY-MM-DD',
-    dateTime: 'YYYY-MM-DD HH:mm:ss'
+    dateTime: 'YYYY-MM-DD HH:mm'
   },
   event: {
     ON_LOAD_NAVIGATION: 'onLoadNavigation',
@@ -157,10 +160,11 @@ const Constants = {
   lang: {
     classification: {
       subflow: '共有フロー',
+      data_dest: "データデスト（フローからの出力）",
       calculation: '項目間の計算',
       col_edit: '列に対する選択・加工',
       data_format: 'フォーマットの整形',
-      data_source: 'データソース出力',
+      data_source: 'データソース（フローへの入力）',
       row_edit: '行に対する選択・加工',
       row_sort: '行のソート',
       table_grouping: 'テーブルの集計',
@@ -187,7 +191,7 @@ const Constants = {
       folder: 'folder',
       database: 'database',
       flow: 'flow',
-      remoteFolder: 'remote-folder',
+      remoteFolder: 'rfolder',
       trash: 'trash'
     },
     mode: {
@@ -243,11 +247,11 @@ const Constants = {
     "LF",
     "CR+LF"
   ],
-  admin:{
+  admin: {
     systemRole: {
-      EVERYONE:"EVERYONE",
-      USR_ADMIN:"USR_ADMIN",
-      SYS_ADMIN:"SYS_ADMIN"
+      EVERYONE: "EVERYONE",
+      USR_ADMIN: "USR_ADMIN",
+      SYS_ADMIN: "SYS_ADMIN"
     },
     userStatus: {
       tmp: "tmp",

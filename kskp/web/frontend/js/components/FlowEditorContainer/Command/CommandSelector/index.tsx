@@ -1,18 +1,23 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import style from "./style.scss";
-import {Command} from "FlowEditorContainer/Command";
+import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import {CommandModelType, MastType} from "Types/index";
-import {TextField} from "Shared/Input";
+import { CommandModelType } from "Types/index";
+import { TextField } from "Shared/Input";
+import { flowEditorReducerInitialState } from "Modules/flowEditor";
+
 
 type Props = {
-    mast: MastType;
+    mast: typeof flowEditorReducerInitialState.mast;
+    nodes:any[];
     numberOfInput: number;
-    selected_step_ids: [];
+    selected_step_ids: string[];
     addStep: Function;
     selectSteps: Function;
     addHistory: Function;
     disabled?: boolean;
+    addDataDstStep: Function
+    addDataSrcStep: Function
 }
 
 const CommandSelector = (props: Props) => {
@@ -24,7 +29,7 @@ const CommandSelector = (props: Props) => {
         setKeyword(e.target.value);
     };
 
-    const sortArray = (array: [], key: string): [] => {
+    const sortArray = (array: any[], key: string): any[] => {
         return array.sort((objectA, objectB) => {
             const a = objectA[key];
             const b = objectB[key];
@@ -43,34 +48,39 @@ const CommandSelector = (props: Props) => {
      * @param command
      * @returns {boolean}
      */
-    const isMultiInPorts = (command: CommandModelType) => {
-        if (!command.getInPorts()) return false;
-        if (!command.getInPorts().length) return false;
-        return (command.getInPorts()[0].name === "*");
+    const isMultiInPorts = (command: any) => {
+        if (!command.ports[0]) return false;
+        if (!command.ports[0].length) return false;
+        return (command.ports[0][0].name === "*");
     };
 
-    const {numberOfInput, selected_step_ids, addStep, selectSteps, addHistory, disabled} = props;
+    const { numberOfInput, selected_step_ids, addStep, addDataDstStep, addDataSrcStep,
+        selectSteps, addHistory, disabled, mast, nodes } = props;
+    const { commands, subflows, datasrcs, datadsts } = mast;
+
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;
-    let sortedCommands: [];
-    let subflowSortedCommands: [];
-    sortedCommands = sortArray((window as any).commands, "id");
-    sortedCommands = sortArray(sortedCommands, "classification");
-    subflowSortedCommands = sortArray((window as any).subflows, "label");
+    const sortedCommands = {
+        datasrcs: sortArray(datasrcs, "label"),
+        datadsts: sortArray(datadsts, "label"),
+        subflows: sortArray(sortArray(subflows, "label"), "classification"),
+        commands: sortArray(sortArray(commands, "id"), "classification"),
+    }
 
-    sortedCommands = [...subflowSortedCommands, ...sortedCommands] as [];
+
+    let operators = [...sortedCommands.datasrcs, ...sortedCommands.datadsts,
+    ...sortedCommands.subflows, ...sortedCommands.commands];
 
     //コマンドの絞り込み
-    let operators = sortedCommands.filter((command: CommandModelType): boolean => {
-        //if(numberOfInput && command.ports){
+    operators = operators.filter((command: any): boolean => {
         if (isMultiInPorts(command)) {
             return true;
-        } else if (command.getInPorts().length === numberOfInput) {
+        } else if (command.ports[0].length === numberOfInput) {
             return true;
         }
         //}
         return false;
-    }).filter((command: CommandModelType) => {
+    }).filter((command: any) => {
         noOperators = false;
         if (isNoKeyword) {
             return true;
@@ -86,16 +96,20 @@ const CommandSelector = (props: Props) => {
     operators.map((command: CommandModelType, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             //区切りを表示
-            let label = Constants.lang.classification[command.classification];
+            let key = command.classification;
+            let label = Constants.lang.classification[key];
             if (!label) label = command.classification;
-            operatorsContainer.push(<div key={command.id} className={style.command_separator}>{label}</div>);
+            operatorsContainer.push(<div key={index + command.id} className={style.command_separator}>{label}</div>);
         }
         operatorsContainer.push(<Command
+            nodes={nodes}
+            key={index}
             command={command}
             selected_step_ids={selected_step_ids}
             addStep={addStep}
+            addDataDstStep={addDataDstStep}
+            addDataSrcStep={addDataSrcStep}
             selectSteps={selectSteps}
-            key={index}
             addHistory={addHistory}
         />);
         beforeCommand = command;
@@ -107,7 +121,7 @@ const CommandSelector = (props: Props) => {
 
         commandSelector = <div>
             <TextField className={"mb-8px"} onChange={(e) => onChangeKeyword(e)}
-                       placeholder={"キーワード"} />
+                placeholder={"キーワード"} />
             <div className={style.command_selector_container}>
                 {(operatorsContainer.length) ? operatorsContainer : <div
                     className={style.command_not_found}>コマンドが見つかりませんでした</div>}
@@ -120,4 +134,4 @@ const CommandSelector = (props: Props) => {
     </div>;
 };
 
-export {CommandSelector};
+export { CommandSelector };

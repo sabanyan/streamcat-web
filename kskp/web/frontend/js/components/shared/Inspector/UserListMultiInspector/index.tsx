@@ -4,7 +4,6 @@ import {BaseInspector, Resizer} from 'Shared/Inspector'
 import {UserListUser} from 'Types/index'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
 interface Props {
     selectedDatas: UserListUser[];
@@ -33,7 +32,7 @@ const UserListMultiInspector = (props: Props) => {
     }
 
     return <Resizer>
-        <BaseInspector key={JSON.stringify(selectedDatas)} label={null} disabled={true}>
+        <BaseInspector key={JSON.stringify(selectedDatas)} label={""} disabled={true}>
             <div className={style.inspector}>
                 <div className={style.actions}>
                     {renderButtons(selectedDatas)}

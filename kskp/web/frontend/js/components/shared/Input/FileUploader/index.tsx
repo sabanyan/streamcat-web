@@ -7,8 +7,6 @@ import style from './style.scss'
 
 import { Button, TextField } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
-import { ModalUtil } from "Utils/index";
-import Constants from "Constants/index";
 
 type Props = {
   url: string
@@ -135,7 +133,7 @@ export default class FileUploader extends React.Component<Props, State> {
     formData.append('label', uploadFile.uploadName)
     formData.append('parent', parentUUID)
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       axios.post(url, formData, options)
         .then((response) => {
           if (!response.data.success) throw response
@@ -232,7 +230,7 @@ export default class FileUploader extends React.Component<Props, State> {
     const onClick = (e) => this.onClickFileSelect(e)
 
     return <React.Fragment key={title + icon}>
-      <a href="javascript:return false;" className={style.button} onClick={onClick}>
+      <a href="#" className={style.button} onClick={onClick}>
         <i className={'material-icons'}>{icon}</i>
         {title}
       </a >

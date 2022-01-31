@@ -1,20 +1,16 @@
 import React from 'react';
 import Constants from 'Constants/index';
-import { DataSourceImport, Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
+import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import classnames from 'classnames';
-import { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel';
-import { DataFrameStepModel, FlowModel, MessageModel, NoteStepModel } from 'Model/index';
-import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
+import { DataFrameStepModel, NoteStepModel, NoteStepModelProps } from 'Model/index';
+import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil, APIUtil2 } from 'Utils/index';
 import { Loader } from 'Shared/Base';
-import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index';
-import { NoteStepModelProps } from 'Model/Step/NoteStepModel';
+import { HistoryType, LibraryListDataType, UploadedFileType } from 'Types/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
-import { API } from 'Modules/api/index';
-import { FlowEditModeValue, FlowExecuteModeValue } from 'Model/Flow/FlowModel';
+import { ActivityType, FlowType } from 'Model/Library';
 
 type ToolBarProps = {
-    flow: FlowModel;
     nodes: any[];
     history: HistoryType;
     zoom: number;
@@ -24,7 +20,6 @@ type ToolBarProps = {
     addStep: Function;
     addHistory: Function;
     sortFlow: Function;
-    loadFlowJSON: Function;
     selectSteps: Function;
     setZoom: Function;
     undo: Function;
@@ -48,9 +43,9 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
 
     constructor(props: ToolBarProps) {
         super(props);
-        this.setState({
+        this.state = {
             isLoading: false
-        })
+        };
     }
 
     onClickSave() {
@@ -62,8 +57,8 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
         this.props.addHistory();
     }
 
-    renderRunResult(json: RunResponseType) {
-        const result = json.lasts.map((n) => {
+    renderRunResult(activity: ActivityType) {
+        const result = activity.outs.map((n) => {
             return <li>{n.id}</li>;
         });
         const content = <div>
@@ -75,48 +70,44 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     run() {
-        let { notify, dismissNotify } = this.props;
+        let { notify, dismissNotify, lockUUID } = this.props;
         const runArgs = {
-            "flow_uuid": inject_flow_uuid,
+            "flowUuid": inject_flow_uuid,
+            "lockUuid": lockUUID,
             "flows": [],
             "variables": []
         };
-        return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
-            .then((response) => {
-                if (response.data.success) {
-                    const json: RunResponseType = response.data;
-                    const content = this.renderRunResult(json);
-                    console.log("^^^^^^^^^")
-                    console.log(json)
-                    // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
-                    const parentFolderUUID = json.lasts[0].parent; //　今はlasts[0]
-                    // 結果出力
-                    let notifyId = notify({
-                        title: "フロー実行完了",
-                        message: ReactDomUtil.renderToString(content),
-                        status: "success",
-                        dismissAfter: 0,
-                        buttons: [
-                            {
-                                name: "閉じる",
-                                primary: true,
-                                onClick: () => {
-                                    this.props.dismissNotify(notifyId);
-                                }
-                            },
-                            {
-                                name: "開く",
-                                primary: true,
-                                onClick: () => {
-                                    window.open("/folders/" + parentFolderUUID, "_blank");
-                                }
-                            }]
-                    });
-                }
+        return FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then(activity => {
+                const content = this.renderRunResult(activity);
+                // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
+                const parentFolderUUID = activity.outs[0].parent; //　今はlasts[0]
+                // 結果出力
+                let notifyId = notify({
+                    title: "フロー実行完了",
+                    message: ReactDomUtil.renderToString(content),
+                    status: "success",
+                    dismissAfter: 0,
+                    buttons: [
+                        {
+                            name: "閉じる",
+                            primary: true,
+                            onClick: () => {
+                                this.props.dismissNotify(notifyId);
+                            }
+                        },
+                        {
+                            name: "開く",
+                            primary: true,
+                            onClick: () => {
+                                window.open("/folders/" + parentFolderUUID, "_blank");
+                            }
+                        }]
+                });
                 // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
                 this.flowUpdate();
-            })
-            .catch((e) => {
+            }).catch(e => {
+                console.log(e);
+            }).finally(() => {
                 this.setState({
                     isLoading:false
                 })
@@ -124,20 +115,18 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     onClickProjectRun() {
-        const { lockUUID } = this.props;
 
         this.loadingMessage = "";
 
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
-                this.props.onClickRunFlowPromise().then((result: any) => {
-                    if (result.success === true) {
-                        this.setState({
-                            isLoading: true
-                        }, () => {
-                            this.run();
-                        })
-                    }
+                this.props.onClickRunFlowPromise().then((flow: FlowType) => {
+                    this.setState({
+                        isLoading: true
+                    }, () => {
+                        // フローを実行する
+                        this.run();
+                    })
                 });
                 ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
             }, onClickCancel: () => {
@@ -160,21 +149,16 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     flowUpdate() {
-        APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
-            const json = response.data.data;
-            console.log("flowupdate")
-            console.log(json)
-            this.props.refreshFlow(json);
+        APIUtil2.findFlow(inject_flow_uuid).then(flow => {
+            this.props.refreshFlow(flow);
         }).then(() => {
             this.setState({
-                isLoading:false
-            })
+                isLoading: false
+            });
         });
     }
 
     onClickDataSourceImport() {
-
-        const self = this;
 
         this.uploadedFile = null;
         this.forceUpdate();
@@ -183,7 +167,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             const selected_data: LibraryListDataType = args;
             let parameters = {};
             //データソースを追加
-            const props: DataFrameStepModelProps = {
+            const props: any = {
                 type: selected_data.type,
                 uuid: selected_data.uuid,
                 label: selected_data.label,
@@ -245,10 +229,11 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             { ...position }, nodes);
 
         const props: NoteStepModelProps = {
+            id: '',
             type: Constants.step.type.note,
             position: notOverlapNodePosition,
             title: "新しいメモ",
-            content: "新しいメモ"
+            content: ""
         };
 
         const note = new NoteStepModel(props);
@@ -270,8 +255,9 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             <div className={classnames(style.flow_toolbar)}>
                 <Save disabled={baseDisabled} icon={"&#xE2C2"}
                     onClick={(e) => this.onClickSave()}>保存</Save>
-                <DataSourceImport disabled={baseDisabled} icon={"&#xE2C2"}
-                    onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
+                    
+                {/* <DataSourceImport disabled={baseDisabled} icon={"&#xE2C2"}
+                    onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport> */}
                 <Run disabled={runDisabled} icon={"&#xE037"}
                     onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
                 <Note disabled={baseDisabled} icon={"comment"}

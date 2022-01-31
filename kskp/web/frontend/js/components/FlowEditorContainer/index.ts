@@ -1,3 +1,4 @@
+import {SortEndHandler} from "react-sortable-hoc";
 import {FlowModel} from "Model/index";
 import {DragType} from "Types/index";
 
@@ -40,7 +41,7 @@ export type FlowEditorProps = {
   inspector:{width:number};
   editor: {};
   selected_data_source_detail: Function;
-  sortStepSrcEnd: Function;
+  sortStepSrcEnd: SortEndHandler;
   deleteSelectStep: Function;
   notify: Function;
   updateNotify: Function;

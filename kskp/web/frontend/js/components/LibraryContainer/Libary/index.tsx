@@ -1,64 +1,51 @@
-import * as React from "react";
+import React from 'react';
 import { useEffect, useRef, useState } from "react";
-import { ModalManager } from "Shared/Modal";
-import { NotificationManager } from "Shared/Notification";
-import { FileUploader, TextField } from "Shared/Input";
-import { FileListTable } from "Components/LibraryContainer/Libary/FileListTable";
-import { BreadCrumb, IBreadCrumbsLink } from "Components/LibraryContainer/Libary/BreadCrumb";
-import Constants from "Constants/index";
-import { APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
-import { EmptyState, Loader, Spacer } from "Shared/Base";
-import { ITableBody } from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
-import { MenuList } from "Components/LibraryContainer/Libary/MenuList";
-import { Flex } from "Shared/Base/Layouts/Flex";
+import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
 import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
-import ParamsForm from "Shared/Inspector/ParamsForm";
-import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { LibraryChild } from "Model/Library";
-import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
-import { LibraryModel, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { LibraryListDataType } from "Types/index";
-import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
-import { API } from "Modules/api";
-import { TrashMenuList } from "Components/LibraryContainer/Libary/TrashMenuList";
-import axios from "axios";
-import TrashInspector from "Shared/Inspector/TrashInspector";
-import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
-import LibraryUtil from "Utils/LibraryUtil";
-import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
-import { project } from '../../shared/IconRenderer/icon/index';
-import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
+import * as lodash from "lodash";
 import { reject } from "lodash";
+import { EmptyState, Loader, Spacer } from "Shared/Base";
+import { Flex } from "Shared/Base/Layouts/Flex";
+import { NotificationManager } from "Shared/Notification";
+import { ModalManager } from "Shared/Modal";
+import { FileUploader, TextField } from "Shared/Input";
+import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
+import {ParamsForm} from "Shared/Inspector/ParamsForm";
+import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
+import TrashInspector from "Shared/Inspector/TrashInspector";
+import { FileListTable } from "Components/LibraryContainer/Libary/FileListTable";
+import { BreadCrumb, IBreadCrumbsLink } from "Components/LibraryContainer/Libary/BreadCrumb";
+import { TrashMenuList } from "Components/LibraryContainer/Libary/TrashMenuList";
+import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
+import { MenuList } from "Components/LibraryContainer/Libary/MenuList";
+import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/LibraryContainer/Libary/RemoteFolder/model"
+import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
+import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
+import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , DatabaseType, FrameType, Member, FlowType } from "Model/Library";
+import { UserType } from 'Model/Navigation/NavigationModel';
+import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
+import LibraryUtil from "Utils/LibraryUtil";
+import Constants from "Constants/index";
+
+/**
+ * ライブラリ画面に表示するDatumの表示行
+ */
+export type DatumEntryType = DatumType & {
+    selected: boolean;
+    clickable: boolean;
+}
 
 export interface Database {
     label?: string;
     dbms?: any;
     hostname?: string;
-    port?: string;
+    port?: number;
     database?: string;
-    user_id?: string;
+    userId?: string;
     password?: string;
-}
-
-export interface Allowlist {
-    copy: boolean;
-    createFile: boolean;
-    createFolder: boolean;
-    createProject: boolean;
-    delete: boolean;
-    download: boolean;
-    execute: boolean;
-    findMember: boolean;
-    lock: boolean;
-    move: boolean;
-    read: boolean;
-    update: boolean;
-    updateMember: boolean;
-    upload: boolean;
-    export: boolean;
-    import: boolean;
 }
 
 export const getDataBaseRules = () => {
@@ -78,6 +65,7 @@ export const getDataBaseRules = () => {
         }
     };
 };
+
 export const getDataBaseParams = () => {
     // TODO paramsの型定義
     return [
@@ -115,7 +103,7 @@ export const getDataBaseParams = () => {
             "default": ""
         },
         {
-            "name": "user_id",
+            "name": "userId",
             "type": "string",
             "label": "ユーザID",
             "default": ""
@@ -130,57 +118,45 @@ export const getDataBaseParams = () => {
     ];
 };
 
-const getInitialDatabase = (): Database => {
-    return {
-        label: "",
-        dbms: getDataBaseParams()[1].default,
-        hostname: "",
-        port: "",
-        database: "",
-        user_id: "",
-        password: ""
-    };
-};
-
-export interface Member {
-    createdAt: string;
-    creator: string;
-    email: string;
-    name: string;
-    state: string;
-    type: string;
-    uuid: string;
+// useAsyncResourceに渡す関数はコンポーネントの外で定義しないと
+// useAsyncResourceのキャッシュが機能しない
+const getParentFolder = () => {
+    if(inject_folder_uuid){
+        if(inject_is_project){
+            // プロジェクトを表示する場合
+            return APIUtil2.findProject(inject_folder_uuid);
+        }else{
+            // フォルダを表示する場合
+            return APIUtil2.findFolder(inject_folder_uuid);
+        }
+    }else if(inject_is_trash) {
+        // ゴミ箱を表示する場合
+        return APIUtil2.findTrash();
+    }else{
+        // ルートフォルダを表示する場合
+        return APIUtil2.findLibrary();
+    }
 }
 
-export interface ProjectInfo {
-    members?: Member[];
-    projectModifiedAt?: string;
+const getProjects = (members:boolean) => {
+    if(inject_folder_uuid || inject_is_trash){
+        // ルートフォルダ以外の場合は何もしない
+        return APIUtil2.findNull();
+    }else{
+        // ルートフォルダを表示する場合
+        return APIUtil2.findProjects(true, false, members);
+    }
 }
 
-const defaultAllowlist = {
-    copy: false,
-    createFile: false,
-    createFolder: false,
-    createProject: false,
-    delete: false,
-    download: false,
-    execute: false,
-    findMember: false,
-    lock: false,
-    move: false,
-    read: false,
-    update: false,
-    updateMember: false,
-    upload: false,
-    export: false,
-    import: false
-}
+const Library = () => {
 
-interface Props {
-    navigation?: NavigationModelProps
-}
+     // ここでフォルダの取得を開始する
+    const [folderReader] = useAsyncResource(getParentFolder, []);
 
-const Library = (_: Props) => {
+    // ルートフォルダを表示する場合は
+    // ここで全てのプロジェクトのメンバリストを取得する
+    // (GET /projects?members=1はSQLが遅いので画面表示用とは別に非同期に取得する)
+    const [projectsReader, refreshProjects] = useAsyncResource(getProjects, true);
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
@@ -190,33 +166,41 @@ const Library = (_: Props) => {
         }, 1000);
     };
 
-    const [formFlowName, setFormFlowName] = useState<string>("");
+    const [parentFolder, setParentFolder] = useState<ParentFolderType>(folderReader());
+    const [sortedDatas, setSortedDatas] = useState<DatumType[]>(folderReader().children);
+    const [selectedDatas, setSelectedDatas] = useState<DatumType[]>([]);
+    const [lastSelectedCell, setLastSelectedCell] = useState<DatumType | null>(null);
     const [formProjectName, setFormProjectName] = useState<string>("");
     const [formFolderName, setFormFolderName] = useState<string>("");
+    const [formFlowName, setFormFlowName] = useState<string>("");
     const [addDatabase, setAddDatabase] = useState<Database | null>(null);
     const [editDatabase, setEditDatabase] = useState<Database | null>(null);
-    const [, setStores] = useState();
-    const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
-    const [importFlowtName, setImportFlowName] = useState<string>("");
-    const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
-    const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
-    const [lastSelectedCell, setLastSelectedCell] = useState<LibraryChild | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
-    const clickedLibraryCell = useRef(false);
-    const [folderPath, setFolderPath] = useState<any>();
-    const [isLoading, setIsLoading] = useState<Boolean>();
-    const [is_finished, setIsFinished] = useState<Boolean>();
-    const [isDialog] = useState<Boolean>((HttpUtil.getURLParam("dialog") === "true"));
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isDialog] = useState<boolean>((HttpUtil.getURLParam("dialog") === "true"));
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
-    const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
-    const [allowlists, setAllowlists] = useState
-        <{ parent: Allowlist, selected: Allowlist }>
-        ({ parent: defaultAllowlist, selected: defaultAllowlist })
-    const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
-    const [remountCount, setRemountCount] = useState(0);
-    const refresh = () => setRemountCount(remountCount + 1);
-    const [exportName, setExportName] = useState<string>("");
+    const clickedLibraryCell = useRef(false);
+
+    // custom hooks
+    const { onAddRemoteFolder,
+            onEditRemoteFolder,
+            onChangeRemoteFolder,
+            clearRemoteFolder,
+            remoteFolder,
+            remoteFolderMode,
+            setRemoteFolder,
+            setRemoteFolderMode } = useRemoteFolderHooks();
+
+    useEffect(() => {
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_DOCUMENT, onClickClose: onClickAddDocumentDone
+        });
+        ModalUtil.registerModal({
+            id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlowDone
+        });
+        getVisualizers();
+    }, []);
 
     useEffect(() => {
         if (isDialog) {
@@ -226,20 +210,9 @@ const Library = (_: Props) => {
     }, [isDialog]);
 
     useEffect(() => {
-        if (!folderPath) return;
-        setLinks(makeBreadCrumbLinks(folderPath));
-    }, [folderPath]);
-
-    useEffect(() => {
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
-        });
-        ModalUtil.registerModal({
-            id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlowDone
-        });
-        getVisualizers();
-        fetchFolder();
-    }, []);
+        if (!parentFolder) return;
+        setLinks(makeBreadCrumbLinks(parentFolder.folderPath));
+    }, [parentFolder]);
 
     useEffect(() => {
         // プロジェクトの作成
@@ -250,39 +223,24 @@ const Library = (_: Props) => {
                     return;
                 }
                 setIsLoading(true);
-                APIUtil.post("projects", { label: formProjectName, parent: inject_folder_uuid }).then(() => {
-                    ModalUtil.emitModal(
-                        { id: Constants.modal.ADD_PROJECT, visible: false });
+                parentFolder.createProject(formProjectName).then(project => {
+                    // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
+                    resourceCache(getProjects).clear();
+                    // ルートフォルダ直下の全てのプロジェクトを再取得する
+                    refreshProjects(true);
+                    // ダイアログを閉じる
+                    ModalUtil.closeModal(Constants.modal.ADD_PROJECT);
                     fetchFolder();
                     setFormProjectName("");
                     notify({
-                        title: "プロジェクトを作成しました", message: formProjectName + "を作成しました",
+                        title: "プロジェクトを作成しました",
+                        message: project.label + "を作成しました",
                         status: "success"
                     });
                 });
             }
         });
-
-      
     }, [formProjectName]);
-
-
-    useEffect(() => {
-        if (selectedDatas.length === 1) {
-            const selectedData = selectedDatas[0];
-            if (selectedData && selectedData.type === "project") {
-                APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
-                    if (response.data.success && response.data.data.members) {
-                        setCurrentProject({
-                            members: response.data.data.members,
-                            projectModifiedAt: response.data.data.modifiedAt
-                        })
-                        setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
-                    }
-                })
-            }
-        }
-    }, [selectedDatas])
 
     useEffect(() => {
         // フォルダの作成
@@ -293,17 +251,25 @@ const Library = (_: Props) => {
                     return;
                 }
                 setIsLoading(true);
-                const body = {
-                    "label": formFolderName,
-                    "parent": inject_folder_uuid
-                };
-                APIUtil.post("folders", body).then((response) => {
-                    completeAddedFolder(response);
+                parentFolder.createFolder(formFolderName).then(folder => {
+                    notify({
+                        title: "フォルダを作成しました",
+                        message: folder.label + "を作成しました",
+                        status: "success"
+                    });
                     setFormFolderName("");
                     ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
                     fetchFolder();
-                }, () => {
-                    unhandledNotify("フォルダ作成エラー");
+                }).catch(error => {
+                    notify({
+                        title: "フォルダ作成エラー",
+                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                        status: "error",
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                }).finally(() => {
+                    setIsLoading(false);
                 });
             }
         });
@@ -318,18 +284,13 @@ const Library = (_: Props) => {
                     return false;
                 }
                 setIsLoading(true);
-                APIUtil.post("flows", {
-                    name: formFlowName,
-                    project_uuid: inject_folder_uuid, // TODO project_uuid のキーが将来的に変更になる可能性あり、実態はfolderのuuidが利用できる
-                    datasource: {
-                        "type": "frame"
-                    }
-                }).then(() => {
+                // POST /flowsを発行してフローを新規作成する
+                parentFolder.createFlow(formFlowName).then((flow) => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
                     setFormFlowName("");
                     fetchFolder();
                     notify({
-                        title: "フローを作成しました", message: formFlowName + "を作成しました",
+                        title: "フローを作成しました", message: flow.label + "を作成しました",
                         status: "success"
                     });
                 });
@@ -339,6 +300,133 @@ const Library = (_: Props) => {
     }, [formFlowName]);
 
     useEffect(() => {
+        if (remoteFolderMode === RemoteFolderMode.INIT) return;
+        if (remoteFolderMode === RemoteFolderMode.ADD) {
+            // add_remote_folder
+            ModalUtil.registerModal({
+                id: Constants.modal.ADD_REMOTE_FOLDER, onClickDone: () => {
+                    if (remoteFolder.label === "") {
+                        alert("名称を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.protocol === "") {
+                        alert("プロトコルを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.hostname === "") {
+                        alert("ホスト名を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.domain === "") {
+                        alert("ドメインを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.directory === "") {
+                        alert("ディレクトリーを入力してください");
+                        return;
+                    }
+                    onAddRemoteFolder(parentFolder.uuid, remoteFolder)
+                        .then((response) => {
+                            fetchFolder();
+                            if (!response.data.success) {
+                                notify({
+                                    title: "リモートフォルダ作成エラー",
+                                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                                    status: "error",
+                                    dismissAfter: 0,
+                                    closeButton: true
+                                });
+                            } else {
+                                notify({
+                                    title: "リモートフォルダを保存しました", message: remoteFolder.label + "を保存しました",
+                                    status: "success"
+                                });
+                            }
+                        })
+                    setIsLoading(false);
+                    setRemoteFolderMode(RemoteFolderMode.INIT);
+                    ModalUtil.closeModal(Constants.modal.ADD_REMOTE_FOLDER);
+                }
+            });
+            ModalUtil.emitModal({
+                id: Constants.modal.ADD_REMOTE_FOLDER,
+                visible: true,
+                done: "追加する",
+                dynamic: true,
+                content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+            });
+        } else if (remoteFolderMode === RemoteFolderMode.EDIT) {
+            // edit_remote_folder
+            ModalUtil.registerModal({
+                id: Constants.modal.EDIT_REMOTE_FOLDER, onClickDone: () => {
+                    if (remoteFolder.label === "") {
+                        alert("名称を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.protocol === "") {
+                        alert("プロトコルを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.hostname === "") {
+                        alert("ホスト名を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.domain === "") {
+                        alert("ドメインを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.directory === "") {
+                        alert("ディレクトリーを入力してください");
+                        return;
+                    }
+                    onEditRemoteFolder(remoteFolder.uuid, remoteFolder)
+                        .then((response) => {
+                            fetchFolder();
+                            if (!response.data.success) {
+                                notify({
+                                    title: "リモートフォルダ設定エラー",
+                                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                                    status: "error",
+                                    dismissAfter: 0,
+                                    closeButton: true
+                                });
+                            } else {
+                                notify({
+                                    title: "リモートフォルダを保存しました", message: remoteFolder.label + "を保存しました",
+                                    status: "success"
+                                });
+                            }
+                        })
+                    setIsLoading(false);
+                    setRemoteFolderMode(RemoteFolderMode.INIT);
+                    ModalUtil.closeModal(Constants.modal.EDIT_REMOTE_FOLDER);
+                }
+            });
+            ModalUtil.emitModal({
+                id: Constants.modal.EDIT_REMOTE_FOLDER,
+                visible: true,
+                done: "設定する",
+                dynamic: true,
+                content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+            });
+        }
+    }, [remoteFolder]);
+
+    useEffect(() => {
+        /**
+         * ハンドリングできないエラー表示
+         */
+        const unhandledNotify = (title: string) => {
+            setIsLoading(false);
+            notify({
+                title: title,
+                message: Constants.errorMessage.unhandledError,
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
+            });
+        };
+
         // データベースの編集
         const database = editDatabase;
         if (!database) return;
@@ -366,7 +454,7 @@ const Library = (_: Props) => {
             setSelectedDatas([]);
         };
 
-        const editLibraryChild = (data: LibraryListDataType) => {
+        const editLibraryChild = (data: DatumType) => {
             setIsLoading(true);
             APIUtil.put("databases/" + data.uuid, database).then((response) => {
                 completeEditDatabase(response);
@@ -376,7 +464,6 @@ const Library = (_: Props) => {
                 setIsLoading(false);
             });
         };
-
 
         const onChangeEditDatabase = (e, param, value) => {
             try {
@@ -419,7 +506,6 @@ const Library = (_: Props) => {
 
     }, [editDatabase]);
 
-
     useEffect(() => {
         // データベースの新規作成
         const database = addDatabase;
@@ -439,20 +525,24 @@ const Library = (_: Props) => {
         });
     }, [addDatabase]);
 
+    // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
     const getVisualizers = () => {
-        // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
-        APIUtil.get("visualizers").then((response) => {
-            const json = response.data;
-            const visualizers = json.data.map((visualize) => {
-                return new VisualizeModel(visualize);
-            });
-            setVisualizers(visualizers);
+        APIUtil2.findVCommands().then(visualizers => {
+            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
+            setVisualizers(visualizerModels);
         });
     };
+
     const makeBreadCrumbLinks = (folderPath: any[] | any): IBreadCrumbsLink[] => {
         const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
         return folderPath.map((path, index): IBreadCrumbsLink => {
             const isCurrent = ((folderPath.length - 1) === index);
+
+            // HTML headのtitleにカレントフォルダ名を設定する
+            if (isCurrent){
+                document.title = path.label;
+            }
+
             if (index === 0) {
                 // ルートはライブラリを指定
                 return {
@@ -481,7 +571,7 @@ const Library = (_: Props) => {
         });
     };
 
-    const onClickAddFrameDone = () => {
+    const onClickAddDocumentDone = () => {
         fetchFolder();
     };
 
@@ -492,208 +582,71 @@ const Library = (_: Props) => {
     const onClickAddDatabaseDone = () => {
         const database = addDatabase;
         if (!database) return;
-        try {
-            if (!database.label) {
-                alert("名称を入力してください");
-                return;
-            }
-            if (!database.dbms) {
-                alert("DBMSを入力してください");
-                return;
-            }
-            if (!database.hostname) {
-                alert("ホスト名を入力してください");
-                return;
-            }
-            if (!database.port) {
-                alert("ポート番号を入力してください");
-                return;
-            }
 
-            const body = {
-                label: database.label,
-                parent: inject_folder_uuid,
-                dbms: database.dbms,
-                hostname: database.hostname,
-                port: Number(database.port),
-                database: database.database,
-                user_id: database.user_id,
-                password: database.password
-            };
-            setIsLoading(true);
-            APIUtil.post("databases", body).then((response) => {
-                completeAddedDatabase(response);
-            }, () => {
-                unhandledNotify("データベース作成エラー");
-            });
-        } catch (e) {
-            console.log(e);
+        if (!database.label) {
+            alert("名称を入力してください");
+            return;
         }
-    };
+        if (!database.dbms) {
+            alert("DBMSを入力してください");
+            return;
+        }
+        if (!database.hostname) {
+            alert("ホスト名を入力してください");
+            return;
+        }
+        if (!database.port) {
+            alert("ポート番号を入力してください");
+            return;
+        }
 
-    /**
-     * データベース作成後の完了処理
-     * @param response
-     */
-    const completeAddedDatabase = (response: any) => {
-        const database = addDatabase;
-        if (!database) return;
-        if (!response.data.success) {
-            notify({
-                title: "データベース作成エラー",
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                status: "error",
-                dismissAfter: 0,
-                closeButton: true
-            });
-        } else {
+        setIsLoading(true);
+        parentFolder.createDatabase(
+            database.label,
+            database.dbms,
+            database.hostname,
+            database.port,
+            database.database,
+            database.userId,
+            database.password
+        ).then(database => {
             notify({
                 title: "データベースを作成しました",
                 message: database.label + "を作成しました",
                 status: "success"
             });
-        }
-        setIsLoading(false);
-        setAddDatabase(null);
-        ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
-        fetchFolder();
-    };
-
-    /**
-     * ハンドリングできないエラー表示
-     * @param title
-     */
-    const unhandledNotify = (title: string) => {
-        setIsLoading(false);
-        notify({
-            title: title,
-            message: Constants.errorMessage.unhandledError,
-            status: "error",
-            dismissAfter: 0,
-            closeButton: true
-        });
-    };
-
-    /**
-     * フォルダ作成時の完了処理
-     * @param response
-     */
-    const completeAddedFolder = (response: any) => {
-        setIsLoading(false);
-        if (!response.data.success) {
+        }).catch(error => {
             notify({
-                title: "フォルダ作成エラー",
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                title: "データベース作成エラー",
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
                 status: "error",
                 dismissAfter: 0,
                 closeButton: true
             });
-        } else {
-            notify({
-                title: "フォルダを作成しました",
-                message: formFolderName + "を作成しました",
-                status: "success"
-            });
-        }
-        fetchFolder();
-    };
-
-    const fetchFolder = () => {
-        Promise.all([getStores(), getFolderChildren()]).then(() => {
+        }).finally(() => {
             setIsLoading(false);
-            setIsFinished(true);
+            setAddDatabase(null);
+            ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
+            fetchFolder();
         });
     };
 
-    const getStores = () => {
-        return APIUtil.get("stores").then((response) => {
-            const json = response.data.data;
-            setStores(json.stores);
+    const fetchFolder = () => {
+        return getParentFolder().then(response => {
+            // 取得したフォルダ等を状態変数に格納する
+            setParentFolder(response);
+            setSortedDatas(response.children);
+            // フォルダの取得が完了したらisLoading=falseにする
+            setIsLoading(false);
+            return response;
         });
     };
 
     const clearSelected = () => {
+        parentFolder!.children.map((selectedData) => {
+            (selectedData as DatumEntryType).selected = false;
+        });
         setSelectedDatas([]);
-        setLibraryChildren(libraryChildren.map((libraryChildren: LibraryListDataType) => {
-            libraryChildren.selected = false;
-            return libraryChildren;
-        }));
-    };
-
-    const getFolderChildren = () => {
-        if (inject_folder_uuid) {
-            if (isProject) {
-                return APIUtil.get("projects/" + inject_folder_uuid).then((response) => {
-                    const json = response.data.data;
-                    const { children, folderPath } = json;
-                    setInitialLibraryChildren(children);
-                    setLibraryChildren(children);
-                    setFolderPath(folderPath);
-                    setAllowlists({ ...allowlists, parent: json.allowlist });
-                });
-            }
-            //該当フォルダを取得
-            return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
-                if (response.data.success) {
-                    const json = response.data.data;
-                    const { children, folderPath } = json;
-                    setInitialLibraryChildren(children);
-                    setLibraryChildren(children);
-                    setFolderPath(folderPath);
-                    setAllowlists({ ...allowlists, parent: json.allowlist });
-                } else {
-                    APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
-                        if (response.data.success) {
-                            const json = response.data.data;
-                            const { children, folderPath } = json;
-                            setInitialLibraryChildren(children);
-                            setLibraryChildren(children);
-                            setFolderPath(folderPath);
-                            setAllowlists({ ...allowlists, parent: json.allowlist });
-                        }
-                    });
-                }
-            });
-        } else if (inject_is_trash) {
-            // ゴミ箱の場合
-            return new Promise(async (resolve) => {
-                await API.request.doGet.trashes({})
-                    .then((response) => {
-                        if (response.data.data) {
-                            let model = new LibraryModel(response.data.data);
-                            setInitialLibraryChildren(model.children);
-                            setLibraryChildren(model.children);
-                            setFolderPath(model.folderPath);
-                            setAllowlists({ ...allowlists, parent: response.data.data.allowlist });
-                        } else {
-                            throw response.data;
-                        }
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        notify({
-                            title: "エラー",
-                            message: e.message,
-                            status: "error",
-                            dismissAfter: 0,
-                            closeButton: true
-                        });
-                    });
-                resolve(undefined);
-            });
-        } else {
-            //ルートを取得
-            return APIUtil.get("library").then((response) => {
-                const json = response.data.data;
-                if (response.data.success) {
-                    const { children, folderPath } = json;
-                    setInitialLibraryChildren(children);
-                    setLibraryChildren(children);
-                    setFolderPath(folderPath);
-                    setAllowlists({ ...allowlists, parent: json.allowlist });
-                }
-            });
-        }
     };
 
     const onClickNewFlow = () => {
@@ -708,6 +661,7 @@ const Library = (_: Props) => {
             </div>
         });
     };
+
     const onClickNewProject = () => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_PROJECT,
@@ -719,13 +673,13 @@ const Library = (_: Props) => {
     };
 
     const onClickImportFlow = () => {
-        let url = location.protocol + "//" + location.host + "/api/v0/flow_files";
+        let url = location.protocol + "//" + location.host + "/api/v0/archives/flows";
         ModalUtil.emitModal({
             id: Constants.modal.IMPORT_FLOW,
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={[".tgz"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
+                <FileUploader accept={[".tgz"]} url={url} parentUUID={parentFolder.uuid} notify={notify} />
             </div>
         });
     };
@@ -740,28 +694,76 @@ const Library = (_: Props) => {
             </div>
         });
     };
+
     const onClickCSVUpload = () => {
-        let url = location.protocol + "//" + location.host + "/api/v0/frames";
+        let url = location.protocol + "//" + location.host + "/api/v0/documents";
         ModalUtil.emitModal({
-            id: Constants.modal.ADD_FRAME,
+            id: Constants.modal.ADD_DOCUMENT,
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={[".csv"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
+                <FileUploader accept={["text/csv,application/pdf,image/*"]} url={url} parentUUID={parentFolder.uuid} notify={notify} />
             </div>
         });
     };
 
     const onClickSelectDestination = () => {
         if (window.opener || !window.opener.closed) {
-            window.opener.onCallbackApply(inject_folder_uuid);
+            window.opener.onCallbackApply(parentFolder.uuid);
         }
         window.close();
     };
 
-    const onClickAddDatabase = () => {
-        setAddDatabase(getInitialDatabase());
+    const getApiPath = (uuid:string):string => {
+        if(inject_folder_uuid || inject_is_trash){
+            // ルートフォルダ以外の場合
+            return {
+                project:`projects/${uuid}`,
+                folder: `folders/${uuid}`,
+                trash:  `trashes`
+            }[parentFolder.type];
+        }else{
+            // ルートフォルダの場合
+            return `library`;
+        }
     };
+
+    const onClickAddDatabase = () => {
+        const nullDatabase = {
+            label: "",
+            dbms: getDataBaseParams()[1].default,
+            hostname: "",
+            port: NaN,
+            database: "",
+            userId: "",
+            password: ""
+        };
+        setAddDatabase(nullDatabase);
+    };
+
+    const onClickAddRemoteFolder = () => {
+        clearRemoteFolder();
+        setRemoteFolderMode(RemoteFolderMode.ADD);
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_REMOTE_FOLDER,
+            visible: true,
+            done: "追加する",
+            dynamic: true,
+            content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+        });
+    }
+
+    const onClickEditRemoteFolder = (data:any) => {
+        setRemoteFolder(data);
+        setRemoteFolderMode(RemoteFolderMode.EDIT);
+        ModalUtil.emitModal({
+            id: Constants.modal.EDIT_REMOTE_FOLDER,
+            visible: true,
+            done: "設定する",
+            dynamic: true,
+            content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+        });
+    }
 
     const onChangeNewDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
         try {
@@ -771,470 +773,6 @@ const Library = (_: Props) => {
         } catch (e) {
             console.log(e);
         }
-    };
-
-    const isEmptyLibraryList = () => {
-        if (!is_finished) {
-            return false;
-        }
-        return !Array.isArray(libraryChildren) || libraryChildren.length === 0;
-    };
-
-    const renderAll = () => {
-        if (!is_finished) return null;
-        if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
-
-        const onClickFileName = (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => {
-            if (event) event.stopPropagation();
-            const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
-
-            if (body.type === "trash") {
-                WebUtil.navigateURL(WebUtil.webURL("/trashes" + dialogOption));
-            }
-            if (body.type === "folder") {
-                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption));
-            }
-            if (body.type === "project") {
-                WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
-            }
-            if (body.type === "database") {
-                onClickEditDatabase(body);
-            }
-            if (body.type === "frame") {
-                if (mode === Constants.library.mode.frame_select) {
-                    // データソースの追加時
-                    onClickApply(body);
-                    return;
-                }
-                window.open(WebUtil.webURL("/preview?step_id=null&dialog=false&frame_uuid=" + body.uuid + "&title=" + StringUtil.urlEncode(body.label)));
-            }
-            if (body.type === "flow") {
-                window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
-            }
-
-        };
-
-        const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-            let data: LibraryListDataType = cell;
-            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;// ライブラリ画面の単体表示時のみ複数選択を許可
-            if (isLoading) return;
-            if (event) event.stopPropagation();
-            if (data.allowlist) {
-                setAllowlists({ ...allowlists, selected: data.allowlist })
-            }
-
-            if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
-                data.selected = true;
-                // command or ctrl + click
-                if (selectedDatas.includes(data)) {
-                    data.selected = !data.selected;
-                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
-                    if (!data.selected) {
-                        setLastSelectedCell(null);
-                    }
-                } else {
-                    selectedDatas.push(data);
-                    setLastSelectedCell(data);
-                }
-            } else if (event && event.shiftKey && enableMultiSelect) {
-                // shift + click
-                clearSelected();// 選択状態を一旦解除
-                let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
-                if (lastSelectedCell) {
-                    let last = libraryChildren.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
-                    let min, max;
-                    if (current >= last) {
-                        min = last;
-                        max = current;
-                    } else {
-                        min = current;
-                        max = last;
-                    }
-                    const selectedDatas: LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild) => {
-                        libraryChild.selected = true;
-                        return libraryChild;
-                    });
-                    setSelectedDatas(selectedDatas);
-                }
-            } else {
-                // 単一選択
-                clearSelected();
-                data.selected = true;
-                setSelectedDatas([data]);
-                setLastSelectedCell(data);
-            }
-            clickedLibraryCell.current = true;
-        };
-
-        const onMouseDownLibrary = () => {
-            if (clickedLibraryCell.current) {
-                clearSelected();// 選択状態を一旦解除
-                setLastSelectedCell(null);
-                clickedLibraryCell.current = false;
-            }
-        };
-
-        const onClickDeleteAll = () => {
-            onClickCleanTrash();
-        };
-
-        const renderMenuList = () => {
-            let menuList;
-            if (mode === Constants.library.mode.folder_select) {
-                menuList = <ApplyMenuList
-
-                    onClickApply={onClickSelectDestination}
-                />;
-            } else if (mode === Constants.library.mode.frame_select) {
-                return null;
-            } else {
-                if (!inject_is_trash) {
-                    menuList = <MenuList
-                        allowlist={allowlists.parent}
-                        onClickAddDatabase={onClickAddDatabase}
-                        onClickCSVUpload={onClickCSVUpload}
-                        onClickNewFlow={onClickNewFlow}
-                        onClickNewFolder={onClickNewFolder}
-                        onClickNewProject={onClickNewProject}
-                        onClickImportFlow={onClickImportFlow}
-                    />;
-                } else {
-                    menuList = <TrashMenuList
-                        onClickDeleteAll={onClickDeleteAll}
-                    />;
-                }
-            }
-
-            return <>
-                <Spacer minWidth={40} />
-                <Flex flexDirection={"column"} fluid={true} width={280}>
-                    <Spacer height={160} />
-                    {menuList}
-                </Flex>
-            </>;
-        };
-
-
-        return <Flex justifyContent={"center"} fluid={true}>
-            {
-                (!inject_is_trash) ?
-                    renderLibraryInspector()
-                    :
-                    renderTrashInspector()
-
-            }
-            <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
-                onMouseDown={onMouseDownLibrary}>
-                <Spacer width={40} />
-                <Flex flexDirection={"column"} fluid={true}>
-                    <Spacer height={40} />
-                    <BreadCrumb links={links} />
-                    <Spacer height={8} />
-                    <FileListTable
-                        minWidth={800}
-                        onClickCell={onClickCell}
-                        onClickFileName={onClickFileName}
-                        onClickHeader={(header: ITableHeader, event) => {
-                            if (event) event.stopPropagation();
-                            if (header.sort) {
-                                setLibraryChildren(lodash.orderBy(libraryChildren, header.key, header.sort));
-                            } else {
-                                setLibraryChildren(initialLibraryChildren);
-                            }
-                        }}
-                        bodies={
-                            libraryChildren.map((libraryChild) => {
-                                const body = libraryChild as ITableBody;
-                                if (mode === Constants.library.mode.folder_select) {
-                                    switch (body.type) {
-                                        case "folder":
-                                        case "project":
-                                            body.clickable = true;
-                                    }
-                                } else if (mode === Constants.library.mode.frame_select) {
-                                    switch (body.type) {
-                                        case "frame":
-                                        case "folder":
-                                        case "project":
-                                            body.clickable = true;
-                                    }
-                                } else {
-                                    body.clickable = true;
-                                    if (body.type === "database") body.clickable = false;
-                                }
-                                if (inject_is_trash) {
-                                    // ゴミ箱の場合は全て選択不可
-                                    body.clickable = false;
-                                }
-                                return body;
-                            })
-                        }
-                    />
-                    <Spacer height={80} />
-                </Flex>
-                {renderMenuList()}
-                <Spacer width={40} />
-            </Flex>
-        </Flex>;
-    };
-
-    const deleteLibrary = async (library: LibraryChild, lock: { uuid: string | null }) => {
-
-        return new Promise(async (resolve, reject) => {
-            // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
-            if (library.type === Constants.library.type.flow) {
-                await API.request.doPost.locks({ flowUUID: library.uuid })
-                    .then((res) => {
-                        if (res && !res.data.success) throw res.data;
-                        lock.uuid = API.response.post.locks(res).uuid;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-
-            // Libraryを削除する
-            await API.request.doDelete.library({
-                libraryUUID: library.uuid,
-                libraryType: library.type,
-                lockUUID: lock.uuid
-            })
-                .then((res) => {
-                    if (res && !res.data.success) throw res.data;
-                })
-                .catch((e) => {
-                    console.log(e);
-                    reject(e);
-                });
-
-            // Lockを取得した場合、Lockを解除する
-            if (lock.uuid) {
-                await API.request.doDelete.locks({ lockUUID: lock.uuid })
-                    .then((res: any) => {
-                        lock.uuid = null;
-                        if (res && !res.data.success) throw res.data;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-            resolve(undefined);
-        })
-            .then(() => {
-                // 成功
-                const typeLabel = LibraryUtil.getTypeLabel(library.type);
-                notify({
-                    title: typeLabel + "を削除しました",
-                    message: library.label + "を削除しました",
-                    status: "success"
-                });
-            })
-            .catch((e) => {
-                // エラー
-                notify({
-                    title: "ライブラリー削除エラー(" + library.label + ")",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
-            });
-    };
-
-    const moveLibrary = async (library: LibraryChild, parentFolderUUID: string, lock: { uuid: string | null }) => {
-
-        return new Promise(async (resolve, reject) => {
-            // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
-            if (library.type === Constants.library.type.flow) {
-                await API.request.doPost.locks({ flowUUID: library.uuid })
-                    .then((res) => {
-                        if (res && !res.data.success) throw res.data;
-                        lock.uuid = API.response.post.locks(res).uuid;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-
-            // Libraryを移動させる
-            await API.request.doPut.library({
-                parentUUID: parentFolderUUID,
-                libraryUUID: library.uuid,
-                libraryType: library.type,
-                lockUUID: lock.uuid
-            })
-                .then((res) => {
-                    if (res && !res.data.success) throw res.data;
-                })
-                .catch((e) => {
-                    console.log(e);
-                    reject(e);
-                });
-
-            // Lockを取得した場合、Lockを解除する
-            if (lock.uuid) {
-                await API.request.doDelete.locks({ lockUUID: lock.uuid })
-                    .then((res: any) => {
-                        lock.uuid = null;
-                        if (res && !res.data.success) throw res.data;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-            resolve(undefined);
-        })
-            .then(() => {
-                // 成功
-                const typeLabel = LibraryUtil.getTypeLabel(library.type);
-                notify({
-                    title: typeLabel + "を移動しました", message: library.label + "を移動しました",
-                    status: "success"
-                });
-            })
-            .catch((e) => {
-                // 例外
-                notify({
-                    title: "ライブラリー移動エラー(" + library.label + ")",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
-            });
-    };
-
-    const renderTrashInspector = (): React.ReactNode => {
-        if (!selectedDatas.length) return null;
-        const data: LibraryListDataType = selectedDatas[0];
-
-        const doRecovery = (data) => {
-            API.request.doPut.trash({ trashUUID: data.uuid })
-                .then((response) => {
-                    if (!response.data.success) throw response.data;
-
-                })
-                .catch((err) => {
-                    let message = new MessageModel(err);
-                    notify({
-                        title: message.title,
-                        message: message.message,
-                        status: message.messageStatus,
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                })
-                .then(() => {
-                    fetchFolder();
-                });
-        };
-
-        const onClickRecovery = (e, data) => {
-            ModalUtil.registerModal({
-                id: Constants.modal.CONFIRM, onClickDone: () => {
-                    doRecovery(data);
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                }
-            });
-            ModalUtil.emitModal({
-                id: Constants.modal.CONFIRM,
-                visible: true,
-                done: "戻す",
-                danger: true,
-                content: <div>
-                    {data.label} を元の場所に戻しますか？
-                </div>
-            });
-        };
-
-        const editFlow = (flow_uuid, parent_uuid) => {
-            let body = { target: flow_uuid };
-            let locks = new LocksModel(flow_uuid);
-
-            return axios.post("/api/v0/locks", body).then((response) => {
-                let locksModel = locks.Parse(response);
-                let lockId = locksModel.getLockId();
-                if (lockId) {
-                    axios.put("/api/v0/flows/" + flow_uuid, {
-                        parent: parent_uuid,
-                        lock: lockId
-                    }).then(() => {
-                        navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                    }, (error) => {
-                        navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                        console.log(error);
-                    });
-                } else {
-                    // lockが出来なかった場合
-                    notify({
-                        title: "ライブラリー移動エラー",
-                        message: response.data.message,
-                        status: "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                }
-            });
-        };
-
-        const onClickMove = (e, libraryData: any) => {
-            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
-                const type = libraryData.type;
-                const uuid = libraryData.uuid;
-                const data = {
-                    parent: folder_uuid
-                };
-
-                let result;
-                switch (type) {
-                    case Constants.library.type.folder:
-                        result = APIUtil.put("folders/" + uuid, data);
-                        break;
-                    case Constants.library.type.project:
-                        result = APIUtil.put("projects/" + uuid, data);
-                        break;
-                    case Constants.library.type.flow:
-                        result = editFlow(uuid, folder_uuid);
-                        break;
-                    case Constants.library.type.frame:
-                        result = APIUtil.put("frames/" + uuid, data);
-                        break;
-                    case Constants.library.type.document:
-                        result = APIUtil.put("documents/" + uuid, data);
-                        break;
-                    case Constants.library.type.database:
-                        result = APIUtil.put("databases/" + uuid, data);
-                        break;
-                    case Constants.library.type.remoteFolder:
-                        result = APIUtil.put("remote-folders/" + uuid, data);
-                        break;
-                }
-                if (!result) return;
-                result.then((response) => {
-                    fetchFolder();
-                    if (!response.data.success) {
-                        notify({
-                            title: "エラー",
-                            message: response.data.message,
-                            status: "error",
-                            dismissAfter: 0,
-                            closeButton: true
-                        });
-                    }
-                });
-
-            });
-        };
-
-        return <TrashInspector data={data}
-            allowlist={allowlists.selected}
-            onClickRecovery={(e, data) => onClickRecovery(e, data)}
-            onClickMove={(e, data) => onClickMove(e, data)}
-        />;
     };
 
     const onClickCleanTrash = () => {
@@ -1273,7 +811,7 @@ const Library = (_: Props) => {
         });
     };
 
-    const onClickEditDatabase = (data: LibraryListDataType) => {
+    const onClickEditDatabase = (data: DatabaseType) => {
         if (data.type !== Constants.library.type.database) {
             return;
         }
@@ -1284,13 +822,13 @@ const Library = (_: Props) => {
             "hostname": data.hostname,
             "port": data.port,
             "database": data.database,
-            "user_id": data.user_id,
+            "userId": data.userId,
             "password": data.password
         };
         setEditDatabase(database);
     };
 
-    const onClickApply = (selected_data: LibraryListDataType) => {
+    const onClickApply = (selected_data: DatumType) => {
         if (window.opener || !window.opener.closed) {
             window.opener.onCallbackApply(selected_data);
         }
@@ -1298,7 +836,9 @@ const Library = (_: Props) => {
     };
 
     const renderLibraryInspector = (): React.ReactNode => {
-        if (!selectedDatas.length) return null;
+        if(!selectedDatas.length){
+            return null;
+        }
 
         let _onClickApply: any = null;
         let _onClickEdit: any = null;
@@ -1306,37 +846,118 @@ const Library = (_: Props) => {
         let _onClickDelete: any = null;
         let _onClickMove: any = null;
         let _onClickEditEncoding: any = null;
-        let _onBlurTitle: any = null;
+        let _onBlurTitle: ((e:any, selectedData:DatumType) => void) | null = null;
         let _onClickMemberInfo: any = null;
-        let _onChangeFlowLock: any = null;
+        let _onChangeEditLock: any = null;
+
+        const moveLibrary = (datum:DatumType, parentFolderUUID:string) => {
+            let promise: Promise<DatumType>;
+            if (datum.type === Constants.library.type.flow) {
+                // Flowの場合は、Lockを取得してから移動する
+                promise = APIUtil2.createLock(datum.uuid).then(async lock => {
+                    // Datumを移動する(移動の完了を待つ)
+                    await datum.move(parentFolderUUID, lock.uuid);
+                    return lock;
+                }).then(lock => {
+                    // Datumのの移動が完了した後に、Lockを解除する
+                    lock.delete();
+                    return datum;
+                });
+            }else{
+                // Datumを移動する
+                promise = datum.move(parentFolderUUID); 
+            }
+
+            // 移動完了メッセージを表示する
+            return promise.then(datum => {
+                // 成功
+                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                notify({
+                    title: typeLabel + "を移動しました", message: datum.label + "を移動しました",
+                    status: "success"
+                });
+            })
+            .catch((e) => {
+                // 例外
+                notify({
+                    title: "ライブラリー移動エラー(" + datum.label + ")",
+                    message: e.message,
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            });
+        };
+
+        const deleteLibrary = (datum: DatumType) => {
+            let promise: Promise<void>;
+            if (datum.type === Constants.library.type.flow) {
+                // Flowの場合は、Lockを取得してから削除する
+                promise = APIUtil2.createLock(datum.uuid).then(async lock => {
+                    // Datumを削除する(削除の完了を待つ)
+                    await datum.delete(lock.uuid);
+                    return lock;
+                }).then(lock => {
+                    // Datumのの削除が完了した後に、Lockを解除する
+                    lock.delete();
+                });
+            }else{
+                // Datumを削除する
+                promise = datum.delete(); 
+            }
+
+            // 削除完了メッセージを表示する
+            return promise.then(() => {
+                // 成功
+                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                notify({
+                    title: typeLabel + "を削除しました",
+                    message: datum.label + "を削除しました",
+                    status: "success"
+                });
+            })
+            .catch((e) => {
+                // エラー
+                notify({
+                    title: "ライブラリー削除エラー(" + datum.label + ")",
+                    message: e.message,
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            });
+        };
 
         const onClickMove = () => {
             let queue = Queue(
                 1, // concurrency
                 {
                     "retry": 0               //Number of retries
-                    , "retryIsJump": false     //retry now?
-                    , "timeout": 0            //The timeout period
+                    , "retryIsJump": false   //retry now?
+                    , "timeout": 0           //The timeout period
                 }
             );
             let lock = { uuid: null };
-            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
-                setIsLoading(true);
-
-                selectedDatas.forEach((selectedData: LibraryChild) => {
-                    queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
-                });
-                queue.push(setIsLoading, [false]);
-                queue.push(fetchFolder, []);
-                queue.start();
-            });
+            // 移動先フォルダ選択ダイアログは、現在の位置のフォルダを初期表示する
+            HttpUtil.windowOpen(
+                getApiPath(parentFolder.uuid) + '?dialog=true&mode=folder_select',
+                (folder_uuid) => {
+                    setIsLoading(true);
+                    selectedDatas.forEach((selectedData: DatumType) => {
+                        queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
+                    });
+                    queue.push(setIsLoading, [false]);
+                    queue.push(fetchFolder, []);
+                    queue.start();
+                }
+            );
         };
 
-        const _onClickCopy = (e, data: LibraryChild) => {
+        const _onClickCopy = (e, data: DatumType) => {
             if (data.type == "flow") {
                 ModalUtil.registerModal({
                     id: Constants.modal.CONFIRM, onClickDone: () => {
-                        APIUtil.post("flows", { original_flow_uuid: data.uuid }).then((response) => {
+                        APIUtil.post("flows", { source: data.uuid }).then((response) => {
                             if (response.data.success) {
                                 fetchFolder();
                                 notify({
@@ -1371,19 +992,19 @@ const Library = (_: Props) => {
 
         const onClickDelete = () => {
             ModalUtil.registerModal({
-                id: Constants.modal.CONFIRM, onClickDone: () => {
+                id: Constants.modal.CONFIRM,
+                onClickDone: () => {
                     let queue = Queue(
                         1, // concurrency
                         {
-                            "retry": 0               //Number of retries
-                            , "retryIsJump": false     //retry now?
-                            , "timeout": 0            //The timeout period
+                            "retry": 0              //Number of retries
+                            , "retryIsJump": false  //retry now?
+                            , "timeout": 0          //The timeout period
                         }
                     );
-                    let lock = { uuid: null };
                     setIsLoading(true);
-                    selectedDatas.forEach((selectedData: LibraryChild) => {
-                        queue.push(deleteLibrary, [selectedData, lock]);
+                    selectedDatas.forEach((selectedData: DatumType) => {
+                        queue.push(deleteLibrary, [selectedData]);
                     });
                     queue.push(setIsLoading, [false]);
                     queue.push(fetchFolder, []);
@@ -1408,167 +1029,56 @@ const Library = (_: Props) => {
             });
         };
 
-
-        // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
-        if (selectedDatas.length >= 2) {
-            // モードに応じた処理
-            switch (mode) {
-                case Constants.library.mode.frame_select:
-                    break;
-                case Constants.library.mode.folder_select:
-                    break;
-                case Constants.library.mode.list:
-                    _onClickDelete = () => onClickDelete();
-                    _onClickMove = () => onClickMove();
-            }
-            return <LibraryMultiInspector
-                allowlist={allowlists.selected}
-                selectedDatas={selectedDatas}
-                onClickDelete={_onClickDelete}
-                onClickMove={_onClickMove}
-            />;
-        }
-
-        // 選択されているのが 1件 の場合の処理
-        const selectedData: LibraryListDataType = selectedDatas[0];
-
-        console.assert(selectedData.uuid !== "d8d2fec5-066c-48ec-9ee4-314559aa7ae4", "起きた")
-        if (selectedData.uuid === "d8d2fec5-066c-48ec-9ee4-314559aa7ae4") {
-            console.trace("起きたよ");
-        }
-
-        // モードに応じた処理
-        switch (mode) {
-            case Constants.library.mode.frame_select:
-                // if (data && data.type === Constants.library.type.frame) {
-                //     _onClickApply = (data) => onClickApply(data);
-                // }
-                break;
-            case Constants.library.mode.folder_select:
-                break;
-            case Constants.library.mode.list:
-                _onClickDelete = () => onClickDelete();
-                _onClickMove = () => onClickMove();
-                _onClickEditEncoding = (data) => onClickEditEncoding(data);
-                _onBlurTitle = (e, data) => onBlurTitle(e, data);
-                if (selectedData && selectedData.type === Constants.library.type.database) {
-                    _onClickEdit = (data) => onClickEditDatabase(data);
-                } else if (selectedData && selectedData.type === Constants.library.type.trash) {
-                    _onBlurTitle = null;
-                    _onClickCleanTrash = onClickCleanTrash;
-                } else if (selectedData && selectedData.type === Constants.library.type.database) {
-                    _onClickEdit = (data) => onClickEditDatabase(data);
-                }
-                _onClickMemberInfo = (e, uuid) => onClickMemberInfo(e, uuid);
-                break;
-        }
-
-        const getEndPoint = (libraryType: string): string | null => {
-            let endPoint: string | null = null;
-            switch (libraryType) {
-                case Constants.library.type.flow:
-                    endPoint = "flows/";
-                    break;
-                case Constants.library.type.frame:
-                    endPoint = "frames/";
-                    break;
-                case Constants.library.type.document:
-                    break;
-                case Constants.library.type.folder:
-                    endPoint = "folders/";
-                    break;
-                case Constants.library.type.project:
-                    endPoint = "projects/";
-                    break;
-                case Constants.library.type.database:
-                    endPoint = "databases/";
-                    break;
-                case Constants.library.type.remoteFolder:
-                    break;
-                default:
-                    break;
-            }
-
-            return endPoint;
-        };
-
-        const updateLibrary = (libraryChildren: any[], uuid: string, library): LibraryChild[] => {
-            return libraryChildren.map((child: any) => {
-                if (uuid === child.uuid) {
-                    return library;
-                }
-                return child;
-            });
-        };
-
-        const onBlurTitle = (
-            e: React.FocusEvent<HTMLInputElement>, selected_data: any) => {
+        /**
+         * ラベル名を変更する
+         * @param e 
+         * @param selectedData
+         */
+         const onBlurTitle = (e:React.FocusEvent<HTMLInputElement>, selectedData:DatumType) => {
             // Label の修正
-            if (!selected_data) {
+            if (!selectedData) {
                 return;
             }
 
-            const uuid = selected_data.uuid;
-            const libraryType = selected_data.type;
-
-            let endPoint = getEndPoint(libraryType);
-
-            if (!endPoint) {
+            const newLabel = e.target.value;
+            if(!newLabel || newLabel === selectedData.label) {
                 return;
             }
 
-            let body: any = {
-                label: e.target.value
-            };
-            if (selected_data.type === Constants.library.type.database) {
-                body = {
-                    label: e.target.value,
-                    dbms: selected_data.dbms,
-                    hostname: selected_data.hostname,
-                    port: selected_data.port,
-                    database: selected_data.database,
-                    user_id: selected_data.user_id,
-                    password: selected_data.password
-                };
-            }
+            let promise: Promise<any>;
 
             setIsLoading(true);
-            let locksModel = new LocksModel(uuid);
-            let lock, lockId, response
+            if(selectedData.type === 'flow'){
+                // フローのラベル名を変更するには排他ロックを獲得する必要がある
+                promise = APIUtil2.createLock(selectedData.uuid).then(lock => {
+                    selectedData.rename(newLabel, lock.uuid).then(datum => {
+                    // ライブラリ画面を再表示する
+                        fetchFolder();
+                    }).finally(() => {
+                        lock.delete();
+                    });
+                });
+            }else{
+                promise = selectedData.rename(newLabel).then(datum => {
+                // ライブラリ画面を再表示する
+                    fetchFolder();
+                });
+            }
 
-            new Promise(async (resolve, reject) => {
-                // lockが必要な場合、lockを取得
-                if (libraryType === Constants.library.type.flow) {
-                    const lockBody = { target: uuid };
-                    // lockの取得
-                    response = await APIUtil.post("locks", lockBody);
-                    if (!response.data.success) reject(response.data)
-                    lock = locksModel.Parse(response);
-                    lockId = lock.getLockId();
-                    if (!lockId) reject(response.data);
-                    body = { ...body, lock: lockId }
-                }
-                resolve(body);
-            }).then(async (body) => {
-                response = await APIUtil.put(endPoint + uuid, body)
-                if (lockId) navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                if (response.data.success) fetchFolder();
-            }).catch((exception) => {
+            promise.catch(error => {
                 notify({
                     title: "エラー",
-                    message: exception.message,
+                    message: error.message,
                     status: "error",
                     dismissAfter: 0,
                     closeButton: true
                 });
-            }).then(() => {
-                setIsLoading(false);
+            }).finally(() => {
+                setIsLoading(true);
             });
         };
 
-
-        const onClickEditEncoding = (data: LibraryChild) => {
-
+        const onClickEditEncoding = (data: DatumType) => {
 
             const onChangeEncoding = (e, data) => {
                 data.encoding = e.target.value;
@@ -1632,19 +1142,19 @@ const Library = (_: Props) => {
             ModalUtil.registerModal({
                 id: Constants.modal.EDIT_ENCODING, onClickDone: () => {
                     if (data.type === Constants.library.type.frame) {
-
+                        const frame = data as FrameType;
                         setIsLoading(true);
                         APIUtil.put("frames/" + data.uuid, {
-                            encoding: data.encoding,
-                            newline: data.newline
+                            encoding: frame.encoding,
+                            newline: frame.newline
                         })
                             .then(() => {
                                 setIsLoading(false);
 
-                                const typeLabel = LibraryUtil.getTypeLabel(data.type);
+                                const typeLabel = LibraryUtil.getTypeLabel(frame.type);
                                 notify({
                                     title: typeLabel + "の文字コードを変更しました",
-                                    message: data.label + "の文字コードを変更しました",
+                                    message: frame.label + "の文字コードを変更しました",
                                     status: "success"
                                 });
                             });
@@ -1662,209 +1172,336 @@ const Library = (_: Props) => {
             });
         };
 
-        const emitMemberForm = (members, searchRows, onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged) => {
+        // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
+        if (selectedDatas.length >= 2) {
+            // モードに応じた処理
+            switch (mode) {
+                case Constants.library.mode.frame_select:
+                    break;
+                case Constants.library.mode.folder_select:
+                    break;
+                case Constants.library.mode.list:
+                    _onClickDelete = () => onClickDelete();
+                    _onClickMove = () => onClickMove();
+            }
+            return <LibraryMultiInspector selectedDatas={selectedDatas}
+                                          onClickDelete={_onClickDelete}
+                                          onClickMove={_onClickMove} />;
+        }
+
+        // 選択されているのが 1件 の場合の処理
+        const selectedData = selectedDatas[0];
+
+        // モードに応じた処理
+        switch (mode) {
+            case Constants.library.mode.frame_select:
+                // if (data && data.type === Constants.library.type.frame) {
+                //     _onClickApply = (data) => onClickApply(data);
+                // }
+                break;
+            case Constants.library.mode.folder_select:
+                break;
+            case Constants.library.mode.list:
+                _onClickDelete = () => onClickDelete();
+                _onClickMove = () => onClickMove();
+                _onClickEditEncoding = (data) => onClickEditEncoding(data);
+                _onBlurTitle = (e, data) => onBlurTitle(e, data);
+                if (selectedData && selectedData.type === Constants.library.type.database) {
+                    _onClickEdit = (data) => onClickEditDatabase(data);
+                } else if (selectedData && selectedData.type === Constants.library.type.remoteFolder) {
+                    _onClickEdit = (data) => onClickEditRemoteFolder(data);
+                } else if (selectedData && selectedData.type === Constants.library.type.trash) {
+                    _onBlurTitle = null;
+                    _onClickCleanTrash = onClickCleanTrash;
+                } else if (selectedData && selectedData.type === Constants.library.type.project) {
+                    _onClickMemberInfo = (project) => {
+                        emitMemberModal(project.members || [], []);
+                    }
+                }
+                break;
+        }
+
+        /**
+         * フローの編集ロックを変更する
+         */
+        _onChangeEditLock = (e, flow:FlowType) => {
+            // 編集ロックの値を取得する
+            const editLocked = e.currentTarget.checked;
+
+            return APIUtil2.createLock(flow.uuid).then(async lock => {
+                // 編集ロックの値を変更する
+                await flow.updateLock(editLocked, lock.uuid).then(flow => {
+                    // ロックの値を変更後に、カレントフォルダを再読み込みする
+                    fetchFolder();
+                    // インスペクターを更新する
+                    setSelectedDatas([flow]);
+                }).catch(error => {
+                    // 編集ロックの値の変更に失敗した場合
+                    notify({
+                        title: "エラー",
+                        message: error.message,
+                        status: "error",
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                });
+                return lock;
+            }).then(lock => {
+                // 排他ロックを解除する
+                lock.delete();
+            }).catch(error => {
+                // 排他ロックに失敗した場合
+                notify({
+                    title: "エラー",
+                    message: error.message,
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            });
+        };
+
+        /**
+         * プロジェクトメンバのダイアログを表示する
+         * @param members
+         * @param searchedUsers
+         */
+        const emitMemberModal = (members:Member[], searchedUsers:UserType[], doneEnabled:boolean=false) => {
+            /**
+             * プロジェクトのメンバを更新する
+             */
+            const initMembers = (members:Member[]) => {
+                // ルートフォルダ直下の全てのプロジェクトを取得する
+                const projects = projectsReader()
+                if(!projects){
+                    return;
+                }
+                // 選択中のプロジェクトを取得する
+                const project = projects.find(child => child.uuid===selectedData.uuid) as ParentProjectType;
+                if(!project){
+                    return;
+                }
+                // メンバ情報の型変換
+                const currentMemberList = members.map(member => 
+                    {
+                        return {
+                            uuid: member.uuid,
+                            type: member.type
+                        };
+                    }
+                );
+                // 指定されたメンバでプロジェクトを更新する
+                project.initMembers(currentMemberList, project.modifiedAt).then(project => {
+                    // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
+                    resourceCache(getProjects).clear();
+                    // ルートフォルダ直下の全てのプロジェクトを再取得する
+                    refreshProjects(true);
+                    // 更新を通知する
+                    notify({
+                        title: 'メンバー情報保存',
+                        message: 'プロジェクトのメンバー情報を保存しました',
+                        status: 'success'
+                    });
+                }).catch(error => {    
+                    notify({
+                        title: 'メンバー情報保存エラー',
+                        message: error.message,
+                        status: 'error',
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                    throw error;
+                });
+            };
+
+            /**
+             * 検索語を含むユーザを検索し、結果を一覧表示する
+             */
+            const onSearchTextInputed = (e, members:Member[]) => {
+                // 検索語を取得する
+                const searchText = e.currentTarget.value;
+                // 検索語を含むユーザを取得する
+                if (searchText) {
+                    APIUtil2.findUsers(searchText, true).then(users => {
+                        // 既にプロジェクトメンバに登録されているユーザを取得結果から除外する
+                        const searchedUsers = users.filter(user => {
+                            return members!.findIndex(member => member.uuid===user.uuid) === -1;
+                        });
+                        // プロジェクトメンバのダイアログを、検索したユーザリストで更新する
+                        emitMemberModal(members, searchedUsers);
+                    });
+                }else{
+                    // 検索語が空の場合は、検索結果を空にする
+                    emitMemberModal(members, []); 
+                }
+            }
+
+            /**
+             * プロジェクトメンバに指定したユーザを追加する
+             */
+            const onSearchedMemberClicked = (e, members:Member[], newUser:UserType) => {
+                const newMember = {...newUser, type: 'Reader'} as Member;
+                const newMembers = [...members, newMember];
+                // プロジェクトメンバのダイアログを、新しいメンバで更新する
+                emitMemberModal(newMembers, [], true);
+            }
+
+            /**
+             * プロジェクトメンバの権限を変更する、または削除する
+             */
+            const onMemberRoleChanged = (e, members:Member[], editMember:Member) => {
+                // 選択されたメンバの権限を更新する
+                const selectedType = e.currentTarget.value;
+
+                let newMembers: Member[];
+                if(selectedType==='Del'){
+                    // '削除する'が選択されメンバを一覧から削除する
+                    newMembers = members.filter(member => {
+                        return member.uuid !== editMember.uuid;
+                    });
+                } else {
+                    // 選択されたメンバの権限を変更する
+                    newMembers = members.map(member => {
+                        if (member.uuid === editMember.uuid) {
+                            const newMember = {...member};
+                            newMember.type = selectedType;
+                            return newMember;
+                        }else{
+                            return member;
+                        }
+                    })
+                }
+
+                // プロジェクトメンバのダイアログを、新しいメンバの権限で更新する
+                emitMemberModal(newMembers, [], true);
+            }
+
+            // ダイアログを登録する
+            ModalUtil.registerModal({
+                id: Constants.modal.MEMBER_INFO,
+                onClickClose : () => {},
+                onClickCancel: () => {},
+                onClickDone: () => {
+                    doneEnabled && initMembers(members);
+                    ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
+                }
+            });
+
+            // ダイアログ内に表示するFormを指定して、ダイアログを表示する
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
                 done: "保存する",
-                content: <MemberForm
-                    rows={members}
-                    searchedRows={searchRows}
-                    onSearchTextInputed={onSearchTextInputed}
-                    onSearchedMemberClicked={onSearchedMemberClicked}
-                    onMemberRoleChanged={onMemberRoleChanged}
-                />
+                content: <MemberForm members={members}
+                                     searchedUsers={searchedUsers}
+                                     onSearchTextInputed={onSearchTextInputed}
+                                     onSearchedMemberClicked={onSearchedMemberClicked}
+                                     onMemberRoleChanged={onMemberRoleChanged} />
             });
-        }
-
-        const onMemberRoleChanged = (e, user: any) => {
-            const value = e.currentTarget.value
-            let currentMembers = currentProject.members;
-
-            if (currentMembers) {
-                if (value === "Del") {
-                    currentMembers = currentMembers.filter((mem) => {
-                        return mem.uuid !== user.uuid
-                    })
-                } else if (value !== "Del") {
-                    currentMembers = currentMembers.map((mem) => {
-                        if (mem.uuid === user.uuid) {
-                            mem.type = value
-                        }
-                        return mem
-                    })
-                }
-
-                currentProject.members = currentMembers;
-                emitMemberForm(currentMembers, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
-            }
-        }
-
-        const onSearchedMemberClicked = (e, addMember: any) => {
-            addMember.type = "Reader"
-            let currentMembers = currentProject.members;
-
-            if (currentMembers) {
-                currentMembers.unshift(addMember)
-                emitMemberForm(currentMembers, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
-            }
-
-        }
-
-        const onSearchTextInputed = async (e) => {
-            const searchText = e.currentTarget.value ? e.currentTarget.value : "";
-            const currentMembers = currentProject.members;
-            let seachResult = []
-
-            if (currentMembers) {
-                if (searchText !== "") {
-
-                    let response = await APIUtil.get("users?q=" + searchText + "&roles=off&projects=on&&except_inactive=on")
-                    if (response.data.success && response.data.data) {
-                        seachResult = response.data.data
-
-                        seachResult = seachResult.filter((user: any) => {
-                            let result = true;
-                            if (currentMembers.some((currentMember: any) => { return currentMember.uuid == user.uuid })) {
-                                result = false;
-                            }
-
-                            return result
-                        })
-                    }
-                }
-
-                emitMemberForm(currentMembers, seachResult, onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
-            }
-        }
-
-
-        const onClickMemberInfo = (e, projectUUID) => {
-            ModalUtil.registerModal({
-                id: Constants.modal.MEMBER_INFO, onClickDone: () => {
-                    let putBody = {
-                        "members": currentProject.members,
-                        "lastModifiedAt": currentProject.projectModifiedAt
-                    }
-
-                    APIUtil.put("projects/" + projectUUID, putBody).then((response) => {
-                        if (response.data.success) {
-                            notify({
-                                title: "メンバー情報保存",
-                                message: "プロジェクトのメンバー情報を保存しました。",
-                                status: "success"
-                            });
-                        } else {
-                            notify({
-                                title: "",
-                                message: response.data.message,
-                                status: "warning",
-                                dismissAfter: 0,
-                                closeButton: true
-                            });
-                        }
-                        refresh();
-                    })
-                    ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
-                }, onClickClose: () => {
-                    if (selectedData && selectedData.type === "project") {
-                        APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
-                            if (response.data.success && response.data.data.members) {
-                                setCurrentProject({
-                                    members: response.data.data.members,
-                                    projectModifiedAt: response.data.data.modifiedAt
-                                })
-                                setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
-                            }
-                        })
-                    }
-                }, onClickCancel: () => {
-                    if (selectedData && selectedData.type === "project") {
-                        APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
-                            if (response.data.success && response.data.data.members) {
-                                setCurrentProject({
-                                    members: response.data.data.members,
-                                    projectModifiedAt: response.data.data.modifiedAt
-                                })
-                                setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
-                            }
-                        })
-                    }
-                }
-            });
-
-            emitMemberForm(currentProject.members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         };
 
-        _onChangeFlowLock = (e, data) => {
-            const checked = e.currentTarget.checked;
+        return <AsyncResourceContent
+                // フォルダ情報を取得中の場合
+                fallback={<LibraryInspector projectsReader={() => null}
+                                            selectedData={selectedData} />}>
+            <LibraryInspector
+                projectsReader={projectsReader}
+                selectedData={selectedData}
+                onClickCopy={_onClickCopy}
+                onClickDelete={_onClickDelete}
+                onClickApply={_onClickApply}
+                onClickMove={_onClickMove}
+                onClickEdit={_onClickEdit}
+                onClickEditEncoding={_onClickEditEncoding}
+                onChangEditLock={_onChangeEditLock}
+                onClickCleanTrash={_onClickCleanTrash}
+                onClickMemberInfo={_onClickMemberInfo}
+                onBlurTitle={_onBlurTitle} />
+        </AsyncResourceContent>
+    };
 
-            const editFlow = (flow_uuid, editLock) => {
-                let body = { target: flow_uuid };
-                let locks = new LocksModel(flow_uuid);
+    const renderTrashInspector = (): React.ReactNode => {
+        if (!selectedDatas.length) return null;
 
-                return APIUtil.post("locks", body).then((response) => {
-                    let locksModel = locks.Parse(response);
-                    let lockId = locksModel.getLockId();
-                    if (lockId) {
-                        APIUtil.put("flows/" + flow_uuid, {
-                            editLock: editLock,
-                            lock: lockId
-                        }).then((response) => {
-                            data.editLock = response.data.data.editLock;
-                            navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                        }, (response) => {
-                            navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
-                            notify({
-                                title: "エラー",
-                                message: response.data.message,
-                                status: "error",
-                                dismissAfter: 0,
-                                closeButton: true
+        const datum = selectedDatas[0];
+
+        const doRecovery = () => {
+            if(parentFolder.type !== 'trash'){
+                throw new Error('Trash folder is not selected.');
+            }
+            const trashFolder = parentFolder as ParentTrashType;
+            trashFolder.putBack(datum.uuid).catch((e) => {
+                let message = new MessageModel(e);
+                notify({
+                    title: message.title,
+                    message: message.message,
+                    status: message.messageStatus,
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            }).then(() => {
+                fetchFolder();
+            });
+        };
+
+        const onClickRecovery = (e, data) => {
+            ModalUtil.registerModal({
+                id: Constants.modal.CONFIRM, onClickDone: () => {
+                    doRecovery();
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                }
+            });
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: "戻す",
+                danger: true,
+                content: <div>
+                    {data.label} を元の場所に戻しますか？
+                </div>
+            });
+        };
+
+        const onClickMove = (e, libraryData: DatumType) => {
+            HttpUtil.windowOpen(
+                getApiPath(parentFolder.uuid) + '?dialog=true&mode=folder_select',
+                (newParentUuid) => {
+                    // Datumを移動する
+                    let promise: Promise<any>;
+                    if(libraryData.type === 'flow'){
+                        promise = APIUtil2.createLock(libraryData.uuid).then(lock => {
+                            libraryData.move(newParentUuid, lock.uuid).then(flow => {
+                                lock.delete().then(() => {
+                                    // ライブラリ画面を再読み込みする
+                                    fetchFolder();
+                                });
                             });
-                        }).then(() => {
-                            setSelectedDatas([data]);
-                        })
-                    } else {
-                        // lockが出来なかった場合
+                        });
+                    }else{
+                        promise = libraryData.move(newParentUuid).then(datum => {
+                            // ライブラリ画面を再読み込みする
+                            fetchFolder();
+                        });
+                    }
+                    // エラー処理
+                    promise.catch((e) => {
                         notify({
                             title: "エラー",
-                            message: response.data.message,
+                            message: e.message,
                             status: "error",
                             dismissAfter: 0,
                             closeButton: true
                         });
-                    }
-                });
-            };
+                    });
+                }
+            );
+        };
 
-
-            editFlow(data.uuid, checked);
-        }
-
-        return <LibraryInspector
-            currentProject={currentProject}
-            allowlist={allowlists.selected}
-            selectedData={selectedData}
-            onClickCopy={_onClickCopy}
-            onClickDelete={_onClickDelete}
-            onClickApply={_onClickApply}
-            onClickMove={_onClickMove}
-            onClickEdit={_onClickEdit}
-            onClickEditEncoding={_onClickEditEncoding}
-            onClickCleanTrash={_onClickCleanTrash}
-            onClickMemberInfo={_onClickMemberInfo}
-            onChangeFlowLock={_onChangeFlowLock}
-            onBlurTitle={_onBlurTitle}
+        return <TrashInspector data={datum}
+            onClickRecovery={(e, data) => onClickRecovery(e, data)}
+            onClickMove={(e, data) => onClickMove(e, data)}
         />;
     };
-
-    const findLibrary = (libraryChildren: any[], uuid: string): LibraryChild => {
-        return libraryChildren.find((child: any) => {
-            return (child.uuid === uuid);
-        });
-    };
-
 
     const renderEmptyState = () => {
         return <EmptyState
@@ -1874,15 +1511,215 @@ const Library = (_: Props) => {
         </EmptyState>;
     };
 
+    const renderAll = () => {
+        const isEmptyLibraryList = !Array.isArray(parentFolder!.children) || parentFolder!.children.length === 0;
+
+        if (isEmptyLibraryList && mode === Constants.library.mode.dialog){
+            return renderEmptyState();
+        }
+
+        const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
+            if (event) event.stopPropagation();
+            const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
+
+            if (body.type === "trash") {
+                WebUtil.navigateURL(WebUtil.webURL("/trashes" + dialogOption));
+            }
+            if (body.type === "folder") {
+                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption));
+            }
+            if (body.type === "project") {
+                WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
+            }
+            if (body.type === "database") {
+                onClickEditDatabase(body as DatabaseType);
+            }
+            if (body.type === "frame") {
+                if (mode === Constants.library.mode.frame_select) {
+                    // データソースの追加時
+                    onClickApply(body);
+                    return;
+                }
+                window.open(WebUtil.webURL("/preview?step_id=null&dialog=false&frame_uuid=" + body.uuid + "&title=" + StringUtil.urlEncode(body.label)));
+            }
+            if (body.type === "flow") {
+                window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
+            }
+            if (body.type === "document") {
+                window.open(WebUtil.webURL("/documents/" + body.uuid));
+            }
+
+        };
+
+        const onClickCell = (cell: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
+            let data = cell;
+            // ライブラリ画面の単体表示時のみ複数選択を許可
+            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
+            if (isLoading) return;
+            if (event) event.stopPropagation();
+
+            if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
+                data.selected = true;
+                // command or ctrl + click
+                if (selectedDatas.includes(data)) {
+                    data.selected = !data.selected;
+                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
+                    if (!data.selected) {
+                        setLastSelectedCell(null);
+                    }
+                } else {
+                    selectedDatas.push(data);
+                    setLastSelectedCell(data);
+                }
+            } else if (event && event.shiftKey && enableMultiSelect) {
+                // shift + click
+                clearSelected();// 選択状態を一旦解除
+                const children = parentFolder!.children;
+                let current = children.findIndex(libraryChild => data.uuid === libraryChild.uuid);
+                if (lastSelectedCell) {
+                    let last = children.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
+                    let min, max;
+                    if (current >= last) {
+                        min = last;
+                        max = current;
+                    } else {
+                        min = current;
+                        max = last;
+                    }
+                    const selectedEntries = children.slice(min, max + 1).map((selectedData) => {
+                        (selectedData as DatumEntryType).selected = true;
+                        return selectedData;
+                    });
+                    setSelectedDatas(selectedEntries);
+                }
+            } else {
+                // 単一選択
+                clearSelected();
+                data.selected = true;
+                setSelectedDatas([data]);
+                setLastSelectedCell(data);
+            }
+            clickedLibraryCell.current = true;
+        };
+
+        const onMouseDownLibrary = () => {
+            if (clickedLibraryCell.current) {
+                clearSelected();// 選択状態を一旦解除
+                setLastSelectedCell(null);
+                clickedLibraryCell.current = false;
+            }
+        };
+
+        const onClickDeleteAll = () => {
+            onClickCleanTrash();
+        };
+
+        const renderMenuList = () => {
+            let menuList;
+            if (mode === Constants.library.mode.folder_select) {
+                menuList = <ApplyMenuList
+                    onClickApply={onClickSelectDestination}
+                />;
+            } else if (mode === Constants.library.mode.frame_select) {
+                return null;
+            } else {
+                if (!inject_is_trash) {
+                    menuList = <MenuList
+                        allowlist={parentFolder!.allowlist}
+                        onClickAddDatabase={onClickAddDatabase}
+                        onClickCSVUpload={onClickCSVUpload}
+                        onClickNewFlow={onClickNewFlow}
+                        onClickNewFolder={onClickNewFolder}
+                        onClickNewProject={onClickNewProject}
+                        onClickAddRemoteFolder={onClickAddRemoteFolder}
+                        onClickImportFlow={onClickImportFlow}
+                    />;
+                } else {
+                    menuList = <TrashMenuList
+                        onClickDeleteAll={onClickDeleteAll}
+                    />;
+                }
+            }
+
+            return <>
+                <Spacer minWidth={40} />
+                <Flex flexDirection={"column"} fluid={true} width={280}>
+                    <Spacer height={160} />
+                    {menuList}
+                </Flex>
+            </>;
+        };
+
+        return <Flex justifyContent={"center"} fluid={true}>
+            {
+                (!inject_is_trash) ?
+                    renderLibraryInspector()
+                    :
+                    renderTrashInspector()
+
+            }
+            <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
+                onMouseDown={onMouseDownLibrary}>
+                <Spacer width={40} />
+                <Flex flexDirection={"column"} fluid={true}>
+                    <Spacer height={40} />
+                    <BreadCrumb links={links} />
+                    <Spacer height={8} />
+                    <FileListTable
+                        minWidth={800}
+                        onClickCell={onClickCell}
+                        onClickFileName={onClickFileName}
+                        onClickHeader={(header: ITableHeader, event) => {
+                            if (event) event.stopPropagation();
+                            if (header.sort) {
+                                setSortedDatas(lodash.orderBy(parentFolder!.children, header.key, header.sort));
+                            } else {
+                                setSortedDatas(parentFolder!.children);
+                            }
+                        }}
+                        bodies={
+                            sortedDatas.map((datum) => {
+                                const body = datum as DatumEntryType;
+                                if (mode === Constants.library.mode.folder_select) {
+                                    switch (body.type) {
+                                        case "folder":
+                                        case "project":
+                                            body.clickable = true;
+                                    }
+                                } else if (mode === Constants.library.mode.frame_select) {
+                                    switch (body.type) {
+                                        case "frame":
+                                        case "folder":
+                                        case "project":
+                                        case Constants.library.type.remoteFolder:
+                                        case Constants.library.type.database:
+
+                                            body.clickable = true;
+                                    }
+                                } else {
+                                    body.clickable = true;
+                                    if (body.type === "database") body.clickable = false;
+                                }
+                                if (inject_is_trash) {
+                                    // ゴミ箱の場合は全て選択不可
+                                    body.clickable = false;
+                                }
+                                return body;
+                            })
+                        }
+                    />
+                    <Spacer height={80} />
+                </Flex>
+                {renderMenuList()}
+                <Spacer width={40} />
+            </Flex>
+        </Flex>;
+    };
 
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
-
-        <ModalManager
-            notify={notify}
-            dismissNotify={dismissNotify}
-        />
+        <ModalManager notify={notify} dismissNotify={dismissNotify} />
         <NotificationManager />
     </>;
 

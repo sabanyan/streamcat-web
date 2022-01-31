@@ -6,7 +6,7 @@
   }
   .custom-radio,.custom-checkbox{
     .custom-control-indicator{
-      background-color: $kskp-form-background-color;
+      @include form-background-color();
     }
     .custom-control-input:checked ~ .custom-control-indicator{
       background-color: $kskp-form-radio-indicator-color;

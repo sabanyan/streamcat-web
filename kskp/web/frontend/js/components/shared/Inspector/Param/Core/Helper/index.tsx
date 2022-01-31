@@ -1,9 +1,7 @@
 import React from 'react'
 
-import { AppBar, Toolbar, IconButton, Tabs, Tab, Card, CardContent } from '@material-ui/core';
+import { AppBar, IconButton, Tabs, Tab } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
-
-import { Param as ParamType, Element } from 'Shared/Inspector/ParamsForm/index'
 
 import style from './style.scss'
 
@@ -32,7 +30,7 @@ type Props = {
   onClickCloseHelper(event): void;
 }
 
-export default function Helper(props: Props) {
+export function Helper(props: Props) {
   const { helper, onClickShortcut, onClickCloseHelper } = props;
   const [tabIndex, setTabIndex] = React.useState(0);
   
@@ -76,7 +74,7 @@ export default function Helper(props: Props) {
       result.push(
         <div key={index} className={style.shortcut}>
           {v.label + " : "}
-          <a href={"javascript:void(0)"}
+          <a href={"#"}
             onClick={(event) => onClickShortcut(event, v.value, v.delimiter)}
           >
             {v.link}

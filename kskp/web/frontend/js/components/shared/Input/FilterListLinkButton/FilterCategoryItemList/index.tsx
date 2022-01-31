@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import style from './style.scss';
 import classnames from 'classnames';
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
@@ -104,7 +104,7 @@ const FilterCategoryItemList = (props: Props) => {
             onClickFilterListItem(checkedListItems)
         }
         applyElement = <div className={style.apply}>
-            <a href="javascript:void(0)" className={style.applyLink} onClick={onClickApply}>適用</a>
+            <a href="#" className={style.applyLink} onClick={onClickApply}>適用</a>
         </div>
     }
 

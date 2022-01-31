@@ -1,17 +1,15 @@
-import * as React from "react";
+import React from 'react';
 
 import style from "../style.scss";
 
-import {BaseInspector, Resizer} from "Shared/Inspector";
-import {Button} from "Shared/Input";
-import {LibraryChild} from "Model/index";
-import { Allowlist} from 'Components/LibraryContainer/Libary/index';
+import { BaseInspector, Resizer } from "Shared/Inspector";
+import { Button } from "Shared/Input";
+import { DatumType, FrameType } from "Model/Library";
 
 
 type Props = {
-    data?: LibraryChild
+    data?: DatumType
     customStyle?: any
-    allowlist?: Allowlist
     onClickRecovery: Function
     onClickMove: Function
 }
@@ -33,10 +31,10 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     renderButtons(data) {
-        const {onClickRecovery, onClickMove, allowlist} = this.props;
+        const { onClickRecovery, onClickMove } = this.props;
 
         let recovery, move;
-        if (data && allowlist && allowlist.update) {
+        if (data && data.allowlist && data.allowlist.update) {
             recovery = <Button onClick={(e) => onClickRecovery(e, data)} icon={"undo"}>元に戻す</Button>;
             move = <Button onClick={(e) => onClickMove(e, data)} icon={"arrow_right_alt"}>移動する</Button>;
         }
@@ -48,7 +46,7 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     renderDetail() {
-        const {data} = this.props;
+        const { data } = this.props;
         let result: any = [];
         if (!data) return result;
 
@@ -63,26 +61,30 @@ export default class TrashInspector extends React.Component<Props, State> {
             result.push(label);
         }
 
-        // 文字コードがあれば、表示する
-        let encoding;
-        if (data.encoding) {
-            encoding = <React.Fragment key={data.encoding}>
-                <div><label>{this.display.encoding}</label></div>
-                <div className={"mb-8px"}>{data.encoding}</div>
-            </React.Fragment>;
+        // DatumがFrameの場合は文字コードと改行コードを表示する
+        if(data.type==='frame'){
+            const frame = data as FrameType;
+            // 文字コードがあれば、表示する
+            let encoding;
+            if (frame.encoding) {
+                encoding = <React.Fragment key={frame.encoding}>
+                    <div><label>{this.display.encoding}</label></div>
+                    <div className={"mb-8px"}>{frame.encoding}</div>
+                </React.Fragment>;
 
-            result.push(encoding);
-        }
+                result.push(encoding);
+            }
 
-        // 改行コードがあれば、表示する
-        let newline;
-        if (data.newline) {
-            newline = <React.Fragment key={data.newline}>
-                <div><label>{this.display.newline}</label></div>
-                <div className={"mb-8px"}>{data.newline}</div>
-            </React.Fragment>;
+            // 改行コードがあれば、表示する
+            let newline;
+            if (frame.newline) {
+                newline = <React.Fragment key={frame.newline}>
+                    <div><label>{this.display.newline}</label></div>
+                    <div className={"mb-8px"}>{frame.newline}</div>
+                </React.Fragment>;
 
-            result.push(newline);
+                result.push(newline);
+            }
         }
 
         // 作成者があれば、表示する
@@ -114,7 +116,7 @@ export default class TrashInspector extends React.Component<Props, State> {
                 <div className={"mb-8px"}>{data.prevFolderPath}</div>
             </React.Fragment>;
             result.push(prevFolderPath);
-        }else{
+        } else {
             // TODO ライブラリのルートの場合でない？
         }
 
@@ -124,12 +126,12 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     render() {
-        const {data, customStyle} = this.props;
+        const { data, customStyle } = this.props;
 
         const className = (customStyle) ? customStyle : style;
 
         return <Resizer>
-            <BaseInspector key={(data)?data.uuid:"trash"}>
+            <BaseInspector key={(data) ? data.uuid : "trash"} disabled={false}>
                 <div className={style.inspector}>
                     <div className={style.actions}>
                         {this.renderButtons(data)}

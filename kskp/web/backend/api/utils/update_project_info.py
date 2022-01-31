@@ -10,20 +10,21 @@ def update_project_info(func):
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
-        result = json.loads(func(**kwargs).data.decode())
+        result, status = func(**kwargs)
+        result_json = json.loads(result.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not result['success']:
-            return func(**kwargs)
+        if not result_json['success']:
+            return result, status
 
         # Project JSONに情報を追加する
-        project_data = result['data']
+        project_data = result_json['data']
         _update_project_info_inner(project_data)
         # サブプロジェクトにも情報を追加する
-        for sub_project_data in result['data']['children']:
+        for sub_project_data in result_json['data']['children']:
             _update_project_info_inner(sub_project_data)
 
-        return jsonify(result)
+        return jsonify(result_json), status
     return deco
 
 def update_projects_info(func):
@@ -34,17 +35,18 @@ def update_projects_info(func):
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
-        results = json.loads(func(**kwargs).data.decode())
+        results, status = func(**kwargs)
+        results_json = json.loads(results.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not results['success']:
-            return func(**kwargs)
+        if not results_json['success']:
+            return results, status
 
         # Project JSONに情報を追加する
-        for project_data in results['data']['children']:
+        for project_data in results_json['data']['children']:
             _update_project_info_inner(project_data)
 
-        return jsonify(results)
+        return jsonify(results_json), status
     return deco
 
 def update_projects_info2(func):
@@ -55,17 +57,18 @@ def update_projects_info2(func):
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
-        results = json.loads(func(**kwargs).data.decode())
+        results, status = func(**kwargs)
+        results_json = json.loads(results.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not results['success']:
-            return func(**kwargs)
+        if not results_json['success']:
+            return results, status
 
         # Project JSONに情報を追加する
-        for project_data in results['data']:
+        for project_data in results_json['data']:
             _update_project_info_inner(project_data)
 
-        return jsonify(results)
+        return jsonify(results_json), status
     return deco
 
 def _update_project_info_inner(project_data):

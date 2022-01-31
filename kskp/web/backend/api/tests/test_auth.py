@@ -20,7 +20,7 @@ class AuthTestCase(ApiTestCaseBase):
     # def test_login_required_DO_LOGGING_IN(self):
     #     with app.test_client() as client:
     #         with client.session_transaction() as session:
-    #             session['user_id'] = 'me'
+    #             session['userId'] = 'me'
     #         templates = []
     #         with captured_templates(app, templates):
     #             result = client.get('/projects')
@@ -43,10 +43,9 @@ class AuthTestCase(ApiTestCaseBase):
         name = '開発者'
         password = '1bdae10ff4532d6bd4c23d54cae62fa4f636b19cf5e3e8f83432a90aea99f33f'
 
-        with self.client.session_transaction() as session:
-            user = self.factory.user.create(email, name, password)
-            bln = user.authenticate(password)
-            self.assertEqual(bln, True)
+        user = self.factory.user.create(email, name, password)
+        bln = user.authenticate(password)
+        self.assertEqual(bln, True)
 
 def captured_templates(app, recorded, **extra):
     def record(sender, template, context):

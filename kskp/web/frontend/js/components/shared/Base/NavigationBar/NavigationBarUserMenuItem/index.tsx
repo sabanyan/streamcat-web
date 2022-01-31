@@ -1,9 +1,9 @@
 import React from "react";
-import {NavigationModelProps} from "Model/index";
+import {NavigationType} from "Model/Navigation/NavigationModel";
 
 interface Props {
-    navigation?: NavigationModelProps;
-    children: React.ReactNode;
+    navigation: NavigationType | null;
+    children?: React.ReactNode;
     visible?: boolean;
 }
 
@@ -15,7 +15,7 @@ const NavigationBarUserMenuItem = (props: Props) => {
         <a className="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
            aria-haspopup="true" aria-expanded="false">
             <img className="icon" src={baseUrl + "images/icon/user.svg"} />
-            {navigation.user_name}
+            {navigation.user.name}
         </a>
         <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
             {children}

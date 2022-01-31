@@ -2,12 +2,10 @@ import React from 'react'
 import style from '../style.scss'
 import { BaseInspector, Resizer } from 'Shared/Inspector'
 import { Button} from 'Shared/Input'
-import { LibraryChild } from 'Model/index';
-import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index';
+import { DatumType } from 'Model/Library';
 
 type Props = {
-  allowlist:Allowlist;
-  selectedDatas: LibraryChild[];
+  selectedDatas: DatumType[];
   onClickDelete?: Function;
   onClickMove?: Function;
 }
@@ -17,10 +15,9 @@ class LibraryMultiInspector extends React.Component<Props> {
     super(props)
   }
 
-  renderButtons(datas: LibraryChild[]) {
-    const { allowlist, onClickDelete, onClickMove } = this.props
+  renderButtons(datas: DatumType[]) {
+    const {onClickDelete, onClickMove } = this.props
     let del,move
-    let isDeletable, isMoveable
 
     if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(datas)} icon={"delete"}>削除する</Button>
     if (onClickMove) move = <Button onClick={(data) => onClickMove(datas)} icon={"open_in_browser"}>移動する</Button>
@@ -31,11 +28,16 @@ class LibraryMultiInspector extends React.Component<Props> {
   }
 
   render() {
-    const { allowlist, selectedDatas} = this.props
+    const {selectedDatas} = this.props
     if(!selectedDatas.length)return;
-    const disabled = allowlist && allowlist.update ? false : true
+
+    // 選択中の全てのDatumが更新可能の場合にTrue
+    const enabled = selectedDatas
+                    .map(selectedData => selectedData.allowlist.update)
+                    .reduce((prevUpdate, update) => prevUpdate && update);
+
     return <Resizer>
-      <BaseInspector key={JSON.stringify(selectedDatas)} label={null} disabled={disabled}>
+      <BaseInspector key={JSON.stringify(selectedDatas)} label={undefined} disabled={!enabled}>
         <div className={style.inspector}>
           <div className={style.actions}>
             {this.renderButtons(selectedDatas)}
@@ -49,4 +51,4 @@ class LibraryMultiInspector extends React.Component<Props> {
 
 }
 
-export default LibraryMultiInspector
+export {LibraryMultiInspector};

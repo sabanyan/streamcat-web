@@ -55,7 +55,7 @@ $kskp-toolbar-border: #879AB1;
 $kskp-toolbar-shadow: rgba(0,0,0,0.2);
 $kskp-paper-toolbar-background-color: rgba(255,255,255,0.6);
 
-$kskp-paper-background-color: #EDF1F3;
+// $kskp-paper-background-color: #EDF1F3;
 
 $primary-link-color: #61B8E2;
 $primary-border-color: #61B8E2;
@@ -73,7 +73,7 @@ $kskp-section-background-color: #F2F2F2;
 $kskp-operator-border-color: $kskp-gray;
 $kskp-operator-text-color: $kskp-gray;
 
-$kskp-form-background-color: #fff;
+// $kskp-form-background-color: #fff;
 $kskp-form-radio-indicator-color: #43AB4C;
 
 $kskp-property-action-border-color: $kskp-text;
@@ -115,4 +115,36 @@ $kskp-port-label-color: darken(#B7C8D3,5%);
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+// 
+// Dark mode対応
+// 
+
+@mixin paper-background-color() {
+  background: #EDF1F3;
+  @media (prefers-color-scheme: dark) {
+    background-color: #010f16;
+  }
+}
+
+@mixin list-background-color() {
+  background: #fdfeff;
+  @media (prefers-color-scheme: dark) {
+    background-color: #2d4863;
+  }
+}
+
+@mixin button-background-color() {
+  background: #F5F7F8;
+  @media (prefers-color-scheme: dark) {
+    background-color: #304861;
+  }
+}
+
+@mixin form-background-color() {
+  background: #ffffff;
+  @media (prefers-color-scheme: dark) {
+    background-color: #000000;
+  }
 }

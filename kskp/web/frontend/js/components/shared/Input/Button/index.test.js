@@ -1,13 +1,12 @@
-//@flow
 import React from 'react'
 import renderer from 'react-test-renderer'
 import Button from './index'
 
-it('renders correctly', () => {
-  const tree = renderer
-    .create(
+describe('Button', () => {
+  test('Button', () => {
+    const button = renderer.create(
       <Button disabled={false} icon={'attachment'} danger={false}>アップロード</Button>
-    )
-    .toJSON()
-  expect(tree).toMatchSnapshot()
-})
+    ).toJSON();
+    expect(button).toMatchSnapshot();
+  });
+});

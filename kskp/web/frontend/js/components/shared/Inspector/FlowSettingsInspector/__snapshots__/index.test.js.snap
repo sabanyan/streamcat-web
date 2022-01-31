@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FlowSettingsInspector renderer 1`] = `
+<div
+  className=""
+  style={
+    Object {
+      "width": 400,
+    }
+  }
+>
+  <div
+    className=""
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+  <div
+    className="inspector-container"
+  >
+    <div>
+      
+    </div>
+    <div>
+      <div>
+        <input
+          className=""
+          defaultValue="test2"
+          onBlur={[Function]}
+          type="text"
+        />
+      </div>
+      <textarea
+        className="form-control mb-8px"
+        defaultValue=""
+        onChange={[Function]}
+        placeholder="フローの説明"
+        rows={8}
+      />
+      <div
+        className="mt-8px"
+      >
+        <label>
+          フロー変数
+        </label>
+      </div>
+      <div
+        className=""
+        onClick={[Function]}
+      >
+        <i
+          className="material-icons"
+        >
+          add_circle_outline
+        </i>
+        フロー変数を追加する
+      </div>
+      <div />
+      <div />
+    </div>
+  </div>
+</div>
+`;

@@ -159,9 +159,9 @@ export default class TextField extends React.Component<Props, State> {
                    onChange={(e) => this.onChange(e)}
                    defaultValue={defaultValue}
                    disabled={disabled}
+                   readOnly={readOnly}
                    name={name}
                    ref={inputRef}
-                   readOnly={readOnly}
             />
             {this.renderValidationMessage()}
         </div>;

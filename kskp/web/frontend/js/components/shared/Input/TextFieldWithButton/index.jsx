@@ -1,5 +1,5 @@
 //@flow
-import * as React from 'react'
+import React from 'react'
 import style from './style.scss'
 import { Button, TextField } from 'Shared/Input'
 

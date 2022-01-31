@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
 import { InspectorKnob } from 'Shared/Inspector'
@@ -11,7 +11,7 @@ let mouseUpEvent
 type Props = {
   children: React.ReactNode;
   inspector?: {width:number};
-
+  width?: number;
   resizeInspector?: Function
 }
 
@@ -44,7 +44,7 @@ class Resizer extends React.Component<Props, State> {
 
   }
 
-  onMouseDown (e: Event) {
+  onMouseDown (e: React.MouseEvent<Element,MouseEvent>) {
     const {resizeInspector} = this.props
 
     this.setState({
@@ -64,13 +64,13 @@ class Resizer extends React.Component<Props, State> {
     })
     
     //mousemoveイベントでハンドリング
-    mouseMoveEvent = (e: MouseEvent) => this.onMouseMove(e)
-    mouseUpEvent = (e: MouseEvent) => this.onMouseUp(e)
+    mouseMoveEvent = (e: React.MouseEvent<Element,MouseEvent>) => this.onMouseMove(e)
+    mouseUpEvent = (e: React.MouseEvent<Element,MouseEvent>) => this.onMouseUp(e)
     document.addEventListener('mousemove', mouseMoveEvent, false)
     document.addEventListener('mouseup', mouseUpEvent, false)
   }
 
-  onMouseUp (e: Event) {
+  onMouseUp (e: React.MouseEvent<Element,MouseEvent>) {
     this.setState({
       isDragging: false,
       willClosed: false,
@@ -79,13 +79,13 @@ class Resizer extends React.Component<Props, State> {
     document.removeEventListener('mouseup', mouseUpEvent)
   }
 
-  onMouseMove (e: MouseEvent) {
+  onMouseMove (e: React.MouseEvent<Element,MouseEvent>) {
     if (this.state.isDragging) {
       this.onResize(e)
     }
   }
 
-  onResize (e: MouseEvent) {
+  onResize (e: React.MouseEvent<Element,MouseEvent>) {
     const {resizeInspector} = this.props
     const zeroPoint = window.innerWidth - Constants.default.inspector.width
     const closedPoint = window.innerWidth - Constants.default.inspector.width +
@@ -153,4 +153,4 @@ class Resizer extends React.Component<Props, State> {
 
 }
 
-export default Resizer
+export {Resizer};

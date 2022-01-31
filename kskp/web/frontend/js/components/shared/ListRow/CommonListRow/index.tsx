@@ -1,11 +1,11 @@
-import * as React from 'react'
+import React from 'react'
 import classnames from 'classnames'
 import defaultStyle from './style.scss'
 import { database } from './ListIcons/index'
 
 type Props = {
   index?: number
-  isSelected?: Boolean
+  isSelected?: boolean
   icon?: string
 
   // data

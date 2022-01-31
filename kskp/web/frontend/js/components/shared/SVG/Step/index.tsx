@@ -1,12 +1,11 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Constants from "Constants/index";
-import {CommandIcon, ErrorIcon, FileIcon, InOutIcon, Note, Rect, SubFlowIcon} from "Shared/SVG";
-import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
+import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
+import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from "Model/index";
 import style from "./style.scss";
-import {APIUtil, ZoomUtil} from "Utils/index";
-import {DragType, MastType, StepModelType} from "Types/index";
-import {FlowModelProps} from "Model/Flow/FlowModel";
-import {PaperScroller} from "FlowEditorContainer/PaperScroller";
+import { APIUtil, APIUtil2, ZoomUtil } from "Utils/index";
+import { DragType, MastType, StepModelType } from "Types/index";
+import { FlowType } from "Model/Library";
 
 let mouseMoveEvent;
 let mouseUpEvent;
@@ -20,7 +19,7 @@ interface Props {
     invalid: {};
     error: {};
     mast: MastType;
-    flow: FlowModelProps;
+    flow: FlowType;
     selected_step_ids: string[];
     zoom: number;
     drag: DragType;
@@ -60,12 +59,12 @@ const Step = (props: Props) => {
         });
         mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(e);
         mouseUpEvent = (e: React.MouseEvent<SVGElement>) => handleMouseUp(e);
-        document.addEventListener("mousemove", mouseMoveEvent, {passive: true});
-        document.addEventListener("mouseup", mouseUpEvent, {passive: true});
+        document.addEventListener("mousemove", mouseMoveEvent, { passive: true });
+        document.addEventListener("mouseup", mouseUpEvent, { passive: true });
     };
 
     const isSelected = () => {
-        const {selected_step_ids, model} = props;
+        const { selected_step_ids, model } = props;
         let selected = false;
         selected_step_ids.map((id) => {
             if (id === model.id) {
@@ -83,7 +82,7 @@ const Step = (props: Props) => {
 
         setCoords(null);
 
-        const {model, addSelectStep, deleteSelectStep, selectSteps, updateDataFrameDetail} = props;
+        const { model, addSelectStep, deleteSelectStep, selectSteps, updateDataFrameDetail } = props;
         let step = model;
         //選択イベントの呼び出し
         if (e.shiftKey) {
@@ -100,11 +99,10 @@ const Step = (props: Props) => {
             //データフレームの詳細を取得する
             const selected_step: StepModelType = step;//this.getSelectedStep()
             if (selected_step instanceof DataFrameStepModel) {
-                if (selected_step.hasData()) {
+                if (selected_step.hasData() && selected_step.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
-                    APIUtil.get("frames/" + selected_step.uuid).then((response) => {
-                        const json = response.data;
-                        updateDataFrameDetail(json.data);
+                    APIUtil2.findFrame(selected_step.uuid).then(frame => {
+                        updateDataFrameDetail(frame);
                     });
                 } else {
                     updateDataFrameDetail({});
@@ -122,8 +120,8 @@ const Step = (props: Props) => {
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-        const {selected_step_ids,readOnly} = props;
-        if(readOnly) return; // 読み取り専用の場合は移動不可
+        const { selected_step_ids, readOnly } = props;
+        if (readOnly) return; // 読み取り専用の場合は移動不可
         if (selected_step_ids.length > 1) {
             onMoveSteps(e);
         } else {
@@ -137,7 +135,7 @@ const Step = (props: Props) => {
     };
 
     const calcNewPosition = (e: React.MouseEvent<SVGElement>): { new_x: number, new_y: number } => {
-        const {zoom, position} = props;
+        const { zoom, position } = props;
         let coords_x = e.pageX;
         let coords_y = e.pageY;
 
@@ -151,28 +149,28 @@ const Step = (props: Props) => {
         const yDiff = coords_y - e.pageY;
         const new_x = position.x - ZoomUtil.zoomReverse(xDiff, zoom);
         const new_y = position.y - ZoomUtil.zoomReverse(yDiff, zoom);
-        return {new_x: new_x, new_y: new_y};
+        return { new_x: new_x, new_y: new_y };
     };
 
 
     const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
-        const {model, selected_step_ids, moveSteps} = props;
+        const { model, selected_step_ids, moveSteps } = props;
         if (selected_step_ids.includes(model.id)) {
-            const {new_x, new_y} = calcNewPosition(e);
+            const { new_x, new_y } = calcNewPosition(e);
             moveSteps(new_x, new_y, model);
         }
     };
 
     const onUpdateStep = (e: React.MouseEvent<SVGElement>) => {
-        const {selected_step_ids, model, updateStep} = props;
+        const { selected_step_ids, model, updateStep } = props;
         if (selected_step_ids.length > 1) {
             onMoveSteps(e);
             return;
         }
-        const {new_x, new_y} = calcNewPosition(e);
+        const { new_x, new_y } = calcNewPosition(e);
         //移動に応じてStepの位置を更新
         let step = model;
-        step.setPosition({x: new_x, y: new_y});
+        step.setPosition({ x: new_x, y: new_y });
         updateStep(step);
     };
 
@@ -200,7 +198,7 @@ const Step = (props: Props) => {
      * 範囲選択との衝突判定
      */
     const selectorIntersect = () => {
-        const {zoom, position, drag} = props;
+        const { zoom, position, drag } = props;
         const operator = {
             x: position.x,
             y: position.y,
@@ -208,7 +206,7 @@ const Step = (props: Props) => {
             height: Constants.default.step.height
         };
 
-        const {start, end} = drag;
+        const { start, end } = drag;
         if (start && end) {
             //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 
@@ -246,7 +244,7 @@ const Step = (props: Props) => {
     };
 
 
-    const isStep = (model): boolean => {
+    const isCommandStep = (model): boolean => {
         return (model instanceof CommandStepModel);
     };
 
@@ -267,7 +265,7 @@ const Step = (props: Props) => {
         return filter;
     };
     useEffect(() => {
-        const {model, addSelectStep, deleteSelectStep} = props;
+        const { model, addSelectStep, deleteSelectStep } = props;
         // componentDidUpdate
         if (selectorIntersect()) {
             if (!isSelected()) {
@@ -281,9 +279,9 @@ const Step = (props: Props) => {
         }
     });
 
-    const {position, mast, flow, invalid, error, model} = props;
-    const {x, y} = position;
-    let icon;
+    const { position, mast, flow, invalid, error, model } = props;
+    const { x, y } = position;
+    let icon: JSX.Element | null;
 
     let step: StepModelType = model;
 
@@ -295,83 +293,100 @@ const Step = (props: Props) => {
 
     const selected = selectorIntersect();
 
-    const flowIn = flow.hasInPortWithId(step.id);
-    const flowOut = flow.hasOutPortWithId(step.id);
+    const flowIn = flow.flow.ports[0].hasPort(step.id);
+    const flowOut = flow.flow.ports[1].hasPort(step.id);
 
-    let stepLabel = step.getLabel();
+    let stepLabel = step.label;
 
-    if (flowIn || flowOut) {
-        icon = <g>
-            <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
-                  hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
-                  hover={hover} selected={selected} stroke={"#63CFFD"}
-                  filter={filter} style={RectStyle}>
-                <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"} />
-            </Rect>
-        </g>;
+    if (isDataFrame(step)) {
+        // データノード
+        let innerIcon: JSX.Element;
+        if (flowIn || flowOut) {
+            // IN、OUT指定がある場合
+            innerIcon = <InOutIcon flowIn={flowIn}
+                                   flowOut={flowOut}
+                                   width={50}
+                                   height={50}
+                                   stroke={"#CCCCCC"}
+                                   fill={"#CCCCCC"} />;
+        } else {
+            // IN、OUT指定のない場合
+            innerIcon = <FileIcon fillColor={(step.hasData()) ? "#63CFFD" : "#CCCCCC"}
+                                  width={16}
+                                  height={20} />;
+        }
+
+        icon = <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
+                     hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
+                     hover={hover} selected={selected} stroke={"#63CFFD"}
+                     filter={filter} style={RectStyle}>
+            {innerIcon}
+        </Rect>;
     } else if (isSubFlow(step)) {
+        // サブフローノード
         icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
         stepLabel = step.getLabel();
-    } else if (isStep(step)) {
-        //ステップ
+    } else if (isCommandStep(step)) {
+        // コマンドノード
         let command;
         if (mast.commands) {
             mast.commands.forEach(c => {
                 if (c.id === step.commandId) command = c;
             });
             icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />;
+        } else {
+            icon = null;
         }
         stepLabel = step.getLabel();
-    } else if (isDataFrame(step)) {
-        //データソース
-        const stroke = (!step.hasData()) ? {stroke: "#CCCCCC"} : {};
-        icon =
-            <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
-                  hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
-                  hover={hover} selected={selected} stroke={"#63CFFD"}
-                  filter={filter} style={RectStyle}>
-                <FileIcon fillColor={(step.hasData()) ? "#63CFFD" : "#CCCCCC"}
-                          width={16} height={20} />
-            </Rect>;
     } else if (isNote(step)) {
-        icon = <Note hover={hover} selected={selected} model={step} />;
-
+        icon = <NoteIcon hover={hover} selected={selected} model={step} />;
+        stepLabel = step.getLabel();
+    } else if (step.flow && step.classification === "data_source") {
+        icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+    } else if (step.flow && step.classification === "data_dest") {
+        icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+    } else {
+        icon = null;
     }
 
-    let invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
-    let error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
+
+    const invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
+    const error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
+    const label_text = (!!stepLabel) ? 
+                        <g className={style.labelContainer}>
+                            <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>
+                                <div style={{
+                                    display: "table",
+                                    width: "100%",
+                                    height: StepTextStyle.height,
+                                    paddingRight: StepTextStyle.padding + "px"
+                                }}>
+                                    <p style={{
+                                        display: "table-cell",
+                                        verticalAlign: "middle",
+                                        textAlign: "right",
+                                        wordBreak: "break-all"
+                                    }}>{stepLabel}</p>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        : null;
 
     return (
         <g className={style.operator} transform={"translate(" + x + "," + y + ")"}>
             <g className={style.iconContainer} onMouseDown={(e: React.MouseEvent<SVGElement>) => handleMouseDown(e)}
-               onMouseOver={() => handleMouseOver()}
-               onMouseLeave={() => handleMouseLeave()}>
+                onMouseOver={() => handleMouseOver()}
+                onMouseLeave={() => handleMouseLeave()}>
                 {icon}
             </g>
             {invalid_icon}
             {error_icon}
-            <g className={style.labelContainer}>
-                <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>
-                    <div style={{
-                        display: "table",
-                        width: "100%",
-                        height: StepTextStyle.height,
-                        paddingRight: StepTextStyle.padding + "px"
-                    }}>
-                        <p style={{
-                            display: "table-cell",
-                            verticalAlign: "middle",
-                            textAlign: "right",
-                            wordBreak: "break-all"
-                        }}>{stepLabel}</p>
-                    </div>
-                </foreignObject>
-            </g>
+            {label_text}
         </g>
     );
 };
 
-export {Step};
+export { Step };
 
 export const RectStyle = {
     x: 0,

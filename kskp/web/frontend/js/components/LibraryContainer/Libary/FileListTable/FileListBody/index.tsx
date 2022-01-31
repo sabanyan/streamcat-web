@@ -1,24 +1,14 @@
-import * as React from "react";
+import React from 'react';
 import { LinkButton } from "Shared/Input";
 import moment from "moment";
 import classnames from "classnames";
 import style from "./style.scss";
-
-export interface ITableBody {
-    uuid: string;
-    type: string;
-    prevFolderPath: string;
-    label: string;
-    creator: string;
-    createdAt: string;
-    selected?: boolean;
-    clickable?: boolean;
-}
+import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
 
 interface Props {
-    onClickFileName: (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => void;
-    onClickCell: (body: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => void;
-    bodies: ITableBody[];
+    onClickFileName: (body: DatumEntryType, event?: React.SyntheticEvent<any, Event>) => void;
+    onClickCell: (body: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
+    bodies: DatumEntryType[];
 }
 
 const FileListBody = (props: Props) => {
@@ -45,8 +35,10 @@ const FileListBody = (props: Props) => {
                 return "icon-flow";
             case "database":
                 return "icon-database";
-            case "remote-folder":
+            case "rfolder":
                 return "icon-remote-folder";
+            case "document":
+                return "icon-file-csv";
             default:
                 console.log(type);
                 return null;
@@ -56,7 +48,7 @@ const FileListBody = (props: Props) => {
         onClickCell(body, event)
     };
 
-    const bodiesElement = bodies.map((body: ITableBody, index) => {
+    const bodiesElement = bodies.map((body, index) => {
         return <tr className={classnames(style.row,{[style.selected]: body.selected})}
                    onClick={(event)=>onClick(event,body)}
                    onMouseDown={(event)=>event.stopPropagation()}

@@ -16,21 +16,22 @@ def update_user_info(func):
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
-        result = json.loads(func(**kwargs).data.decode())
+        result, status = func(**kwargs)
+        result_json = json.loads(result.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not result['success']:
-            return func(**kwargs)
+        if not result_json['success']:
+            return result, status
 
         # 所属ロールの情報をUser JSONに追加する
         if update_roles:
-            _update_user_roles_info(result['data'])
+            _update_user_roles_info(result_json['data'])
 
         # 所属プロジェクトの情報をUser JSONに追加する
         if update_projects:
-            _update_user_projects_info(result['data'])
+            _update_user_projects_info(result_json['data'])
 
-        return jsonify(result)
+        return jsonify(result_json), status
     return deco
 
 def update_users_info(func):
@@ -47,13 +48,14 @@ def update_users_info(func):
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
-        results = json.loads(func(**kwargs).data.decode())
+        results, status = func(**kwargs)
+        results_json = json.loads(results.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not results['success']:
-            return func(**kwargs)
+        if not results_json['success']:
+            return results, status
 
-        for user_data in results['data']:
+        for user_data in results_json['data']:
             # 所属ロールの情報をUser JSONに追加する
             if update_roles:
                 _update_user_roles_info(user_data)
@@ -62,7 +64,7 @@ def update_users_info(func):
             if update_projects:
                 _update_user_projects_info(user_data)   
 
-        return jsonify(results)
+        return jsonify(results_json), status
     return deco
 
 def _update_user_roles_info(user_data):

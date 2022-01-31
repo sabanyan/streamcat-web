@@ -6,7 +6,7 @@
   //-khtml-user-select: none;
   //-webkit-user-select: none;
   user-select: none;
-  background: $kskp-paper-background-color;
+  @include paper-background-color();
 }
 
 .flow_editor_container {
@@ -14,5 +14,5 @@
 }
 
 body {
-  background: $kskp-paper-background-color;
+  @include paper-background-color();
 }

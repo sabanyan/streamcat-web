@@ -5,8 +5,6 @@ import validateJS from "validate.js";
 import arrayMove from "array-move";
 import {BaseModelProps} from "Model/Step/BaseStepModel";
 
-type stepType = "command" | "frame"
-
 export interface CommandStepModelProps extends BaseModelProps {
     srcs: {};
     srcsOrder: [];
@@ -164,24 +162,20 @@ export default class CommandStepModel extends BaseStepModel {
             const stepId = this.dsts[key];
             steps[stepId] = this.getStep(nodes, stepId);
         });
-        return steps;
     }
 
-    getCommand(): any {
-        let command;
-        (window as any).commands.forEach((_command) => {
-            if (this.commandId === _command.id) {
-                command = _command;
-            }
-        });
-        return command as CommandModel;
-    }
+    getCommand = () => {
+        const commands = (window as any).commands;
+        return commands.find(command => this.commandId === command.id);
+    };
 
     getLabel() {
         if (this.label == this.id) {
-            return this.getCommand().label;
+            const command = this.getCommand();
+            if (command) {
+                return command.label;
+            }
         }
-
         return this.label;
     }
 

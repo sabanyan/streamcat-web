@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
+import {NavigationType} from "Model/Navigation/NavigationModel";
 import {HttpUtil, WebUtil} from "Utils/index";
 import {NavigationBarItem} from "Shared/Base/NavigationBar/NavigationBarItem";
 import {NavigationBarItemGroup} from "Shared/Base/NavigationBar/NavigationBarItemGroup";
@@ -9,14 +9,12 @@ import {NavigationBarGroup} from "Shared/Base/NavigationBar/NavigationBarGroup";
 import {NavigationBarUserMenuItem} from "Shared/Base/NavigationBar/NavigationBarUserMenuItem";
 
 interface Props {
-    navigation?: NavigationModelProps
+    navigation: NavigationType | null;
 }
 
 const baseUrl = "/front_static/";
 const NavigationBar = (props: Props) => {
     const [isLogin, setIsLogin] = useState(false);
-    const [hasProject, setHasProject] = useState(false);
-    const [hasFlow, setHasFlow] = useState(false);
 
     const renderGlobalNavigationItem = () => {
         const {navigation} = props;
@@ -29,15 +27,14 @@ const NavigationBar = (props: Props) => {
     const renderUserNavigationItem = () => {
         const {navigation} = props;
         let depoName;
-        if (navigation && navigation.depo_name !== "master") {
+        if (navigation && navigation.depoName !== "master") {
             depoName = <div className="depo-name">
                 <div className="dropdown-item">
-                    {navigation.depo_name}
+                    {navigation.depoName}
                 </div>
                 <div className="dropdown-divider"/>
             </div>;
         }
-
 
         const renderUserAdminMenu = () => {
             const {navigation} = props;
@@ -61,7 +58,7 @@ const NavigationBar = (props: Props) => {
             {depoName}
             {renderUserSettingsMenu()}
             {renderUserAdminMenu()}
-            <a href="javascript:void(0)" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
+            <a href="#" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
         </NavigationBarUserMenuItem>
 
     };
@@ -71,18 +68,11 @@ const NavigationBar = (props: Props) => {
     };
 
     if (isDialog()) return null;
-//const {baseUrl} = this.props
 
     useEffect(()=>{
         if (props.navigation) {
-            if (props.navigation.user_id && props.navigation.user_name) {
+            if (props.navigation.user.uuid) {
                 setIsLogin(true);
-            }
-            if (props.navigation.project_uuid && props.navigation.project_name) {
-                setHasProject(true);
-            }
-            if (props.navigation.flow_uuid && props.navigation.flow_name) {
-                setHasFlow(true);
             }
         }
     },[props]);

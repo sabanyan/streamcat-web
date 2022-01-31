@@ -8,7 +8,11 @@ setup(
     url='https://www.kskp.io',
     include_package_data=True,
     install_requires=[
-        'flask',
+        # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
+        'blinker',
+        'Flask',
         # 'flask_mail',
+        'oauthlib',
+        'PyJWT',
     ],
 )

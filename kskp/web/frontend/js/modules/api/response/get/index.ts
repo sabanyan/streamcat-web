@@ -1,1 +1,0 @@
-export { navigation } from './navigation/index'

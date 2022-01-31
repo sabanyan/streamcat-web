@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from 'react';
 import {useState} from "react";
 import * as style from "./style.scss";
 import {
@@ -6,13 +6,14 @@ import {
     ITableHeader,
     TTableHeaderSortType
 } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import {FileListBody, ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
+import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
+import {FileListBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 
 interface Props {
     onClickHeader: (header: ITableHeader, event?: React.MouseEvent<HTMLSpanElement>) => void;
-    onClickFileName: (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => void;
-    onClickCell: (body: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => void;
-    bodies: ITableBody[];
+    onClickFileName: (body: DatumEntryType, event?: React.SyntheticEvent<any, Event>) => void;
+    onClickCell: (body: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
+    bodies: DatumEntryType[];
     minWidth?: number | string;
 }
 
@@ -26,7 +27,7 @@ const FileListTable = (props: Props) => {
     ];
     const [headers, setHeaders] = useState<ITableHeader[]>(initialHeaders);
 
-    const [, updateState] = React.useState();
+    const [, updateState] = React.useState<{}>();
     const forceUpdate = React.useCallback(() => updateState({}), []);
 
     const _onClickHeader = (clickHeader: ITableHeader) => {

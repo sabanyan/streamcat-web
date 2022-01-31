@@ -4,7 +4,7 @@
       "baseUrl": "./", 
       "target": "ES2015",                    /* ｔｓを書くときにどのversionのESが対象か: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
       "module": "es2015",                    /* どのversionのESを生成するか: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-      "jsx": "react",                     /* reactを書くときに必要, 'react-native', or 'react'. */
+      "jsx": "react",                    /* reactを書くときに必要, 'react-native', or 'react'. */
       
       /* Strict Type-Checking Options */
       "strict": true,                        /* すべての strict タイプ・オプション(noImplicitAny, strictNullChecks, noImplicitThis(thisの型チェック), alwaysStrict(strictモードのjs出力)) を 有効化する */
@@ -20,17 +20,14 @@
       "paths": {// WebPackのAlias設定も忘れずに
         "Components/*": ["./web/frontend/js/components/*"],
         "FlowEditorContainer/*": ["./web/frontend/js/components/FlowEditorContainer/*"],
-        "FlowListContainer/*": ["./web/frontend/js/components/FlowListContainer/*"],
         "LibraryContainer/*": ["./web/frontend/js/components/LibraryContainer/*"],
         "ProfileContainer/*": ["./web/frontend/js/components/ProfileContainer/*"],
-        "ProjectListContainer/*": ["./web/frontend/js/components/ProjectListContainer/*"],
         "PreviewContainer/*": ["./web/frontend/js/components/PreviewContainer/*"],
         "UserListContainer/*": ["./web/frontend/js/components/admin/UserListContainer/*"],
         "Shared/*": ["./web/frontend/js/components/shared/*"],
         "Constants/*": ["./web/frontend/js/constants/*"],
         "Model/*": ["./web/frontend/js/model/*"],
         "Modules/*": ["./web/frontend/js/modules/*"],
-        "Schema/*": ["./web/frontend/js/schema/*"],
         "Types/*": ["./web/frontend/js/types/*"],
         "Utils/*": ["./web/frontend/js/utils/*"]
       },
@@ -38,7 +35,7 @@
       /* Module Resolution Options */
       "moduleResolution": "node",            /* http://js.studio-kingdom.com/typescript/handbook/module_resolution 参照 */
       "esModuleInterop": true,                /* ESModuleと同じ動作をする. */
-      "resolveJsonModule": true,
+      "resolveJsonModule": true
     },
     "exclude": [
       "node_modules",

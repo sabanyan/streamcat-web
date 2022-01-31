@@ -1,10 +1,13 @@
 {% extends "common/base.html" %}
-{% block title %}
-{% endblock %}
+{% block title %}now loadig ...{% endblock %}
+
 {% block content %}
 <script nonce="{{ nonce }}">
   const inject_project_uuid = '{{ project_uuid }}';
   const inject_flow_uuid = undefined;
 </script>
+{% if js_resources %}
+{{ js_resources | safe }}
+{% endif %}
 <div id="preview"></div>
 {% endblock %}

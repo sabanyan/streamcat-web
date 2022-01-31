@@ -17,23 +17,14 @@ class FileTestCase(ApiTestCaseBase):
         """
         upload_frame APIをテストする
         """
+        root_uuid = self.factory.data.load_root().uuid
+
         # アップロード用に一時ファイルを作成する
-        f, file_name = tempfile.mkstemp()
+        i, file_name = tempfile.mkstemp()
 
-        with app.test_client() as client:
-            response = client.post('/api/v0/frames',
-                # content_type='multipart/form-data',
-                # content_type='application/x-www-form-urlencoded',
-                data={
-                    # 'file_name': file_name
-                    # ,
-                    'file': f
-                }
-            )
-            result = json.loads(response.get_data())
-
-        # self.assertEqual(result['message'], '')
-        # self.assertEqual(result['success'], True)
+        # ファイルをアップロードする
+        with open(file_name, mode='rb') as f:
+            result = self.post_frames('UPロードファイル', root_uuid, f, self.USER1)
 
     def test_download_file(self):
         """
@@ -51,7 +42,7 @@ class FileTestCase(ApiTestCaseBase):
         frame_uuid = self.create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
         # テストデータをダウンロードする
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER1)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
 
         # 作成したテストデータとダウンロードしたデータが一致すること
         self.assertEqual(result,
@@ -78,7 +69,7 @@ class FileTestCase(ApiTestCaseBase):
         os.environ['KSKP_FRAME_CHARACTER_CODE'] = 'cp932'
         
         # テストデータをダウンロードする
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER1)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
 
         # 作成したテストデータがS_JISに変換されていること
         self.assertEqual(result,
@@ -116,7 +107,7 @@ class FileTestCase(ApiTestCaseBase):
         flow.save()
 
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/flow_files/{flow.uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{flow.uuid}', self.USER1)
         self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
 
         # インポート先のフォルダを作成する
@@ -154,7 +145,7 @@ class FileTestCase(ApiTestCaseBase):
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
 
         # 編集者は、フローの排他ロックを解除する
-        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+        self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -202,11 +193,11 @@ class FileTestCase(ApiTestCaseBase):
         flow2.save()
 
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/flow_files/{project1.uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{project1.uuid}', self.USER1)
         self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
 
         # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
-        project1.update_data('うごげ〜')
+        project1.update_label('うごげ〜')
 
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
@@ -254,3 +245,148 @@ class FileTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_export_import_library_store(self):
+        """
+        ライブラリストアとその入力CSVファイルをエクスポート/インポートできること
+        インラインサブフローをエクスポート/インポートできること
+        """
+        import io
+        from kskp.core import KSKPBaseModel
+
+        flow_json = {
+            "label": "test用",
+            "creator": "開発用",
+            "createdAt": "2021-06-17 08:23:00",
+            "projectId": None,
+            "description": "",
+            "ports": [[],[]],
+            "params": [],
+            "nodes": [
+                {
+                    "id": "d",
+                    "label": "京阪乗る人おけいはん",
+                    "type": "frame",
+                    "dataSource": "csv"
+                }
+            ]
+        }
+
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'お京阪'}, self.USER1)
+        project_uuid0 = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # CSVデータを作成する
+        l = [['会社名','デザイン','線形','速度'],
+             ['お京阪','イマイチ','bad','slow'], 
+             ['半休','良い','good','slow'], 
+             ['菌鉄','まあ','normal','slow']]
+        csv_str = '\n'.join([KSKPBaseModel.join(line) for line in l])
+        f = io.StringIO(csv_str)
+        f = io.BytesIO(bytes(f.read(), encoding='utf-8'))
+
+        # 入力フレームを作成する
+        result = self.post_frames('電車🚆', project_uuid0, (f, 'train.csv'), self.USER1)
+        frame_uuid = result['data']['uuid']
+
+        # リモートフォルダを作成する
+        data = {
+            "parent"   : project_uuid0,
+            "label"    : "リモートフォルダ",
+            "protocol" : "smb",
+            "hostname" : "18.178.64.116",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            'userId'  : "samba",
+            "password" : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
+
+        # データソースの一覧を取得する
+        results = self.get_uri('/api/v0/datasrcs', self.USER1)
+
+        # ライブラリデータソースを作成する
+        library_data_src = {}
+        library_data_src['id'] = 'f0'
+        library_data_src['type'] = 'flow'
+        library_data_src['args'] = {'uuid':frame_uuid}
+        library_data_src['dsts'] = {'d':'d'}
+        library_data_src['flow'] = results['data'][0]['flow']
+
+        # データデストの一覧を取得する
+        results = self.get_uri('/api/v0/datadsts', self.USER1)
+
+        # リモートフォルダデータデストを作成する
+        rfolder_data_dst = {}
+        rfolder_data_dst['id'] = 'f1'
+        rfolder_data_dst['type'] = 'flow'
+        rfolder_data_dst['args'] = {'file_path':'電車🚃'}
+        rfolder_data_dst['srcs'] = {'d':'d'}
+        rfolder_data_dst['flow'] = results['data'][1]['flow']
+
+        # フローJSONを作成する
+        flow_json['nodes'].append(library_data_src)
+        flow_json['nodes'].append(rfolder_data_dst)
+
+        # 編集者は、プロジェクト内にFlowを作成する
+        data = {
+            'parent': project_uuid0,
+            'label': '半休電車',
+            'flow': flow_json
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+        flow_uuid = result['data']['uuid']
+
+        # フローをエクスポートする
+        result = self.get_file(f'/api/v0/archives/flows/{flow_uuid}', self.USER1)
+        self._save_file(root.path/'電車🚃.tgz', io.BytesIO(result))
+
+        # インポート先のプロジェクトを作成する
+        data = {'parent': root.uuid,
+                'label' : '半休'}
+        result = self.post_uri(f'/api/v0/projects', data, self.USER1)
+        project_uuid1 = result['data']['uuid']
+
+        # フローをインポートする
+        with open(root.path/'電車🚃.tgz', mode='rb') as f:
+            result = self.post_flows('阪急電車', project_uuid1, f, self.USER1)
+
+        # フローはインポートされていること
+        project = self.factory.data.find_by_uuid(project_uuid1)
+        children = project.find_children_by_label('阪急電車')
+        children = children[0].find_children_by_label('半休電車')
+        self.assertEqual(children[0].type, 'flow')
+        flow_uuid1 = children[0].uuid
+
+        # インポート元のプロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid0}', self.USER1)
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+        # インポートしたフローを実行できること
+        result = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid1}, self.USER1)
+        data = result['data']
+        outs = data['outs']
+
+        # POST /activitiesの結果を検証する
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(data['label'], '半休電車')
+        self.assertEqual(data['type'], 'activity')
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0]['id'], 'f1_d1')
+        self.assertEqual(outs[0]['label'], 'f1_d1')
+        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['parent'])
+
+        # フローの実行結果が出力されていること
+        result = self.get_uri(f"/api/v0/flows/{outs[0]['uuid']}", self.USER1)
+        self.assertEqual(result['data']['type'], 'flow')
+        self.assertTrue(result['data']['label'].startswith('京阪乗る人おけいはん'))
+
+        # インポート先のプロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER1)
+        self.delete_uri('/api/v0/trashes', self.USER1)
+

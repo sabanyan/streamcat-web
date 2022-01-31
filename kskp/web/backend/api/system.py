@@ -1,374 +1,209 @@
-# 
-# システム管理者向けのAPIを定義する
-# 
-
-from flask import Blueprint, request, g
+import os
+from flask import (
+    Blueprint,
+    send_from_directory,
+    request,
+    g
+)
 from .utils import (
     RequestJson,
     api_base,
-    update_user_info,
-    update_users_info,
-    update_role_info,
-    update_roles_info,
-    login_required_api
+    login_required_api,
+    make_refresh_token,
+    make_access_token
 )
+
 mod = Blueprint('system', __name__)
 
-# 
-# User
-# 
-
-@mod.route('/users', methods=['GET'])
+@mod.route('/navigation', methods=['GET'])
 @login_required_api
-@update_users_info
 @api_base
-def get_users():
+def get_navigation():
     """
-    全てのユーザ、またはキーワードに一致するユーザを返す
+    ナビゲーションバーに表示する情報などを取得する
     """
-    search_keyword = request.args.get('q')
-    states = _get_except_states(request.args)
-    if search_keyword is None:
-        return g.factory.user.find_all(except_states=states)
+    from kskp.core import KSKP_VER
+
+    navigation = {
+        'version': KSKP_VER,
+        'depoName': os.environ.get('KSKP_DEPO') or 'Unit Test',
+        'user': {},
+        'allowlist': {}
+    }
+
+    if g.user is not None:
+        navigation['user'] = g.user.to_json()
+        navigation['allowlist'] = g.user.get_allowlist()
+
+    return navigation
+
+
+@mod.route('/stores', methods=['GET'])
+@login_required_api
+@api_base
+def fecth_stores():
+    """
+    データストアの定義(雛形)の一覧を返却する
+    """
+    return g.factory.store.find_all()
+
+@mod.route('/stores/<store_id>', methods=['GET'])
+@login_required_api
+@api_base
+def fecth_store(store_id):
+    """
+    データストアの定義(雛形)を返却する
+    """
+    return g.factory.store.find_by_id(store_id)
+
+@mod.route('/stores', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_store():
+    """
+    データストアの定義(雛形)を作成する
+    """
+    new_store = g.factory.store.create(request.json['id'],
+                                       request.json['version'],
+                                       request.json['label'],
+                                       request.json['description'],
+                                       request.json['url'],
+                                       request.json['params'])
+    new_store.save()
+    return new_store
+
+@mod.route('/stores/<store_id>', methods=['DELETE'])
+@login_required_api
+@api_base
+def delete_store(store_id):
+    """
+    データストアの定義(雛形)を削除する
+    """
+    store = g.factory.store.find_by_id(store_id)
+    store.delete()
+
+
+@mod.route('/archives/flows/<uuid>', methods=['GET'])
+@login_required_api
+def download_flow(uuid):
+    from kskp.store import FlowDumper
+    flow_dumper = FlowDumper(g.factory)
+    (archive_path, archive_name) = flow_dumper.dump_archive(uuid)
+
+    # アーカイブファイルを返す
+    ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
+                              download_name=archive_name + '.tgz', mimetype='application/gzip')
+    archive_path.unlink()
+    return ret
+
+@mod.route('/archives/flows', methods=['POST'])
+@login_required_api
+@api_base
+def upload_flow():
+    from pathlib import Path
+
+    if 'file' not in request.files or request.files.get('file') is None:
+        raise Exception('No archive file found.')
+    if 'parent' not in request.form:
+        raise Exception('No parent is designated.')
+
+    if 'label' in request.form:
+        folder_label = request.form['label']
     else:
-        return g.factory.user.find_by_keyword(search_keyword, except_states=states)
+        folder_label = None
 
-@mod.route('/users/<user_uuid>', methods=['GET'])
+    parent = g.factory.data.find_by_uuid(request.form['parent'])
+    file_name = Path(request.files.get('file').filename).stem
+    stream = request.files.get('file').stream
+
+    from kskp.store import FlowDumper
+    flow_dumper = FlowDumper(g.factory)
+    flow_dumper.restore_archive(parent, folder_label, file_name, stream)
+
+
+@mod.route('/dump', methods=['GET'])
 @login_required_api
-@update_user_info
-@api_base
-def get_user(user_uuid):
+def get_dump():
     """
-    ユーザを返却する
+    KSKPのDumpファイルを取得する
     """
-    states = _get_except_states(request.args)
-    return g.factory.user.find_by_uuid(user_uuid, except_states=states)
+    from datetime import datetime
+    from kskp.core import Tmp
+    from kskp.engine import execute
+    from kskp.depo.std.commands.scmd.script import DumpCommand
 
-@mod.route('/users/self', methods=['GET'])
-@login_required_api
-@update_user_info
-@api_base
-def get_self():
-    """
-    自分ユーザを返却する
-    """
-    states = _get_except_states(request.args)
-    return g.factory.user.find_by_id(g.user.id, except_states=states)
-
-@mod.route('/users', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_user():
-    """
-    ユーザを作成する
-    """
-    req = RequestJson(request.json)
-    if not req.has_all('email', 'name'):
-        raise Exception('email,name属性を指定してください')
-
-    # passwordの指定がなければ自動生成する
-    new_user = g.factory.user.create(email=req['email'], name=req['name'], password=req.get('password'))
-    new_user.save()
-    return new_user
-
-@mod.route('/users/<user_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def update_user(user_uuid):
-    """
-    ユーザを修正する
-    'password':Noneの場合はパスワードを自動生成する
-    """
-    req = RequestJson(request.json)
-    user = g.factory.user.find_by_uuid(user_uuid)
-    return _update_user_inner(user, req)
-
-@mod.route('/users/self', methods=['PUT'])
-@login_required_api
-@api_base
-def update_self():
-    """
-    自分ユーザを修正する
-    """
-    req = RequestJson(request.json)
-    user = g.factory.user.find_by_id(g.user.id)
-
-    if req.has('currentPassword'):
-        if not user.authenticate(req['currentPassword']):
-            raise Exception('現在のパスワードが誤っています')
-    elif req.has_at_least('email','password') or req.isnull('password'):
-        # emailまたはpasswordを修正する場合は、現在のパスワードによる認証が必要である
-        raise Exception('現在のパスワードを指定してください')
-
-    return _update_user_inner(user, req)
-
-def _get_except_states(request_args):
-    if request_args.get('except_inactive') == 'on':
-        from kskp.store.auth import User
-        return [User.INACTIVE_STATE]
-    else:
-        return None
-
-def _update_user_inner(user, req):
-    if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
-        raise Exception('email,nameまたはpassword属性を指定してください')
-
-    if req.has('email'):
-        user = user.update_email(req['email'])
-    if req.has('name'):
-        user = user.update_name(req['name'])
-    if req.has('password'):
-        user = user.update_password(req['password'])
-    elif req.isnull('password'):
-        user = user.reset_password()
-
-    return user
-
-@mod.route('/users/<user_uuid>/undelete', methods=['PUT'])
-@login_required_api
-@api_base
-def put_back_user(user_uuid):
-    """
-    論理削除されたユーザを登録状態に戻す
-    """
-    user = g.factory.user.find_by_uuid(user_uuid)
-    return user.put_back()
-
-@mod.route('/users/<user_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def delete_user(user_uuid):
-    """
-    登録ユーザを論理削除する
-    (仮登録ユーザは物理削除する)
-    """
-    user = g.factory.user.find_by_uuid(user_uuid)
-    user.throw_away()
-
-# 
-# Role
-# 
-
-@mod.route('/roles', methods=['GET'])
-@login_required_api
-@update_roles_info
-@api_base
-def get_roles():
-    """
-    全てのロールを返却する
-    """
-    return g.factory.role.find_all()
-
-@mod.route('/roles/<role_uuid>', methods=['GET'])
-@login_required_api
-@update_role_info
-@api_base
-def get_role(role_uuid):
-    """
-    ロールを返却する
-    """
-    return g.factory.role.find_by_uuid(role_uuid)
-
-@mod.route('/roles', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_role():
-    """
-    ロールを作成する
-    """
-    req = RequestJson(request.json)
-    if not req.has_all('name'):
-        raise Exception('name属性を指定してください')
-
-    new_role = g.factory.role.create(name=req['name'])
-    new_role.save()
-    return new_role
-
-@mod.route('/roles/<role_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def update_role(role_uuid):
-    """
-    ロールを修正する
-    """
-    from kskp.store.auth import Role, NoRoleOwnerException
-
-    req = RequestJson(request.json)
-    if req.has_no_all('name', 'members'):
-        raise Exception('nameまたはmembers属性を指定してください')
-
-    role = g.factory.role.find_by_uuid(role_uuid)
-
-    # ロール名を変更する
-    if req.has('name'):
-        role = role.update_name(req['name'])
-
-    # ロールにユーザを追加・削除する
-    if req.has('members'):
-        if not isinstance(req['members'], list):
-            raise Exception('members属性にはユーザuuidの配列を指定してください')
-        # member属性からMembersオブジェクトを作成する
-        members = []
-        for member_dict in req['members']:
-            user = g.factory.user.find_by_uuid(member_dict['uuid'])
-            owner = member_dict['owner']
-            members.append(Role.Member(user, owner))
-        # 所有者が設定されない場合はエラーとする
-        if not role.owner_exists(members):
-            raise NoRoleOwnerException('所有者が設定されていません')
-        # member属性で指定されたユーザを追加する
-        role.init_members(members)
-
-    return role
-
-@mod.route('/roles/<role_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def delete_role(role_uuid):
-    """
-    ロールを削除する
-    """
-    role = g.factory.role.find_by_uuid(role_uuid)
-    role.delete()
-
-#
-# Role-User
-#
-
-@mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def join_user_to_role(role_uuid, user_uuid):
-    """
-    ロールにユーザを追加する
-    """
-    req = RequestJson(request.json)
-    if not req.has_all('owner'):
-        raise Exception('owner属性を指定してください')
-    _join_user_to_role(role_uuid, user_uuid, req['owner'])
-
-@mod.route('/roles/sys_admin/users/<user_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def join_user_to_sys_admin_role(user_uuid):
-    """
-    システム管理者ロールにユーザを追加する
-    """
-    # システム管理者による、システム管理者の追加・削除は不可なので、owner=Falseでシステム管理者ロールに追加する
-    sys_admin_role = g.factory.role.load_sys_admin_role()
-    _join_user_to_role(sys_admin_role.uuid, user_uuid, owner=False)
-
-@mod.route('/roles/usr_admin/users/<user_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def join_user_to_usr_admin_role(user_uuid):
-    """
-    ユーザ管理者ロールにユーザを追加する
-    """
-    # ユーザ管理者による、ユーザ管理者の追加・削除を可能とするため、owner=Trueでユーザ管理者ロールに追加する
-    usr_admin_role = g.factory.role.load_usr_admin_role()
-    _join_user_to_role(usr_admin_role.uuid, user_uuid, owner=True)
-
-def _join_user_to_role(role_uuid, user_uuid, owner):
-    from kskp.store.auth import Role, NoRoleOwnerException
-
-    role = g.factory.role.find_by_uuid(role_uuid)
-    user = g.factory.user.find_by_uuid(user_uuid)
-    member = Role.Member(user, owner)
-
-    # この所属によって、ロールに所有者が居なくなる場合はエラーとする
-    if member.owner == False and role.is_last_owner(member.user):
-        raise NoRoleOwnerException('この所属処理でロール所有者がいなくなります')
-
-    role.join_member(member)
-
-@mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def leave_user_outof_role(role_uuid, user_uuid):
-    """
-    ロールからユーザを削除する
-    """
-    _leave_user_outof_role(role_uuid, user_uuid)
-
-@mod.route('/roles/sys_admin/users/<user_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def leave_user_outof_sys_admin_role(user_uuid):
-    """
-    システム管理者ロールからユーザを削除する
-    """
-    from kskp.store.auth import NoRoleOwnerException
-    sys_admin_role = g.factory.role.load_sys_admin_role()
-    _leave_user_outof_role(sys_admin_role.uuid, user_uuid, raise_on_no_owner=False)
-
-@mod.route('/roles/usr_admin/users/<user_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def leave_user_outof_usr_admin_role(user_uuid):
-    """
-    ユーザ管理者ロールからユーザを削除する
-    """
-    from kskp.store.auth import NoRoleOwnerException
-    usr_admin_role = g.factory.role.load_usr_admin_role()
     try:
-        _leave_user_outof_role(usr_admin_role.uuid, user_uuid)
-    except NoRoleOwnerException:
-        raise NoRoleOwnerException('ユーザー管理者権限を持つユーザがいなくなるのでこの操作はできません')
+        # Dumpコマンドを実行する
+        outs = execute(DumpCommand(), args={'datum_factory': g.factory.data})
+        if 'o' not in outs or isinstance(outs['o'], Exception):
+            raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
 
-def _leave_user_outof_role(role_uuid, user_uuid, raise_on_no_owner=True):
-    from kskp.store.auth import NoRoleOwnerException
-
-    role = g.factory.role.find_by_uuid(role_uuid)
-    user = g.factory.user.find_by_uuid(user_uuid)
-
-    # この脱退によって、ロールに所有者が居なくなる場合はエラーとする
-    if raise_on_no_owner and role.is_last_owner(user):
-        raise NoRoleOwnerException('この脱退処理でロール所有者がいなくなります')
-
-    role.leave_member(user)
-
-# 
-# Project-Member
-# 
-
-@mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['PUT'])
+        # Dumpファイルをクライアントに返す
+        archive_path = outs['o']
+        archive_name = 'backup_' + datetime.now().strftime('%Y%m%d') + '.tgz'
+        return send_from_directory(archive_path.parent, archive_path.name, as_attachment=True,
+                                   download_name=archive_name, mimetype='application/gzip')
+    finally:
+        # Dumpコマンドで作成した一時ファイルを削除する
+        Tmp.remove_files()
+    
+@mod.route('/dump', methods=['POST'])
 @login_required_api
 @api_base
-def join_user_to_project(project_uuid, user_uuid):
+def upload_dump():
     """
-    プロジェクトにユーザを追加する
+    KSKPのDumpファイルを復元する
     """
-    from kskp.core import Datum
-    from kskp.store import ProjectFolder
+    from kskp.engine import execute
+    from kskp.depo.std.commands.scmd.script import RestoreCommand
 
+    if 'file' not in request.files or request.files.get('file') is None:
+        raise Exception('Dumpファイルを指定してください')
+
+    # 入力ストリームを取得する
+    stream = request.files.get('file').stream
+
+    # Restoreコマンドを実行する
+    outs = execute(RestoreCommand(), args={'factory': g.factory}, inputs={'i':stream})
+    if 'o' not in outs or isinstance(outs['o'], Exception):
+        raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
+
+
+@mod.route('/tokens/refresh', methods=["POST"])
+@login_required_api
+@api_base
+def get_refresh_token():
+    """
+    リフレッシュトークンを発給する
+    """
     req = RequestJson(request.json)
-    if not req.has_all('memberType'):
-        raise Exception('memberTyp属性を指定してください')
 
-    project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
-    user = g.factory.user.find_by_uuid(user_uuid)
-    member = ProjectFolder.Member(user, req['memberType'])
+    if not req.has('currentPassword'):
+        raise Exception('現在のパスワードを指定してください')
+    if not g.user.authenticate(req['currentPassword']):
+        raise Exception('現在のパスワードが誤っています')
 
-    # この所属によって、プロジェクトに管理者が居なくなる場合(ユーザ管理者は除外)はエラーとする
-    if member.type != ProjectFolder.OWNER_MEMBER_TYPE and project.is_last_owner(member.user):
-        raise Exception('この所属処理でプロジェクト管理者がいなくなります')
+    return make_refresh_token(g.user.uuid)
 
-    project.join_member(member)
-
-@mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['DELETE'])
+@mod.route('/tokens/access', methods=["POST"])
 @login_required_api
 @api_base
-def leave_user_outof_project(project_uuid, user_uuid):
+def get_access_token():
     """
-    プロジェクトからユーザを削除する
+    アクセストークンを発給する
     """
-    from kskp.core import Datum
-    project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
-    user = g.factory.user.find_by_uuid(user_uuid)
+    # アクセストークンを用いて新たなアクセストークンを
+    # 発給できるが脆弱性にはならないだろう
+    return make_access_token(g.user.uuid)
 
-    # この脱退によって、プロジェクトに管理者が居なくなる場合(ユーザ管理者は除外)はエラーとする
-    if project.is_last_owner(user):
-        raise Exception('この脱退処理でプロジェクト管理者がいなくなります')
 
-    project.leave_member(user)
+@mod.errorhandler(400)
+def handle_bad_request(error):
+    """
+    Bad Requestが起きた時にもJSONを返却するように
+    （request bodyのJSONが不正な場合を想定している）
+    """
+    from flask import jsonify
+    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
+    message = 'The browser (or proxy) sent a request that this server could not understand.'
+    return jsonify({'success': False, 'message': str(error)})

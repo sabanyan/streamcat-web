@@ -17,7 +17,7 @@ class ExecuteTestCase(ApiTestCaseBase):
         subflow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
 
 
-        from kskp.web.backend.api.lib import get_library
+        from kskp.web.backend.api.library import get_library
 
         # ルートストアフォルダを取得する(無ければ作成する)
         root = get_library(self.USER1)

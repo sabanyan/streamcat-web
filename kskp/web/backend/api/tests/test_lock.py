@@ -19,9 +19,9 @@ class LockTestCase(ApiTestCaseBase):
         }
 
         data1 = {
-            'project_uuid': parent_uuid,
-            'name': new_flow_name,
-            'datasource': data_source
+            'parent': parent_uuid,
+            'label': new_flow_name,
+            'flow': {'nodes':[data_source]}
         }
         return self.post_uri('/api/v0/flows', data1, self.USER1)
 
@@ -37,7 +37,7 @@ class LockTestCase(ApiTestCaseBase):
         }
 
         data1 = {
-            'name': '変更後のフローでーす',
+            'label': '変更後のフローでーす',
             'datasource': data_source
         }
 
@@ -177,7 +177,7 @@ class LockTestCase(ApiTestCaseBase):
         # 正しいロックUUIDで更新する
         result = self.update_flow(flow_uuid, source_uuid=frame_uuid, lock_uuid=lock_uuid)
         # フローのUUIDでロックを解除する
-        result = self.post_uri(f'/api/v0/delete-locks?of={flow_uuid}', {}, self.USER1)
+        result = self.delete_uri(f'/api/v0/locks?of={flow_uuid}', self.USER1)
 
     def test_expire_lock(self):
         """
@@ -197,9 +197,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': 'ビタミンD',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': 'ビタミンD',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -257,9 +257,9 @@ class LockTestCase(ApiTestCaseBase):
             "label": "test"
         }
         data = {
-            'project_uuid': project_uuid,
-            'name': 'Catalina',
-            'datasource': data_source
+            'parent': project_uuid,
+            'label': 'Catalina',
+            'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
         flow_uuid = result['data']['uuid']
@@ -274,7 +274,7 @@ class LockTestCase(ApiTestCaseBase):
         flow_data = result['data']['flow']
 
         # Frameをダウンロードする
-        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER2)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER2)
 
         # Flowを更新する
         data = {
@@ -284,16 +284,16 @@ class LockTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # Frameをプレビューする
-        vis_args = {"args" :
-                        {"visualizer" : "csvtohtmltable",
-                            "offset" : 0,
-                            "limit"  : 100
-                        }
-                    }
-        result = self.post_uri(f'/api/v0/vizs/{frame_uuid}', vis_args, self.USER2)
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER2)
 
         # Flowのロックを解除する
         result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
 
     # @unittest.skip
     def test_extend_lock(self):
@@ -314,9 +314,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': '🐱😽',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': '🐱😽',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -334,8 +334,8 @@ class LockTestCase(ApiTestCaseBase):
             # 少し待つ
             time.sleep(0.4)
             # ロックの有効期間を延長する
-            self.post_locks(f'/api/v0/extend-locks/{lock_uuid}', {}, self.USER1)
-            self.assertTrue(result['success'], 'POST extend-locks is failed.')
+            self.put_uri(f'/api/v0/locks/{lock_uuid}', {}, self.USER1)
+            self.assertTrue(result['success'], 'PUT locks is failed.')
 
         # ロックの有効期間が延長されたため、フローを更新できること
         self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid) 
@@ -364,9 +364,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': 'Anker',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': 'Anker',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -423,9 +423,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、プロジェクト内にFlowを作成する
         data = {
-            'project_uuid': project_uuid,
-            'name': 'Anker',
-            'datasource': None
+            'parent': project_uuid,
+            'label': 'Anker',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -460,6 +460,12 @@ class LockTestCase(ApiTestCaseBase):
         # ロックの有効期限を戻す
         lock_manager._valid_seconds = backup_valid_seconds
 
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_delete_locked_flow(self):
         """
         排他ロックされたフローはゴミ箱にほかせないこと
@@ -473,9 +479,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': 'お〜いお茶',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': 'お〜いお茶',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 
@@ -518,9 +524,9 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
-            'project_uuid': folder_uuid,
-            'name': '養老サイダー',
-            'datasource': None
+            'parent': folder_uuid,
+            'label': '養老サイダー',
+            'flow': {}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
 

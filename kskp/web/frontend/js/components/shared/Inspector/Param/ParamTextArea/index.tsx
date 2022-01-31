@@ -1,7 +1,5 @@
 import React from 'react'
 import { CommandParamType } from 'Types/index'
-import classnames from 'classnames'
-import style from './style.scss'
 
 
 type Props = {

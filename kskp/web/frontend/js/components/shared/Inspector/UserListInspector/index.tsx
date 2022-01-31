@@ -2,17 +2,12 @@ import React, {useEffect, useState} from 'react'
 import style from '../style.scss'
 import {BaseInspector, Resizer} from 'Shared/Inspector'
 import {UserListUser} from 'Types/index'
-import moment from 'moment/moment'
 import Constants from 'Constants/index'
-import {Button, DownloadButton} from 'Shared/Input'
+import {Button} from 'Shared/Input'
 import {APIUtil, ModalUtil, ReactDomUtil} from 'Utils/index';
-import {LibraryChild} from 'Model/index';
 import AdminUtil from 'Utils/AdminUtil';
-import {useDispatch} from 'react-redux';
-import {addNotification, removeNotification} from 'reapop';
 import ErrorUtil from 'Utils/ErrorUtil';
-import {Spacer} from 'Shared/Base';
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 
 interface Props {
@@ -25,7 +20,7 @@ interface Props {
     onChangedUserSystemAdminRole?: Function;
     onChangedList?: Function;
     notify: Function;
-    navigation?: NavigationModelProps
+    navigation: NavigationType | null;
 }
 
 const display = {
@@ -113,8 +108,8 @@ const UserListInspector = (props: Props) => {
     }, [selectedData,systemAdminChecked,userAdminChecked])
 
     const unDeleteUser = async (uuid:string)=>{
-        const url = 'users/' + uuid + "/undelete";
-        return APIUtil.put(url).then((response)=>{
+        const url = 'users/' + uuid;
+        return APIUtil.put(url, {state:'active'}).then((response)=>{
             if(response.data.success){
                 return Promise.resolve(response)
             }else {
@@ -430,4 +425,5 @@ const UserListInspector = (props: Props) => {
 
 }
 
-export default UserListInspector
+export {UserListInspector};
+

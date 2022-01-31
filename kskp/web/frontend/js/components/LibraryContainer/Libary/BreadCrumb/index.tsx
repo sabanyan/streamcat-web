@@ -1,11 +1,10 @@
-import * as React from "react";
+import React from 'react';
 import {Fragment} from "react";
 import * as style from "./style.scss";
 import {Text} from "Shared/Base/Texts/Text";
 import {LinkButton} from "Shared/Input";
 import classnames from "classnames";
 import WebUtil from "Utils/WebUtil";
-import Constants from "Constants/index";
 
 export interface IBreadCrumbsLink {
     uuid: string | null;
