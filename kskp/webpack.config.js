@@ -1,5 +1,5 @@
 const path = require('path')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require('webpack')
 
 module.exports = (env) => {
@@ -97,25 +97,25 @@ module.exports = (env) => {
     {
       mode: mode,
       entry: './web/frontend/sass/app.scss',
-      output: {
-        path: `${__dirname}/web/frontend/static/css`,
-        filename: 'app.css',
-      },
       devtool: 'source-map',
+      plugins: [
+        new MiniCssExtractPlugin({
+          filename: "app.css",
+          chunkFilename: "[id].css"   
+        }),
+      ],
       module: {
         rules: [
           {
             test: /\.scss$/,
-            loader: ExtractTextPlugin.extract({
-              fallback: 'style-loader',
-              use: ['css-loader', 'sass-loader'],
-            }),
+            use: [
+              MiniCssExtractPlugin.loader,
+              'css-loader',
+              'sass-loader',
+            ],
             exclude: /node_modules/,
           }],
-      },
-      plugins: [
-        new ExtractTextPlugin('app.css'),
-      ],
+      }
     },
   ]
 }
