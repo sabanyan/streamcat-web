@@ -314,7 +314,7 @@ class FileTestCase(ApiTestCaseBase):
         library_data_src['id'] = 'f0'
         library_data_src['type'] = 'flow'
         library_data_src['args'] = {'uuid':frame_uuid}
-        library_data_src['dsts'] = {'d':'d'}
+        library_data_src['dsts'] = {'o':'d'}
         library_data_src['flow'] = results['data'][0]['flow']
 
         # データデストの一覧を取得する
@@ -325,7 +325,7 @@ class FileTestCase(ApiTestCaseBase):
         rfolder_data_dst['id'] = 'f1'
         rfolder_data_dst['type'] = 'flow'
         rfolder_data_dst['args'] = {'file_path':'電車🚃'}
-        rfolder_data_dst['srcs'] = {'d':'d'}
+        rfolder_data_dst['srcs'] = {'i':'d'}
         rfolder_data_dst['flow'] = results['data'][1]['flow']
 
         # フローJSONを作成する

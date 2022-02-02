@@ -366,23 +366,23 @@ def _make_flow_inputs(factory, flow_uuid, request):
 
     for port in flow_data.i_ports:
         # frame（既にkskpに存在するデータソース）の場合
-        if request.json.get(port['nodeId']) is not None:
+        if request.json.get(port['label']) is not None:
             # フレームのUUIDを取得する
-            frame_uuid = request.json.get(port['nodeId'])
+            frame_uuid = request.json.get(port['label'])
             # 指定したuuidのframeを取得する
             nysol_module = _load_frame(frame_uuid)
-            inputs[port['nodeId']] = nysol_module
+            inputs[port['label']] = nysol_module
             continue
 
         # 新たにkskpにアップロードする場合
-        file = request.files.get(port['nodeId'])
+        file = request.files.get(port['label'])
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
             # from kskp.web.backend.api.basic import upload_frame
             frame_uuid = _upload_frame(file, '')['uuid']
             # 指定したuuidのframeを取得する
             nysol_module = _load_frame(frame_uuid)
-            inputs[port['nodeId']] = nysol_module
+            inputs[port['label']] = nysol_module
             continue
 
     return inputs

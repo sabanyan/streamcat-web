@@ -269,7 +269,7 @@ class FlowTestCase(ApiTestCaseBase):
                     "type": "flow", 
                     "classification": "data_dest",
                     "srcs": {
-                        "d": 'd'
+                        "i": 'd'
                     },
                     "dsts": {}, 
                     "uuid": self.data_dst.uuid

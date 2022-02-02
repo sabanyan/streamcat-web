@@ -66,7 +66,7 @@ class FrameTestCase(ApiTestCaseBase):
                     "type": "flow", 
                     "classification": "data_dest",
                     "srcs": {
-                        "d": 'd1'
+                        "i": 'd1'
                     },
                     "dsts": {}, 
                     "uuid": self.data_dst.uuid
@@ -428,7 +428,7 @@ class FrameTestCase(ApiTestCaseBase):
         data = {
             'args': {},
             'flow_uuid':flow.uuid,
-            'i': frame_uuid
+            '入力1': frame_uuid
         }
         result = self.post_uri('/api/v0/frames', data, self.USER1)
         lasts = result['lasts']
@@ -499,7 +499,7 @@ class FrameTestCase(ApiTestCaseBase):
         data = {
             'args': args,
             'flow_uuid': flow.uuid,
-            'i': frame_uuid
+            '入力1': frame_uuid
         }
         result = self.post_uri('/api/v0/frames', data, self.USER1)
         lasts = result['lasts']
@@ -640,7 +640,7 @@ class FrameTestCase(ApiTestCaseBase):
                     "classification": "data_dest",
                     "args": {}, 
                     "srcs": {
-                        "d": "d"
+                        "i": "d"
                     }, 
                     "dsts": {}, 
                     "flow": {
