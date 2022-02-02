@@ -170,7 +170,9 @@ const DataFrameInspector = (props: Props) => {
         let selected_step = getSelectedStep();
         //パラメーターを更新
         const port = {
-            label: selected_step.getLabel(),
+            // TODO: Portのlabelは一意である必要があるので、getLabel() -> idに変更した
+            // label: selected_step.getLabel(),
+            label: selected_step.id,
             nodeId: selected_step.id,
             type: selected_step.type
         };

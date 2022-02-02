@@ -126,7 +126,7 @@ const InOutConnector = (props: Props) => {
     } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
         let srcs = selectedStep.srcs;
         selectedStep.flow.ports[0].forEach((port) => {
-            let key= port.nodeId;
+            let key= port.label;
             if (!srcs[key]) {
                 srcs[key] = null;
             }
@@ -170,7 +170,7 @@ const InOutConnector = (props: Props) => {
                 dataFrameId = selectedStep.dsts[key];
                 const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
                 const subflowOutPort = subflowOutPorts.find((outPort) => {
-                    return (outPort.nodeId == key);
+                    return (outPort.label == key);
                 });
                 return <div key={index} className={style.outPort_}>
                     <div className={style.outPort_Port}>

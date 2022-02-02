@@ -66,7 +66,7 @@ class FrameTestCase(ApiTestCaseBase):
                     "type": "flow", 
                     "classification": "data_dest",
                     "srcs": {
-                        "d": 'd1'
+                        "i": 'd1'
                     },
                     "dsts": {}, 
                     "uuid": self.data_dst.uuid
@@ -513,7 +513,7 @@ class FrameTestCase(ApiTestCaseBase):
                     "classification": "data_dest",
                     "args": {}, 
                     "srcs": {
-                        "d": "d"
+                        "i": "d"
                     }, 
                     "dsts": {}, 
                     "flow": {
