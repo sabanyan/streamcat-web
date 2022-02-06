@@ -4,7 +4,7 @@ import classnames from "classnames";
 
 interface Props {
     onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     disabled?: boolean;
     icon?: string;
     danger?: boolean;

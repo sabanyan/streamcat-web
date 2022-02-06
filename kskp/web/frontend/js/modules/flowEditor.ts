@@ -6,7 +6,7 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, 
 import { CommandPortType, StepModelType } from "../types";
 import { DataFrameDetailType } from "Types/index";
 import _ from "lodash";
-import { FlowType } from "Model/Library";
+import { FlowType, Port } from "Model/Library";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -308,7 +308,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
             const newPort = inPorts[index];
             let portName = isAddable ? "*" + index : newPort.name;
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.nodeId;
+              portName = newPort.label;
             }
 
             add_step.addInPort(portName, id);
@@ -329,7 +329,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
             const newPort = outPorts[index];
             let portName = newPort.name;
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.nodeId;
+              portName = newPort.label;
             }
             add_step.dsts[portName] = id;
 
@@ -798,7 +798,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
     case ADD_DATASRC_ACTION: {
       const { dataSrc } = action.payload;
       const id = newNodeId('i', newState.flow!.flow.nodes, 1)[0];
-      const outPorts: any[] = dataSrc.ports[1];
+      const outPorts: Port[] = dataSrc.ports[1];
 
       const dstNodeIds = newNodeId('d', newState.flow!.flow.nodes, outPorts.length);
       const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, [], dstNodeIds);
@@ -832,15 +832,9 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
 
       const newNode = newDataSrc(props);
       const dstNodes = newDstNodes(dstNodeIds, dstNodesPositionAndSize, dstProps);
-      // ポートの追加
-      dstNodes.forEach((dstNode) => {
-        const port = {
-          label: dstNode.label,
-          nodeId: dstNode.id,
-          type: dstNode.type
-        }
-        // newState.flow.setInPort(port);
-        newState.flow!.flow.ports[0].upsertPort(port);
+      // Portの追加
+      outPorts.forEach(outPort => {
+        newState.flow!.flow.ports[0].upsertPort(outPort);
       })
 
       let nodes: any[] = newState.flow!.flow.nodes;
@@ -854,6 +848,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
       newState.graph = graph.getGraph(newState);
     };
       break;
+
     case ADD_DATADST_ACTION: {
       const { dataDest, selctedDataNodeId } = action.payload;
 
@@ -863,21 +858,12 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
 
       const { newNodePositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, srcNodeIds, []);
 
-      // portの追加
-      srcNodeIds.forEach((srcNodeId) => {
-        newState.flow!.flow.nodes = newState.flow!.flow.nodes.map((node) => {
-          if (node.id === srcNodeId && Constants.step.type.frame) {
-            const port = {
-              label: node.label,
-              nodeId: node.id,
-              type: node.type
-            }
-            // newState.flow.setOutPort(port);
-            newState.flow!.flow.ports[1].upsertPort(port);
-          }
-          return node;
-        })
+      // Portの追加
+      const inPorts: Port[] = dataDest.ports[0];
+      inPorts.forEach(inPort => {
+        newState.flow!.flow.ports[1].upsertPort(inPort);
       })
+
       let args = {};
       // default value
       dataDest.params.map((param: any) => {
@@ -1194,7 +1180,7 @@ export function newDataSrc(props: DataSrcProps) {
   let dsts = {};
   const outPorts: any[] = dataSrc.ports[1];
   outPorts.forEach((outPort, index) => {
-    dsts[outPort.nodeId] = dstNodeIds[index];
+    dsts[outPort.label] = dstNodeIds[index];
   });
 
   let dataSrcProps = {
@@ -1229,7 +1215,7 @@ export function newDataDest(props: DataDestProps) {
   let srcs = {};
   const inPorts: any[] = dataDest.ports[0];
   inPorts.forEach((inPort, index) => {
-    srcs[inPort.nodeId] = srcNodeIds[index];
+    srcs[inPort.label] = srcNodeIds[index];
   });
 
   let DataDstProps = {

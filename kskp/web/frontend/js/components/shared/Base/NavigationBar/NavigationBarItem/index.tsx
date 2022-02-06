@@ -3,7 +3,7 @@ import React from "react";
 interface Props {
     iconUrl: string;
     href: string;
-    children: string;
+    children?: string;
 }
 
 const NavigationBarItem = (props: Props) => {

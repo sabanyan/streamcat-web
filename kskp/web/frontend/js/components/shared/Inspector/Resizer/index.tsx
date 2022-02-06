@@ -9,7 +9,7 @@ let mouseMoveEvent
 let mouseUpEvent
 
 type Props = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   inspector?: {width:number};
   width?: number;
   resizeInspector?: Function

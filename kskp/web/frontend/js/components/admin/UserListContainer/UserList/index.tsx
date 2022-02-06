@@ -53,8 +53,10 @@ const UserList = (props: Props) => {
     const [selectableProjects,setSelectableProjects] = useState<UserProject[]>([]);
 
     const fetchProjects = (exceptMyProject:boolean = false) => {
-        const except_my_project = (exceptMyProject)?"on":"off"
-        const url = 'projects?except_myproject=' + except_my_project
+        // ゴミ箱にほかされたプロジェクトを除外する
+        const on_root = 'on';
+        const except_my_project = (exceptMyProject)?'on':'off';
+        const url = `projects?on_root=${on_root}&except_myproject=${except_my_project}`;
         return APIUtil.get(url).then((response) => {
             const projects: UserProject[] = response.data.data;
             if(!exceptMyProject){

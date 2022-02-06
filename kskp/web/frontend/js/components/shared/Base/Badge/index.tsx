@@ -4,7 +4,7 @@ import classnames from "classnames";
 
 
 interface Props {
-    children: string;
+    children?: string;
     color: "darkGreen" | "darkBlue";
 }
 

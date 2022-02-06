@@ -3,7 +3,7 @@ import {NavigationType} from "Model/Navigation/NavigationModel";
 
 interface Props {
     navigation: NavigationType | null;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     visible?: boolean;
 }
 

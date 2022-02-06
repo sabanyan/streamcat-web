@@ -5,7 +5,7 @@ import * as style from "./style.scss";
 import {AlignContentProperty, AlignItemsProperty, FlexDirectionProperty} from 'csstype';
 
 type Props = {
-    children: React.ReactNode;
+    children?: React.ReactNode;
     justifyContent?: AlignContentProperty;
     alignItems?: AlignItemsProperty;
     flexDirection?: FlexDirectionProperty;
