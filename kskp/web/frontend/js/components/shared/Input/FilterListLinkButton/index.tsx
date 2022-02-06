@@ -1,12 +1,11 @@
 import React from 'react';
 import style from './style.scss';
-import classnames from 'classnames';
 import {useState} from 'react';
 import {FilterCategoryItemList} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList';
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 
 interface Props {
-    children: string;
+    children?: string;
     list: IFilterCategoryItem[];
     onClickFilterListItem: (item: IFilterListItem)=>void;
     onClickFilterCategoryItem: (item: IFilterCategoryItem)=>void;

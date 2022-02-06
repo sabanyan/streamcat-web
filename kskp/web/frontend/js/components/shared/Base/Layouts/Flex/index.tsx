@@ -3,7 +3,7 @@ import * as style from "./style.scss";
 import {Property} from "csstype";
 
 type Props = {
-    children: React.ReactNode
+    children?: React.ReactNode
     justifyContent?: Property.AlignContent;
     alignItems?: Property.AlignItems;
     flexDirection?: Property.FlexDirection;
