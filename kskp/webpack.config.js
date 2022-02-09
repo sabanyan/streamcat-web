@@ -93,29 +93,32 @@ module.exports = (env) => {
         }),
       ],
       performance: { hints: false }
-    },
+    }
+    ,
     {
       mode: mode,
       entry: './web/frontend/sass/app.scss',
+      output: {
+        path: `${__dirname}/web/frontend/static/css`
+      },
       devtool: 'source-map',
       plugins: [
         new MiniCssExtractPlugin({
-          filename: "app.css",
-          chunkFilename: "[id].css"   
+          filename: 'app.css',
+          chunkFilename: '[id].css'
         }),
       ],
       module: {
-        rules: [
-          {
+        rules: [{
             test: /\.scss$/,
             use: [
               MiniCssExtractPlugin.loader,
               'css-loader',
-              'sass-loader',
+              'sass-loader'
             ],
             exclude: /node_modules/,
-          }],
+        }]
       }
-    },
+    }
   ]
 }
