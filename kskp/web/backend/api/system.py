@@ -22,10 +22,10 @@ def get_navigation():
     """
     ナビゲーションバーに表示する情報などを取得する
     """
-    from kskp.core import KSKP_VER
+    from kskp.core import STREAMCAT_VER
 
     navigation = {
-        'version': KSKP_VER,
+        'version': STREAMCAT_VER,
         'depoName': os.environ.get('STREAMCAT_DEPO') or 'Unit Test',
         'user': {},
         'allowlist': {}

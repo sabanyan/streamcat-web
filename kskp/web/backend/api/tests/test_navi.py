@@ -1,5 +1,5 @@
 import pprint
-from kskp.core import KSKP_VER
+from kskp.core import STREAMCAT_VER
 from .api_test_case_base import ApiTestCaseBase
 
 class NavigationTestCase(ApiTestCaseBase):
@@ -10,7 +10,7 @@ class NavigationTestCase(ApiTestCaseBase):
         """
         result = self.get_uri('/api/v0/navigation', self.USER0)
         data = result['data']
-        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['version'], STREAMCAT_VER)
         self.assertEqual(data['depoName'], 'Unit Test')
         self.assertDictEqual(data['user'], self.USER0.to_json())
         self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
@@ -28,7 +28,7 @@ class NavigationTestCase(ApiTestCaseBase):
         """
         result = self.get_uri('/api/v0/navigation', self.USER1)
         data = result['data']
-        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['version'], STREAMCAT_VER)
         self.assertEqual(data['depoName'], 'Unit Test')
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
