@@ -252,7 +252,7 @@ class FileTestCase(ApiTestCaseBase):
         インラインサブフローをエクスポート/インポートできること
         """
         import io
-        from kskp.core import KSKPBaseModel
+        from kskp.core import SCatBaseModel
 
         flow_json = {
             "label": "test用",
@@ -285,7 +285,7 @@ class FileTestCase(ApiTestCaseBase):
              ['お京阪','イマイチ','bad','slow'], 
              ['半休','良い','good','slow'], 
              ['菌鉄','まあ','normal','slow']]
-        csv_str = '\n'.join([KSKPBaseModel.join(line) for line in l])
+        csv_str = '\n'.join([SCatBaseModel.join(line) for line in l])
         f = io.StringIO(csv_str)
         f = io.BytesIO(bytes(f.read(), encoding='utf-8'))
 
