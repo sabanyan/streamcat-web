@@ -41,7 +41,7 @@ const getNavigation = (viewId: ViewId) => {
     }
 }
 
-const Kskp = (props: Props) => {
+const StreamCat = (props: Props) => {
 
     const dispatch = useDispatch();
     const {viewId} = props;
@@ -136,4 +136,4 @@ const Kskp = (props: Props) => {
 
 };
 
-export {Kskp};
+export {StreamCat};
