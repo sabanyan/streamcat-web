@@ -1274,8 +1274,8 @@ class SystemTestCase(ApiTestCaseBase):
         # kskp.store.__init__.pyを再読み込みする
         # (Docker再起動を再現する)
         import importlib
-        kskp_store = importlib.import_module('kskp.store')
-        importlib.reload(kskp_store)
+        streamcat_store = importlib.import_module('kskp.store')
+        importlib.reload(streamcat_store)
 
         # 論理削除ユーザを登録ユーザに戻す
         result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}', {'state':User.ACTIVE_STATE}, self.USER1)
@@ -1330,8 +1330,8 @@ class SystemTestCase(ApiTestCaseBase):
         # kskp.store.__init__.pyを再読み込みする
         # (Docker再起動を再現する)
         import importlib
-        kskp_store = importlib.import_module('kskp.store')
-        importlib.reload(kskp_store)
+        streamcat_store = importlib.import_module('kskp.store')
+        importlib.reload(streamcat_store)
 
         # 論理削除ユーザを登録ユーザに戻す
         result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}', {'state':User.ACTIVE_STATE}, new_user)

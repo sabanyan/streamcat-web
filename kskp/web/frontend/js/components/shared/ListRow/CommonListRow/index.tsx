@@ -35,7 +35,7 @@ export default class CommonListRow extends React.Component<Props> {
     if (!icon) return result
 
     switch (icon) {
-      case 'kskp_database': result = database
+      case 'streamcat_database': result = database
         break;
 
       default: result = <i className={classnames('material-icons')}>{icon}</i>
