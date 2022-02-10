@@ -49,31 +49,31 @@ const UserListInspector = (props: Props) => {
     useEffect(()=>{
         // 権限更新確認ダイアログ
         ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN, onClickDone: () => {
+            id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN, onClickDone: () => {
                 activateSystemAdminRole(selectedData.uuid,systemAdminChecked).catch(_=>{
                     setSystemAdminChecked(!systemAdminChecked);
                 })
-                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN)
             },onClickCancel: ()=>{
                 setSystemAdminChecked(!systemAdminChecked);
-                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN)
             },onClickClose: ()=>{
                 setSystemAdminChecked(!systemAdminChecked);
-                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN)
             }
         })
         ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN, onClickDone: () => {
+            id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN, onClickDone: () => {
                 activateUserAdminRole(selectedData.uuid,userAdminChecked).catch(_=>{
                     setUserAdminChecked(!userAdminChecked);
                 })
-                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN)
             },onClickCancel: ()=>{
                 setUserAdminChecked(!userAdminChecked);
-                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN)
             },onClickClose: ()=>{
                 setSystemAdminChecked(!userAdminChecked);
-                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN)
             }
         })
         // 自分のユーザー管理権限を剥奪する場合
@@ -223,7 +223,7 @@ const UserListInspector = (props: Props) => {
             setSystemAdminChecked(e.target.checked);
             // システム管理者がチェックされていた場合
             ModalUtil.emitModal({
-                id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN,
+                id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN,
                 visible: true,
                 done: (e.target.checked)?"付与する":"外す",
                 danger: (!e.target.checked),
@@ -264,7 +264,7 @@ const UserListInspector = (props: Props) => {
                 });
             }else{
                 ModalUtil.emitModal({
-                    id: Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN,
+                    id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN,
                     visible: true,
                     done: (e.target.checked)?"付与する":"外す",
                     danger: (!e.target.checked),
