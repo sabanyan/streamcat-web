@@ -26,7 +26,7 @@ def get_navigation():
 
     navigation = {
         'version': KSKP_VER,
-        'depoName': os.environ.get('KSKP_DEPO') or 'Unit Test',
+        'depoName': os.environ.get('STREAMCAT_DEPO') or 'Unit Test',
         'user': {},
         'allowlist': {}
     }

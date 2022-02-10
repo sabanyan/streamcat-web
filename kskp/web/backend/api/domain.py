@@ -3,8 +3,8 @@ from flask import Blueprint
 
 mod = Blueprint('domain', __name__)
 
-DOMAIN_AUTHN_PATH = os.environ.get('KSKP_DOMAIN_AUTHN_PATH', '/.well-known/pki-validation/dummy')
-DOMAIN_AUTHN_KEY= os.environ.get('KSKP_DOMAIN_AUTHN_KEY', '')
+DOMAIN_AUTHN_PATH = os.environ.get('STREAMCAT_DOMAIN_AUTHN_PATH', '/.well-known/pki-validation/dummy')
+DOMAIN_AUTHN_KEY= os.environ.get('STREAMCAT_DOMAIN_AUTHN_KEY', '')
 
 if DOMAIN_AUTHN_PATH is not None and DOMAIN_AUTHN_PATH.startswith('/'):
     # 

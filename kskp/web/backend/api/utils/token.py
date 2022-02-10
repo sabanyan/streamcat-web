@@ -7,11 +7,11 @@ from ... import SECURITY_LEVEL
 
 # 環境変数からアクセストークンの有効期間(分)を取得する
 # (設定値がない場合は5日とする)
-_access_expire_timedelta = timedelta(minutes=int(os.getenv('KSKP_ACCESS_TOKEN_EXPIRE_MIN', 5*24*60)))
+_access_expire_timedelta = timedelta(minutes=int(os.getenv('STREAMCAT_ACCESS_TOKEN_EXPIRE_MIN', 5*24*60)))
 
 # 環境変数からリフレッシュトークンの有効期間(日)を取得する
 # (設定値がない場合は6ヶ月とする)
-_refresh_expire_timedelta = timedelta(days=int(os.getenv('KSKP_REFRESH_TOKEN_EXPIRE_DAYS', 6*30)))
+_refresh_expire_timedelta = timedelta(days=int(os.getenv('STREAMCAT_REFRESH_TOKEN_EXPIRE_DAYS', 6*30)))
 
 # トークンの有効期限切れ迄の猶予時間(分)
 # (アクセストークンの有効期間の半分とする)

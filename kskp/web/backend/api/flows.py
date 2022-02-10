@@ -470,7 +470,7 @@ def fetch_frame(frame_uuid):
         if headers.accept_mimetype == 'text/csv':
             # Acceptヘッダから文字コードの指定を取得する
             # 指定がない場合は環境変数から取得する、環境変数の設定値もない場合は'UTF-8'とする
-            target_encoding = headers.accept_charset or os.getenv('KSKP_FRAME_CHARACTER_CODE', 'UTF-8').lower()
+            target_encoding = headers.accept_charset or os.getenv('STREAMCAT_FRAME_CHARACTER_CODE', 'UTF-8').lower()
             # フレームの内容をCSVファイルで返す
             return _convert_file(frame_uuid, target_encoding=target_encoding)
         else:

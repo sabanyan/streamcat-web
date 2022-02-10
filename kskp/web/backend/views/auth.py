@@ -123,7 +123,7 @@ def complete_sign_up():
     return _make_response_with_token(response, access_token)
 
 
-# 環境変数KSKP_GOOGLE_LOGIN=Trueの場合は、Googleによる認証APIを公開する
+# 環境変数STREAMCAT_GOOGLE_LOGIN=Trueの場合は、Googleによる認証APIを公開する
 if GOOGLE_LOGIN:
     # TODO: テスト用にHTTPS制限を解除している
     import os 

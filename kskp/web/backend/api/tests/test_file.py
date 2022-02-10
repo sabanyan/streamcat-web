@@ -66,7 +66,7 @@ class FileTestCase(ApiTestCaseBase):
         frame_uuid = self.create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
         # S_JISに変換してダウンロードするため、環境変数を設定する
-        os.environ['KSKP_FRAME_CHARACTER_CODE'] = 'cp932'
+        os.environ['STREAMCAT_FRAME_CHARACTER_CODE'] = 'cp932'
         
         # テストデータをダウンロードする
         result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
