@@ -58,7 +58,7 @@ module.exports = (env) => {
                 loader: "style-loader",
                 options: {esModule: false},
               }, 
-              'css-loader?modules',
+              'css-loader',
               'sass-loader'
             ],
             exclude: /node_modules/,
