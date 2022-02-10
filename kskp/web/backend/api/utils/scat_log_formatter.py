@@ -4,7 +4,7 @@ from flask import has_request_context, request
 from .token import decode_token
 from .login_required_api import get_token_from_auth_header
 
-class KSKPLogFormatter(logging.Formatter):
+class SCatPLogFormatter(logging.Formatter):
     """
     HTTPリクエストのログの書式
     """

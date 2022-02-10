@@ -1,6 +1,6 @@
 from flask.json import JSONEncoder
 
-class KSKPJSONEncoder(JSONEncoder):
+class SCatJSONEncoder(JSONEncoder):
     """
     ライブラリにおいて定義したクラスのJSONへのデコード処理を定義する
     """

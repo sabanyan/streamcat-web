@@ -43,7 +43,7 @@ def after_request(response:Response):
 #
 import logging
 from flask.logging import default_handler
-from .api.utils import KSKPLogFormatter, XHRFilter
+from .api.utils import SCatPLogFormatter, XHRFilter
 
 # WerkzeugサーバのHTTPリクエストログの出力を停止する
 werkzeug_logger = logging.getLogger('werkzeug')
@@ -52,7 +52,7 @@ werkzeug_logger.disabled = True
 # ログの書式を定義する
 # %(message)sにHTTPステータスコードが記述されているようだ
 # https://docs.python.org/ja/3/library/logging.html#logrecord-attributes
-log_formatter = KSKPLogFormatter(
+log_formatter = SCatPLogFormatter(
     '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(message)s","%(method)s","%(path)s"'
 )
 
@@ -65,8 +65,8 @@ app.logger.addHandler(default_handler)
 app.logger.addFilter(XHRFilter())
 
 # FlaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
-from .api.utils import KSKPJSONEncoder
-app.json_encoder = KSKPJSONEncoder
+from .api.utils import SCatJSONEncoder
+app.json_encoder = SCatJSONEncoder
 
 #
 # End points of API
