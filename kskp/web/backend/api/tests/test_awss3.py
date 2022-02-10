@@ -114,7 +114,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         awss3_uuid = result['data']['uuid']
         awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
-        # KSKPの外部からUnmountをする
+        # StreamCatの外部からUnmountをする
         import shlex
         import subprocess
         import time

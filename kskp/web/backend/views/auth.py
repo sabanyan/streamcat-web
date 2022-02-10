@@ -54,13 +54,13 @@ def confirm_email():
     url = make_temporal_url(email)
 
     msg = Message(
-        '【確認】KSKP用のメールアドレスをご確認ください',
+        '【確認】StreamCat用のメールアドレスをご確認ください',
         sender=CONFIRM_EMAIL,
         recipients=[email]
     )
     msg.html = f"""
     <p>
-      KSKPアカウントにこのメールアドレスを登録にするには
+      StreamCatアカウントにこのメールアドレスを登録にするには
       <br>
       24時間以内に<a href={url}>ここから</a>登録してください。
     </p>

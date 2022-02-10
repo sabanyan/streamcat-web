@@ -125,7 +125,7 @@ def upload_flow():
 @login_required_api
 def get_dump():
     """
-    KSKPのDumpファイルを取得する
+    StreamCatのDumpファイルを取得する
     """
     from datetime import datetime
     from kskp.core import Tmp
@@ -152,7 +152,7 @@ def get_dump():
 @api_base
 def upload_dump():
     """
-    KSKPのDumpファイルを復元する
+    StreamCatのDumpファイルを復元する
     """
     from kskp.engine import execute
     from kskp.depo.std.commands.scmd.script import RestoreCommand
