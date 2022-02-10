@@ -27,7 +27,7 @@ const display = {
     email: 'E-mail',
     projects: '所属プロジェクト',
     state: 'ステータス',
-    admin_types: 'KSKP 管理権限',
+    admin_types: 'StreamCat 管理権限',
     admin_types_system_admin: 'システム管理権限',
     admin_types_user_admin: 'ユーザー管理権限',
     password: '仮パスワード',
