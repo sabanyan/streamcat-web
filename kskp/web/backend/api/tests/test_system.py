@@ -498,7 +498,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['email'], 'Admin@kskp.io')
+        self.assertEqual(result['data']['email'], 'Admin@streamcat.io')
         self.assertEqual(result['data']['name'], 'システム管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
@@ -542,7 +542,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['email'], 'admin@kskp.io')
+        self.assertEqual(result['data']['email'], 'admin@streamcat.io')
         self.assertEqual(result['data']['name'], 'ユーザー管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
@@ -600,7 +600,7 @@ class SystemTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
 
         # ユーザを作成する
-        USER_X = self.factory.user.create('test-x@kskp.io', 'TestX', '~!@#$%^&*()')
+        USER_X = self.factory.user.create('test-x@streamcat.io', 'TestX', '~!@#$%^&*()')
         USER_X.save()
 
         # 仮登録状態から登録状態にする
@@ -627,7 +627,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['email'], 'test@kskp.io')
+        self.assertEqual(result['data']['email'], 'test@streamcat.io')
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
         # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
@@ -637,7 +637,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', self.USER2)
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['email'], 'test@kskp.io')
+        self.assertEqual(result['data']['email'], 'test@streamcat.io')
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
         # 自分が所属するプロジェクトの数を取得する
