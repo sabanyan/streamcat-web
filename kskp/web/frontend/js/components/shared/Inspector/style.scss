@@ -11,7 +11,7 @@
   opacity: 0;
   z-index: 1;
   @extend .user-select;
-  box-shadow: 0 1px 3px $kskp-property-shadow;
+  box-shadow: 0 1px 3px $streamcat-property-shadow;
 
   &.isClosed {
     background: #fafafa;
@@ -38,7 +38,7 @@
   opacity: 0;
   z-index: 1;
   @extend .user-select;
-  box-shadow: 0 1px 3px $kskp-property-shadow;
+  box-shadow: 0 1px 3px $streamcat-property-shadow;
 
   &.isClosed {
     background: #fafafa;
@@ -67,13 +67,13 @@
 
 .property_header {
   font-size: 18px;
-  color: $kskp-text;
-  background-color: $kskp-property-background-color;
-  border-bottom: 1px solid $kskp-property-border-color;
+  color: $streamcat-text;
+  background-color: $streamcat-property-background-color;
+  border-bottom: 1px solid $streamcat-property-border-color;
 }
 
 .property_label {
-  color: $kskp-text;
+  color: $streamcat-text;
   font-size: 16px;
   padding: 0 0 8px;
   text-align: left;
@@ -81,7 +81,7 @@
 }
 
 .property_name {
-  color: $kskp-text;
+  color: $streamcat-text;
   font-size: 14px;
   padding: 0 0 8px;
   text-align: left;
@@ -96,7 +96,7 @@
 
   label {
     font-size: 14px;
-    color: $kskp-text;
+    color: $streamcat-text;
     padding: 8px 0 4px;
     margin: 0;
   }
@@ -108,13 +108,13 @@
 }
 
 .hr {
-  border-top: 1px solid $kskp-property-border-color;
+  border-top: 1px solid $streamcat-property-border-color;
   margin: 8px -8px 8px -8px;
   height: 8px;
 }
 
 .full_hr {
-  border-top: 1px solid $kskp-property-border-color;
+  border-top: 1px solid $streamcat-property-border-color;
   margin: 16px -16px 8px -16px;
   height: 8px;
 }
@@ -131,7 +131,7 @@
 .overview_label {
   float: left;
   width: 120px;
-  color: $kskp-property-overview-label-color;
+  color: $streamcat-property-overview-label-color;
   margin-bottom: 8px;
   font-size: 14px;
 }
@@ -141,7 +141,7 @@
   width: calc(100% - 120px);
   text-align: left;
   font-size: 14px;
-  color: $kskp-property-overview-value-color;
+  color: $streamcat-property-overview-value-color;
 }
 
 .flowInOut {
@@ -163,7 +163,7 @@
 }
 
 .output {
-  color: $kskp-text;
+  color: $streamcat-text;
   padding-left: 12px;
 }
 
@@ -180,12 +180,12 @@
   width: 100%;
   padding: 4px 0;
   position: relative;
-  color: $kskp-text;
+  color: $streamcat-text;
   font-size: 16px;
   border-bottom: 1px dotted transparent;
   &.clickable{
     &:hover {
-      border-bottom: 1px dotted $kskp-text;
+      border-bottom: 1px dotted $streamcat-text;
       cursor: pointer;
     }
 
@@ -270,9 +270,9 @@
   width: 100%;
 
   th {
-    color: $kskp-text;
+    color: $streamcat-text;
     font-weight: normal;
-    border-bottom: 1px solid $kskp-text;
+    border-bottom: 1px solid $streamcat-text;
   }
 
   th, td {
@@ -291,19 +291,19 @@
   .activity_user {
     float: right;
     font-size: 12px;
-    color: $kskp-text;
+    color: $streamcat-text;
   }
 
   .activity_time {
     float: left;
     font-size: 12px;
-    color: $kskp-text;
+    color: $streamcat-text;
     margin-bottom: 8px;
   }
 }
 
 .noDescription {
-  color: $kskp-gray;
+  color: $streamcat-gray;
 }
 
 .cache_ {
@@ -312,14 +312,14 @@
 
 .cache_label {
   display: inline-block;
-  color: $kskp-property-overview-label-color;
+  color: $streamcat-property-overview-label-color;
   margin-bottom: 8px;
   font-size: 14px;
 }
 
 .cache_value {
   display: inline-block;
-  color: $kskp-property-overview-value-color;
+  color: $streamcat-property-overview-value-color;
   margin-bottom: 8px;
   margin-left: 8px;
   font-size: 14px;
@@ -351,12 +351,12 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  border: 1px solid $kskp-port-border-color;
+  border: 1px solid $streamcat-port-border-color;
   border-radius: 4px;
   padding: 0 4px;
   font-size: 14px;
   align-self: flex-start;
-  color: $kskp-port-label-color;
+  color: $streamcat-port-label-color;
   text-align: center;
   background: #fff;
 }

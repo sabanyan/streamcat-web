@@ -9,7 +9,7 @@
       @include form-background-color();
     }
     .custom-control-input:checked ~ .custom-control-indicator{
-      background-color: $kskp-form-radio-indicator-color;
+      background-color: $streamcat-form-radio-indicator-color;
       color: #fff;
     }
   }

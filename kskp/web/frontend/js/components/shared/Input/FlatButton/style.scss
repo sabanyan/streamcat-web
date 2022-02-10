@@ -16,10 +16,10 @@
   }
 
   &.danger {
-    border: 1px solid $kskp-danger;
+    border: 1px solid $streamcat-danger;
 
     .text, .icon {
-      color: $kskp-danger !important;
+      color: $streamcat-danger !important;
     }
   }
 
@@ -49,6 +49,6 @@
 
 .icon {
   display: inline-block;
-  color: $kskp-primary !important;
+  color: $streamcat-primary !important;
   padding-right: 16px;
 }

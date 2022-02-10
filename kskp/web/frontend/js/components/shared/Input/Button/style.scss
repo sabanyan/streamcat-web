@@ -2,9 +2,9 @@
 
 .button {
   display: inline-block;
-  border: 1px solid $kskp-button-border;
+  border: 1px solid $streamcat-button-border;
   border-radius: 4px;
-  box-shadow: 0 1px 1px $kskp-button-shadow;
+  box-shadow: 0 1px 1px $streamcat-button-shadow;
   margin: 0 8px 0 0;
   outline: none !important;
   cursor: pointer;
@@ -19,28 +19,28 @@
   }
 
   &.danger {
-    border: 1px solid $kskp-danger!important;
+    border: 1px solid $streamcat-danger!important;
 
     .text, .icon {
-      color: $kskp-danger !important;
+      color: $streamcat-danger !important;
     }
   }
 
   &:hover {
-    background-color: darken($kskp-button-background, 5%);
-    border: 1px solid lighten($kskp-button-border, 5%);
+    background-color: darken($streamcat-button-background, 5%);
+    border: 1px solid lighten($streamcat-button-border, 5%);
     transition: all 0.3s;
   }
 
   &.primary {
-    border: 1px solid darken($kskp-dark-gray, 5%);
-    background: $kskp-dark-gray;
+    border: 1px solid darken($streamcat-dark-gray, 5%);
+    background: $streamcat-dark-gray;
     color: #fff !important;
   }
 
   &.primary:hover {
-    background-color: darken($kskp-dark-gray, 5%);
-    border: 1px solid lighten($kskp-dark-gray, 5%);
+    background-color: darken($streamcat-dark-gray, 5%);
+    border: 1px solid lighten($streamcat-dark-gray, 5%);
     transition: all 0.3s;
   }
   &.primary{
@@ -53,7 +53,7 @@
 .text {
   top: -0.5px;
   position: relative;
-  color: $kskp-text !important;
+  color: $streamcat-text !important;
   font-size: 12px;
   display: inline-block;
 }
@@ -68,7 +68,7 @@
 
 .icon {
   display: inline-block;
-  color: $kskp-text !important;
+  color: $streamcat-text !important;
   font-size: 16px;
   line-height: 1em;
   padding-right: 4px;
