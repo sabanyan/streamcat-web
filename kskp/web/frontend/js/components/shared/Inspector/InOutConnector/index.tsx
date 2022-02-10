@@ -213,9 +213,9 @@ const InOutConnector = (props: Props) => {
         });
     }
 
-    // FIXIT: React Hooks対応の後に、className={'kskp-form'}が出力されない、classnamesの不具合?
+    // FIXIT: React Hooks対応の後に、className={'streamcat-form'}が出力されない、classnamesの不具合?
     // https://github.com/JedWatson/classnames/issues/115
-    return <div className={'kskp-form'}>
+    return <div className={'streamcat-form'}>
             <label>入力</label>
             <SortableList items={inEdgeSelect} onSortEnd={sortStepSrcEnd} distance={1} />
             {addEdgeContainer}

@@ -53,22 +53,22 @@ input::placeholder,textarea::placeholder {
   cursor: pointer;
 }
 
-.kskp-list-link{
+.streamcat-list-link{
   cursor: pointer;
   color: $streamcat-list-link-color!important;
 }
 
-.kskp-canvas-tool, .kskp-property {
+.streamcat-canvas-tool, .streamcat-property {
   position: fixed;
 }
 
-.kskp-visualization {
+.streamcat-visualization {
   height: 100%;
-  .kskp-visualization-container {
+  .streamcat-visualization-container {
     height: 100%;
     float: left;
     width: calc(100% - 400px);
-    .kskp-visualization-header {
+    .streamcat-visualization-header {
       padding: 18px;
       width: 100%;
       height: 66px;
@@ -84,22 +84,22 @@ input::placeholder,textarea::placeholder {
         padding-left: 16px;
       }
     }
-    .kskp-visualization-body {
+    .streamcat-visualization-body {
       padding: 16px;
       width: 100%;
       height: calc(100% - 66px);
       background: #F4F4F4;
     }
   }
-  .kskp-visualization-property {
+  .streamcat-visualization-property {
     height: 100%;
     width: 400px;
     float: right;
     background: #FFFFFF;
-    .kskp-visualization-property-header {
+    .streamcat-visualization-property-header {
       padding: 16px;
     }
-    .kskp-visualization-property-body {
+    .streamcat-visualization-property-body {
       padding: 16px;
     }
   }

@@ -67,7 +67,7 @@ exports[`DataSrcInspector renderer 1`] = `
             />
           </div>
           <div
-            className="kskp-form"
+            className="streamcat-form"
           >
             <label>
               入力

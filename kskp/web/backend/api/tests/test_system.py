@@ -3778,7 +3778,7 @@ class SystemTestCase(ApiTestCaseBase):
         # data = {
         #     'parent': folder_uuid,
         #     'label' : '銭形平次',
-        #     'bucket': 'kskp-test'
+        #     'bucket': 'streamcat-test'
         # }
         # result = self.post_uri('/api/v0/awss3s', data, self.USER2)
         # awss3_uuid = result['data']['uuid']

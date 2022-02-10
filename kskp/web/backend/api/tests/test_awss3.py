@@ -16,7 +16,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         data = {
             'parent': root_uuid,
             'label' : 'Amazonに感謝',
-            'bucket': 'kskp-test'
+            'bucket': 'streamcat-test'
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
@@ -24,7 +24,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
-        self.assertEqual(result['data']['bucket'], 'kskp-test')
+        self.assertEqual(result['data']['bucket'], 'streamcat-test')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -41,7 +41,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['uuid'], awss3_uuid)
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
-        self.assertEqual(result['data']['bucket'], 'kskp-test')
+        self.assertEqual(result['data']['bucket'], 'streamcat-test')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
@@ -69,7 +69,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         data = {
             'parent': root_uuid,
             'label' : 'Appleに感謝',
-            'bucket': 'kskp-test'
+            'bucket': 'streamcat-test'
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
@@ -107,7 +107,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         data = {
             'parent': root_uuid,
             'label' : 'Googleに感謝',
-            'bucket': 'kskp-test'
+            'bucket': 'streamcat-test'
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
@@ -148,7 +148,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         data = {
             'parent': root_uuid,
             'label' : 'Facebookに感謝',
-            'bucket': 'kskp-test'
+            'bucket': 'streamcat-test'
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
         awss3_uuid = result['data']['uuid']
@@ -158,7 +158,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         data = {
             'parent': awss3_uuid,
             'label' : 'Microsoftにさようなら',
-            'bucket': 'kskp-test'
+            'bucket': 'streamcat-test'
         }
         # S3フォルダの下にS3フォルダを作成することはできない
         with self.assertRaises(AssertionError) as e:

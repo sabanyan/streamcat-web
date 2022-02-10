@@ -92,7 +92,7 @@ const MultiInspector = (props: Props) => {
                           header={''}
                           title={selected_step_ids.length + ' files'}
                           disabled={baseInspectorDisabled}>
-        <div className='kskp-form'>
+        <div className='streamcat-form'>
             <Button onClick={() => onClickDelete()} danger={true} disabled={baseInspectorDisabled}>
                 削除する
             </Button>

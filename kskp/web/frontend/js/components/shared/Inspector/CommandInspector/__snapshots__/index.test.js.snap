@@ -63,7 +63,7 @@ exports[`CommandInspector renderer 1`] = `
           </label>
         </div>
         <div
-          className="kskp-form"
+          className="streamcat-form"
         >
           <label>
             入力
@@ -87,7 +87,7 @@ exports[`CommandInspector renderer 1`] = `
           <div />
           <div>
             <div
-              className="kskp-form"
+              className="streamcat-form"
             >
               <div
                 className="mb-12px"

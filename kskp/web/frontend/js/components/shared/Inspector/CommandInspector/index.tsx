@@ -163,7 +163,7 @@ const CommandInspector = (props: Props) => {
         form = <div>
             <div className={style.full_hr} />
             <div>
-                <div className="kskp-form">
+                <div className="streamcat-form">
                     {inputForm}
                 </div>
             </div>
