@@ -14,7 +14,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "postgres",
             "password" : ""
         }
@@ -27,7 +27,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['dbms'], 'postgresql')
         self.assertEqual(result['data']['hostname'], 'db')
         self.assertEqual(result['data']['port'], 5432)
-        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['database'], 'streamcat')
         self.assertEqual(result['data']['userId'], 'postgres')
         self.assertEqual(result['data']['password'], '')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
@@ -45,7 +45,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['dbms'], 'postgresql')
         self.assertEqual(result['data']['hostname'], 'db')
         self.assertEqual(result['data']['port'], 5432)
-        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['database'], 'streamcat')
         self.assertEqual(result['data']['userId'], 'postgres')
         self.assertEqual(result['data']['password'], '')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
@@ -69,7 +69,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "postgres",
             "password" : ""
         }
@@ -90,7 +90,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['dbms'], 'postgresql')
         self.assertEqual(result['data']['hostname'], 'db')
         self.assertEqual(result['data']['port'], 5432)
-        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['database'], 'streamcat')
         self.assertEqual(result['data']['userId'], 'postgres')
         self.assertEqual(result['data']['password'], '')
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')

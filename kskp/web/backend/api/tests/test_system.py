@@ -2457,7 +2457,7 @@ class SystemTestCase(ApiTestCaseBase):
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "postgres",
             "password" : "password"
         }
@@ -2470,7 +2470,7 @@ class SystemTestCase(ApiTestCaseBase):
             "dbms"     : "ORACLE",
             "hostname" : "db0",
             "port"     : 2935,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "scott",
             "password" : "tiger"
         }
@@ -3753,7 +3753,7 @@ class SystemTestCase(ApiTestCaseBase):
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "postgres",
             "password" : ""
         }

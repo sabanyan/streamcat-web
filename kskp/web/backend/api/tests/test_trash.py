@@ -925,7 +925,7 @@ class TrashTestCase(ApiTestCaseBase):
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "postgres",
             "password" : ""
         }
@@ -941,7 +941,7 @@ class TrashTestCase(ApiTestCaseBase):
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
-            "database" : "kskp",
+            "database" : "streamcat",
             'userId'  : "postgres",
             "password" : ""
         }

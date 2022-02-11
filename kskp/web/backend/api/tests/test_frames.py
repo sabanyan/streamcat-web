@@ -12,8 +12,8 @@ class FrameTestCase(ApiTestCaseBase):
       'dbms'     : "postgresql",
       'hostname' : "db", 
       'port'     : 5432, 
-      'database' : "kskp", 
-      'userId'  : "kskp", 
+      'database' : "streamcat", 
+      'userId'  : "streamcat", 
       'password' : 'ZQZtVgL6G32Vy6p6WJtG3C3K84yuJ4zz'
     }
     database_conn = DatabaseConn(conn_json)
