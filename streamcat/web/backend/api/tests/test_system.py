@@ -192,7 +192,7 @@ class SystemTestCase(ApiTestCaseBase):
         ユーザ情報を変更する
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'aaa-bbb_ccc@ksk-anl.com', 'name':'一般ユーザです', 'password':'0123iampassword!'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'aaa-bbb_ccc@sabanyan.com', 'name':'一般ユーザです', 'password':'0123iampassword!'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # 作成したユーザを登録状態にする
@@ -715,7 +715,7 @@ class SystemTestCase(ApiTestCaseBase):
         一度も登録状態になっていないUserのMyProjectは存在しない
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'iam.new-man@ksk-anl.co.jp', 'name':'IAM New Man', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'iam.new-man@sabanyan.co.jp', 'name':'IAM New Man', 'password':None}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # ユーザを取得する
@@ -723,7 +723,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['email'], 'iam.new-man@ksk-anl.co.jp')
+        self.assertEqual(result['data']['email'], 'iam.new-man@sabanyan.co.jp')
         self.assertEqual(result['data']['name'], 'IAM New Man')
         self.assertEqual(result['data']['state'], 'tmp')
         # MyProjectも含め所属するプロジェクトは存在しない
@@ -1168,7 +1168,7 @@ class SystemTestCase(ApiTestCaseBase):
         論理削除UserはAPI操作ができないこと
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'inactive-user@ksk-anl.com', 'name':'論理削除ユーザです', 'password':'<2rf-_aab=[uUU9]>!'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'inactive-user@sabanyan.com', 'name':'論理削除ユーザです', 'password':'<2rf-_aab=[uUU9]>!'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # 作成したユーザを登録状態にする
@@ -1193,7 +1193,7 @@ class SystemTestCase(ApiTestCaseBase):
         論理削除Userを登録状態Userに戻す
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'inactive-user!@ksk-anl.com', 'name':'論理削除ユーザです！', 'password':'AadiemtJ89'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'inactive-user!@sabanyan.com', 'name':'論理削除ユーザです！', 'password':'AadiemtJ89'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # 作成したユーザを登録状態にする
@@ -1227,7 +1227,7 @@ class SystemTestCase(ApiTestCaseBase):
         
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['email'], 'inactive-user!@ksk-anl.com')
+        self.assertEqual(result['data']['email'], 'inactive-user!@sabanyan.com')
         self.assertEqual(result['data']['name'], '論理削除ユーザです！')
         self.assertEqual(result['data']['state'], 'active')
         # 本人ロールは存在しないので所属するロールはeveryoneのみである

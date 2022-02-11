@@ -7,10 +7,10 @@
 	"homepage": "https://www.kskp.io/",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ksk-anl/kskp-web.git"
+		"url": "git+https://github.com/sabanyan/streamcat-web.git"
 	},
 	"bugs": {
-		"url": "https://github.com/ksk-anl/kskp-web/issues"
+		"url": "https://github.com/sabanyan/streamcat-web/issues"
 	},
 	"main": "index.js",
 	"scripts": {
