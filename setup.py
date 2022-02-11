@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name='kskp.web',
-    packages=['kskp.web'],
+    name='streamcat.web',
+    packages=['streamcat.web'],
     version='3.0',
     description='Web Frontend of StreamCat',
     url='https://www.kskp.io',
