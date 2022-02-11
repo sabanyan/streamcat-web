@@ -12,7 +12,7 @@ def top():
 @mod.route('/favicon.ico', methods=['GET'])
 def favicon():
     from flask import send_from_directory
-    return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype='image/x-icon')
+    return send_from_directory('../frontend/static/images', 'streamcat.ico', mimetype='image/x-icon')
 
 @mod.route('/settings/profile', methods=['GET', 'POST'])
 @login_required

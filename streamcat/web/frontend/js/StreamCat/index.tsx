@@ -121,7 +121,7 @@ const StreamCat = (props: Props) => {
     };
 
     try {
-        return <div className={style.kskp}>
+        return <div className={style.streamcat}>
             {renderNavigationBar()}
             {renderView(viewId)}
             <ModalManager
