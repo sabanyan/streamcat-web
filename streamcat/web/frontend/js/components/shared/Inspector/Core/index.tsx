@@ -116,6 +116,7 @@ class Inspector extends React.Component<InspectorProps> {
             addHistory={addHistory}
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
+            parentUUID={flow.folderUuid || undefined}
           />
         } else if (selected_step.flow && selected_step.classification == "data_dest") {
           property = <DataDstInspector
@@ -128,6 +129,7 @@ class Inspector extends React.Component<InspectorProps> {
             addHistory={addHistory}
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
+            parentUUID={flow.folderUuid || undefined}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector

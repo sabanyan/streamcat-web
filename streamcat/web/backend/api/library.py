@@ -76,7 +76,6 @@ def fetch_project(project_uuid):
     """
     指定したプロジェクトを取得する
     """
-    from .library import _jsonify_folder
     project = g.factory.data.find_by_uuid(project_uuid)
     return _jsonify_folder(project)
 

@@ -472,7 +472,7 @@ const Library = () => {
                     newDatabase[param.name] = value;
                     setEditDatabase(newDatabase);
                     const params = getDataBaseParams();
-                    const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
+                    const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}} parentUUID={parentFolder.uuid}
                         onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
                     ModalUtil.emitModal({
                         id: Constants.modal.EDIT_DATABASE,
@@ -487,7 +487,7 @@ const Library = () => {
             }
         };
 
-        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}} parentUUID={parentFolder.uuid}
             onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
@@ -511,7 +511,7 @@ const Library = () => {
         const database = addDatabase;
         if (!database) return;
         const params = getDataBaseParams();
-        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}} parentUUID={parentFolder.uuid}
             onChange={(e, param, value) => onChangeNewDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone

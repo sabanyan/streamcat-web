@@ -516,7 +516,7 @@ export class APIUtil2 {
     };
 
     /**
-     * GET /projectwを発行して全てのプロジェクトを取得する
+     * GET /projectsを発行して全てのプロジェクトを取得する
      */
     static findProjects = (onRoot?: boolean, exceptMyProject?: boolean, members?: boolean):Promise<ProjectType[]> => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する

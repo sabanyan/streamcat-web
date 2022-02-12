@@ -44,12 +44,19 @@ export type Group = {
 }
 
 type Props = {
-    params: CommandParamType[];//パラメーター定義
-    groups?: string[];　//パラメータのグルプ定義
-    args: {};//入力値
-    invalids: {}; // Validationチェック内容
+    //パラメーター定義
+    params: CommandParamType[];
+    //パラメータのグルプ定義
+    groups?: string[];
+    //入力値
+    args: {};
+    // Validationチェック内容
+    invalids: {};
     command?: CommandModel;
-    headers?: string[];//カラム情報
+    //カラム情報
+    headers?: string[];
+    // フローの親フォルダ
+    parentUUID?: string;
     disabled?: boolean;
     // event
     onChange: (e: React.ChangeEvent<HTMLInputElement>, param: CommandParamType, value: any) => void;
@@ -127,7 +134,7 @@ export class ParamsForm extends React.Component<Props, State> {
         return null;
     }
 
-    getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
+    getParamElement(param: CommandParamType, disabled: boolean = false, parentUUID?:string, label?: string, value?: any, onChange?: Function, headers?: string[]) {
         let paramElement: any;
         let className = param.type === Constants.param.type.boolean ? classnames(style.param, style.flex) : style.param;
         try {
@@ -161,7 +168,7 @@ export class ParamsForm extends React.Component<Props, State> {
                         setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange ? onChange : () => { }} />;
                     break;
                 case Constants.param.type.frame:
-                    paramElement = <ParamFrame param={param} disabled={disabled} value={value} onChange={onChange} />;
+                    paramElement = <ParamFrame param={param} disabled={disabled} value={value} onChange={onChange} parentUUID={parentUUID} />;
                     break;
 
             }
@@ -200,10 +207,10 @@ export class ParamsForm extends React.Component<Props, State> {
 
 
     renderParam(param, key) {
-        const {args, command, invalids, onChange, headers, disabled} = this.props;
+        const {args, command, invalids, onChange, headers, disabled, parentUUID} = this.props;
         let isPresence = (command) ? this.isPresence(command, param) : false;
         const value = this.getDefaultValueOrArgsValue(args, param);
-        const paramElement = this.getParamElement(param, disabled, param.label, value, onChange, headers);
+        const paramElement = this.getParamElement(param, disabled, parentUUID, param.label, value, onChange, headers);
         const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name]);
 
         return <div key={key} className={classnames('mb-12px', {

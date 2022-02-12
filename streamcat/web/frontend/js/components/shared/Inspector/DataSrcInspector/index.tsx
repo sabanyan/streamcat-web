@@ -20,6 +20,8 @@ type Props = {
   baseInspectorDisabled: boolean;
 
   sortStepSrcEnd: SortEndHandler;
+  parentUUID?: string;
+
   updateStep: Function;
   addHistory: Function;
   selectSteps: Function;
@@ -75,7 +77,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateStep, nodes, sortStepSrcEnd, baseInspectorDisabled } = this.props;
+    const { updateStep, nodes, sortStepSrcEnd, baseInspectorDisabled, parentUUID } = this.props;
     const selected_step = this.getSelectedStep();
 
     let libraryPlace: any = null;
@@ -97,7 +99,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
  
     if (selected_step.flow.params) {
       
-      paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}}
+      paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}} parentUUID={parentUUID}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
 
@@ -134,19 +136,6 @@ export class DataSrcInspector extends React.Component<Props, State> {
     })
   }
 
-  onClickPlace(parentFolderUUID: string = "") {
-    window.open("/folders/" + parentFolderUUID, "_blank");
-  }
-  /*
-  onClickPlace() {
-    HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
-      const selected_data: any = args;
-      //ステップの選択をキャンセル
-      this.props.addHistory();
-    });
-  }
-  */
-
   update(getNewStep: Function) {
     let selectedStep = this.getSelectedStep()
     const newStep = getNewStep(selectedStep)
@@ -154,7 +143,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   render() {
-    const { selected_step_ids, addHistory, selectSteps, deleteSteps, baseInspectorDisabled } = this.props;
+    const { baseInspectorDisabled } = this.props;
     const selected_step = this.getSelectedStep();
 
     if (this.state.isLoading) return <Loader center={true} absolute={true} fixed={false} visible={true} />
