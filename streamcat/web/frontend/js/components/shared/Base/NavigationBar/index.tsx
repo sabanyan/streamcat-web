@@ -27,10 +27,11 @@ const NavigationBar = (props: Props) => {
     const renderUserNavigationItem = () => {
         const {navigation} = props;
         let depoName;
-        if (navigation && navigation.depoName !== "master") {
+        if (navigation) {
             depoName = <div className="depo-name">
                 <div className="dropdown-item">
-                    {navigation.depoName}
+                    {/* master Depoの場合はVersionを、それ以外の場合はDepo名を表示する */}
+                    {navigation.depoName==='master' ? navigation.version : navigation.depoName}
                 </div>
                 <div className="dropdown-divider"/>
             </div>;
