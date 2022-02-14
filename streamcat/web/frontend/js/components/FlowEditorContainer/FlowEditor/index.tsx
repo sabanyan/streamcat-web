@@ -545,9 +545,17 @@ const FlowEditor = () => {
             }
             return dialogText;
         };
-        const handleUnload = (e) => {
-            lock && lock.delete();
-        };
+
+        // タブが閉じられた時にロックを解除する
+        const handleUnload = (e) =>{
+            // ・Pageを閉じる時はnavigator.sendBeacon()を用いないとAPIが発行できない(ただしmacOSのChromeは発行できるようだ)
+            // ・navigator.sendBeacon()はPOSTしか発行できないので、POSTでロックを解除する
+            lock && navigator.sendBeacon(`/api/v0/delete-locks/${lock.uuid}`)
+        }
+
+        // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
+        // ・document.addEventListener()へのイベントハンドラの登録では
+        //   Pageを閉じる時にイベントハンドラが実行されなかった
         window.addEventListener("beforeunload", handleLeavePage);
         window.addEventListener("unload", handleUnload);
 

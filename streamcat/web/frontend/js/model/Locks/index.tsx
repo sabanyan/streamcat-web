@@ -91,7 +91,7 @@ export type LockType = {
     created_at: string;
     modified_at: string;
 
-    delete: (lastModifiedAt?:string) => Promise<void>;
+    delete: () => Promise<void>;
     extend: () => Promise<void>;
 };
 

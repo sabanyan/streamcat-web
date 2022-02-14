@@ -1,6 +1,6 @@
 {
 	"name": "streamcat",
-	"version": "3.0.0",
+	"version": "3.1.0",
 	"description": "A data-analysis software, StreamCat",
 	"author": "StreamCat developers",
 	"license": "GNU Affero General Public License v3.0",

@@ -70,7 +70,7 @@ def delete_all_locks():
 def delete_lock(lock_uuid):
     """
     指定した排他ロックを解除する
-    """ 
+    """
     return lock_manager.unlock(lock_uuid)
 
 @mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
@@ -80,7 +80,7 @@ def delete_lock_by_post(lock_uuid):
     """
     指定した排他ロックを解除する
     (frontendのNavagator.sendBeacon()で発行する為、POSTで定義する必要がある)
-    """ 
+    """
     return lock_manager.unlock(lock_uuid)
 
 
