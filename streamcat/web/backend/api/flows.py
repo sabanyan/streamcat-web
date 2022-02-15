@@ -147,6 +147,7 @@ def fetch_datasrcs():
     datasource = root.create_datasource(label, root, loader_cmd, args, params)
     # 戻り値のJSONを作成する
     datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+    datasrc_json['description'] = 'ライブラリに在るファイルからデータを取得する'
     datasrc_json['classification'] = 'data_source'
     datasrc_json['flow'] = datasource.flow_data.to_json()
     # データソースの一覧に格納する
@@ -163,6 +164,7 @@ def fetch_datasrcs():
         if store.type == Datum.DATABASE_TYPE:
             # DBデータソースを作成する
             label = store.label
+            description = 'データベースからデータを取得する'
             loader_cmd = CommandLink('db_loader').resolve()
             args = {'schema_name':'@[schema]', 'table_name':'@[table]'}
             params = [
@@ -183,6 +185,7 @@ def fetch_datasrcs():
         elif store.type == Datum.RFOLDER_TYPE:
             # リモートフォルダデータソースを作成する
             label = store.label
+            description = 'リモートフォルダに在るファイルからデータを取得する'
             loader_cmd = CommandLink('remotefolder_loader').resolve()
             args = {'file_path':'@[filePath]'}
             params = [
@@ -199,6 +202,7 @@ def fetch_datasrcs():
         # 戻り値のJSONを作成する
         datasource_flow_data = datasource.flow_data
         datasrc_json = datasource_flow_data.to_json(contains_nodes=False)
+        datasrc_json['description'] = description
         datasrc_json['classification'] = 'data_source'
         # データソースが参照するデータストアの参照権限は確認済みなので
         # 速度低下を防ぐためto_json()ではノードのマスキングをしない
@@ -232,6 +236,7 @@ def fetch_datadsts():
     datadest = root.create_datadest(label, root, loader_cmd, args, params)
     # 戻り値のJSONを作成する
     datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+    datadst_json['description'] = 'ライブラリにファイルを新規作成しこれにデータを出力する'
     datadst_json['classification'] = 'data_dest'
     datadst_json['flow'] = datadest.flow_data.to_json()
     # データソースの一覧に格納する
@@ -248,6 +253,7 @@ def fetch_datadsts():
         if store.type == Datum.DATABASE_TYPE:
             # DBデータデストを作成する
             label = store.label
+            description = 'データベースにテーブルを新規作成しこれにデータを出力する'
             saver_cmd = CommandLink('db_saver').resolve()
             args = {'schema_name':'@[schema]', 'table_name':'@[table]'}
             params = [
@@ -268,6 +274,7 @@ def fetch_datadsts():
         elif store.type == Datum.RFOLDER_TYPE:
             # リモートフォルダデータデストを作成する
             label = store.label
+            description = 'リモートフォルダにファイルを新規作成しこれにデータを出力する'
             saver_cmd = CommandLink('remotefolder_saver').resolve()
             args = {'dir_path':'@[dirPath]'}
             params = [
@@ -284,6 +291,7 @@ def fetch_datadsts():
         # 戻り値のJSONを作成する
         datadest_flow_data = datadest.flow_data
         datadst_json = datadest_flow_data.to_json(contains_nodes=False)
+        datadst_json['description'] = description
         datadst_json['classification'] = 'data_dest'
         # データデストが参照するデータストアの参照権限は確認済みなので
         # 速度低下を防ぐためto_json()ではノードのマスキングをしない
