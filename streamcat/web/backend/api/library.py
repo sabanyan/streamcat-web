@@ -189,7 +189,7 @@ def update_folder(folder_uuid):
         raise Exception('labelまたはparent属性を指定してください')
     elif req.has_all('parent', 'label'):
         raise Exception('labelとparent属性は同時に指定できません')
-        
+
     if req.has('label'):
         # フォルダのラベルを変更する
         folder = g.factory.data.find_by_uuid(folder_uuid)
