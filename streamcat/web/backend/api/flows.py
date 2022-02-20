@@ -136,10 +136,10 @@ def fetch_datasrcs():
     args = {'uuid':'@[uuid]'}
     params = [
         {
-            "name": "uuid",
-            "type": "frame",
-            "label": "ファイルを指定する",
-            "optional": False
+            'name': 'uuid',
+            'type': 'frame',
+            'label': 'ファイルを指定する',
+            'optional': False
         }
     ]
     # データソースを作成する
@@ -169,16 +169,16 @@ def fetch_datasrcs():
             args = {'schema_name':'@[schema]', 'table_name':'@[table]'}
             params = [
                 {
-                    "name": "schema",
-                    "type": "string",
-                    "label": "スキーマ名を指定する",
-                    "optional": True
+                    'name': 'schema',
+                    'type': 'string',
+                    'label': 'スキーマ名を指定する',
+                    'optional': True
                 },
                 {
-                    "name": "table",
-                    "type": "string",
-                    "label": "テーブル名を指定する",
-                    "optional": False
+                    'name': 'table',
+                    'type': 'string',
+                    'label': 'テーブル名を指定する',
+                    'optional': False
                 }
             ]
             
@@ -190,10 +190,10 @@ def fetch_datasrcs():
             args = {'file_path':'@[filePath]'}
             params = [
                 {
-                    "name": "filePath",
-                    "type": "string",
-                    "label": "ファイルパスを指定する",
-                    "optional": False
+                    'name': 'filePath',
+                    'type': 'string',
+                    'label': 'ファイルパスを指定する',
+                    'optional': False
                 }
             ]
 
@@ -258,16 +258,16 @@ def fetch_datadsts():
             args = {'schema_name':'@[schema]', 'table_name':'@[table]'}
             params = [
                 {
-                    "name": "schema",
-                    "type": "string",
-                    "label": "スキーマ名を指定する",
-                    "optional": True
+                    'name': 'schema',
+                    'type': 'string',
+                    'label': 'スキーマ名を指定する',
+                    'optional': True
                 },
                 {
-                    "name": "table",
-                    "type": "string",
-                    "label": "テーブル名を指定する",
-                    "optional": False
+                    'name': 'table',
+                    'type': 'string',
+                    'label': 'テーブル名を指定する',
+                    'optional': False
                 }
             ]
 
@@ -279,10 +279,10 @@ def fetch_datadsts():
             args = {'dir_path':'@[dirPath]'}
             params = [
                 {
-                    "name": "dirPath",
-                    "type": "string",
-                    "label": "フォルダパスを指定する",
-                    "optional": False
+                    'name': 'dirPath',
+                    'type': 'string',
+                    'label': 'フォルダパスを指定する',
+                    'optional': False
                 }
             ]
 
