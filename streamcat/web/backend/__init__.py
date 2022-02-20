@@ -43,7 +43,7 @@ def after_request(response:Response):
 #
 import logging
 from flask.logging import default_handler
-from .api.utils import SCatPLogFormatter, XHRFilter
+from .api.utils import SCatLogFormatter, XHRFilter
 
 # WerkzeugサーバのHTTPリクエストログの出力を停止する
 werkzeug_logger = logging.getLogger('werkzeug')
@@ -52,7 +52,7 @@ werkzeug_logger.disabled = True
 # ログの書式を定義する
 # %(message)sにHTTPステータスコードが記述されているようだ
 # https://docs.python.org/ja/3/library/logging.html#logrecord-attributes
-log_formatter = SCatPLogFormatter(
+log_formatter = SCatLogFormatter(
     '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(message)s","%(method)s","%(path)s"'
 )
 

@@ -1,5 +1,5 @@
 from .scat_json_encoder import SCatJSONEncoder
-from .scat_log_formatter import SCatPLogFormatter, XHRFilter
+from .scat_log_formatter import SCatLogFormatter, XHRFilter
 from .token import make_access_token, make_refresh_token, expired_soon, decode_token
 from .login_required_api import login_required_api, get_token_from_auth_header
 from .update_user_info import update_user_info, update_users_info
