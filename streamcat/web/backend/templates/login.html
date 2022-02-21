@@ -1,0 +1,48 @@
+{% extends "common/base.html" %}
+{% block title %}StreamCat{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row mt-40px">
+        <div class="col-4 offset-4">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form action="{{ original_url }}" method="post">
+                        <div class="form-group">
+                            <label for="login_email">ユーザーアカウント</label>
+                            <input id="login_email" name="email" type="text" placeholder="メールアドレス"
+                                   autocomplete="email" value="{{ email }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="form-group">
+                            <label for="login_password">パスワード</label>
+                            <input id="login_password" name="password" type="password" placeholder="パスワード"
+                                   autocomplete="current-password" class="form-control form-control-sm">
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="ログイン" class="btn btn-primary btn-default btn-block">
+                        </div>
+                        {% if login_failed %}
+                        <div class="alert alert-danger small">
+                            {% if alert_message == "" %}
+                                ユーザーアカウントもしくはパスワードが正しくありません。
+                            {% else %}
+                                {{ alert_message }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </form>
+                    {% if google_login %}
+                    <form action="/signup/login" method="get">
+                        <button type="submit"
+                                class="btn btn-primary btn-default btn-block">Googleでログイン</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script nonce="{{ nonce }}">
+    const inject_project_uuid = undefined
+    const inject_flow_uuid = undefined
+</script>
+{% endblock %}
