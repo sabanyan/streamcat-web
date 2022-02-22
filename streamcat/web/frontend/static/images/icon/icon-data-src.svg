@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="284pt" height="284pt" viewBox="0 0 284 284">
+    <clipPath id="a">
+        <path transform="matrix(1 0 0 -1 0 284)" d="M0 .08h283.92V284H0z" />
+    </clipPath>
+    <g clip-path="url(#a)">
+        <path d="M0 0h283.92v283.92H0z" fill="#fff" />
+    </g>
+    <path d="M0 0h283.5v283.5H0z" fill="#fff" />
+    <path
+        d="M1.358 69.478c0-37.371 30.296-67.667 67.667-67.667h144.368c37.371 0 67.667 30.296 67.667 67.667v143.589c0 37.371-30.296 67.666-67.667 67.666H69.025c-37.371 0-67.667-30.295-67.667-67.666z"
+        fill="#9dc3e6" />
+    <path stroke-width="3.048" stroke-miterlimit="8" fill="none" stroke="#9dc3e6"
+        d="M1.358 69.478c0-37.371 30.296-67.667 67.667-67.667h144.368c37.371 0 67.667 30.296 67.667 67.667v143.589c0 37.371-30.296 67.666-67.667 67.666H69.025c-37.371 0-67.667-30.295-67.667-67.666z" />
+    <path d="M86.643 174.427h29.558V98.625h50.017v75.802h29.557l-54.566 47.744z" fill="#fff" />
+    <path stroke-width="1.016" stroke-miterlimit="8" fill="none" stroke="#fff"
+        d="M86.643 174.427H116.2V98.625h50.018v75.802h29.557l-54.566 47.744z" />
+    <path stroke-width="6.096" stroke-miterlimit="8" fill="none" stroke="#fff" d="M44.34 61.255h193.737" />
+</svg>

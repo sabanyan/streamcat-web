@@ -1,0 +1,11 @@
+{% extends "common/base.html" %}
+{% block title %}now loadig ...{% endblock %}
+{% block content %}
+<script nonce="{{ nonce }}">
+  const inject_project_uuid = '{{ project_uuid }}'
+  const inject_folder_uuid = '{{ folder_uuid }}'
+  const inject_is_project = {{ is_project }}
+  const inject_is_trash = {{ is_trash }}
+</script>
+<div id="library"></div>
+{% endblock %}

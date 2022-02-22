@@ -1,0 +1,63 @@
+@import "../../../../../sass/common";
+
+.param {
+}
+
+.flex {
+  display: flex;
+}
+
+.invalid_message {
+  padding-top: 4px;
+  color: red;
+  font-size: 12px;
+}
+
+.presence {
+}
+
+.presence label {
+  &:after {
+    content: "*";
+    display: inline-block;
+    color: red;
+  }
+}
+
+.invalid input[type="text"] {
+  background: lighten(#f51f28, 40%);
+}
+
+.group {
+  border-top: 1px solid $streamcat-property-border-color;
+  color: #00469d;
+  margin: 16px -16px 16px -16px;
+  padding: 0 16px 0 16px;
+  height: 30px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.colored {
+  background: $streamcat-primary;
+  color: #fff;
+}
+
+.description {
+  width: 100%;
+  word-wrap: normal;
+  white-space: pre-wrap;
+  color: lighten($streamcat-text, 15%);
+  font-size: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+.labelContainer{
+  margin-bottom: 4px;
+}
+
+.label{
+  font-size: 14px;
+}

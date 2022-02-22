@@ -1,0 +1,15 @@
+{% extends "common/base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<form action="/signup/confirm" method="POST">
+  <p>メールアドレスを入力してください</p>
+  <input type="text" name="email">
+  <input type="submit" value="send">
+</form>
+<script nonce="{{ nonce }}">
+  const inject_project_uuid = undefined
+  const inject_flow_uuid = undefined
+</script>
+{% endblock %}

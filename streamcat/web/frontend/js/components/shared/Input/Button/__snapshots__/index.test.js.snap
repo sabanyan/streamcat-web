@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Button Button 1`] = `
+<button
+  className=""
+  disabled={false}
+  onClick={[Function]}
+  type="button"
+>
+  <i
+    className="material-icons"
+    dangerouslySetInnerHTML={
+      Object {
+        "__html": "attachment",
+      }
+    }
+  />
+  <div
+    className="undefined"
+  >
+    アップロード
+  </div>
+</button>
+`;

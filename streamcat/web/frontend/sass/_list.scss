@@ -1,0 +1,79 @@
+.streamcat-list-header{
+  font-weight: bold;
+  color: $streamcat-text;
+  div{
+    padding: 4px 16px;
+  }
+  &.streamcat-list-icon{
+    div{
+      padding: 4px 32px;
+    }
+  }
+}
+
+.streamcat-list{
+  display: block;
+  border: 1px solid $streamcat-list-border-color;
+  border-radius: 0;
+  color: $streamcat-text;
+  background: #fff;
+  padding: 16px;
+  &:hover{
+    color: $streamcat-text;
+    text-decoration: none!important;
+    opacity: 0.8;
+  }
+  &.streamcat-list-dotted{
+    border-style: dotted;
+    border-color: $streamcat-list-dotted-border-color;
+    border-width: 2px;
+  }
+  &.streamcat-list-icon{
+    position: relative;
+    padding-left: 48px;
+    div.icon{
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      .icon{
+        color: $streamcat-list-icon-color;
+        font-size: 18px;
+      }
+    }
+    .row{
+      .icon{
+        position: inherit;
+        left: 0;
+        top: 0;
+        line-height: 1;
+        .material-icons{
+          font-size: 18px;
+        }
+      }
+    }
+  }
+  &.streamcat-list-accessory{
+    position: relative;
+    padding-right: 48px;
+    div.accessory{
+      position: absolute;
+      right: 12px;
+      top: 10px;
+      .icon{
+        color: $streamcat-list-accessory-color;
+        font-size: 22px;
+      }
+    }
+  }
+  &.streamcat-list-link{
+    background: $streamcat-list-link-background-color;
+    color: $streamcat-list-link-color;
+    .icon{
+      color: $streamcat-list-link-color!important;
+      display: inline-block;
+      position: relative;
+      top: 2px;
+      font-size: 18px;
+    }
+  }
+}

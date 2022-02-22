@@ -1,0 +1,130 @@
+{
+	"name": "streamcat",
+	"version": "3.1.0",
+	"description": "A data-analysis software, StreamCat",
+	"author": "StreamCat developers",
+	"license": "AGPL-3.0-only",
+	"homepage": "https://www.kskp.io/",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sabanyan/streamcat-web.git"
+	},
+	"bugs": {
+		"url": "https://github.com/sabanyan/streamcat-web/issues"
+	},
+	"main": "index.js",
+	"scripts": {
+		"start": "npx webpack --config webpack.dll.config.js --env=development && npx webpack --env=development --watch",
+		"dll": "npx webpack --config webpack.dll.config.js",
+		"build": "npx webpack --config webpack.dll.config.js --env=production && npx webpack --env=production",
+		"lint": "npx eslint .",
+		"test": "jest --maxWorkers=1",
+		"testwatch": "jest --watchAll",
+		"testupdate": "jest --update-snapshot",
+		"testcoverage": "jest --coverage",
+		"flow": "flow",
+		"flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
+	},
+	"dependencies": {
+		"dagre": "^0.8.5",
+		"eventemitter3": "^4.0.7",
+		"lodash": "^4.17.15",
+		"moment": "^2.29.1",
+		"react": "^16.14.0",
+		"react-dom": "^16.14.0",
+		"react-redux": "^7.2.6",
+		"react-select": "^3.2.0",
+		"redux": "^4.1.2",
+		"redux-thunk": "^2.4.1",
+		"use-async-resource": "^2.2.2"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.16.0",
+		"@babel/plugin-proposal-class-properties": "^7.16.0",
+		"@babel/preset-env": "^7.16.0",
+		"@babel/preset-flow": "^7.16.0",
+		"@babel/preset-react": "^7.16.0",
+		"@babel/preset-typescript": "^7.16.0",
+		"@material-ui/core": "^4.11.0",
+		"@types/jquery": "^3.5.6",
+		"@types/lodash": "^4.14.175",
+		"@types/react": "^16.14.0",
+		"@types/react-dom": "^16.9.14",
+		"@types/react-redux": "^7.1.20",
+		"array-move": "^2.1.0",
+		"axios": "^0.21.1",
+		"babel-loader": "^8.2.3",
+		"bootstrap": "4.1.1",
+		"classnames": "^2.3.1",
+		"css-loader": "^0.28.11",
+		"extract-text-webpack-plugin": "^4.0.0-beta.0",
+		"flow-bin": "^0.72.0",
+		"flow-coverage-report": "^0.6.1",
+		"jest": "^27.2.5",
+		"sass": "^1.49.0",
+		"promise-queue-plus": "^1.2.2",
+		"react-app-polyfill": "^2.0.0",
+		"react-hook-form": "^6.8.4",
+		"react-i18next": "^10.11.2",
+		"react-sortable-hoc": "^1.9.1",
+		"react-test-renderer": "^16.14.0",
+		"reapop": "^2.1.0",
+		"reapop-theme-wybo": "^1.0.2",
+		"redux-devtools-extension": "^2.13.8",
+		"sass-loader": "^7.3.1",
+		"style-loader": "^1.3.0",
+		"ts-loader": "^8.3.0",
+		"typescript": "^4.5.2",
+		"use-interval": "^1.3.0",
+		"validate.js": "^0.12.0",
+		"webpack": "^4.46.0",
+		"webpack-cli": "^4.9.1"
+	},
+	"jest": {
+		"roots": [
+			"<rootDir>/web/frontend/js"
+		],
+		"collectCoverageFrom": [
+			"js/**/*.{js,jsx,ts,tsx}",
+			"!js/**/*.d.ts"
+		],
+		"setupFiles": [
+			"react-app-polyfill/jsdom"
+		],
+		"testMatch": [
+			"<rootDir>/web/frontend/js/**/__tests__/**/*.{js,jsx,ts,tsx}",
+			"<rootDir>/web/frontend/js/**/*.{spec,test}.{js,jsx,ts,tsx}"
+		],
+		"testEnvironment": "jsdom",
+		"transform": {
+			"^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/web/frontend/config/jest/babelTransform.js",
+			"^.+\\.css$": "<rootDir>/web/frontend/config/jest/cssTransform.js",
+			"^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/web/frontend/config/jest/fileTransform.js"
+		},
+		"transformIgnorePatterns": [
+			"[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+			"^.+\\.module\\.(css|sass|scss)$"
+		],
+		"modulePaths": [
+			"<rootDir>/web/frontend/js",
+			"<rootDir>/web/frontend/js/components"
+		],
+		"moduleNameMapper": {
+			"^react-native$": "react-native-web",
+			"^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+		},
+		"moduleFileExtensions": [
+			"web.js",
+			"js",
+			"web.ts",
+			"ts",
+			"web.tsx",
+			"tsx",
+			"json",
+			"web.jsx",
+			"jsx",
+			"node"
+		],
+		"resetMocks": true
+	}
+}
