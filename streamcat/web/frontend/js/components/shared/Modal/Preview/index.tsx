@@ -1,11 +1,11 @@
 //@flow
-import React from 'react'
-import classnames from 'classnames'
-import { Tab, TabBar, TabList } from 'Shared/Base'
-import { HttpUtil } from 'Utils/index'
-import style from '../Core/style.scss'
+import React from 'react';
+import classnames from 'classnames';
+import { Tab, TabBar, TabList } from 'Shared/Base';
+import { HttpUtil } from 'Utils/index';
+import style from '../Core/style.scss';
 import Visualizer from 'Shared/Visualizer';
-import {Contents} from 'Shared/Inspector'
+import {Contents} from 'Shared/Inspector';
 
 type Props = {
   id: string;
@@ -46,9 +46,9 @@ export default class PreviewModal extends React.Component<Props, State> {
     }
   }
 
-  saveResults (index: number, result: Result, headers=[]) {
+  saveResults (selected_tab_id: number, result: Result, headers=[]) {
     let results = this.state.results
-    results[index] = result
+    results[selected_tab_id] = result
     if (headers.length === 0) {
       this.setState({results: results})
     } else {
@@ -56,26 +56,20 @@ export default class PreviewModal extends React.Component<Props, State> {
     }
   }
 
-  loadResults (index: number) {
-    let results = this.state.results
-
-    return results[index]
-  }
-
-  renderTabContent(index) {
+  renderTabContent(selected_tab_id) {
     const {notify, dismissNotify, title} = this.props
     const contents = this.props.contents
-    const {flowUuid, stepIds, frameUuid, lockUuid, visualize} = contents[index].content
-    const {id, afterViz} = contents[index]
+    const {flowUuid, stepIds, frameUuid, lockUuid, visualize} = contents[selected_tab_id].content
+    const {id, afterViz} = contents[selected_tab_id]
 
-    const result = this.state.results[index]
+    const result = this.state.results[selected_tab_id]
 
     if (!title) {
       return null;
     }
       
-    return <Visualizer key={id + index}
-                       index={index}
+    return <Visualizer key={id + selected_tab_id}
+                       index={selected_tab_id}
                        headers={this.state.headers}
                        flowUuid={flowUuid}
                        frameUuid={frameUuid}
@@ -84,7 +78,7 @@ export default class PreviewModal extends React.Component<Props, State> {
                        visualize={visualize} 
                        afterViz={afterViz}
                        result={result}
-                       onSaveResult={(index, result, headers) => {this.saveResults(index, result, headers)}}
+                       onSaveResult={(selected_tab_id, result, headers) => {this.saveResults(selected_tab_id, result, headers)}}
                        notify={notify}
                        dismissNotify={dismissNotify} />
     
@@ -139,9 +133,9 @@ export default class PreviewModal extends React.Component<Props, State> {
               </div>
             </div>
           </div>
-          <div className="modal-body">
+          {/* <div className="modal-body"> */}
             {this.renderTabContent(selected_tab_id)}
-          </div>
+          {/* </div> */}
           {footer}
         </div>
       </div>

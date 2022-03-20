@@ -323,12 +323,16 @@ export default class Visualizer extends React.Component<Props, State> {
 
     renderContents() {
         let result;
-        if (!this.state.html) {
-            result = <EmptyState title={'表示することができません'} description={'条件を変更して表示ボタンを押してください'} icon={'cloud_off'} />;
-        } else {
+        if(this.state.html){
             result = <div className={style.visualizeContainer}>
                 <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
             </div>;
+            // <table>を<div>で囲むと、テーブルヘッダを固定できない
+            if(this.props.visualize.id!=='csvtohtmltable'){
+                result = <div className="modal-body">{result}</div>
+            }
+        }else{
+            result = <EmptyState title={'表示することができません'} description={'条件を変更して表示ボタンを押してください'} icon={'cloud_off'} />;
         }
 
         return result;
@@ -339,7 +343,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
         if (this.state.isLoading) return <Loader center={true} visible={this.state.isLoading} />;
 
-        return <div>
+        return <>
             {this.renderContents()}
             <PreviewInspector headers={this.state.headers}
                               onApply={(args: {}) => this.apply(args)}
@@ -347,6 +351,6 @@ export default class Visualizer extends React.Component<Props, State> {
                               args={this.state.args}
                               groups={visualize.groups}
                               label={visualize.label} />
-        </div>;
+        </>;
     }
 }

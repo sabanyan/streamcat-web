@@ -105,15 +105,24 @@ input::placeholder,textarea::placeholder {
   }
 }
 
+// テーブルプレビュー
 .s-tbl {
 	border-collapse: collapse;
-}
-.s-tbl th, .s-tbl td {
-	border: 1px solid #c0c0c0;
-  padding: 5px 10px;
-}
-.s-tbl tr:nth-child(odd) {
-	background: #e0e0e0;
+  tr:nth-child(even){
+    background-color: #e0e0e0;
+  }
+  th {
+    padding: 5px 10px;
+    border: 1px solid #c0c0c0;
+    // ヘッダ行を固定する
+    top: 0;
+    position: sticky;
+    background-color: #e0e0e0;
+  }
+  td {
+    padding: 5px 10px;
+    border: 1px solid #c0c0c0;
+  }
 }
 
 body, html {
