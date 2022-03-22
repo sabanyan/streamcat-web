@@ -5,7 +5,7 @@ import {ModalManager} from 'Shared/Modal'
 import {Loader} from 'Shared/Base'
 import {Button, LinkButton, TextField} from 'Shared/Input'
 import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
-import {useForm} from 'react-hook-form';
+import {useForm, UseFormRegisterReturn} from 'react-hook-form';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 
 /**
@@ -32,6 +32,17 @@ interface FormInputs {
 
 type EditingMode = ('name' | 'email' | 'password' | null);
 
+/**
+ * React-Hook-Form v7でMaterial-UI v4のTextFieldがバインドできない問題の対処をする
+ * https://dev.classmethod.jp/articles/mui-with-rhf-v7/
+ */
+const registerMui = (res: UseFormRegisterReturn) => ({
+    inputRef: res.ref,
+    onChange: res.onChange,
+    onBlur: res.onBlur,
+    name: res.name,
+});
+
 const Profile = (props: Props) => {
 
     // 通知機能メソッドの取得
@@ -46,7 +57,7 @@ const Profile = (props: Props) => {
         name: '',
         email: ''
     });
-    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs | any>({
+    const {handleSubmit, register, formState:{errors}, watch, clearErrors, reset} = useForm<FormInputs | any>({
         shouldUnregister: false
     });
     const [editing, setEditing] = useState<EditingMode>(null);
@@ -68,7 +79,7 @@ const Profile = (props: Props) => {
                 'name': profile.name,
                 'email': profile.email
             };
-            reset(resetValue)
+            reset(resetValue);
         }
     }, [profile]);
 
@@ -155,8 +166,8 @@ const Profile = (props: Props) => {
                                         onClick={() => switchEditing('name')}>変更する</LinkButton></label>
                                 :  <label>ユーザー名</label>
                         }
-                        <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'} name={'name'}
-                                   inputRef={register({required: 'ユーザー名を入力してください。'})}/>
+                        <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'}
+                                   {...registerMui(register('name', {required:'ユーザー名を入力してください'}))}/>
                         {errors.name && <label className={'text-danger'}>{errors.name.message}</label>}
                     </div>
                     {
@@ -181,7 +192,7 @@ const Profile = (props: Props) => {
                                 : <label>メールアドレス</label>
                         }
                         <TextField readOnly={(editing !== 'email')} placeholder={'メールアドレス'} type={'email'}
-                                   name={'email'} inputRef={register({required: 'E-mail を入力してください。'})}/>
+                                   {...registerMui(register('email', {required: 'E-mail を入力してください'}))}/>
                         {errors.email && <label className={'text-danger'}>{errors.email.message}</label>}
                     </div>
                     {
@@ -189,8 +200,8 @@ const Profile = (props: Props) => {
                             <>
                                 <div className={'mb-8px'}>
                                     <label>現在のパスワード</label>
-                                    <TextField placeholder={'現在のパスワード'} type={'password'} name={'currentPassword'}
-                                               inputRef={register}/>
+                                    <TextField placeholder={'現在のパスワード'} type={'password'}
+                                               {...registerMui(register('currentPassword'))}/>
                                 </div>
                                 <div className={'text-right'}>
                                     <Button disabled={!availableUpdateSelf} submit={true} className={'mr-0'}>保存する</Button>
@@ -216,8 +227,8 @@ const Profile = (props: Props) => {
                                         <div className={'mb-8px'}>
                                             <label>現在のパスワード</label>
                                             <TextField readOnly={(editing !== 'password')} placeholder={'現在のパスワード'}
-                                                       type={'password'} name={'currentPassword'}
-                                                       inputRef={register({required: '現在のパスワードを入力してください。'})}/>
+                                                       type={'password'}
+                                                       {...registerMui(register('currentPassword', {required: '現在のパスワードを入力してください'}))}/>
                                             {errors.currentPassword &&
                                             <label className={'text-danger'}>{errors.currentPassword.message}</label>}
                                         </div>
@@ -225,35 +236,34 @@ const Profile = (props: Props) => {
                                             <label>新しいパスワード <span
                                                 className={style.helpText}>10桁以上のパスワードが必要</span></label>
 
-                                            <TextField placeholder={'新しいパスワード'} type={'password'} name={'password1'}
-                                                       inputRef={register({
+                                            <TextField placeholder={'新しいパスワード'} type={'password'}
+                                                       {...registerMui(register('password1', {
                                                            required: '新しいパスワードを入力してください',
                                                            minLength: {
                                                                value: 10,
-                                                               message: '10桁以上のパスワードが必要です。'
+                                                               message: '10桁以上のパスワードが必要です'
                                                            },
                                                            maxLength: {
                                                                value: 64,
-                                                               message: '64桁以下のパスワードが必要です。'
+                                                               message: '64桁以下のパスワードが必要です'
                                                            },
                                                            pattern: {
                                                                value: /[!-~]/,
-                                                               message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。'
+                                                               message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです'
                                                            }
-                                                       })}/>
+                                                       }))}/>
                                             {errors.password1 &&
                                             <label className={'text-danger'}>{errors.password1.message}</label>}
                                         </div>
                                         <div className={'mb-8px'}>
                                             <label>新しいパスワード（確認用）</label>
                                             <TextField placeholder={'新しいパスワード（確認用）'} type={'password'}
-                                                       name={'password2'}
-                                                       inputRef={register({
+                                                       {...registerMui(register('password2', {
                                                            required: '新しいパスワード（確認用）を入力してください',
                                                            validate: (value) => {
                                                                return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
                                                            }
-                                                       })}/>
+                                                       }))}/>
                                             {errors.password2 &&
                                             <label className={'text-danger'}>{errors.password2.message}</label>}
                                         </div>
