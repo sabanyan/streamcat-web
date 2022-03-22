@@ -8,9 +8,7 @@ import {MenuList} from 'UserListContainer/UserList/MenuList';
 import {UserListTable} from 'UserListContainer/UserList/UserListTable';
 import {ITableBody} from 'UserListContainer/UserList/UserListTable/UserListBody';
 import {ModalManager} from 'Shared/Modal';
-import {NotificationManager} from 'Shared/Notification';
-import {useDispatch} from 'react-redux';
-import {addNotification, removeNotification} from 'reapop';
+import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
 import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import Select from 'react-select';
@@ -31,15 +29,9 @@ interface Props {
 }
 
 const UserList = (props: Props) => {
-    const dispatch = useDispatch();
 
     // 通知機能メソッドの取得
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
+    const {notifyError} = useStreamCatNotifications();
 
     // 読み込み完了を設定する
     const [isFinished, setIsFinished] = useState<boolean>(false);
@@ -67,13 +59,7 @@ const UserList = (props: Props) => {
             setIsLoading(false);
             setIsFinished(true);
         }).catch((error) => {
-            notify({
-                title: 'プロジェクト取得エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+            notifyError('プロジェクト取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
             setIsLoading(false);
             setIsFinished(true);
         });
@@ -96,13 +82,7 @@ const UserList = (props: Props) => {
             setIsFinished(true);
         }).catch((error) => {
             console.log(error);
-            notify({
-                title: 'ユーザー一覧取得エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+            notifyError('ユーザー一覧取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
             setIsLoading(false);
             setIsFinished(true);
         });
@@ -120,11 +100,11 @@ const UserList = (props: Props) => {
         const url = 'users'
         // ユーザーの作成
         const newUserResponse = await APIUtil.post(url,body).catch(error=>{
-            ErrorUtil.notifyError(notify,"ユーザー作成エラー",error)
+            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",error)
             return Promise.reject()
         })
         if(!newUserResponse.data.success){
-            ErrorUtil.notifyError(notify,"ユーザー作成エラー",newUserResponse.data.message)
+            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",newUserResponse.data.message)
             return Promise.reject()
         }
         if(projectUUIDs){
@@ -144,11 +124,11 @@ const UserList = (props: Props) => {
             };
             (async() => {
                 const response = await APIUtil.put(url, body).catch(error => {
-                    ErrorUtil.notifyError(notify, 'プロジェクト追加エラー', error)
+                    ErrorUtil.notifyError(notifyError, 'プロジェクト追加エラー', error)
                     return Promise.reject()
                 });
                 if (!response.data.success) {
-                    ErrorUtil.notifyError(notify, 'プロジェクト追加エラー', response.data.message)
+                    ErrorUtil.notifyError(notifyError, 'プロジェクト追加エラー', response.data.message)
                     return Promise.reject()
                 }
                 return Promise.resolve(response);
@@ -162,13 +142,7 @@ const UserList = (props: Props) => {
         return APIUtil.delete(url).then((response)=>{
             setIsLoading(false);
         }).catch((error) => {
-            notify({
-                title: 'ユーザー削除エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+            notifyError('ユーザー削除エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
             setIsLoading(false);
         });
     }
@@ -183,13 +157,7 @@ const UserList = (props: Props) => {
             fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
-            notify({
-                title: 'パスワードリセットエラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+            notifyError('パスワードリセットエラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
             setIsLoading(false);
         });
     }
@@ -397,13 +365,7 @@ const UserList = (props: Props) => {
                     setIsLoading(false);
                     fetchUsers();
                     if(!response.data.success){
-                        notify({
-                            title: 'ユーザー作成エラー',
-                            message: ReactDomUtil.renderToString(response.data.message),
-                            status: 'error',
-                            dismissAfter: 0,
-                            closeButton: true
-                        })
+                        notifyError('ユーザー作成エラー', ReactDomUtil.renderToString(response.data.message));
                         ModalUtil.closeModal(Constants.modal.ADD_USER)
                         clearField();
                         return
@@ -583,7 +545,6 @@ const UserList = (props: Props) => {
 
         return <UserListInspector
             navigation={navigation}
-            notify={notify}
             selectedData={selectedData}
             onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
             onClickDelete={(availableDelete)?onClickDelete:undefined}
@@ -835,10 +796,7 @@ const UserList = (props: Props) => {
                     <Spacer width={40}/>
                 </Flex>
             </Flex>
-            <ModalManager
-                notify={notify}
-                dismissNotify={dismissNotify}
-            />
+            <ModalManager />
             <NotificationManager/>
         </>
     };

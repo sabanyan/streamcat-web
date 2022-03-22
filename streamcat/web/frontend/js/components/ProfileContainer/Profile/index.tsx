@@ -4,9 +4,7 @@ import {APIUtil, ReactDomUtil, ErrorUtil} from 'Utils/index'
 import {ModalManager} from 'Shared/Modal'
 import {Loader} from 'Shared/Base'
 import {Button, LinkButton, TextField} from 'Shared/Input'
-import {useDispatch} from 'react-redux';
-import {addNotification, removeNotification} from 'reapop';
-import {NotificationManager} from 'Shared/Notification';
+import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
 import {useForm} from 'react-hook-form';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 
@@ -37,13 +35,7 @@ type EditingMode = ('name' | 'email' | 'password' | null);
 const Profile = (props: Props) => {
 
     // 通知機能メソッドの取得
-    const dispatch = useDispatch();
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
+    const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     const {navigation} = props;
     const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
@@ -91,13 +83,7 @@ const Profile = (props: Props) => {
             setIsFinished(true);
             setProfile(json.data);
         }).catch((error) => {
-            notify({
-                title: 'プロフィールの取得エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+            notifyError('プロフィールの取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
             setIsLoading(false);
             setIsFinished(true);
         })
@@ -129,18 +115,14 @@ const Profile = (props: Props) => {
             const json = response.data
             setIsLoading(false)
             if (!json.success) {
-                ErrorUtil.notifyError(notify, 'ユーザー情報更新エラー', json.message);
+                ErrorUtil.notifyError(notifyError, 'ユーザー情報更新エラー', json.message);
                 return
             }
-            notify({
-                title: 'ユーザー情報を更新しました',
-                message: 'ユーザー情報を更新しました',
-                status: 'success'
-            });
+            notifySuccess('ユーザー情報を更新しました');
             getProfile();
             setEditing(null);
         }).catch((error) => {
-            ErrorUtil.notifyError(notify, 'ユーザー情報更新エラー', error);
+            ErrorUtil.notifyError(notifyError, 'ユーザー情報更新エラー', error);
             setIsLoading(false)
         });
     }

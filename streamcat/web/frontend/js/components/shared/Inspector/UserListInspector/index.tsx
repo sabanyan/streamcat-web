@@ -9,6 +9,7 @@ import AdminUtil from 'Utils/AdminUtil';
 import ErrorUtil from 'Utils/ErrorUtil';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
+import { useStreamCatNotifications } from 'Components/shared/Notification'
 
 interface Props {
     selectedData?: UserListUser;
@@ -19,7 +20,6 @@ interface Props {
     onClickShowPassword?: Function;
     onChangedUserSystemAdminRole?: Function;
     onChangedList?: Function;
-    notify: Function;
     navigation: NavigationType | null;
 }
 
@@ -35,12 +35,14 @@ const display = {
 
 
 const UserListInspector = (props: Props) => {
-    const {notify, navigation, onChangedList} = props;
+    const {navigation, onChangedList} = props;
     const {selectedData, onBlurTitle} = props
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [systemAdminChecked, setSystemAdminChecked] = useState<boolean>(false)
     const [userAdminChecked, setUserAdminChecked] = useState<boolean>(false)
 
+    const {notifyError} = useStreamCatNotifications();
+    
     useEffect(() => {
         setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedData.roles))
         setUserAdminChecked(AdminUtil.hasUserAdmin(selectedData.roles))
@@ -113,23 +115,11 @@ const UserListInspector = (props: Props) => {
             if(response.data.success){
                 return Promise.resolve(response)
             }else {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(response.data.message),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
+                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(response.data.message));
                 return Promise.reject()
             }
         }).catch((error) => {
-            notify({
-                title: 'ユーザー削除エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+            notifyError('ユーザー削除エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
         });
     }
 
@@ -150,50 +140,26 @@ const UserListInspector = (props: Props) => {
         const {onChangedUserSystemAdminRole} = props;
         if(active){
             const response = await APIUtil.put(url).catch((error) => {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
+                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
                 return Promise.reject()
             });
             if(response.data.success){
                 if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
             }else {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(response.data.message),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
+                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(response.data.message));
                 return Promise.reject()
             }
             return response;
         }else{
             const response = await APIUtil.delete(url).catch((error) => {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
+                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
                 return Promise.reject()
             });
 
             if(response.data.success){
                 if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
             }else {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(response.data.message),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
+                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(response.data.message));
                 return Promise.reject()
             }
             return response;

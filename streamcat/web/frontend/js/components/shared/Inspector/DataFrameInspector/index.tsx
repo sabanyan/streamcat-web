@@ -9,10 +9,9 @@ import {CommandSelector} from "FlowEditorContainer/Command";
 import {DataFrameDetailType, MastType} from "Types/index";
 import {Loader} from "Shared/Base";
 import { FlowType, Port } from "Model/Library";
+import { useStreamCatNotifications } from "Components/shared/Notification";
 
 type Props = {
-    notify: Function;
-    dismissNotify: Function;
     selected_data_source_detail: DataFrameDetailType;
     mast: MastType;
     deleteSteps: Function;
@@ -53,6 +52,8 @@ type Contents = {
 
 const DataFrameInspector = (props: Props) => {
 
+    const {notifyLoading, notifyError, dismissNotify} = useStreamCatNotifications();
+
     const flowIn = useRef<HTMLInputElement>(null);
     const flowOut = useRef<HTMLInputElement>(null);
     const cache = useRef<HTMLInputElement>(null);
@@ -71,26 +72,15 @@ const DataFrameInspector = (props: Props) => {
     }, []);
 
     const saveFlow = () => {
-        const {flow, lockUUID, notify, dismissNotify, updateLastSavedFlow} = props;
-        let saveNotify = notify({
-            title: "フロー保存中",
-            message: "フローの設定を保存しています",
-            status: "loading",
-            dismissAfter: 0
-        });
+        const {flow, lockUUID, updateLastSavedFlow} = props;
+        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
 
         return flow.update(flow.flow, lockUUID).then(flow => {
-            dismissNotify(saveNotify.id);
+            dismissNotify(notificationId);
             updateLastSavedFlow();
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
-            notify({
-                title: "フロー保存エラー",
-                message: e.message,
-                status: "error",
-                dismissAfter: -1,
-                closeButton: true
-            });
+            notifyError('フロー保存エラー', e.message);
         });
     };
 
@@ -236,19 +226,13 @@ const DataFrameInspector = (props: Props) => {
 
 
     const deleteCache = () => {
-        const {selected_step_ids, notify, deleteCache, updateDataFrameDetail} = props;
+        const {selected_step_ids, deleteCache, updateDataFrameDetail} = props;
         const id = (selected_step_ids as any)[0];
         const url = "caches?of=" + inject_flow_uuid + "." + id;
 
         APIUtil.delete(url).then((response) => {
             if (!response.data.success) {
-                notify({
-                    title: "実行エラー",
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notifyError('実行エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)));
             }
             if (response.data.success) {
                 deleteCache(id);

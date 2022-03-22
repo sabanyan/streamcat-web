@@ -1,14 +1,12 @@
 import React from 'react';
 import { useEffect, useRef, useState } from "react";
 import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
-import { useDispatch } from "react-redux";
-import { addNotification, removeNotification } from "reapop";
 import Queue from "promise-queue-plus";
 import * as lodash from "lodash";
 import { reject } from "lodash";
 import { EmptyState, Loader, Spacer } from "Shared/Base";
 import { Flex } from "Shared/Base/Layouts/Flex";
-import { NotificationManager } from "Shared/Notification";
+import { NotificationManager, useStreamCatNotifications } from "Shared/Notification";
 import { ModalManager } from "Shared/Modal";
 import { FileUploader, TextField } from "Shared/Input";
 import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
@@ -158,14 +156,7 @@ const Library = () => {
     // (GET /projects?members=1はSQLが遅いので画面表示用とは別に非同期に取得する)
     const [projectsReader, refreshProjects] = useAsyncResource(getProjects, true);
 
-    const dispatch = useDispatch();
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
-
+    const {notifySuccess, notifyWarning, notifyError} = useStreamCatNotifications();
     const [parentFolder, setParentFolder] = useState<ParentFolderType>(folderReader());
     const [sortedDatas, setSortedDatas] = useState<DatumType[]>(folderReader().children);
     const [selectedDatas, setSelectedDatas] = useState<DatumType[]>([]);
@@ -232,11 +223,7 @@ const Library = () => {
                     ModalUtil.closeModal(Constants.modal.ADD_PROJECT);
                     fetchFolder();
                     setFormProjectName("");
-                    notify({
-                        title: "プロジェクトを作成しました",
-                        message: project.label + "を作成しました",
-                        status: "success"
-                    });
+                    notifySuccess('プロジェクトを作成しました', project.label);
                 });
             }
         });
@@ -252,22 +239,12 @@ const Library = () => {
                 }
                 setIsLoading(true);
                 parentFolder.createFolder(formFolderName).then(folder => {
-                    notify({
-                        title: "フォルダを作成しました",
-                        message: folder.label + "を作成しました",
-                        status: "success"
-                    });
+                    notifySuccess('フォルダを作成しました', folder.label);
                     setFormFolderName("");
                     ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
                     fetchFolder();
                 }).catch(error => {
-                    notify({
-                        title: "フォルダ作成エラー",
-                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                        status: "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
+                    notifyError('フォルダ作成エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
                 }).finally(() => {
                     setIsLoading(false);
                 });
@@ -289,10 +266,7 @@ const Library = () => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
                     setFormFlowName("");
                     fetchFolder();
-                    notify({
-                        title: "フローを作成しました", message: flow.label + "を作成しました",
-                        status: "success"
-                    });
+                    notifySuccess('フローを作成しました', flow.label);
                 });
                 return true;
             }
@@ -329,18 +303,9 @@ const Library = () => {
                         .then((response) => {
                             fetchFolder();
                             if (!response.data.success) {
-                                notify({
-                                    title: "リモートフォルダ作成エラー",
-                                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                                    status: "error",
-                                    dismissAfter: 0,
-                                    closeButton: true
-                                });
+                                notifyError('リモートフォルダ作成エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)));
                             } else {
-                                notify({
-                                    title: "リモートフォルダを保存しました", message: remoteFolder.label + "を保存しました",
-                                    status: "success"
-                                });
+                                notifySuccess('リモートフォルダを保存しました', remoteFolder.label);
                             }
                         })
                     setIsLoading(false);
@@ -383,18 +348,9 @@ const Library = () => {
                         .then((response) => {
                             fetchFolder();
                             if (!response.data.success) {
-                                notify({
-                                    title: "リモートフォルダ設定エラー",
-                                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                                    status: "error",
-                                    dismissAfter: 0,
-                                    closeButton: true
-                                });
+                                notifyError('リモートフォルダ設定エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)));
                             } else {
-                                notify({
-                                    title: "リモートフォルダを保存しました", message: remoteFolder.label + "を保存しました",
-                                    status: "success"
-                                });
+                                notifySuccess('リモートフォルダを保存しました', remoteFolder.label);
                             }
                         })
                     setIsLoading(false);
@@ -418,13 +374,7 @@ const Library = () => {
          */
         const unhandledNotify = (title: string) => {
             setIsLoading(false);
-            notify({
-                title: title,
-                message: Constants.errorMessage.unhandledError,
-                status: "error",
-                dismissAfter: 0,
-                closeButton: true
-            });
+            notifyError(title, Constants.errorMessage.unhandledError);
         };
 
         // データベースの編集
@@ -433,18 +383,9 @@ const Library = () => {
         const params = getDataBaseParams();
         const completeEditDatabase = (response: any) => {
             if (!response.data.success) {
-                notify({
-                    title: "データベース作成エラー",
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notifyError('データベース作成エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)));
             } else {
-                notify({
-                    title: "データベースを保存しました", message: (database) ? database.label : "" + "を保存しました",
-                    status: "success"
-                });
+                notifySuccess('データベースを保存しました', database.label || '');
             }
             setIsLoading(false);
             setEditDatabase(null);
@@ -610,19 +551,9 @@ const Library = () => {
             database.userId,
             database.password
         ).then(database => {
-            notify({
-                title: "データベースを作成しました",
-                message: database.label + "を作成しました",
-                status: "success"
-            });
+            notifySuccess('データベースを作成しました', database.label);
         }).catch(error => {
-            notify({
-                title: "データベース作成エラー",
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: "error",
-                dismissAfter: 0,
-                closeButton: true
-            });
+            notifyError('データベース作成エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
         }).finally(() => {
             setIsLoading(false);
             setAddDatabase(null);
@@ -679,7 +610,7 @@ const Library = () => {
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={[".tgz"]} url={url} parentUUID={parentFolder.uuid} notify={notify} />
+                <FileUploader accept={[".tgz"]} url={url} parentUUID={parentFolder.uuid} notify={notifySuccess} />
             </div>
         });
     };
@@ -702,7 +633,7 @@ const Library = () => {
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={["text/csv,application/pdf,image/*"]} url={url} parentUUID={parentFolder.uuid} notify={notify} />
+                <FileUploader accept={["text/csv,application/pdf,image/*"]} url={url} parentUUID={parentFolder.uuid} notify={notifySuccess} />
             </div>
         });
     };
@@ -780,20 +711,10 @@ const Library = () => {
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 APIUtil.delete("trashes").then((response) => {
                     if (response.data.success !== true) throw response.data;
-                    notify({
-                        title: "ゴミ箱を空にしました",
-                        message: "ゴミ箱を空にしました",
-                        status: "success"
-                    });
+                    notifySuccess('ゴミ箱を空にしました');
                     fetchFolder();
                 }).catch(e => {
-                    notify({
-                        title: "ゴミ箱エラー",
-                        message: e.message,
-                        status: "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
+                    notifyError('ゴミ箱エラー', e.message);
                 });
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -872,20 +793,11 @@ const Library = () => {
             return promise.then(datum => {
                 // 成功
                 const typeLabel = LibraryUtil.getTypeLabel(datum.type);
-                notify({
-                    title: typeLabel + "を移動しました", message: datum.label + "を移動しました",
-                    status: "success"
-                });
+                notifySuccess(typeLabel + 'を移動しました', datum.label);
             })
             .catch((e) => {
                 // 例外
-                notify({
-                    title: "ライブラリー移動エラー(" + datum.label + ")",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notifyError(`ライブラリー移動エラー(${datum.label})`, e.message);
             });
         };
 
@@ -910,21 +822,11 @@ const Library = () => {
             return promise.then(() => {
                 // 成功
                 const typeLabel = LibraryUtil.getTypeLabel(datum.type);
-                notify({
-                    title: typeLabel + "を削除しました",
-                    message: datum.label + "を削除しました",
-                    status: "success"
-                });
+                notifySuccess(typeLabel + 'を削除しました', datum.label);
             })
             .catch((e) => {
                 // エラー
-                notify({
-                    title: "ライブラリー削除エラー(" + datum.label + ")",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notifyError(`ライブラリー削除エラー(${datum.label})`, e.message);
             });
         };
 
@@ -960,19 +862,13 @@ const Library = () => {
                         APIUtil.post("flows", { source: data.uuid }).then((response) => {
                             if (response.data.success) {
                                 fetchFolder();
-                                notify({
-                                    title: "フローを複製しました", message: response.data.data.label + "を作成しました",
-                                    status: "success"
-                                });
+                                notifySuccess('フローを複製しました', response.data.data.label);
                             } else {
                                 reject(response)
                             }
 
                         }).catch((response) => {
-                            notify({
-                                title: "複製エラー", message: response.data.message,
-                                status: "error"
-                            });
+                            notifyError('複製エラー', response.data.message);
                         });
                         ModalUtil.closeModal(Constants.modal.CONFIRM);
                     }
@@ -1066,13 +962,7 @@ const Library = () => {
             }
 
             promise.catch(error => {
-                notify({
-                    title: "エラー",
-                    message: error.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notifyError('エラー', error.message);
             }).finally(() => {
                 setIsLoading(true);
             });
@@ -1150,13 +1040,8 @@ const Library = () => {
                         })
                             .then(() => {
                                 setIsLoading(false);
-
                                 const typeLabel = LibraryUtil.getTypeLabel(frame.type);
-                                notify({
-                                    title: typeLabel + "の文字コードを変更しました",
-                                    message: frame.label + "の文字コードを変更しました",
-                                    status: "success"
-                                });
+                                notifySuccess(typeLabel + 'の文字コードを変更しました', frame.label);
                             });
                     }
                     ModalUtil.closeModal(Constants.modal.EDIT_ENCODING);
@@ -1237,13 +1122,7 @@ const Library = () => {
                     setSelectedDatas([flow]);
                 }).catch(error => {
                     // 編集ロックの値の変更に失敗した場合
-                    notify({
-                        title: "エラー",
-                        message: error.message,
-                        status: "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
+                    notifyError('エラー', error.message);
                 });
                 return lock;
             }).then(lock => {
@@ -1251,13 +1130,7 @@ const Library = () => {
                 lock.delete();
             }).catch(error => {
                 // 排他ロックに失敗した場合
-                notify({
-                    title: "エラー",
-                    message: error.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notifyError('エラー', error.message);
             });
         };
 
@@ -1297,19 +1170,9 @@ const Library = () => {
                     // ルートフォルダ直下の全てのプロジェクトを再取得する
                     refreshProjects(true);
                     // 更新を通知する
-                    notify({
-                        title: 'メンバー情報保存',
-                        message: 'プロジェクトのメンバー情報を保存しました',
-                        status: 'success'
-                    });
+                    notifySuccess('メンバー情報保存', 'プロジェクトのメンバー情報を保存しました');
                 }).catch(error => {    
-                    notify({
-                        title: 'メンバー情報保存エラー',
-                        message: error.message,
-                        status: 'error',
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
+                    notifyError('メンバー情報保存エラー', error.message);
                     throw error;
                 });
             };
@@ -1432,13 +1295,11 @@ const Library = () => {
             const trashFolder = parentFolder as ParentTrashType;
             trashFolder.putBack(datum.uuid).catch((e) => {
                 let message = new MessageModel(e);
-                notify({
-                    title: message.title,
-                    message: message.message,
-                    status: message.messageStatus,
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                if(message.messageStatus==='warning'){
+                    notifyWarning(message.title || '', message.message);
+                }else{
+                    notifyError(message.title || '', message.message);
+                }
             }).then(() => {
                 fetchFolder();
             });
@@ -1485,13 +1346,7 @@ const Library = () => {
                     }
                     // エラー処理
                     promise.catch((e) => {
-                        notify({
-                            title: "エラー",
-                            message: e.message,
-                            status: "error",
-                            dismissAfter: 0,
-                            closeButton: true
-                        });
+                        notifyError('エラー', e.message);
                     });
                 }
             );
@@ -1719,7 +1574,7 @@ const Library = () => {
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
-        <ModalManager notify={notify} dismissNotify={dismissNotify} />
+        <ModalManager />
         <NotificationManager />
     </>;
 

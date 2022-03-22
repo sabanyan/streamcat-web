@@ -37,8 +37,8 @@ export class ErrorResponse {
 }
 
 /**
+ * @param json
  * @throws {ErrorResponse}
- * @param json 
  */
 const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => {
     if (json.success) {
@@ -53,7 +53,8 @@ const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => 
 
 /**
  * GET APIを発行する
- * @param url 
+ * @param url
+ * @throws {ErrorResponse}
  */
 const get = <TDatumType>(url: string, params?: {}) => {
     if(params) {
@@ -111,7 +112,8 @@ const get = <TDatumType>(url: string, params?: {}) => {
 
 /**
  * POST APIを発行する
- * @param url 
+ * @param url
+ * @throws {ErrorResponse}
  */
 const post = <TDatumType>(url: string, body: {}) => {
     return fetch(
@@ -135,7 +137,8 @@ const post = <TDatumType>(url: string, body: {}) => {
 
 /**
  * PUT APIを発行する
- * @param url 
+ * @param url
+ * @throws {ErrorResponse}
  */
 const put = <TDatumType>(url: string, body: {}) => {
     return fetch(
@@ -157,7 +160,8 @@ const put = <TDatumType>(url: string, body: {}) => {
 
 /**
  * DELETE APIを発行する
- * @param url 
+ * @param url
+ * @throws {ErrorResponse}
  */
 const del = (url: string, body={}) => {
     return fetch(
@@ -492,6 +496,7 @@ export class APIUtil2 {
 
     /**
      * GET /libraryを発行してルートフォルダを取得する
+     * @throws {ErrorResponse}
      */
      static findLibrary = (members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
@@ -506,6 +511,7 @@ export class APIUtil2 {
 
     /**
      * GET /trashesを発行してゴミ箱を取得する
+     * @throws {ErrorResponse}
      */
     static findTrash = () => {
         return get<ParentTrashType>('/api/v0/trashes').then(trash => {
@@ -517,6 +523,7 @@ export class APIUtil2 {
 
     /**
      * GET /projectsを発行して全てのプロジェクトを取得する
+     * @throws {ErrorResponse}
      */
     static findProjects = (onRoot?: boolean, exceptMyProject?: boolean, members?: boolean):Promise<ProjectType[]> => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
@@ -532,6 +539,7 @@ export class APIUtil2 {
     /**
      * GET /projectsを発行してプロジェクトを取得する
      * @param uuid 取得するプロジェクトのUUID
+     * @throws {ErrorResponse}
      */
     static findProject = (uuid: string, members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
@@ -547,6 +555,7 @@ export class APIUtil2 {
     /**
      * GET /foldersを発行してフォルダを取得する
      * @param uuid 取得するフォルダのUUID
+     * @throws {ErrorResponse}
      */
      static findFolder = (uuid: string) => {
         return get<ParentFolderType>(`/api/v0/folders/${uuid}`).then(folder => {
@@ -559,6 +568,7 @@ export class APIUtil2 {
     /**
      * GET /flowsを発行してフローを取得する
      * @param uuid 取得するフローのUUID
+     * @throws {ErrorResponse}
      */
     static findFlow = (uuid: string) => {
         return get<FlowType>(`/api/v0/flows/${uuid}`).then(flow => {
@@ -594,6 +604,7 @@ export class APIUtil2 {
     /**
      * GET /framesを発行してフレームを取得する
      * @param uuid 取得するフレームのUUID
+     * @throws {ErrorResponse}
      */
     static findFrame = (uuid: string, contents?: boolean, offset?: number, limit?: number) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
@@ -627,6 +638,7 @@ export class APIUtil2 {
 
     /**
      * GET /subflowsを発行してサブフローを取得する
+     * @throws {ErrorResponse}
      */
     static findSubflows = () => {
         return get<Flow[]>('/api/v0/subflows');
@@ -634,6 +646,7 @@ export class APIUtil2 {
 
     /**
      * GET /datasrcsを発行してデータソースを取得する
+     * @throws {ErrorResponse}
      */
     static findDataSrcs = () => {
         return get<Flow[]>('/api/v0/datasrcs');
@@ -641,6 +654,7 @@ export class APIUtil2 {
 
     /**
      * GET /datadstsを発行してデータデストを取得する
+     * @throws {ErrorResponse}
      */
     static findDataDsts = () => {
         return get<Flow[]>('/api/v0/datadsts');
@@ -648,6 +662,7 @@ export class APIUtil2 {
 
     /**
      * GET /commandsを発行してCommandを取得する
+     * @throws {ErrorResponse}
      */
     static findCommands = () => {
         return get<Command[]>('/api/v0/commands');
@@ -655,6 +670,7 @@ export class APIUtil2 {
 
     /**
      * GET /vcommandsを発行してVCommandを取得する
+     * @throws {ErrorResponse}
      */
     static findVCommands = () => {
         return get<Command[]>('/api/v0/vcommands');
@@ -662,6 +678,7 @@ export class APIUtil2 {
 
     /**
      * GET /navigationを発行してNavigationを取得する
+     * @throws {ErrorResponse}
      */
     static findNavigation = () => {
         return get<NavigationType>('/api/v0/navigation');
@@ -670,6 +687,7 @@ export class APIUtil2 {
     /**
      * POST /locksを発行してロックを獲得する
      * @param flowUUID 排他ロック対象Datumのuuid
+     * @throws {ErrorResponse}
      */
     static createLock = (flowUUID: string, lastModifiedAt?: string) => {
         // lastModifiedAtが指定された場合はロックの再取得をする
@@ -687,6 +705,7 @@ export class APIUtil2 {
     /**
      * POST /vizsを発行してフローをプレビューする
      * @param flowUUID
+     * @throws {ErrorResponse}
      */
     static createFlowVis = (flowUUID:string, args:{}, lockUUID?:string) => {
         const body = {uuid:flowUUID, args:args, lock:lockUUID};
@@ -696,6 +715,7 @@ export class APIUtil2 {
     /**
      * POST /vizsを発行してFrameをプレビューする
      * @param flowUUID
+     * @throws {ErrorResponse}
      */
     static createFrameVis = (frameUUID:string, args:{}) => {
         const body = {frame:frameUUID, args:args};
@@ -705,6 +725,7 @@ export class APIUtil2 {
     /**
      * POST /activitiesを発行してフローを実行する
      * @param flowUUID
+     * @throws {ErrorResponse}
      */
     static createActivity = (flowUUID:string, args:{}, lockUUID?:string) => {
         const body = {uuid:flowUUID, args:args, lock:lockUUID};
@@ -713,6 +734,7 @@ export class APIUtil2 {
 
     /**
      * GET /usersを発行してUserを取得する
+     * @throws {ErrorResponse}
      */
      static findUsers = (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する

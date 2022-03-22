@@ -25,8 +25,8 @@ type Props = {
     headers: string[];
     afterViz: Function;
     onSaveResult: Function;
-    notify: Function;
-    dismissNotify: Function;
+    notify: (title:string, message:string) => string;
+    dismissNotify: (id:string) => void;
 }
 
 type State = {
@@ -174,13 +174,7 @@ export default class Visualizer extends React.Component<Props, State> {
             this.setState(result);
         }).catch((e) => {
             if (e.message !== "VisualizeInitException") {
-                notify({
-                    title: e.title,
-                    message: e.message,
-                    status: (e.messageStatus) ? e.messageStatus : "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notify(e.title, e.message);
             }
             const result = {
                 html: null,
@@ -250,13 +244,7 @@ export default class Visualizer extends React.Component<Props, State> {
             this.setState({args: args, html: contents});
         }).catch(e => {
             if (e.message !== "VisualizeInitException") {
-                notify({
-                    title: e.title,
-                    message: e.message,
-                    status: (e.messageStatus) ? e.messageStatus : "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notify(e.title, e.message);
             }
             const result = {
                 html: null,

@@ -28,8 +28,6 @@ import { Modal } from "Shared/Modal";
  */
 
 interface Props {
-       notify?: any;
-       dismissNotify?: any;
 }
 
 export default class ModalManager extends React.Component<Props> {
@@ -40,10 +38,8 @@ export default class ModalManager extends React.Component<Props> {
        componentDidUpdate() {
               (window as any).modalRefs = this.refs;
        }
-       a
-       render() {
-              const { notify, dismissNotify } = this.props;
 
+       render() {
               return <>
                      <Modal key={Constants.modal.ADD_COMMAND}
                             id={Constants.modal.ADD_COMMAND} dynamic={true}>
@@ -54,9 +50,7 @@ export default class ModalManager extends React.Component<Props> {
                      </Modal>
                      <Modal key={Constants.modal.PREVIEW_DATASOURCE}
                             id={Constants.modal.PREVIEW_DATASOURCE} dynamic={true}
-                            preview={true} footer={false}
-                            notify={notify}
-                            dismissNotify={dismissNotify}>
+                            preview={true} footer={false}>
                      </Modal>
                      <Modal key={Constants.modal.SHOW_MESSAGE}
                             id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true}

@@ -13,7 +13,7 @@ type Props = {
   accept?: string[];
 
   parentUUID: string
-  notify: Function
+  notify: (title:string, message:string) => string;
 }
 
 enum Status {
@@ -165,13 +165,7 @@ export default class FileUploader extends React.Component<Props, State> {
       })
 
       let content = "アップロードが完了しました。<br> (成功:" + successCount + "、失敗:" + failCount + ")"
-      notify({
-        title: 'アップロードしました',
-        message: content,
-        status: 'success',
-        dismissAfter: 2000,
-        allowHTML: true
-      })
+      notify('アップロードしました', content);
 
       self.setState({
         isLoading: false

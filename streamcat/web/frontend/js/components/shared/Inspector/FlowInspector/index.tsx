@@ -15,7 +15,10 @@ type Props = {
     runArgs: RunArgsType;
     updateRunArgs: Function;
     flow: FlowType;
-    notify: Function;
+    notifyLoading: (title: string, message: string) => string;
+    notifyWarning: (title: string, message: string) => string;
+    notifyError: (title: string, message: string) => string;
+    notifyComplete: Function;
     dismissNotify: Function;
 }
 
@@ -70,10 +73,10 @@ const FlowInspector = (props: Props) => {
     };
 
     const run = () => {
-        const {runArgs, notify, dismissNotify} = props;
+        const {runArgs, notifyLoading, notifyWarning, notifyError, notifyComplete, dismissNotify} = props;
         //TODO RunArgsのValidate
 
-        FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then(activity => {
+        FlowUtil.runWithArgs(runArgs, notifyLoading, notifyWarning, notifyError, dismissNotify).then(activity => {
             resetRunArgsValue();
             const result = activity.outs.map((n, index) => {
                 return <li key={index}>{n.id}</li>;
@@ -83,20 +86,10 @@ const FlowInspector = (props: Props) => {
                 <ul>{result}</ul>
             </div>;
 
-            notify({
-                title: "フロー実行完了",
-                message: ReactDomUtil.renderToString(content),
-                status: "success",
-                dismissAfter: 0,
-                buttons: [
-                    {
-                        name: "開く",
-                        primary: true,
-                        onClick: () => {
-                            window.open("/library");
-                        }
-                    }]
-            });
+            // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
+            const parentFolderUUID = activity.outs[0].parent; //　今はlasts[0]
+
+            notifyComplete('フロー実行完了', ReactDomUtil.renderToString(content), parentFolderUUID)
         });
     };
 

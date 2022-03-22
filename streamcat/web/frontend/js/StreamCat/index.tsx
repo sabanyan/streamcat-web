@@ -2,9 +2,9 @@ import React from 'react';
 import {useEffect} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import {useDispatch} from 'react-redux';
+import {NotificationsProvider} from 'reapop';
 import style from './style.scss';
 import {ModalManager} from 'Shared/Modal';
-import {addNotification, removeNotification} from 'reapop';
 import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
@@ -45,13 +45,6 @@ const StreamCat = (props: Props) => {
 
     const dispatch = useDispatch();
     const {viewId} = props;
-
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
 
     // Navigationの取得を開始する
     const [readNavigation] = useAsyncResource(getNavigation, viewId);
@@ -122,12 +115,11 @@ const StreamCat = (props: Props) => {
 
     try {
         return <div className={style.streamcat}>
-            {renderNavigationBar()}
-            {renderView(viewId)}
-            <ModalManager
-                notify={notify}
-                dismissNotify={dismissNotify}
-            />
+            <NotificationsProvider>
+                {renderNavigationBar()}
+                {renderView(viewId)}
+                <ModalManager />
+            </NotificationsProvider>
         </div>;
     } catch (e) {
         console.log(e);

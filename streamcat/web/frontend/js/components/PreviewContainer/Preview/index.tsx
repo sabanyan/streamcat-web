@@ -5,8 +5,6 @@ import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
 import {NotificationManager} from "Shared/Notification";
-import {useDispatch} from "react-redux";
-import {addNotification, removeNotification} from "reapop";
 
 /**
  * ======================================================
@@ -15,18 +13,6 @@ import {addNotification, removeNotification} from "reapop";
  */
 
 const Preview = () => {
-
-    const dispatch = useDispatch();
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
-
-    const parentProps = {
-        dispatch,notify,dismissNotify
-    };
 
     const [isLoading, setIsLoading] = useState(false);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
@@ -54,7 +40,7 @@ const Preview = () => {
             const frameUuid = HttpUtil.getURLParam("frame_uuid");
             if (frameUuid) {
                 // データが存在している場合（ライブラリ）
-                content = {title: v.label, content: viz, parentProps: parentProps, id: frameUuid};
+                content = {title: v.label, content: viz, id: frameUuid};
                 viz["frameUuid"] = frameUuid;
             } else {
                 // データが存在しなくて生成する必要あり（フローエディターからのプレビュー）
@@ -62,7 +48,7 @@ const Preview = () => {
                 const flowUuid = HttpUtil.getURLParam("flow_uuid");
                 const lockUuid = HttpUtil.getURLParam("lock_uuid");
                 let step_ids = JSON.parse(StringUtil.urlDecode((HttpUtil.getURLParam("step_ids"))));
-                content = {title: v.label, content: viz, parentProps: parentProps, id: frame_id};
+                content = {title: v.label, content: viz, id: frame_id};
                 viz["frameUuid"] = frameUuid;
                 viz["flowUuid"] = flowUuid;
                 viz["lockUuid"] = lockUuid;
@@ -86,10 +72,7 @@ const Preview = () => {
 
     return <div className={"container mt-40px"}>
         <Loader center={true} absolute={true} visible={isLoading} />
-        <ModalManager
-            notify={notify}
-            dismissNotify={dismissNotify}
-        />
+        <ModalManager />
         <NotificationManager />
     </div>;
 };
