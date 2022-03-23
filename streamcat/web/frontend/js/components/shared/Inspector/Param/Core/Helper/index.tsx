@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { AppBar, IconButton, Tabs, Tab } from '@material-ui/core';
-import Typography from '@material-ui/core/Typography';
+import { AppBar, IconButton, Tabs, Tab } from '@mui/material';
+import Typography from '@mui/material/Typography';
 
 import style from './style.scss'
 
@@ -120,8 +120,7 @@ export function Helper(props: Props) {
   })
   */
 
-  return <React.Fragment>
-    <div className={style.helper}>
+  return <div className={style.helper}>
       <AppBar position="sticky" color="default">
           <div className={style.toolbar}>
             <IconButton size="small" color="inherit" aria-label="menu" onClick={onClickCloseHelper} >
@@ -142,7 +141,6 @@ export function Helper(props: Props) {
       <TabPanel className={style.contents} value={tabIndex} index={tabIndex}>
         {renderDatas(tabs[tabIndex].data)}
       </TabPanel>
-    </div>
-  </React.Fragment>
+  </div>;
 }
 

@@ -2,13 +2,13 @@ import React from "react";
 import * as style from "./style.scss";
 // TODO: Visual Studio Codeではエラーになるが、num run buildは通る
 // エラーになる原因は不明
-import {AlignContentProperty, AlignItemsProperty, FlexDirectionProperty} from 'csstype';
+import {Property} from 'csstype';
 
 type Props = {
     children?: React.ReactNode;
-    justifyContent?: AlignContentProperty;
-    alignItems?: AlignItemsProperty;
-    flexDirection?: FlexDirectionProperty;
+    justifyContent?: Property.AlignContent;
+    alignItems?: Property.AlignItems;
+    flexDirection?: Property.FlexDirection;
     inline?: boolean;
     fluid?: boolean;
     width?: number | string;

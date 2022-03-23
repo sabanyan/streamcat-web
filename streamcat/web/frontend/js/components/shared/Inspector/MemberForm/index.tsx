@@ -1,5 +1,5 @@
 import React from 'react'
-import { Paper, TextField, TableContainer, Table, TableRow, TableCell, TableBody, Select } from '@material-ui/core';
+import { Paper, TextField, TableContainer, Table, TableRow, TableCell, TableBody, NativeSelect } from '@mui/material';
 import style from './style.scss'
 import Constants from 'Constants/index';
 import { UserType } from 'Model/Navigation/NavigationModel';
@@ -26,20 +26,17 @@ export function MemberForm(props: Props) {
   })
 
   const roleForm = (editMember:Member) => {
-    return <Select
-      native
-      value={editMember.type ? editMember.type : "Reader"}
-      onChange={(e) => onMemberRoleChanged(e, members, editMember)}
-      className={style.role}>
-      <option value="Owner">{Constants.projectMemberRole.OWNER}</option>
-      <option value="Writer">{Constants.projectMemberRole.WRITER}</option>
-      <option value="Reader">{Constants.projectMemberRole.READER}</option>
-      <option className={style.highlight} value="Del">削除する</option>
-    </Select>
+      return <NativeSelect value={editMember.type ? editMember.type : "Reader"}
+                           onChange={(e) => onMemberRoleChanged(e, members, editMember)}
+                           className={style.role}>
+          <option value="Owner">{Constants.projectMemberRole.OWNER}</option>
+          <option value="Writer">{Constants.projectMemberRole.WRITER}</option>
+          <option value="Reader">{Constants.projectMemberRole.READER}</option>
+          <option className={style.highlight} value="Del">削除する</option>
+      </NativeSelect>
   }
 
-  return <React.Fragment>
-    <div className={style.paper}>
+  return <div className={style.paper}>
       <TextField
         id="seachFiled"
         label="追加するユーザーの名前、Email"
@@ -74,6 +71,5 @@ export function MemberForm(props: Props) {
           </TableBody>
         </Table>
       </TableContainer>
-    </div>
-  </React.Fragment>
+  </div>;
 }
