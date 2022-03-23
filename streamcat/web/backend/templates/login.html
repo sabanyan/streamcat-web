@@ -7,20 +7,22 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     <form action="{{ original_url }}" method="post">
-                        <div class="form-group">
+                        <div class="row">
                             <label for="login_email">ユーザーアカウント</label>
                             <input id="login_email" name="email" type="text" placeholder="メールアドレス"
                                    autocomplete="email" value="{{ email }}" class="form-control form-control-sm">
                         </div>
-                        <div class="form-group">
+                        <div class="row">
                             <label for="login_password">パスワード</label>
                             <input id="login_password" name="password" type="password" placeholder="パスワード"
                                    autocomplete="current-password" class="form-control form-control-sm">
                         </div>
-                        <div class="form-group">
+                        <br/>
+                        <div class="row">
                             <input type="submit" value="ログイン" class="btn btn-primary btn-default btn-block">
                         </div>
                         {% if login_failed %}
+                        <br/>
                         <div class="alert alert-danger small">
                             {% if alert_message == "" %}
                                 ユーザーアカウントもしくはパスワードが正しくありません。
@@ -31,7 +33,8 @@
                         {% endif %}
                     </form>
                     {% if google_login %}
-                    <form action="/signup/login" method="get">
+                    <br/>
+                    <form action="/signup/login" method="get" class="row">
                         <button type="submit"
                                 class="btn btn-primary btn-default btn-block">Googleでログイン</button>
                     </form>

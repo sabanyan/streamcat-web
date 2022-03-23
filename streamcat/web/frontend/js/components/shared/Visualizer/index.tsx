@@ -281,10 +281,13 @@ export default class Visualizer extends React.Component<Props, State> {
 
     componentDidUpdate() {
         //visualizeRequestで取得したhtml内のscriptがrenderされた後にscriptを再取得
-        const scripts = $('.visualize-component').find('script');
-        if (scripts[0]) {
-            //再度appendし直してjsを実行させる
-            this.innerHTMLScriptReLaunch(scripts[0]);
+        const element = document.getElementById('visualize-component');
+        if (element) {
+            const scripts = element.getElementsByTagName('script');
+            if(scripts.length > 0){
+                //再度appendし直してjsを実行させる
+                this.innerHTMLScriptReLaunch(scripts[0]);
+            }
         }
     }
 
