@@ -226,7 +226,7 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                 d.createFolder = (label) =>
                     post<FolderType>(`/api/v0/folders`, {parent:d.uuid, label:label});
                 d.createRemoteFolder = (label, protocol, hostname, domain, directory, userId, password) =>
-                    post<RemoteFolderType>(`/api/v0/remote_folders`,
+                    post<RemoteFolderType>(`/api/v0/remote-folders`,
                                            {parent   : d.uuid,
                                             label    : label,
                                             protocol : protocol,

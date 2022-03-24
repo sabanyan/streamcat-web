@@ -615,17 +615,6 @@ const Library = () => {
         });
     };
 
-    const onClickNewFolder = () => {
-        ModalUtil.emitModal({
-            id: Constants.modal.ADD_FOLDER,
-            visible: true,
-            done: "作成する",
-            content: <div>
-                <TextField placeholder={"フォルダ名"} onChange={(e) => setFormFolderName(e.target.value)} />
-            </div>
-        });
-    };
-
     const onClickCSVUpload = () => {
         let url = location.protocol + "//" + location.host + "/api/v0/documents";
         ModalUtil.emitModal({
@@ -671,18 +660,6 @@ const Library = () => {
         };
         setAddDatabase(nullDatabase);
     };
-
-    const onClickAddRemoteFolder = () => {
-        clearRemoteFolder();
-        setRemoteFolderMode(RemoteFolderMode.ADD);
-        ModalUtil.emitModal({
-            id: Constants.modal.ADD_REMOTE_FOLDER,
-            visible: true,
-            done: "追加する",
-            dynamic: true,
-            content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
-        });
-    }
 
     const onClickEditRemoteFolder = (data:any) => {
         setRemoteFolder(data);
@@ -1480,13 +1457,13 @@ const Library = () => {
             } else {
                 if (!inject_is_trash) {
                     menuList = <MenuList
+                        parent={parentFolder}
                         allowlist={parentFolder!.allowlist}
+                        fetchFolder={fetchFolder}
                         onClickAddDatabase={onClickAddDatabase}
                         onClickCSVUpload={onClickCSVUpload}
                         onClickNewFlow={onClickNewFlow}
-                        onClickNewFolder={onClickNewFolder}
                         onClickNewProject={onClickNewProject}
-                        onClickAddRemoteFolder={onClickAddRemoteFolder}
                         onClickImportFlow={onClickImportFlow}
                     />;
                 } else {

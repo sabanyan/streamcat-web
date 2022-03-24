@@ -2,54 +2,56 @@ import React from 'react';
 import * as style from "./style.scss";
 import { Spacer } from "Shared/Base";
 import { FlatButton } from "Shared/Input";
-import { FolderAllowlist } from 'Model/Library'
+import { FolderAllowlist, FolderType } from 'Model/Library'
+import { CreateFolderButton } from 'Components/LibraryContainer/CreateFolderButton';
+import { CreateRemoteFolderButton } from 'Components/LibraryContainer/CreateRemoteFolderButton';
 
 interface Props {
+    parent: FolderType;
     allowlist: FolderAllowlist;
+    fetchFolder: () => void;
     onClickNewFlow: () => void;
     onClickNewProject: () => void;
     onClickImportFlow: () => void;
-    onClickNewFolder: () => void;
     onClickCSVUpload: () => void;
     onClickAddDatabase: () => void;
-    onClickAddRemoteFolder: () => void;
 }
 
 const MenuList = (props: Props) => {
-    const { allowlist, onClickNewFlow, onClickNewProject, onClickNewFolder,
-        onClickCSVUpload, onClickAddDatabase, onClickAddRemoteFolder, onClickImportFlow } = props;
+    const { parent, allowlist, fetchFolder, onClickNewFlow, onClickNewProject,
+        onClickCSVUpload, onClickAddDatabase, onClickImportFlow } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
 
-    createProject = allowlist.createProject ? <React.Fragment>
+    createProject = allowlist.createProject ? <>
         <FlatButton icon={"icon-add"} onClick={onClickNewProject}>プロジェクトの追加</FlatButton>
         <Spacer height={8} />
-    </React.Fragment> : null;
+    </> : null;
 
     // 現状は、プロジェクト単位でインポートされる
-    importProject = allowlist.import ? <React.Fragment>
+    importProject = allowlist.import ? <>
         <FlatButton icon={"icon-upload"} onClick={onClickImportFlow}>フローのアップロード</FlatButton>
         <Spacer height={8} />
-    </React.Fragment> : null;
+    </> : null;
 
-    createFolder = allowlist.createFolder ? <React.Fragment>
-        <FlatButton icon={"icon-add"} onClick={onClickNewFolder}>フォルダの追加</FlatButton>
+    createFolder = allowlist.createFolder ? <>
+        <CreateFolderButton parent={parent} onSuccess={fetchFolder}/>
         <Spacer height={8} />
-    </React.Fragment> : null;
+    </> : null;
 
-    createFile = allowlist.createFile ? <React.Fragment>
+    createFile = allowlist.createFile ? <>
         <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの追加</FlatButton>
         <Spacer height={8} />
         <FlatButton icon={"icon-add"} onClick={onClickAddDatabase}>データベースの追加</FlatButton>
         <Spacer height={8} />
-        <FlatButton icon={"icon-add"} onClick={onClickAddRemoteFolder}>リモートフォルダの追加</FlatButton>
+        <CreateRemoteFolderButton parent={parent} onSuccess={fetchFolder}/>
         <Spacer height={8} />
-    </React.Fragment> : null;
+    </> : null;
 
-    upload = allowlist.upload ? <React.Fragment>
+    upload = allowlist.upload ? <>
         <FlatButton icon={"icon-upload"} onClick={onClickCSVUpload}>ファイルアップロード</FlatButton>
         <Spacer height={8} />
-    </React.Fragment> : null;
+    </> : null;
 
     return <div className={style.menuList}>
         {createProject}

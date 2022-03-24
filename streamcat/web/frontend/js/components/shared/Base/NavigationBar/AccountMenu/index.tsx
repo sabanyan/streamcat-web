@@ -1,7 +1,8 @@
 import React from 'react';
-import {Menu, MenuItem, Button, Link, Avatar, Divider, Box} from '@mui/material';
+import {Menu, MenuItem, Button, Link, Avatar, Divider} from '@mui/material';
 import {WebUtil} from 'Utils/index';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
+import { Spacer } from "Shared/Base";
 
 interface Props {
     navigation: NavigationType | null;
@@ -49,7 +50,7 @@ const AccountMenu = (props: Props) => {
                 aria-expanded={open ? 'true' : undefined}
                 onClick={handleClick}>
             <Avatar src={baseUrl + 'images/icon/user.svg'} variant='rounded' sx={{width:24, height:24}}/>
-            <Box sx={{p:1}}/>
+            <Spacer width={8} />
             {navigation?.user.name}
         </Button>
         <Menu id='basic-menu'
