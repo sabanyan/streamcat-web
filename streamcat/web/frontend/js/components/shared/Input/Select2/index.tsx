@@ -1,5 +1,11 @@
 import React from 'react';
-import {FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent} from '@mui/material';
+import {FormControl,
+        FormHelperText,
+        InputLabel,
+        MenuItem,
+        Select,
+        SelectChangeEvent,
+        Typography} from '@mui/material';
 
 export type Value = {
     value: string;
@@ -13,6 +19,7 @@ export type SelectItem = {
 
 type Props = {
     label:string;
+    readOnly?:boolean;
     required?:boolean;
     requiredMessage?:string;
     items:SelectItem[];
@@ -21,11 +28,22 @@ type Props = {
     onErrorChange?:(isError:boolean) => void;
 };
 
-
+/**
+ * セレクトボックス
+ * @param props
+ */
 export const Select2 = (props:Props) => {
-    const {label, required, items} = props;
+
+    // 親コンポーネントで変更可能なvalue.isErrorの値に依存しないよう
+    // value.valueの値からエラー状態を判定する
+    const isError = (value:string) => {
+        // 入力必須、かつ入力値が空の場合はエラーにする
+        return !!required && !value;
+    };
+
+    const {label, readOnly, required, items} = props;
     const requiredMessage = props.requiredMessage || '入力必須です';
-    const [value, setValue] = props.state || [{value:'', isError:false}, () => {}];
+    const [value, setValue] = props.state || [{value:'',isError:isError('')}, () => {}];
     const onChange = props.onChange || (() => {});
     const onErrorChange = props.onErrorChange || (() => {});
 
@@ -34,14 +52,14 @@ export const Select2 = (props:Props) => {
 
     // 初期処理
     React.useEffect(() => {
-        // 入力必須の場合、初期状態はエラーである
-        required && !value.value && setValue({value:value.value, isError:true});
+        // value.isErrorに誤った初期値が設定された場合は修正する
+        setValue({value:value.value, isError:isError(value.value)});
     }, []);
 
     // 入力値が変更された時の処理
     const onChangeValue = (e:SelectChangeEvent) => {
         // 入力必須、かつ入力値が空の場合はエラーにする
-        const error = !!required && e.target.value === '';
+        const error = isError(e.target.value);
         // 入力値が一度でも変更されたらtrueを設定する
         setValueChanged(true);
         // 入力値を設定する
@@ -49,12 +67,30 @@ export const Select2 = (props:Props) => {
         // イベントハンドラを呼び出す
         onChange({value:e.target.value, isError:error});
         // エラー状態が変わった場合はイベントハンドラを呼び出す
-        if(error!==value.isError){
+        if(error!==isError(value.value)){
             onErrorChange(error);
         }
     };
 
-    return <FormControl // 入力必須記号*の表示する
+    return <>{
+        readOnly?
+        // 
+        // 入力不可の場合
+        // 
+        <>
+            <Typography variant='caption'
+                        color='textSecondary'
+                        sx={{lineHeight:'0'}}>{label}</Typography>
+            <Typography variant="body1"
+                        color="textPrimary"
+                        sx={{lineHeight:'1',
+                            paddingLeft:1,
+                            paddingBottom:1}}>{value.value}</Typography>
+        </>:
+        // 
+        // 入力可の場合
+        // 
+        <FormControl    // 入力必須記号*の表示する
                         required={required}
                         // 小さく表示する
                         size='small'
@@ -66,14 +102,16 @@ export const Select2 = (props:Props) => {
                         variant='outlined'
                         // 入力値が空の場合はエラーにする
                         // (未入力時はエラー表示をしない)
-                        error={valueChanged && value.isError}>
-        <InputLabel>{label}</InputLabel>
-        <Select label={label}
-                value={value.value}
-                onChange={onChangeValue}>
-            {/* 引数で指定された選択値 */}
-            {items.map(item => <MenuItem value={item.value}>{item.label}</MenuItem>)}
-        </Select>
-        <FormHelperText>{(valueChanged && value.isError)? requiredMessage: ''}</FormHelperText>
-    </FormControl>;
-}
+                        error={valueChanged && isError(value.value)}>
+            <InputLabel>{label}</InputLabel>
+            <Select label={label}
+                    // 入力値
+                    value={value.value}
+                    onChange={onChangeValue}>
+                {/* 引数で指定された選択値 */}
+                {items.map((item,index) => <MenuItem key={index} value={item.value}>{item.label}</MenuItem>)}
+            </Select>
+        <FormHelperText>{(valueChanged && isError(value.value))? requiredMessage: ''}</FormHelperText>
+        </FormControl>
+    }</>;
+};
