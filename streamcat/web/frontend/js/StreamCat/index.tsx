@@ -1,6 +1,8 @@
 import React from 'react';
 import {useEffect} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
+import { createTheme, ThemeProvider } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {useDispatch} from 'react-redux';
 import {NotificationsProvider} from 'reapop';
 import style from './style.scss';
@@ -70,6 +72,12 @@ const StreamCat = (props: Props) => {
         if(viewId === ViewId.Flow_Editor)addNetworkStatusHandler();
     }, []);
 
+    // Webブラウザの設定に従って、ライト/ダークテーマを設定する
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const theme = React.useMemo(
+        () => createTheme({palette: {mode:prefersDarkMode? 'dark': 'light'}}),
+        [prefersDarkMode],
+    );
 
     // Navigationを取得する
     const nav = readNavigation();
@@ -115,10 +123,14 @@ const StreamCat = (props: Props) => {
 
     try {
         return <div className={style.streamcat}>
+            {/* 通知ダイアログ */}
             <NotificationsProvider>
+            {/* MUIのテーマ */}
+            <ThemeProvider theme={theme}>
                 {renderNavigationBar()}
                 {renderView(viewId)}
                 <ModalManager />
+            </ThemeProvider>
             </NotificationsProvider>
         </div>;
     } catch (e) {
