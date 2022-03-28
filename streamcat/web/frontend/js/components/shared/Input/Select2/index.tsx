@@ -4,8 +4,8 @@ import {FormControl,
         InputLabel,
         MenuItem,
         Select,
-        SelectChangeEvent,
-        Typography} from '@mui/material';
+        SelectChangeEvent} from '@mui/material';
+import { FixedField2 } from '../FixedField2';
 
 export type Value = {
     value: string;
@@ -77,32 +77,23 @@ export const Select2 = (props:Props) => {
         // 
         // 入力不可の場合
         // 
-        <>
-            <Typography variant='caption'
-                        color='textSecondary'
-                        sx={{lineHeight:'0'}}>{label}</Typography>
-            <Typography variant="body1"
-                        color="textPrimary"
-                        sx={{lineHeight:'1',
-                            paddingLeft:1,
-                            paddingBottom:1}}>{value.value}</Typography>
-        </>:
+        <FixedField2 label={label} value={value.value} />:
         // 
         // 入力可の場合
         // 
-        <FormControl    // 入力必須記号*の表示する
-                        required={required}
-                        // 小さく表示する
-                        size='small'
-                        // ある程度の横幅を設定する
-                        fullWidth={true}
-                        // labelの表示域を確保する
-                        margin='dense'
-                        // 枠線を設定する
-                        variant='outlined'
-                        // 入力値が空の場合はエラーにする
-                        // (未入力時はエラー表示をしない)
-                        error={valueChanged && isError(value.value)}>
+        <FormControl // 入力必須記号*の表示する
+                    required={required}
+                    // 小さく表示する
+                    size='small'
+                    // ある程度の横幅を設定する
+                    fullWidth={true}
+                    // labelの表示域を確保する
+                    margin='dense'
+                    // 枠線を設定する
+                    variant='outlined'
+                    // 入力値が空の場合はエラーにする
+                    // (未入力時はエラー表示をしない)
+                    error={valueChanged && isError(value.value)}>
             <InputLabel>{label}</InputLabel>
             <Select label={label}
                     // 入力値

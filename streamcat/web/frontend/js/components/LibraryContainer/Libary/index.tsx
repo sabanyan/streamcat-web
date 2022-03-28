@@ -22,11 +22,12 @@ import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/Libra
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , DatabaseType, FrameType, Member, FlowType } from "Model/Library";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType } from "Model/Library";
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import LibraryUtil from "Utils/LibraryUtil";
 import Constants from "Constants/index";
+import { RemoteFolderDrawer } from '../RemoteFolderDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -734,6 +735,7 @@ const Library = () => {
     };
 
     const renderLibraryInspector = (): React.ReactNode => {
+        // 項目が選択されていなければインスペクタを表示しない
         if(!selectedDatas.length){
             return null;
         }
@@ -1244,19 +1246,22 @@ const Library = () => {
                 // フォルダ情報を取得中の場合
                 fallback={<LibraryInspector projectsReader={() => null}
                                             selectedData={selectedData} />}>
-            <LibraryInspector
-                projectsReader={projectsReader}
-                selectedData={selectedData}
-                onClickCopy={_onClickCopy}
-                onClickDelete={_onClickDelete}
-                onClickApply={_onClickApply}
-                onClickMove={_onClickMove}
-                onClickEdit={_onClickEdit}
-                onClickEditEncoding={_onClickEditEncoding}
-                onChangEditLock={_onChangeEditLock}
-                onClickCleanTrash={_onClickCleanTrash}
-                onClickMemberInfo={_onClickMemberInfo}
-                onBlurTitle={_onBlurTitle} />
+            {
+                selectedData.type !== 'rfolder' ?
+                <LibraryInspector projectsReader={projectsReader}
+                                    selectedData={selectedData}
+                                    onClickCopy={_onClickCopy}
+                                    onClickDelete={_onClickDelete}
+                                    onClickApply={_onClickApply}
+                                    onClickMove={_onClickMove}
+                                    onClickEdit={_onClickEdit}
+                                    onClickEditEncoding={_onClickEditEncoding}
+                                    onChangEditLock={_onChangeEditLock}
+                                    onClickCleanTrash={_onClickCleanTrash}
+                                    onClickMemberInfo={_onClickMemberInfo}
+                                    onBlurTitle={_onBlurTitle} />:
+                <></>
+            }
         </AsyncResourceContent>
     };
 
@@ -1551,6 +1556,14 @@ const Library = () => {
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
+        {
+            selectedDatas.length>0 && selectedDatas[0].type==='rfolder' ?
+            <RemoteFolderDrawer parent={parentFolder}
+                                remoteFolder={selectedDatas[0] as RemoteFolderType}
+                                create={false}
+                                onSuccess={fetchFolder}/>:
+            <></>
+        }
         <ModalManager />
         <NotificationManager />
     </>;

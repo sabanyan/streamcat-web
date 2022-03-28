@@ -1,5 +1,6 @@
 import React from 'react';
-import {TextField, Typography} from '@mui/material';
+import {TextField} from '@mui/material';
+import { FixedField2 } from '../FixedField2';
 
 export type Value = {
     value: string;
@@ -77,16 +78,7 @@ export const TextField2 = (props:Props) => {
         // 
         // 入力不可の場合
         // 
-        <>
-            <Typography variant='caption'
-                        color='textSecondary'
-                        sx={{lineHeight:'0'}}>{label}</Typography>
-            <Typography variant="body1"
-                        color="textPrimary"
-                        sx={{lineHeight:'1',
-                            paddingLeft:1,
-                            paddingBottom:1}}>{value.value}</Typography>
-        </>:
+        <FixedField2 label={label} value={value.value} mask={type==='password'} />:
         // 
         // 入力可の場合
         // 
