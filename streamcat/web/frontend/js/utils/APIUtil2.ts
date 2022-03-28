@@ -306,6 +306,15 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {label:label});
                 d.delete = () =>
                     del(`/api/v0/remote-folders/${d.uuid}`);
+                d.update = (label, protocol, hostname, domain, directory, userId, password) =>
+                    put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`,
+                                          { label    : label,
+                                            protocol : protocol,
+                                            hostname : hostname,
+                                            domain   : domain,
+                                            directory: directory,
+                                            userId   : userId,
+                                            password : password});
             }else if(datum.type === 'database') {
                 const d = datum as DatabaseType;
                 d.move = (parent) => 
@@ -314,6 +323,15 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {label:label});
                 d.delete = () =>
                     del(`/api/v0/databases/${d.uuid}`);
+                d.update = (label, dbms, hostname, port, database, userId, password) =>
+                    put<DatabaseType>(`/api/v0/databases/${d.uuid}`,
+                                      { label   : label,
+                                        dbms    : dbms,
+                                        hostname: hostname,
+                                        port    : port,
+                                        database: database,
+                                        userId  : userId,
+                                        password: password});
             }else if(datum.type === 'flow') {
                 const d = datum as FlowType;
                 d.move = (parent, lockUUID) => 
