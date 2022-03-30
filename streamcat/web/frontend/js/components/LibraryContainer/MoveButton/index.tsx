@@ -57,7 +57,7 @@ export const MoveButton = (props:Props) => {
 
     // 全てのDatumを移動する
     const moveData = (data:DatumType[], newParent:string) => {
-        // 全てのDatumを移動した後に、ダイアログを閉じる
+        // 全てのDatumを移動した後に、イベントハンドラを呼び出す
         Promise.all(
             data.map(datum => moveDatum(datum, newParent))
         ).finally(() => {

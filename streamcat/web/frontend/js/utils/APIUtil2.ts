@@ -348,6 +348,8 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                 };
                 d.update = (flow, lockUUID) =>
                     put<FlowType>(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
+                d.duplicate = () =>
+                    post(`/api/v0/flows`, {source:d.uuid});
             }else if(datum.type === 'schedule') {
                 const d = datum as ScheduleType;
                 d.move = (parent) => 
