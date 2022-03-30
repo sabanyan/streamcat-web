@@ -1,8 +1,9 @@
 import React from "react";
-import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogTitle } from '@mui/material';
 import { APIUtil2 } from "Utils/APIUtil2";
 import { useStreamCatNotifications } from "Components/shared/Notification";
 import LibraryUtil from "Utils/LibraryUtil";
+import { Button2 } from "Components/shared/Input";
 import { DatumType } from "Model/Library";
 
 type Props = {
@@ -71,7 +72,7 @@ export const DeleteButton = (props:Props) => {
 
     return <>
         {/* ボタン */}
-        <Button onClick={openDialog}>削除する</Button>
+        <Button2 onClick={openDialog}>削除する</Button2>
         {/* ダイアログ */}
         <Dialog // ある程度の横幅を設定する
                 fullWidth={true}
@@ -80,8 +81,8 @@ export const DeleteButton = (props:Props) => {
                 onClose={closeDialog}>
             <DialogTitle>{targetLabels}を削除しますか？</DialogTitle>
             <DialogActions>
-                <Button onClick={closeDialog}>キャンセル</Button>
-                <Button onClick={() => onClickDelete(targets)}>削除する</Button>
+                <Button2 onClick={closeDialog}>キャンセル</Button2>
+                <Button2 onClick={() => onClickDelete(targets)}>削除する</Button2>
             </DialogActions>
         </Dialog>
     </>;

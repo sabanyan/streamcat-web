@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ErrorResponse } from 'Utils/APIUtil2';
 import { FolderType } from 'Model/Library';
 import { useStreamCatNotifications } from 'Components/shared/Notification';
-import { FlatButton, TextField2 } from 'Components/shared/Input';
+import { FlatButton, TextField2, Button2 } from 'Components/shared/Input';
 import { Value } from 'Components/shared/Input/TextField2';
 
 type Props = {
@@ -87,9 +87,9 @@ export const CreateFolderButton = (props:Props) => {
                             onEnterKeyPress={onEnterKeyPress} />
             </DialogContent>
             <DialogActions>
-                <Button onClick={closeDialog}>キャンセル</Button>
-                <Button disabled={isDialogError}
-                        onClick={() => onClickCreate(label.value)}>追加する</Button>
+                <Button2 onClick={closeDialog}>キャンセル</Button2>
+                <Button2 disabled={isDialogError}
+                         onClick={() => onClickCreate(label.value)}>追加する</Button2>
             </DialogActions>
         </Dialog>
     </>;

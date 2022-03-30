@@ -1,8 +1,9 @@
 import React from "react"
-import { Box, Button } from "@mui/material"
+import { Box } from "@mui/material"
 import { useStreamCatNotifications } from 'Components/shared/Notification';
 import { ErrorResponse } from 'Utils/APIUtil2';
 import { DatumType } from "Model/Library";
+import { Button2 } from "Components/shared/Input";
 import { Value } from 'Components/shared/Input/TextField2';
 
 type Props = {
@@ -129,12 +130,12 @@ export const EditBox = (props:Props) => {
         {
             readOnly?
             <Box>
-                <Button onClick={()=>setReadOnly(false)}>変更</Button>
+                <Button2 onClick={()=>setReadOnly(false)}>変更</Button2>
                 {buttons}
             </Box>:
             <Box>
-                <Button onClick={onClickClear}>キャンセル</Button>
-                <Button disabled={isDrawerError} onClick={submit}>確定</Button>
+                <Button2 onClick={onClickClear}>キャンセル</Button2>
+                <Button2 disabled={isDrawerError} onClick={submit}>確定</Button2>
             </Box>
         }
         {/* Function as Child Components pattern

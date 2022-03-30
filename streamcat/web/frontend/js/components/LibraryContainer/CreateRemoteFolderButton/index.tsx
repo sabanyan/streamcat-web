@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ErrorResponse } from 'Utils/APIUtil2';
 import { FolderType, RemoteFolderType } from 'Model/Library';
 import { useStreamCatNotifications } from 'Components/shared/Notification';
-import { FlatButton, TextField2, Select2 } from 'Components/shared/Input';
+import { FlatButton, TextField2, Select2, Button2 } from 'Components/shared/Input';
 import { Value } from 'Components/shared/Input/TextField2';
 
 type Props = {
@@ -160,15 +160,15 @@ export const CreateRemoteFolderButton = (props:Props) => {
                             onEnterKeyPress={onEnterKeyPress} />
             </DialogContent>
             <DialogActions>
-                <Button onClick={closeDialog}>キャンセル</Button>
-                <Button disabled={isDialogError}
+                <Button2 onClick={closeDialog}>キャンセル</Button2>
+                <Button2 disabled={isDialogError}
                         onClick={() => onClickCreate(label.value,
                                                      protocol.value,
                                                      hostname.value,
                                                      domain.value,
                                                      directory.value,
                                                      userId.value,
-                                                     password.value)}>追加する</Button>
+                                                     password.value)}>追加する</Button2>
             </DialogActions>
         </Dialog>
     </>;

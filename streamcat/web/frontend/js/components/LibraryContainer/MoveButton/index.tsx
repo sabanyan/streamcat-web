@@ -1,9 +1,9 @@
 import React from "react";
-import { Button } from "@mui/material";
 import { APIUtil2 } from "Utils/APIUtil2";
 import { useStreamCatNotifications } from "Components/shared/Notification";
 import HttpUtil from "Utils/HttpUtil";
 import LibraryUtil from "Utils/LibraryUtil";
+import { Button2 } from "Components/shared/Input";
 import { DatumType, FolderType } from "Model/Library";
 
 type Props = {
@@ -76,5 +76,5 @@ export const MoveButton = (props:Props) => {
         );
     };
 
-    return <Button onClick={onClickMove}>移動する</Button>;
+    return <Button2 onClick={onClickMove}>移動する</Button2>;
 };
