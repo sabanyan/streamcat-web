@@ -76,5 +76,11 @@ export const MoveButton = (props:Props) => {
         );
     };
 
-    return <Button2 onClick={onClickMove}>移動する</Button2>;
+    // 選択中の全てのDatumが移動可能の場合にTrue
+    const enabled = targets.map(target => 
+        target.allowlist.move).reduce((prevAllow, allow) => 
+        prevAllow && allow
+    );
+
+    return <Button2 disabled={!enabled} onClick={onClickMove}>移動する</Button2>;
 };

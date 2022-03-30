@@ -87,15 +87,15 @@ export const EditBox = (props:Props) => {
 
     // 確定ボタン押下時の処理
     const submit = () => {
+        // エラーの場合は処理を中断する
+        if(isDrawerError){
+            return;
+        }
         createMode? createDatum(): updateDatum();
     };
 
     // Datumの新規作成処理
     const createDatum = () => {
-        // エラーの場合は処理を中断する
-        if(isDrawerError){
-            return;
-        }
         // リモートフォルダを新規作成する
         create().then(folder => {
             notifySuccess('リモートフォルダを作成しました', folder.label);
@@ -110,10 +110,6 @@ export const EditBox = (props:Props) => {
 
     // Datumの変更処理
     const updateDatum = () => {
-        // エラーの場合は処理を中断する
-        if(isDrawerError){
-            return;
-        }
         // リモートフォルダを変更する
         update().then(folder => {
             notifySuccess('リモートフォルダを変更しました', folder.label);
@@ -126,16 +122,19 @@ export const EditBox = (props:Props) => {
         });
     };
 
+    // Datumの更新可否
+    const enabled = datum.allowlist.update;
+
     return <>
         {
             readOnly?
             <Box>
-                <Button2 onClick={()=>setReadOnly(false)}>変更</Button2>
+                <Button2 disabled={!enabled} onClick={()=>setReadOnly(false)}>変更</Button2>
                 {buttons}
             </Box>:
             <Box>
                 <Button2 onClick={onClickClear}>キャンセル</Button2>
-                <Button2 disabled={isDrawerError} onClick={submit}>確定</Button2>
+                <Button2 disabled={!enabled && isDrawerError} onClick={submit}>確定</Button2>
             </Box>
         }
         {/* Function as Child Components pattern

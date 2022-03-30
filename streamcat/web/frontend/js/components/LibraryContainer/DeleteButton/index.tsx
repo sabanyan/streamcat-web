@@ -65,6 +65,12 @@ export const DeleteButton = (props:Props) => {
         });
     };
 
+    // 選択中の全てのDatumが更新可能の場合にTrue
+    const enabled = targets.map(target => 
+                        target.allowlist.delete).reduce((prevAllow, allow) => 
+                        prevAllow && allow
+                    );
+
     const targetLabels = targets.map(target =>
                             target.label).reduce((prevLabel, label) =>
                             prevLabel + ', ' + label
@@ -72,7 +78,7 @@ export const DeleteButton = (props:Props) => {
 
     return <>
         {/* ボタン */}
-        <Button2 onClick={openDialog}>削除する</Button2>
+        <Button2 disabled={!enabled} onClick={openDialog}>削除する</Button2>
         {/* ダイアログ */}
         <Dialog // ある程度の横幅を設定する
                 fullWidth={true}
