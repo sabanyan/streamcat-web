@@ -28,6 +28,7 @@ import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, String
 import LibraryUtil from "Utils/LibraryUtil";
 import Constants from "Constants/index";
 import { RemoteFolderDrawer } from '../RemoteFolderDrawer';
+import { MultiDataDrawer } from '../MultiDataDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1036,21 +1037,14 @@ const Library = () => {
             });
         };
 
-        // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
-        if (selectedDatas.length >= 2) {
+        // 選択されているのが 2件以上の場合はMultiDataDrawerを使う
+        if(selectedDatas.length >= 2){
             // モードに応じた処理
-            switch (mode) {
-                case Constants.library.mode.frame_select:
-                    break;
-                case Constants.library.mode.folder_select:
-                    break;
-                case Constants.library.mode.list:
-                    _onClickDelete = () => onClickDelete();
-                    _onClickMove = () => onClickMove();
+            if(mode === Constants.library.mode.list) {
+                return <MultiDataDrawer parent={parentFolder} data={selectedDatas} onSuccess={fetchFolder}/>;
+            }else{
+                return <></>;
             }
-            return <LibraryMultiInspector selectedDatas={selectedDatas}
-                                          onClickDelete={_onClickDelete}
-                                          onClickMove={_onClickMove} />;
         }
 
         // 選択されているのが 1件 の場合の処理
@@ -1558,9 +1552,9 @@ const Library = () => {
         {renderAll()}
         {
             selectedDatas.length>0 && selectedDatas[0].type==='rfolder' ?
-            <RemoteFolderDrawer parent={parentFolder}
+            <RemoteFolderDrawer createMode={false}
+                                parent={parentFolder}
                                 remoteFolder={selectedDatas[0] as RemoteFolderType}
-                                create={false}
                                 onSuccess={fetchFolder}/>:
             <></>
         }

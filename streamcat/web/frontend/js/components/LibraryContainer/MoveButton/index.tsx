@@ -8,12 +8,12 @@ import { DatumType, FolderType } from "Model/Library";
 
 type Props = {
     parent: FolderType;
-    target: DatumType;
-    onSuccess?: (target:DatumType) => void;
+    targets: DatumType[];
+    onSuccess?: (targets:DatumType[]) => void;
 };
 
 export const MoveButton = (props:Props) => {
-    const {parent, target, onSuccess} = props;
+    const {parent, targets, onSuccess} = props;
 
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
@@ -50,10 +50,19 @@ export const MoveButton = (props:Props) => {
         return promise.then(datum => {
             const typeLabel = LibraryUtil.getTypeLabel(datum.type);
             notifySuccess(typeLabel + 'を移動しました', datum.label);
-            // イベントハンドラを呼び出す
-            onSuccess && onSuccess(datum);
         }).catch((e) => {
             notifyError(`ライブラリー移動エラー(${datum.label})`, e.message);
+        });
+    };
+
+    // 全てのDatumを移動する
+    const moveData = (data:DatumType[], newParent:string) => {
+        // 全てのDatumを移動した後に、ダイアログを閉じる
+        Promise.all(
+            data.map(datum => moveDatum(datum, newParent))
+        ).finally(() => {
+            // イベントハンドラを呼び出す
+            onSuccess && onSuccess(data);
         });
     };
 
@@ -62,18 +71,10 @@ export const MoveButton = (props:Props) => {
         HttpUtil.windowOpen(
             // 移動先フォルダ選択ダイアログは、現在の位置のフォルダを初期表示する
             getApiPath(parent.uuid) + '?dialog=true&mode=folder_select',
-            (folder_uuid) => {
-                // setIsLoading(true);
-                // selectedDatas.forEach((selectedData: DatumType) => {
-                //     queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
-                // });
-                // queue.push(setIsLoading, [false]);
-                // queue.push(fetchFolder, []);
-                // queue.start();
-                moveDatum(target, folder_uuid);
-            }
+            // 選択した移動先フォルダへ移動する
+            folder_uuid => moveData(targets, folder_uuid)
         );
     };
 
     return <Button onClick={onClickMove}>移動する</Button>;
-}
+};

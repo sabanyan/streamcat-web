@@ -6,12 +6,12 @@ import LibraryUtil from "Utils/LibraryUtil";
 import { DatumType } from "Model/Library";
 
 type Props = {
-    target: DatumType;
-    onSuccess?: (target:DatumType) => void;
+    targets: DatumType[];
+    onSuccess?: (targets:DatumType[]) => void;
 };
 
 export const DeleteButton = (props:Props) => {
-    const {target, onSuccess} = props;
+    const {targets, onSuccess} = props;
 
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
@@ -27,7 +27,7 @@ export const DeleteButton = (props:Props) => {
         setIsOpen(false);
     };
 
-    const onClickDelete = (datum:DatumType) => {
+    const deleteDatum = (datum:DatumType) => {
         let promise: Promise<void>;
         if (datum.type === 'flow') {
             // Flowの場合は、Lockを取得してから削除する
@@ -46,15 +46,28 @@ export const DeleteButton = (props:Props) => {
         return promise.then(() => {
             const typeLabel = LibraryUtil.getTypeLabel(datum.type);
             notifySuccess(typeLabel + 'を削除しました', datum.label);
+        }).catch((e) => {
+            notifyError(`ライブラリー削除エラー(${datum.label})`, e.message);
+        });
+    }
+
+    // 全てのDatumを削除する
+    const onClickDelete = (data:DatumType[]) => {
+        // 全てのDatumを削除した後に、ダイアログを閉じる
+        Promise.all(
+            data.map(datum => deleteDatum(datum))
+        ).finally(() => {
             // ダイアログを閉じる
             closeDialog();
             // イベントハンドラを呼び出す
-            onSuccess && onSuccess(datum);
-        })
-        .catch((e) => {
-            notifyError(`ライブラリー削除エラー(${datum.label})`, e.message);
+            onSuccess && onSuccess(data);
         });
     };
+
+    const targetLabels = targets.map(target =>
+                            target.label).reduce((prevLabel, label) =>
+                            prevLabel + ', ' + label
+                        );
 
     return <>
         {/* ボタン */}
@@ -65,10 +78,10 @@ export const DeleteButton = (props:Props) => {
                 // ダイアログの開閉状態
                 open={isOpen}
                 onClose={closeDialog}>
-            <DialogTitle>{target.label}を削除しますか？</DialogTitle>
+            <DialogTitle>{targetLabels}を削除しますか？</DialogTitle>
             <DialogActions>
                 <Button onClick={closeDialog}>キャンセル</Button>
-                <Button onClick={() => onClickDelete(target)}>削除する</Button>
+                <Button onClick={() => onClickDelete(targets)}>削除する</Button>
             </DialogActions>
         </Dialog>
     </>;
