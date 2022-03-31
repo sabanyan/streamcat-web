@@ -29,6 +29,7 @@ import LibraryUtil from "Utils/LibraryUtil";
 import Constants from "Constants/index";
 import { RemoteFolderDrawer } from '../RemoteFolderDrawer';
 import { MultiDataDrawer } from '../MultiDataDrawer';
+import { FlowDrawer } from '../FlowDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -572,6 +573,8 @@ const Library = () => {
             // フォルダの取得が完了したらisLoading=falseにする
             setIsLoading(false);
             return response;
+        }).catch(e => {
+            notifyError('フォルダ取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(e)));
         });
     };
 
@@ -1547,15 +1550,31 @@ const Library = () => {
         </Flex>;
     };
 
+    const refreshLibrary = (datum) => {
+        // フォルダを再取得する
+        fetchFolder();
+        // 状態変数を更新する
+        setSelectedDatas([datum]);
+    };
+
+    // Datum型とペイン種別の対応テーブル
+    const drawersTable = {
+        flow:   <FlowDrawer createMode={false} 
+                            parent={parentFolder}
+                            flow={selectedDatas[0] as FlowType}
+                            onSuccess={refreshLibrary} />,
+        rfolder:<RemoteFolderDrawer createMode={false}
+                                    parent={parentFolder}
+                                    remoteFolder={selectedDatas[0] as RemoteFolderType}
+                                    onSuccess={refreshLibrary} />
+    };
+
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
         {
-            selectedDatas.length>0 && selectedDatas[0].type==='rfolder' ?
-            <RemoteFolderDrawer createMode={false}
-                                parent={parentFolder}
-                                remoteFolder={selectedDatas[0] as RemoteFolderType}
-                                onSuccess={fetchFolder}/>:
+            selectedDatas.length===1 ?
+            drawersTable[selectedDatas[0].type]:
             <></>
         }
         <ModalManager />
