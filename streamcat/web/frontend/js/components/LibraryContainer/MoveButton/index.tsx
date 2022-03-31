@@ -7,13 +7,14 @@ import { Button2 } from "Components/shared/Input";
 import { DatumType, FolderType } from "Model/Library";
 
 type Props = {
+    readOnly?:boolean;
     parent: FolderType;
     targets: DatumType[];
     onSuccess?: (targets:DatumType[]) => void;
 };
 
 export const MoveButton = (props:Props) => {
-    const {parent, targets, onSuccess} = props;
+    const {readOnly, parent, targets, onSuccess} = props;
 
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
@@ -82,5 +83,5 @@ export const MoveButton = (props:Props) => {
         prevAllow && allow
     );
 
-    return <Button2 disabled={!enabled} onClick={onClickMove}>移動する</Button2>;
+    return <Button2 disabled={!enabled || readOnly} onClick={onClickMove}>移動</Button2>;
 };

@@ -7,12 +7,13 @@ import { Button2 } from "Components/shared/Input";
 import { DatumType } from "Model/Library";
 
 type Props = {
+    readOnly?:boolean;
     targets: DatumType[];
     onSuccess?: (targets:DatumType[]) => void;
 };
 
 export const DeleteButton = (props:Props) => {
-    const {targets, onSuccess} = props;
+    const {readOnly, targets, onSuccess} = props;
 
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
@@ -78,7 +79,7 @@ export const DeleteButton = (props:Props) => {
 
     return <>
         {/* ボタン */}
-        <Button2 disabled={!enabled} onClick={openDialog}>削除する</Button2>
+        <Button2 disabled={!enabled || readOnly} onClick={openDialog}>削除</Button2>
         {/* ダイアログ */}
         <Dialog // ある程度の横幅を設定する
                 fullWidth={true}
