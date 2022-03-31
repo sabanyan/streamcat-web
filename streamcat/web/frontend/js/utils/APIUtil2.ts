@@ -153,9 +153,11 @@ const put = <TDatumType>(url: string, body: {}) => {
         }
     ).then<CommonResponse<TDatumType>>(
         res => res.json()
-    ).then(
-        json => unwrapJson(json)
-    )
+    ).then<TDatumType>(json => {
+        const datum = unwrapJson(json)
+        // DatumArrayのshift()を用いてdatumに各種関数を付与する
+        return datum && (new DatumArray([datum as any])).shift();
+    })
 }
 
 /**
@@ -340,14 +342,10 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label, lock:lockUUID});
                 d.delete = (lockUUID) =>
                     del(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
-                d.updateLock = (editLock, lockUUID) => {
-                    return put<FlowType>(`/api/v0/flows/${d.uuid}`, {editLock:editLock, lock:lockUUID}).then(flow => {
-                        // TODO: 他の全ての関数についても、postやputで返されるDatumに関数を設定する必要がある
-                       return (new DatumArray([flow])).shift();
-                    });
-                };
                 d.update = (flow, lockUUID) =>
                     put<FlowType>(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
+                d.updateLock = (editLock, lockUUID) =>
+                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {editLock:editLock, lock:lockUUID});
                 d.duplicate = () =>
                     post(`/api/v0/flows`, {source:d.uuid});
             }else if(datum.type === 'schedule') {

@@ -286,13 +286,17 @@ export type Command = {
     modifiedAt: string;
     flow: Flow;
 
-    updateLock:(
-        editLock: boolean,
-        lockUUID?: string
+    rename:(
+        label,
+        lockUUID
     ) => Promise<FlowType>;
     update:(
         flow:Flow,
         lockUUID?:string
+    ) => Promise<FlowType>;
+    updateLock:(
+        editLock: boolean,
+        lockUUID?: string
     ) => Promise<FlowType>;
     duplicate:() => Promise<FlowType>;
 };
