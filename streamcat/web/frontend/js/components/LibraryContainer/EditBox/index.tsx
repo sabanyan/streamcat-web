@@ -3,10 +3,12 @@ import { Box } from "@mui/material"
 import { useStreamCatNotifications } from 'Components/shared/Notification';
 import { ErrorResponse } from 'Utils/APIUtil2';
 import { DatumType } from "Model/Library";
+import LibraryUtil from "Utils/LibraryUtil";
 import { Button2 } from "Components/shared/Input";
 import { Value } from 'Components/shared/Input/TextField2';
 
 type Props = {
+    readOnly?: boolean;
     // Datumを新規追加する場合はtrue
     createMode?: boolean;
     // EditBoxの状態を初期化するためのトリガー
@@ -39,6 +41,7 @@ type Props = {
  */
 export const EditBox = (props:Props) => {
     const { datum, values, initValues, create, update, onSuccess } = props;
+    const readOnly = !!props.readOnly;
     const createMode = !!props.createMode;
     const [ buttons, inputs ] = props.children
 
@@ -46,7 +49,7 @@ export const EditBox = (props:Props) => {
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     // ペインの変更可否
-    const [readOnly, setReadOnly] = React.useState(!createMode);
+    const [editMode, setEditMode] = React.useState(!createMode);
     // 追加ボタンの押下可否
     const [isDrawerError, setIsDrawerError] = React.useState(createMode);
 
@@ -55,7 +58,7 @@ export const EditBox = (props:Props) => {
         // datumの変更に応じて表示値を変更する
         initValues();
         // datum、またはcreateの変更に応じてreadOnlyを変更する
-        setReadOnly(!createMode);
+        setEditMode(createMode);
         setIsDrawerError(createMode);
     }, [datum,createMode]);
 
@@ -80,7 +83,7 @@ export const EditBox = (props:Props) => {
     // キャンセルボタン押下時の処理
     const onClickClear = () => {
         // 全ての状態変数を初期化する
-        setReadOnly(!createMode);
+        setEditMode(createMode);
         setIsDrawerError(createMode);
         initValues();
     };
@@ -96,50 +99,52 @@ export const EditBox = (props:Props) => {
 
     // Datumの新規作成処理
     const createDatum = () => {
+        const typeLabel = LibraryUtil.getTypeLabel(datum.type);
         // リモートフォルダを新規作成する
-        create().then(folder => {
-            notifySuccess('リモートフォルダを作成しました', folder.label);
+        create().then(datum => {
+            notifySuccess(`${typeLabel}を作成しました`, datum.label);
             // ペインを変更不可にする
-            setReadOnly(true);
+            setEditMode(false);
             // イベントハンドラを呼び出す
-            onSuccess(folder);
+            onSuccess(datum);
         }).catch((error:ErrorResponse) => {
-            notifyError('リモートフォルダ作成エラー', error.message);
+            notifyError(`${typeLabel}作成エラー`, error.message);
         });
     };
 
     // Datumの変更処理
     const updateDatum = () => {
+        const typeLabel = LibraryUtil.getTypeLabel(datum.type);
         // リモートフォルダを変更する
-        update().then(folder => {
-            notifySuccess('リモートフォルダを変更しました', folder.label);
+        update().then(datum => {
+            notifySuccess(`${typeLabel}を変更しました`, datum.label);
             // ペインを変更不可にする
-            setReadOnly(true);
+            setEditMode(false);
             // イベントハンドラを呼び出す
-            onSuccess(folder);
+            onSuccess(datum);
         }).catch((error:ErrorResponse) => {
-            notifyError('リモートフォルダ変更エラー', error.message);
+            notifyError(`${typeLabel}変更エラー`, error.message);
         });
     };
 
     // Datumの更新可否
-    const enabled = datum.allowlist.update;
+    const enabled = datum.allowlist.update && !readOnly;
 
     return <>
         {
-            readOnly?
-            <Box>
-                <Button2 disabled={!enabled} onClick={()=>setReadOnly(false)}>変更</Button2>
-                {buttons}
-            </Box>:
+            editMode?
             <Box>
                 <Button2 onClick={onClickClear}>キャンセル</Button2>
                 <Button2 disabled={!enabled && isDrawerError} onClick={submit}>確定</Button2>
+            </Box>:
+            <Box>
+                <Button2 disabled={!enabled} onClick={()=>setEditMode(true)}>変更</Button2>
+                {buttons}
             </Box>
         }
         {/* Function as Child Components pattern
             https://stackoverflow.com/questions/32370994/how-to-pass-props-to-this-props-children */}
-        {inputs(readOnly, onErrorChange, onEnterKeyPress)}
+        {inputs(!editMode, onErrorChange, onEnterKeyPress)}
     </>;
 
 };
