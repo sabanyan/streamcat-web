@@ -22,7 +22,7 @@ import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/Libra
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType } from "Model/Library";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType } from "Model/Library";
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import LibraryUtil from "Utils/LibraryUtil";
@@ -30,6 +30,9 @@ import Constants from "Constants/index";
 import { RemoteFolderDrawer } from '../RemoteFolderDrawer';
 import { MultiDataDrawer } from '../MultiDataDrawer';
 import { FlowDrawer } from '../FlowDrawer';
+import { DatabaseDrawer } from '../DatabaseDrawer';
+import { FolderDrawer } from '../FolderDrawer';
+import { SystemFolderDrawer } from '../SystemFolderDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1550,6 +1553,12 @@ const Library = () => {
         </Flex>;
     };
 
+    const isSystemFolder = (datum: DatumType) => {
+        const cacheFolderUuid = 'cc9f050d-b007-414e-a6e0-6d31a9c13395';
+        const activityFolderUuid = 'aa2799ba-798e-4fa3-984c-b3fad92fd162';
+        return datum.uuid===cacheFolderUuid || datum.uuid===activityFolderUuid;
+    };
+
     const refreshLibrary = (datum) => {
         // フォルダを再取得する
         fetchFolder();
@@ -1559,23 +1568,38 @@ const Library = () => {
 
     // Datum型とペイン種別の対応テーブル
     const drawersTable = {
-        flow:   <FlowDrawer createMode={false} 
-                            parent={parentFolder}
-                            flow={selectedDatas[0] as FlowType}
-                            onSuccess={refreshLibrary} />,
-        rfolder:<RemoteFolderDrawer createMode={false}
-                                    parent={parentFolder}
-                                    remoteFolder={selectedDatas[0] as RemoteFolderType}
-                                    onSuccess={refreshLibrary} />
+        folder:     <FolderDrawer
+                        createMode={false} 
+                        parent={parentFolder}
+                        folder={selectedDatas[0] as FolderType}
+                        onSuccess={refreshLibrary} />,
+        rfolder:    <RemoteFolderDrawer
+                        createMode={false}
+                        parent={parentFolder}
+                        remoteFolder={selectedDatas[0] as RemoteFolderType}
+                        onSuccess={refreshLibrary} />,
+        database:   <DatabaseDrawer
+                        createMode={false}
+                        parent={parentFolder}
+                        datum={selectedDatas[0] as DatabaseType}
+                        onSuccess={refreshLibrary} />,
+        flow:       <FlowDrawer
+                        createMode={false} 
+                        parent={parentFolder}
+                        flow={selectedDatas[0] as FlowType}
+                        onSuccess={refreshLibrary} />,
     };
+
+    const systemFolderDrawer = <SystemFolderDrawer folder={selectedDatas[0] as FolderType} />;
 
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
         {
-            selectedDatas.length===1 ?
-            drawersTable[selectedDatas[0].type]:
-            <></>
+            selectedDatas.length===1 ? (
+                isSystemFolder(selectedDatas[0])? systemFolderDrawer:
+                drawersTable[selectedDatas[0].type]
+            ): <></>
         }
         <ModalManager />
         <NotificationManager />

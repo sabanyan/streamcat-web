@@ -1,9 +1,8 @@
 import React from "react";
-import { Dialog, DialogActions, DialogTitle } from '@mui/material';
 import { APIUtil2 } from "Utils/APIUtil2";
 import { useStreamCatNotifications } from "Components/shared/Notification";
 import LibraryUtil from "Utils/LibraryUtil";
-import { Button2 } from "Components/shared/Input";
+import { Button2, DialogButton } from "Components/shared/Input";
 import { DatumType } from "Model/Library";
 
 type Props = {
@@ -17,17 +16,6 @@ export const DeleteButton = (props:Props) => {
 
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
-
-    // ダイアログの開閉状態
-    const [isOpen, setIsOpen] = React.useState(false);
-    // ダイアログを開く
-    const openDialog = () => {
-        setIsOpen(true);
-    };
-    // ダイアログを閉じる
-    const closeDialog = () => {
-        setIsOpen(false);
-    };
 
     const deleteDatum = (datum:DatumType) => {
         let promise: Promise<void>;
@@ -56,11 +44,9 @@ export const DeleteButton = (props:Props) => {
     // 全てのDatumを削除する
     const onClickDelete = (data:DatumType[]) => {
         // 全てのDatumを削除した後に、ダイアログを閉じる
-        Promise.all(
+        return Promise.all(
             data.map(datum => deleteDatum(datum))
         ).finally(() => {
-            // ダイアログを閉じる
-            closeDialog();
             // イベントハンドラを呼び出す
             onSuccess && onSuccess(data);
         });
@@ -77,20 +63,17 @@ export const DeleteButton = (props:Props) => {
                             prevLabel + ', ' + label
                         );
 
-    return <>
-        {/* ボタン */}
-        <Button2 disabled={!enabled || readOnly} onClick={openDialog}>削除</Button2>
-        {/* ダイアログ */}
-        <Dialog // ある程度の横幅を設定する
-                fullWidth={true}
-                // ダイアログの開閉状態
-                open={isOpen}
-                onClose={closeDialog}>
-            <DialogTitle>{targetLabels}を削除しますか？</DialogTitle>
-            <DialogActions>
-                <Button2 onClick={closeDialog}>キャンセル</Button2>
-                <Button2 onClick={() => onClickDelete(targets)}>削除する</Button2>
-            </DialogActions>
-        </Dialog>
-    </>;
+    return <DialogButton label={'削除'}
+                         dialogTitle={`${targetLabels}を削除しますか？`}
+                         readOnly={!enabled || readOnly}>{[
+        // Contents
+        ()=>[<></>],
+        // Buttons
+        (closeDialog) => [
+            <Button2 onClick={closeDialog}>キャンセル</Button2>,
+            <Button2 onClick={() => onClickDelete(targets).finally(() => {
+                        closeDialog()
+                     })}>削除する</Button2>
+        ]
+    ]}</DialogButton>;
 };

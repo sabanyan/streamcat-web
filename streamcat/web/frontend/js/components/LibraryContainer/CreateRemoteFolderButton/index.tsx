@@ -1,10 +1,9 @@
 import React from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ErrorResponse } from 'Utils/APIUtil2';
-import { FolderType, RemoteFolderType } from 'Model/Library';
-import { useStreamCatNotifications } from 'Components/shared/Notification';
-import { FlatButton, TextField2, Select2, Button2 } from 'Components/shared/Input';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { DatumType, FolderType, RemoteFolderType } from 'Model/Library';
+import { DialogButton, FlatButton, TextField2, Select2 } from 'Components/shared/Input';
 import { Value } from 'Components/shared/Input/TextField2';
+import { EditBox } from '../EditBox';
 
 type Props = {
     parent:FolderType;
@@ -16,16 +15,34 @@ type Props = {
  * @param props 
  */
 export const CreateRemoteFolderButton = (props:Props) => {
-    // 通知ダイアログ
-    const {notifySuccess, notifyError} = useStreamCatNotifications();
+    const { parent, onSuccess } = props;
+
     // 空の入力値
-    const emptyValue:Value = {value:'', isError:false}
+    const initValue:Value = {value:'', isError:true}
     const initSelectValue:Value = {value:'smb', isError:false}
+
+    // テキストボックスの入力値
+    const [label, setLabel] = React.useState(initValue);
+    const [protocol, setProtocol] = React.useState(initSelectValue);
+    const [hostname, setHostname] = React.useState(initValue);
+    const [domain, setDomain] = React.useState(initValue);
+    const [directory, setDirectory] = React.useState(initValue);
+    const [userId, setUserId] = React.useState(initValue);
+    const [password, setPassword] = React.useState(initValue);
+
+    // 値の初期化処理
+    const initValues = () => {
+        setLabel(initValue);
+        setProtocol(initSelectValue);
+        setHostname(initValue);
+        setDomain(initValue);
+        setDirectory(initValue);
+        setUserId(initValue);
+        setPassword(initValue);
+    };
 
     // ダイアログの開閉状態
     const [isOpen, setIsOpen] = React.useState(false);
-    // 追加ボタンの押下可否
-    const [isDialogError, setIsDialogError] = React.useState(true);
     // ダイアログを開く
     const openDialog = () => {
         setIsOpen(true);
@@ -34,86 +51,27 @@ export const CreateRemoteFolderButton = (props:Props) => {
     const closeDialog = () => {
         // 全ての状態変数を初期化する
         setIsOpen(false);
-        setIsDialogError(true);
-        setLabel(emptyValue);
-        setProtocol(initSelectValue);
-        setHostname(emptyValue);
-        setDomain(emptyValue);
-        setDirectory(emptyValue);
-        setUserId(emptyValue);
-        setPassword(emptyValue);
+        initValues();
     };
 
-    // テキストボックスの入力値
-    const [label, setLabel] = React.useState(emptyValue);
-    const [protocol, setProtocol] = React.useState(initSelectValue);
-    const [hostname, setHostname] = React.useState(emptyValue);
-    const [domain, setDomain] = React.useState(emptyValue);
-    const [directory, setDirectory] = React.useState(emptyValue);
-    const [userId, setUserId] = React.useState(emptyValue);
-    const [password, setPassword] = React.useState(emptyValue);
-    // テキストボックスのエラー状態が変更された時、追加ボタンの押下可否を更新する
-    const onErrorChange = (isError:boolean) => {
-        if(isError){
-            // エラーの場合は、追加ボタンを無効にする
-            setIsDialogError(true);
-        }else{
-            // エラー状態の変更前における、全てのエラー状態のテキストボックスを数える
-            const errorCount = [label,
-                                protocol,
-                                hostname,
-                                domain,
-                                directory,
-                                userId,
-                                password].filter(value => value.isError).length;
-            // このイベントハンドラを呼び出したテキストボックスの変更前のエラー状態は、trueなのでその分を引く
-            (errorCount - 1) === 0 && setIsDialogError(false);
-        }
+    const onClickSucess = (newFolder:DatumType) => {
+        onSuccess(newFolder as RemoteFolderType)
+        closeDialog();
     };
-    // エンターキーの押下処理
-    const onEnterKeyPress = (value:Value) => {
-        // リモートフォルダを新規作成する
-        onClickCreate(label.value,
-                      protocol.value,
-                      hostname.value,
-                      domain.value,
-                      directory.value,
-                      userId.value,
-                      password.value);
+    const onClickCancel = () => {
+        closeDialog();
     };
 
-    // 追加ボタンの押下処理
-    const onClickCreate =  (label:string,
-                            protocol: string,
-                            hostname: string,
-                            domain: string,
-                            directory: string,
-                            userId: string,
-                            password: string) => {
-        const {parent, onSuccess} = props;
-        // エラーの場合は処理を中断する
-        if(isDialogError){
-            return;
-        }
-        // リモートフォルダを新規作成する
-        parent.createRemoteFolder(label,
-                                  protocol,
-                                  hostname,
-                                  domain,
-                                  directory,
-                                  userId,
-                                  password).then(folder => {
-            notifySuccess('リモートフォルダを作成しました', folder.label);
-            // ダイアログを閉じる
-            closeDialog();
-            // イベントハンドラを呼び出す
-            onSuccess(folder);
-        }).catch((error:ErrorResponse) => {
-            notifyError('リモートフォルダ作成エラー', error.message);
-        });
-    };
+    // リモートフォルダの新規追加処理
+    const create = () => parent.createRemoteFolder( label.value,
+                                                    protocol.value,
+                                                    hostname.value,
+                                                    domain.value,
+                                                    directory.value,
+                                                    userId.value,
+                                                    password.value);
 
-    return <>
+    const a= <>
         {/* ボタン */}
         <FlatButton icon={'icon-add'} onClick={openDialog}>リモートフォルダの追加</FlatButton>
         {/* ダイアログ */}
@@ -123,53 +81,139 @@ export const CreateRemoteFolderButton = (props:Props) => {
                 open={isOpen}
                 onClose={closeDialog}>
             <DialogTitle>リモートフォルダの追加</DialogTitle>
-            <DialogContent>
-                <TextField2 label='リモートフォルダ名'
-                            required={true}
-                            autoFocus={true}
-                            state={[label,setLabel]}
-                            onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />
-                <Select2    label='プロトコル'
-                            required={true}
-                            items={[{label:'Samba',value:'smb'}]}
-                            state={[protocol, setProtocol]}
-                            onErrorChange={onErrorChange} />
-                <TextField2 label='ホスト名またはIPアドレス'
-                            required={true}
-                            state={[hostname,setHostname]}
-                            onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />
-                <TextField2 label='ドメイン名'
-                            required={true}
-                            state={[domain,setDomain]}
-                            onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />
-                <TextField2 label='ディレクトリパス'
-                            required={true}
-                            state={[directory,setDirectory]}
-                            onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />
-                <TextField2 label='ユーザーID'
-                            state={[userId,setUserId]}
-                            onEnterKeyPress={onEnterKeyPress} />               
-                <TextField2 label='パスワード'
-                            type='password'
-                            state={[password,setPassword]}
-                            onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />
-            </DialogContent>
-            <DialogActions>
-                <Button2 onClick={closeDialog}>キャンセル</Button2>
-                <Button2 disabled={isDialogError}
-                        onClick={() => onClickCreate(label.value,
-                                                     protocol.value,
-                                                     hostname.value,
-                                                     domain.value,
-                                                     directory.value,
-                                                     userId.value,
-                                                     password.value)}>追加する</Button2>
-            </DialogActions>
+            <DialogContent><EditBox
+                // 編集ロック=ONの場合は編集不可
+                createMode={true}
+                values = {[label,protocol,hostname,domain,directory]}
+                initValues={initValues}
+                create={create}
+                onSuccess={onClickSucess}
+                onCancel={onClickCancel} >{[
+                // ボタン
+                [],
+                // テキストボックス
+                (readOnly, onErrorChange, onEnterKeyPress) => [
+                    <TextField2 key={'label'}
+                                label='ラベル'
+                                required={true}
+                                readOnly={readOnly}
+                                autoFocus={true}
+                                state={[label, setLabel]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <Select2    key={'protocol'}
+                                label='プロトコル'
+                                required={true}
+                                items={[{label:'Samba',value:'smb'}]}
+                                readOnly={readOnly}
+                                state={[protocol, setProtocol]}
+                                onErrorChange={onErrorChange} />,
+                    <TextField2 key={'hostname'}
+                                label='ホスト名またはIPアドレス'
+                                required={true}
+                                readOnly={readOnly}
+                                state={[hostname,setHostname]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'domain'}
+                                label='ドメイン名'
+                                required={true}
+                                readOnly={readOnly}
+                                state={[domain,setDomain]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'directory'}
+                                label='ディレクトリパス'
+                                required={true}
+                                readOnly={readOnly}
+                                state={[directory,setDirectory]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'userId'}
+                                label='ユーザーID'
+                                readOnly={readOnly}
+                                state={[userId,setUserId]}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'password'}
+                                label='パスワード'
+                                type='password'
+                                readOnly={readOnly}
+                                state={[password,setPassword]}
+                                onEnterKeyPress={onEnterKeyPress} />
+                ]
+            ]}</EditBox></DialogContent>
         </Dialog>
     </>;
+
+    return <DialogButton label={'リモートフォルダの追加'}>{[
+        // Contents
+        (closeDialog) => [
+            <EditBox
+                // 編集ロック=ONの場合は編集不可
+                createMode={true}
+                values = {[label,protocol,hostname,domain,directory]}
+                initValues={initValues}
+                create={create}
+                onSuccess={(newFolder) => {
+                    onSuccess(newFolder as RemoteFolderType);
+                    closeDialog();
+                }}
+                onCancel={closeDialog} >{[
+                // ボタン
+                [],
+                // テキストボックス
+                (readOnly, onErrorChange, onEnterKeyPress) => [
+                    <TextField2 key={'label'}
+                                label='ラベル'
+                                required={true}
+                                readOnly={readOnly}
+                                autoFocus={true}
+                                state={[label, setLabel]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <Select2    key={'protocol'}
+                                label='プロトコル'
+                                required={true}
+                                items={[{label:'Samba',value:'smb'}]}
+                                readOnly={readOnly}
+                                state={[protocol, setProtocol]}
+                                onErrorChange={onErrorChange} />,
+                    <TextField2 key={'hostname'}
+                                label='ホスト名またはIPアドレス'
+                                required={true}
+                                readOnly={readOnly}
+                                state={[hostname,setHostname]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'domain'}
+                                label='ドメイン名'
+                                required={true}
+                                readOnly={readOnly}
+                                state={[domain,setDomain]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'directory'}
+                                label='ディレクトリパス'
+                                required={true}
+                                readOnly={readOnly}
+                                state={[directory,setDirectory]}
+                                onErrorChange={onErrorChange}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'userId'}
+                                label='ユーザーID'
+                                readOnly={readOnly}
+                                state={[userId,setUserId]}
+                                onEnterKeyPress={onEnterKeyPress} />,
+                    <TextField2 key={'password'}
+                                label='パスワード'
+                                type='password'
+                                readOnly={readOnly}
+                                state={[password,setPassword]}
+                                onEnterKeyPress={onEnterKeyPress} />
+                ]
+            ]}</EditBox>
+        ],
+        // Buttons
+        ()=>[<></>]
+    ]}</DialogButton>;
 };
