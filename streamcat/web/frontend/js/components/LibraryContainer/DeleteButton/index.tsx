@@ -67,11 +67,17 @@ export const DeleteButton = (props:Props) => {
                          dialogTitle={`${targetLabels}を削除しますか？`}
                          readOnly={!enabled || readOnly}>{[
         // Contents
-        ()=>[<></>],
+        ()=>[],
         // Buttons
         (closeDialog) => [
-            <Button2 onClick={closeDialog}>キャンセル</Button2>,
-            <Button2 onClick={() => onClickDelete(targets).finally(() => {
+            <Button2 key='cancel'
+                     onClick={closeDialog}>キャンセル</Button2>,
+            <Button2 key='delete'
+                     onClick={() => onClickDelete(targets).finally(() => {
+                        // TODO: notifySuccessによる通知ダイアログの表示で、ダイアログが閉じられる
+                        // そのためここでcloseDialog()を呼び出すと
+                        // "Can't perform a React state update on an unmounted component."
+                        // という警告が表示される
                         closeDialog()
                      })}>削除する</Button2>
         ]
