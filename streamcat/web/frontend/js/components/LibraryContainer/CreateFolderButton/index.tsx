@@ -32,6 +32,7 @@ export const CreateFolderButton = (props:Props) => {
         // Contents
         (closeDialog) => [
             <EditBox
+                key='createFolder'
                 // 編集ロック=ONの場合は編集不可
                 createMode={true}
                 values = {[label]}
@@ -58,6 +59,6 @@ export const CreateFolderButton = (props:Props) => {
             ]}</EditBox>
         ],
         // Buttons
-        ()=>[<></>]
+        ()=>[]
     ]}</DialogButton>;
 };

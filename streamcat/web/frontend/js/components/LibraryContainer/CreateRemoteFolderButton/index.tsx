@@ -1,7 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
-import { DatumType, FolderType, RemoteFolderType } from 'Model/Library';
-import { DialogButton, FlatButton, TextField2, Select2 } from 'Components/shared/Input';
+import { FolderType, RemoteFolderType } from 'Model/Library';
+import { DialogButton, TextField2, Select2 } from 'Components/shared/Input';
 import { Value } from 'Components/shared/Input/TextField2';
 import { EditBox } from '../EditBox';
 
@@ -41,27 +40,6 @@ export const CreateRemoteFolderButton = (props:Props) => {
         setPassword(initValue);
     };
 
-    // ダイアログの開閉状態
-    const [isOpen, setIsOpen] = React.useState(false);
-    // ダイアログを開く
-    const openDialog = () => {
-        setIsOpen(true);
-    };
-    // ダイアログを閉じる
-    const closeDialog = () => {
-        // 全ての状態変数を初期化する
-        setIsOpen(false);
-        initValues();
-    };
-
-    const onClickSucess = (newFolder:DatumType) => {
-        onSuccess(newFolder as RemoteFolderType)
-        closeDialog();
-    };
-    const onClickCancel = () => {
-        closeDialog();
-    };
-
     // リモートフォルダの新規追加処理
     const create = () => parent.createRemoteFolder( label.value,
                                                     protocol.value,
@@ -71,84 +49,11 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                                     userId.value,
                                                     password.value);
 
-    const a= <>
-        {/* ボタン */}
-        <FlatButton icon={'icon-add'} onClick={openDialog}>リモートフォルダの追加</FlatButton>
-        {/* ダイアログ */}
-        <Dialog // ある程度の横幅を設定する
-                fullWidth={true}
-                // ダイアログの開閉状態
-                open={isOpen}
-                onClose={closeDialog}>
-            <DialogTitle>リモートフォルダの追加</DialogTitle>
-            <DialogContent><EditBox
-                // 編集ロック=ONの場合は編集不可
-                createMode={true}
-                values = {[label,protocol,hostname,domain,directory]}
-                initValues={initValues}
-                create={create}
-                onSuccess={onClickSucess}
-                onCancel={onClickCancel} >{[
-                // ボタン
-                [],
-                // テキストボックス
-                (readOnly, onErrorChange, onEnterKeyPress) => [
-                    <TextField2 key={'label'}
-                                label='ラベル'
-                                required={true}
-                                readOnly={readOnly}
-                                autoFocus={true}
-                                state={[label, setLabel]}
-                                onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
-                    <Select2    key={'protocol'}
-                                label='プロトコル'
-                                required={true}
-                                items={[{label:'Samba',value:'smb'}]}
-                                readOnly={readOnly}
-                                state={[protocol, setProtocol]}
-                                onErrorChange={onErrorChange} />,
-                    <TextField2 key={'hostname'}
-                                label='ホスト名またはIPアドレス'
-                                required={true}
-                                readOnly={readOnly}
-                                state={[hostname,setHostname]}
-                                onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'domain'}
-                                label='ドメイン名'
-                                required={true}
-                                readOnly={readOnly}
-                                state={[domain,setDomain]}
-                                onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'directory'}
-                                label='ディレクトリパス'
-                                required={true}
-                                readOnly={readOnly}
-                                state={[directory,setDirectory]}
-                                onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'userId'}
-                                label='ユーザーID'
-                                readOnly={readOnly}
-                                state={[userId,setUserId]}
-                                onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'password'}
-                                label='パスワード'
-                                type='password'
-                                readOnly={readOnly}
-                                state={[password,setPassword]}
-                                onEnterKeyPress={onEnterKeyPress} />
-                ]
-            ]}</EditBox></DialogContent>
-        </Dialog>
-    </>;
-
     return <DialogButton label={'リモートフォルダの追加'}>{[
         // Contents
         (closeDialog) => [
             <EditBox
+                key='createRemoteFolder'
                 // 編集ロック=ONの場合は編集不可
                 createMode={true}
                 values = {[label,protocol,hostname,domain,directory]}
@@ -214,6 +119,6 @@ export const CreateRemoteFolderButton = (props:Props) => {
             ]}</EditBox>
         ],
         // Buttons
-        ()=>[<></>]
+        ()=>[]
     ]}</DialogButton>;
 };
