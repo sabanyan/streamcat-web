@@ -22,7 +22,7 @@ import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/Libra
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType } from "Model/Library";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType } from "Model/Library";
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import LibraryUtil from "Utils/LibraryUtil";
@@ -33,6 +33,8 @@ import { FlowDrawer } from '../FlowDrawer';
 import { DatabaseDrawer } from '../DatabaseDrawer';
 import { FolderDrawer } from '../FolderDrawer';
 import { SystemFolderDrawer } from '../SystemFolderDrawer';
+import { TrashFolderDrawer } from '../TrashFolderDrawer';
+import { TrashDrawer } from '../TrashDrawer'
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1588,9 +1590,13 @@ const Library = () => {
                         parent={parentFolder}
                         flow={selectedDatas[0] as FlowType}
                         onSuccess={refreshLibrary} />,
+        trash:      <TrashFolderDrawer
+                        trashFolder={selectedDatas[0] as TrashType} />,
+
     };
 
     const systemFolderDrawer = <SystemFolderDrawer folder={selectedDatas[0] as FolderType} />;
+    const trashDrawer = <TrashDrawer trashFolder={parentFolder as ParentTrashType} datum={selectedDatas[0]} />;
 
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
@@ -1598,6 +1604,7 @@ const Library = () => {
         {
             selectedDatas.length===1 ? (
                 isSystemFolder(selectedDatas[0])? systemFolderDrawer:
+                parentFolder.type==='trash'? trashDrawer:
                 drawersTable[selectedDatas[0].type]
             ): <></>
         }
