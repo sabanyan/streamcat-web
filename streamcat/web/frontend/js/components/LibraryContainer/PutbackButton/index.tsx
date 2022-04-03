@@ -7,7 +7,7 @@ type Props = {
     readOnly?: boolean;
     trashFolder: TrashType;
     datum: DatumType;
-    onSuccess?: () => void;
+    onSuccess?: (datum:DatumType) => void;
 };
 
 export const PutbackButton = (props:Props) => {
@@ -21,14 +21,15 @@ export const PutbackButton = (props:Props) => {
         return trashFolder.putBack(datum.uuid).then(() => {
             notifySuccess('元の場所に戻しました', datum.label);
             // イベントハンドラを呼び出す
-            onSuccess && onSuccess();
+            onSuccess && onSuccess(datum);
         }).catch((e) => {
             notifyError('元の場所に戻す処理でエラー', e.message);
         });
     };
 
-    // 選択中の全てのDatumが移動可能の場合にTrue
-    const enabled = datum.allowlist.move;
+    // 選択中の全てのDatumが削除可能の場合にTrue
+    // NOTE: ゴミ箱から戻す操作の逆操作は削除であるため、削除権限の有無で判定する
+    const enabled = datum.allowlist.delete;
 
     return <DialogButton label={'戻す'}
                          dialogTitle={`${datum.label} を捨てる前の場所に戻しますか？`}
