@@ -37,6 +37,7 @@ import { TrashFolderDrawer } from '../TrashFolderDrawer';
 import { TrashDrawer } from '../TrashDrawer'
 import { ProjectDrawer } from '../ProjectDrawer';
 import { FrameDrawer } from '../FrameDrawer';
+import { UnkownDrawer } from '../UnkownDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1651,6 +1652,10 @@ const Library = () => {
     };
 
     const systemFolderDrawer = <SystemFolderDrawer folder={selectedDatas[0] as FolderType} />;
+    const unkownDrawer = <UnkownDrawer
+                            parent={parentFolder}
+                            datum={selectedDatas[0]}
+                            onSuccess={data => refreshLibrary(data[0])} />;
 
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
@@ -1659,7 +1664,7 @@ const Library = () => {
             selectedDatas.length===1 ? (
                 isSystemFolder(selectedDatas[0])? systemFolderDrawer:
                 parentFolder.type==='trash'? getTrashDrawer(selectedDatas[0]):
-                drawersTable[selectedDatas[0].type]
+                drawersTable[selectedDatas[0].type] || unkownDrawer
             ): <></>
         }
         <ModalManager />
