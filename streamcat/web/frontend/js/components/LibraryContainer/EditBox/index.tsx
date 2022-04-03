@@ -101,12 +101,15 @@ export const EditBox = (props:Props) => {
     const createDatum = () => {
         // リモートフォルダを新規作成する
         create().then(datum => {
-            const typeLabel = LibraryUtil.getTypeLabel(datum.type);
-            notifySuccess(`${typeLabel}を作成しました`, datum.label);
             // ペインを変更不可にする
             setEditMode(false);
-            // イベントハンドラを呼び出す
-            onSuccess(datum);
+            // Promise.all([])が渡された場合、datumはundefinedになる
+            if(datum){
+                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                notifySuccess(`${typeLabel}を作成しました`, datum.label);
+                // イベントハンドラを呼び出す
+                onSuccess(datum);
+            }
         }).catch((error:ErrorResponse) => {
             notifyError(`作成エラー`, error.message);
         });
@@ -120,12 +123,15 @@ export const EditBox = (props:Props) => {
         }
         // リモートフォルダを変更する
         update().then(datum => {
-            const typeLabel = LibraryUtil.getTypeLabel(datum.type);
-            notifySuccess(`${typeLabel}を変更しました`, datum.label);
             // ペインを変更不可にする
             setEditMode(false);
-            // イベントハンドラを呼び出す
-            onSuccess(datum);
+            // Promise.all([])が渡された場合、datumはundefinedになる
+            if(datum){
+                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                notifySuccess(`${typeLabel}を変更しました`, datum.label);
+                // イベントハンドラを呼び出す
+                onSuccess(datum);
+            }
         }).catch((error:ErrorResponse) => {
             notifyError(`変更エラー`, error.message);
         });
