@@ -364,6 +364,10 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<FrameType>(`/api/v0/frames/${d.uuid}`, {label:label});
                 d.delete = () =>
                     del(`/api/v0/frames/${d.uuid}`);
+                d.update = (encoding, newline) =>
+                    put<FrameType>(`/api/v0/frames/${d.uuid}`,
+                                  { encoding: encoding,
+                                    newline : newline});
             }else if(datum.type === 'document') {
                 const d = datum as DocumentType;
                 d.move = (parent) => 
