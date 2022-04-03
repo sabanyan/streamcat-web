@@ -36,6 +36,7 @@ import { SystemFolderDrawer } from '../SystemFolderDrawer';
 import { TrashFolderDrawer } from '../TrashFolderDrawer';
 import { TrashDrawer } from '../TrashDrawer'
 import { ProjectDrawer } from '../ProjectDrawer';
+import { FrameDrawer } from '../FrameDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1638,6 +1639,11 @@ const Library = () => {
                         createMode={false} 
                         parent={parentFolder}
                         flow={selectedDatas[0] as FlowType}
+                        onSuccess={refreshLibrary} />,
+        frame:      <FrameDrawer
+                        createMode={false}
+                        parent={parentFolder}
+                        frame={selectedDatas[0] as FrameType}
                         onSuccess={refreshLibrary} />,
         trash:      <TrashFolderDrawer
                         trashFolder={selectedDatas[0] as TrashType} />,

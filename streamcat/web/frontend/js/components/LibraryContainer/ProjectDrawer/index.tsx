@@ -56,7 +56,7 @@ export const ProjectDrawer = (props:Props) => {
     // プロジェクトの更新処理
     const update = () => {
         let promises:Promise<DatumType>[] = [];
-        // ラベル名が変更された場合Promiseを追加する
+        // ラベル名が変更された場合はPromiseを追加する
         if(label.value!==project.label){
             promises.push(
                 project.rename(label.value)
