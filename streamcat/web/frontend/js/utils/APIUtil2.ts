@@ -49,7 +49,7 @@ const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => 
         // TODO: エラー発生時はHTTPのエラーコードを返すようにAPIを修正する予定
         throw new ErrorResponse(json.code || Number.NaN, json.message || '');
     }
-}
+};
 
 /**
  * GET APIを発行する
@@ -74,7 +74,7 @@ const get = <TDatumType>(url: string, params?: {}) => {
     ).then(
         json => unwrapJson(json)
     );
-}
+};
 
 /**
  * GET APIを発行する
@@ -108,7 +108,7 @@ const get = <TDatumType>(url: string, params?: {}) => {
             ).click();
         }
     );
-}
+};
 
 /**
  * POST APIを発行する
@@ -132,8 +132,8 @@ const post = <TDatumType>(url: string, body: {}) => {
         const datum = unwrapJson(json)
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift();
-    })
-}
+    });
+};
 
 /**
  * PUT APIを発行する
@@ -157,8 +157,8 @@ const put = <TDatumType>(url: string, body: {}) => {
         const datum = unwrapJson(json)
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift();
-    })
-}
+    });
+};
 
 /**
  * DELETE APIを発行する
@@ -181,7 +181,7 @@ const del = (url: string, body={}) => {
     ).then(
         json => unwrapJson(json)
     );
-}
+};
 
 
 /**
@@ -377,7 +377,7 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
             }
             // map関数に渡されたコールバック関数を実行する
             return callbackfn(datum, index, array);
-        }
+        };
     }
     
     // Arrayのmapメソッドを、this=[DatumArrayのインスタンス]で呼び出す
@@ -505,18 +505,28 @@ export class APIUtil2 {
     /**
      * Web APIを発行せず、nullを返すPromiseを返す
      */
-     static findNull = () => {
+    static findNull = () => {
         return new Promise<null>(resolve => {
             // Promiseオブジェクトをfullfilled状態にする
             resolve(null);
         });
-    }
+    };
+
+    /**
+     * Web APIを発行せず、[]を返すPromiseを返す
+     */
+    static findEmpty = () => {
+        return new Promise<[]>(resolve => {
+            // Promiseオブジェクトをfullfilled状態にする
+            resolve([]);
+        });
+    };
 
     /**
      * GET /libraryを発行してルートフォルダを取得する
      * @throws {ErrorResponse}
      */
-     static findLibrary = (members?: boolean) => {
+    static findLibrary = (members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {members?:string} = {};
         members && (params.members = 'on');
@@ -575,7 +585,7 @@ export class APIUtil2 {
      * @param uuid 取得するフォルダのUUID
      * @throws {ErrorResponse}
      */
-     static findFolder = (uuid: string) => {
+    static findFolder = (uuid: string) => {
         return get<ParentFolderType>(`/api/v0/folders/${uuid}`).then(folder => {
             folder = (new DatumArray([folder])).shift();
             folder.children = new DatumArray(folder.children);
@@ -640,7 +650,7 @@ export class APIUtil2 {
      * GET /framesを発行してフレームのファイルを取得する
      * @param uuid 取得するフレームのUUID
      */
-     static downloadFrame = (uuid: string, label: string, encoding?: string) => {
+    static downloadFrame = (uuid: string, label: string, encoding?: string) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         const params = {contents:true};
         const accept = `text/csv; charset=${encoding||'utf-8'}`;
@@ -700,7 +710,7 @@ export class APIUtil2 {
      */
     static findNavigation = () => {
         return get<NavigationType>('/api/v0/navigation');
-    }
+    };
 
     /**
      * POST /locksを発行してロックを獲得する
@@ -718,7 +728,7 @@ export class APIUtil2 {
                 del(`/api/v0/locks/${lock.uuid}`, {});
             return lock;
         });
-    }
+    };
 
     /**
      * POST /vizsを発行してフローをプレビューする
@@ -728,7 +738,7 @@ export class APIUtil2 {
     static createFlowVis = (flowUUID:string, args:{}, lockUUID?:string) => {
         const body = {uuid:flowUUID, args:args, lock:lockUUID};
         return post<ActivityType>('/api/v0/vizs', body);
-    }
+    };
 
     /**
      * POST /vizsを発行してFrameをプレビューする
@@ -738,7 +748,7 @@ export class APIUtil2 {
     static createFrameVis = (frameUUID:string, args:{}) => {
         const body = {frame:frameUUID, args:args};
         return post<ActivityType>('/api/v0/vizs', body);
-    }
+    };
 
     /**
      * POST /activitiesを発行してフローを実行する
@@ -754,7 +764,7 @@ export class APIUtil2 {
      * GET /usersを発行してUserを取得する
      * @throws {ErrorResponse}
      */
-     static findUsers = (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
+    static findUsers = (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {q?:string, except_inactive?:string, roles?:string, projects?:string} = {};
         q && (params.q = q);
@@ -764,5 +774,5 @@ export class APIUtil2 {
         return get<UserType[]>('/api/v0/users', params).then(users => {
             return new UserArray(users);
         });
-    }
+    };
 }

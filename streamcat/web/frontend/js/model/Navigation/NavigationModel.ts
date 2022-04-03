@@ -27,7 +27,7 @@ export type UserType = {
   uuid: string;
   email: string;
   name: string;
-  state: string;
+  state: 'tmp' | 'active' | 'inactive' | 'expired';
   creator: string;
   createdAt: string;
   roles?: RoleType[];
