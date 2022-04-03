@@ -13,7 +13,7 @@ export type Value = {
 type Props = {
     readOnly?:boolean;
     target: FlowType;
-    state?: [Value, React.Dispatch<React.SetStateAction<Value>>];
+    state?: [Value, (value:React.SetStateAction<Value>)=>void];
     onChange?: (datum:FlowType) => void;
 };
 

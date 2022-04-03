@@ -23,7 +23,7 @@ type Props = {
     required?:boolean;
     requiredMessage?:string;
     items:SelectItem[];
-    state?: [Value, React.Dispatch<React.SetStateAction<Value>>];
+    state?: [Value, (value:React.SetStateAction<Value>)=>void];
     onChange?:(value:Value) => void;
     onErrorChange?:(isError:boolean) => void;
 };

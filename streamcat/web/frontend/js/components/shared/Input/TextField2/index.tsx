@@ -14,7 +14,7 @@ type Props = {
     required?:boolean;
     requiredMessage?:string;
     autoFocus?:boolean;
-    state?: [Value, React.Dispatch<React.SetStateAction<Value>>];
+    state?: [Value, (value:React.SetStateAction<Value>)=>void];
     onChange?:(value:Value) => void;
     onErrorChange?:(isError:boolean) => void;
     onEnterKeyPress?:(value:Value) => void;
@@ -95,7 +95,7 @@ export const TextField2 = (props:Props) => {
                     // labelの表示域を確保する
                     margin='dense'
                     // 枠線を設定する
-                    variant={'outlined'}
+                    variant='outlined'
                     // 表示時にフォーカスする
                     autoFocus={autoFocus}
                     // 入力値が空の場合はエラーにする
