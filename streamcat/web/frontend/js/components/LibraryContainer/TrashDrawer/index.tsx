@@ -18,7 +18,8 @@ export const TrashDrawer = (props:Props) => {
         <Box>
             <PutbackButton key={'putback'}
                         trashFolder={trashFolder}
-                        datum={datum} />
+                        datum={datum}
+                        onSuccess={datum => onSuccess && onSuccess([datum])}/>
             <MoveButton key={'move'}
                         parent={trashFolder}
                         targets={[datum]}

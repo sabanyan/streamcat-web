@@ -22,7 +22,7 @@ import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/Libra
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType } from "Model/Library";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType, ProjectType } from "Model/Library";
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import LibraryUtil from "Utils/LibraryUtil";
@@ -35,6 +35,7 @@ import { FolderDrawer } from '../FolderDrawer';
 import { SystemFolderDrawer } from '../SystemFolderDrawer';
 import { TrashFolderDrawer } from '../TrashFolderDrawer';
 import { TrashDrawer } from '../TrashDrawer'
+import { ProjectDrawer } from '../ProjectDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -147,7 +148,7 @@ const getParentFolder = () => {
 const getProjects = (members:boolean) => {
     if(inject_folder_uuid || inject_is_trash){
         // ルートフォルダ以外の場合は何もしない
-        return APIUtil2.findNull();
+        return APIUtil2.findEmpty();
     }else{
         // ルートフォルダを表示する場合
         return APIUtil2.findProjects(true, false, members);
@@ -1555,21 +1556,69 @@ const Library = () => {
         </Flex>;
     };
 
-    const isSystemFolder = (datum: DatumType) => {
+    const isSystemFolder = (datum:DatumType) => {
         const cacheFolderUuid = 'cc9f050d-b007-414e-a6e0-6d31a9c13395';
         const activityFolderUuid = 'aa2799ba-798e-4fa3-984c-b3fad92fd162';
         return datum.uuid===cacheFolderUuid || datum.uuid===activityFolderUuid;
     };
 
-    const refreshLibrary = (datum) => {
+    const refreshLibrary = (datum:DatumType) => {
         // フォルダを再取得する
         fetchFolder();
         // 状態変数を更新する
         setSelectedDatas([datum]);
     };
 
+    const refreshLibraryAndProjects = (datum) => {
+        // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
+        resourceCache(getProjects).clear();
+        // ルートフォルダ直下の全てのプロジェクトを再取得する
+        refreshProjects(true);
+        refreshLibrary(datum)
+    };
+
+    const getProject = (project:DatumType|null) => {
+        if(!project){
+            return null;
+        }
+        const projectUuid = project.uuid;
+        // ルートフォルダ直下の全てのプロジェクトから、指定されたプロジェクトを取得する
+        const ret = projectsReader().find(child => child.uuid===projectUuid) as ParentProjectType;
+        if(!ret){
+            return null;
+        }
+        return ret;
+    };
+
+    const getProjectDrawer = (datum:ProjectType|null) => {
+        const project = getProject(datum);
+        if(project){
+            return <ProjectDrawer
+                        createMode={false} 
+                        parent={parentFolder}
+                        project={project}
+                        onSuccess={refreshLibraryAndProjects} />;
+        }else{
+            // プロジェクトが見つからない場合はペインを表示しない
+            return <></>;
+        }
+    };
+
+    const getTrashDrawer = (datum:DatumType|null) => {
+        if(datum){
+            return <TrashDrawer 
+                        trashFolder={parentFolder as ParentTrashType}
+                        datum={datum}
+                        onSuccess={data=>refreshLibrary(data[0])} />;
+        }else{
+            // Datumをゴミ箱から戻した直後にselectedDatas[0]がundefinedになるため、
+            return <></>;
+        }
+    };
+
     // Datum型とペイン種別の対応テーブル
     const drawersTable = {
+        project:    getProjectDrawer(selectedDatas[0] as ProjectType),
         folder:     <FolderDrawer
                         createMode={false} 
                         parent={parentFolder}
@@ -1596,7 +1645,6 @@ const Library = () => {
     };
 
     const systemFolderDrawer = <SystemFolderDrawer folder={selectedDatas[0] as FolderType} />;
-    const trashDrawer = <TrashDrawer trashFolder={parentFolder as ParentTrashType} datum={selectedDatas[0]} />;
 
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
@@ -1604,7 +1652,7 @@ const Library = () => {
         {
             selectedDatas.length===1 ? (
                 isSystemFolder(selectedDatas[0])? systemFolderDrawer:
-                parentFolder.type==='trash'? trashDrawer:
+                parentFolder.type==='trash'? getTrashDrawer(selectedDatas[0]):
                 drawersTable[selectedDatas[0].type]
             ): <></>
         }
