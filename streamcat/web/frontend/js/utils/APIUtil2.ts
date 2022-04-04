@@ -20,6 +20,7 @@ import {
 } from 'Model/Library';
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import {LockType} from 'Model/Locks';
+import { newDataDest } from 'Modules/flowEditor';
 
 
 // NOTE: JavaScriptではJavaのようにcatch構文で例外オブジェクトに型に応じて処理を振り分ける事はできない
@@ -299,6 +300,11 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                                          {parent: d.uuid,
                                           label : label,
                                           file  : file});
+                d.uploadFlow = (label, file) =>
+                    upload<void>(`/api/v0/archives/flows`,
+                                 {parent: d.uuid,
+                                  label : label,
+                                  file  : file});
 
                 if(datum.type === 'project') {
                     const d = datum as ParentProjectType;

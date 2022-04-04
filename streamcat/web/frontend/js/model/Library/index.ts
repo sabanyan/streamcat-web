@@ -145,6 +145,10 @@ export type FolderType = DatumBaseType<FolderAllowlist> & {
         label:string,
         file:File
     ) => Promise<DocumentType>;
+    uploadFlow:(
+        label:string,
+        file:File
+    ) => Promise<void>;
 };
 
 /**
