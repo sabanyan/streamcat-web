@@ -7,13 +7,14 @@ import style from './style.scss'
 
 import { Button, TextField } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
+import { FolderType } from 'Model/Library'
 
 type Props = {
-  url: string
   accept?: string[];
-
-  parentUUID: string
+  parent: FolderType;
+  uploadType: 'document'|'flow';
   notify: (title:string, message:string) => string;
+  onSuccess?: () => void;
 }
 
 enum Status {
@@ -99,10 +100,7 @@ export default class FileUploader extends React.Component<Props, State> {
   }
 
   uploadSync() {
-    const { notify, parentUUID, url } = this.props
-    const options = {
-      headers: { 'enctype': 'multipart/form-data' }
-    }
+    const { notify, parent } = this.props
 
     let queue = Queue(
       1, // concurrency
@@ -118,40 +116,27 @@ export default class FileUploader extends React.Component<Props, State> {
       return false
     })
     uploadTargets.forEach((uploadFile, index) => {
-      queue.push(this.promisedUpload, [uploadFile, parentUUID, url, this])
+      queue.push(this.promisedUpload, [uploadFile, parent, this])
     })
     queue.push(this.notifyUpload, [uploadTargets, notify, this])
     queue.start()
   }
 
-  promisedUpload(uploadFile: UploadFile, parentUUID: string, url: string, self = this) {
-    const options = {
-      headers: { 'enctype': 'multipart/form-data' }
-    }
-    let formData: FormData = new FormData()
-    formData.append('file', uploadFile.file)
-    formData.append('label', uploadFile.uploadName)
-    formData.append('parent', parentUUID)
+  promisedUpload(uploadFile:UploadFile, parent:FolderType, self=this) {
+      // 引数の指定に応じてDocumentまたはFlowのアップロードのAPIを選択す
+      const upload = self.props.uploadType==='document'?
+          parent.createDocument(uploadFile.uploadName, uploadFile.file):
+          parent.uploadFlow(uploadFile.uploadName, uploadFile.file);
 
-    return new Promise<void>((resolve, reject) => {
-      axios.post(url, formData, options)
-        .then((response) => {
-          if (!response.data.success) throw response
-          uploadFile.status = Status.Success
-        })
-        .catch((error) => {
-          uploadFile.status = Status.Fail
-          console.log(error)
-        })
-        .then(() => {
-          self.forceUpdate(() => {
-            resolve()
-          })
-        })
-    })
-  }
+      return upload.then(() => {
+          uploadFile.status = Status.Success;
+      }).catch((error) => {
+          uploadFile.status = Status.Fail;
+          console.log(error);
+      });
+  };
 
-  notifyUpload(uploadTargets, notify, self = this) {
+  notifyUpload(uploadTargets:UploadFile[], notify, self = this) {
     return new Promise((resolve, reject) => {
       let successCount = 0
       let failCount = 0
@@ -170,6 +155,9 @@ export default class FileUploader extends React.Component<Props, State> {
       self.setState({
         isLoading: false
       })
+
+      // イベントハンドラを呼び出す
+      self.props.onSuccess && self.props.onSuccess();
 
     })
   }

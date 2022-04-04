@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@mui/material"
 
 type Props = {
-    icon?: 'add';
+    icon?: 'add'|'upload';
     large?: boolean;
     disabled?: boolean;
     onClick: () => void;
@@ -12,7 +12,8 @@ type Props = {
 // アイコンテーブル
 const basePath = '/front_static'
 const iconTable = {
-    add: <img src={`${basePath}/images/icon/icon-add.svg`} />
+    add    : <img src={`${basePath}/images/icon/icon-add.svg`} />,
+    upload : <img src={`${basePath}/images/icon/icon-upload.svg`} />
 };
 
 export const Button2 = (props:Props) => {

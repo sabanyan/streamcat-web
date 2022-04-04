@@ -5,7 +5,7 @@ import { Button2 } from "Components/shared/Input";
 type Props = {
     label: string;
     dialogTitle?: string;
-    icon?: 'add';
+    icon?: 'add'|'upload';
     large?: boolean;
     readOnly?:boolean;
     // ボタン

@@ -623,7 +623,7 @@ const Library = () => {
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={[".tgz"]} url={url} parentUUID={parentFolder.uuid} notify={notifySuccess} />
+                <FileUploader uploadType='flow' accept={[".tgz"]} parent={parentFolder} notify={notifySuccess} />
             </div>
         });
     };
@@ -635,7 +635,7 @@ const Library = () => {
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={["text/csv,application/pdf,image/*"]} url={url} parentUUID={parentFolder.uuid} notify={notifySuccess} />
+                <FileUploader uploadType='document' accept={["text/csv,application/pdf,image/*"]} parent={parentFolder} notify={notifySuccess} />
             </div>
         });
     };
@@ -1470,8 +1470,6 @@ const Library = () => {
                         parent={parentFolder}
                         allowlist={parentFolder!.allowlist}
                         fetchFolder={fetchFolder}
-                        onClickCSVUpload={onClickCSVUpload}
-                        onClickImportFlow={onClickImportFlow}
                     />;
                 } else {
                     menuList = <TrashMenuList

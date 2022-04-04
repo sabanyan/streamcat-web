@@ -1,24 +1,23 @@
 import React from 'react';
 import * as style from "./style.scss";
 import { Spacer } from "Shared/Base";
-import { FlatButton } from "Shared/Input";
 import { FolderAllowlist, FolderType } from 'Model/Library'
 import { CreateFolderButton } from 'Components/LibraryContainer/CreateFolderButton';
 import { CreateRemoteFolderButton } from 'Components/LibraryContainer/CreateRemoteFolderButton';
 import { CreateProjectButton } from 'Components/LibraryContainer/CreateProjectButton';
 import { CreateFlowButton } from 'Components/LibraryContainer/CreateFlowButton';
 import { CreateDatabaseButton } from 'Components/LibraryContainer/CreateDatabaseButton';
+import { UploadFileButton } from 'Components/LibraryContainer/UploadFileButton';
+import { UploadFlowButton } from 'Components/LibraryContainer/UploadFlowButton';
 
 interface Props {
     parent: FolderType;
     allowlist: FolderAllowlist;
     fetchFolder: () => void;
-    onClickImportFlow: () => void;
-    onClickCSVUpload: () => void;
 }
 
 const MenuList = (props: Props) => {
-    const { parent, allowlist, fetchFolder, onClickCSVUpload, onClickImportFlow } = props;
+    const { parent, allowlist, fetchFolder } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
 
@@ -42,13 +41,13 @@ const MenuList = (props: Props) => {
     </> : null;
 
     upload = allowlist.upload ? <>
-        <FlatButton icon={"icon-upload"} onClick={onClickCSVUpload}>ファイルアップロード</FlatButton>
+        <UploadFileButton parent={parent} onSuccess={fetchFolder} />
         <Spacer height={8} />
     </> : null;
 
     // 現状は、プロジェクト単位でインポートされる
     importProject = allowlist.import ? <>
-        <FlatButton icon={"icon-upload"} onClick={onClickImportFlow}>フローのアップロード</FlatButton>
+        <UploadFlowButton parent={parent} onSuccess={fetchFolder} />
         <Spacer height={8} />
     </> : null;
 
