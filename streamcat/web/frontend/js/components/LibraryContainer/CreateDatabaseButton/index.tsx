@@ -1,55 +1,56 @@
 import React from 'react';
-import { FolderType, RemoteFolderType } from 'Model/Library';
+import { FolderType, DatabaseType } from 'Model/Library';
 import { DialogButton, TextField2, Select2 } from 'Components/shared/Input';
 import { Value } from 'Components/shared/Input/TextField2';
 import { EditBox } from '../EditBox';
 
 type Props = {
     parent:FolderType;
-    onSuccess:(newRemoteFolder:RemoteFolderType) => void;
+    onSuccess:(newDatabase:DatabaseType) => void;
 };
 
 /**
- * リモートフォルダの追加ボタン
+ * データベースの追加ボタン
  * @param props 
  */
-export const CreateRemoteFolderButton = (props:Props) => {
+export const CreateDatabaseButton = (props:Props) => {
     const { parent, onSuccess } = props;
 
     // 空の入力値
     const initValue:Value = {value:'', isError:true}
-    const initSelectValue:Value = {value:'smb', isError:false}
+    const initSelectValue:Value = {value:'postgresql', isError:false}
+    const initPortValue:Value   = {value:'5432', isError:false}
 
     // テキストボックスの入力値
-    const [label, setLabel] = React.useState(initValue);
-    const [protocol, setProtocol] = React.useState(initSelectValue);
+    const [label, setLabel]       = React.useState(initValue);
+    const [dbms, setDbms]         = React.useState(initSelectValue);
     const [hostname, setHostname] = React.useState(initValue);
-    const [domain, setDomain] = React.useState(initValue);
-    const [directory, setDirectory] = React.useState(initValue);
-    const [userId, setUserId] = React.useState(initValue);
+    const [port, setPort]         = React.useState(initPortValue);
+    const [database, setDatabase] = React.useState(initValue);
+    const [userId, setUserId]     = React.useState(initValue);
     const [password, setPassword] = React.useState(initValue);
 
     // 値の初期化処理
     const initValues = () => {
         setLabel(initValue);
-        setProtocol(initSelectValue);
+        setDbms(initSelectValue);
         setHostname(initValue);
-        setDomain(initValue);
-        setDirectory(initValue);
+        setPort(initPortValue);
+        setDatabase(initValue);
         setUserId(initValue);
         setPassword(initValue);
     };
 
-    // リモートフォルダの新規追加処理
-    const create = () => parent.createRemoteFolder( label.value,
-                                                    protocol.value,
-                                                    hostname.value,
-                                                    domain.value,
-                                                    directory.value,
-                                                    userId.value,
-                                                    password.value);
+    // データベースの新規追加処理
+    const create = () => parent.createDatabase( label.value,
+                                                dbms.value,
+                                                hostname.value,
+                                                parseInt(port.value),
+                                                database.value,
+                                                userId.value,
+                                                password.value);
 
-    return <DialogButton label={'リモートフォルダの追加'}
+    return <DialogButton label={'データベースの追加'}
                          icon='add'
                          large={true} >{[
         // Contents
@@ -58,11 +59,11 @@ export const CreateRemoteFolderButton = (props:Props) => {
                 key='createRemoteFolder'
                 // 編集ロック=ONの場合は編集不可
                 createMode={true}
-                values = {[label,protocol,hostname,domain,directory]}
+                values = {[label,dbms,hostname,port,database]}
                 initValues={initValues}
                 create={create}
-                onSuccess={(newFolder) => {
-                    onSuccess(newFolder as RemoteFolderType);
+                onSuccess={(newDatabase) => {
+                    onSuccess(newDatabase as DatabaseType);
                     closeDialog();
                 }}
                 onCancel={closeDialog} >{[
@@ -78,12 +79,13 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                 state={[label, setLabel]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <Select2    key={'protocol'}
-                                label='プロトコル'
+                    <Select2    key={'dbms'}
+                                label='DBMS'
                                 required={true}
-                                items={[{label:'Samba',value:'smb'}]}
+                                items={[{label:'PostgreSQL',value:'postgresql'},
+                                        {label:'ORACLE',value:'oracle'}]}
                                 readOnly={readOnly}
-                                state={[protocol, setProtocol]}
+                                state={[dbms,setDbms]}
                                 onErrorChange={onErrorChange} />,
                     <TextField2 key={'hostname'}
                                 label='ホスト名またはIPアドレス'
@@ -92,18 +94,19 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                 state={[hostname,setHostname]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'domain'}
-                                label='ドメイン名'
+                    <TextField2 key={'port'}
+                                label='ポート番号'
+                                type='number'
                                 required={true}
                                 readOnly={readOnly}
-                                state={[domain,setDomain]}
+                                state={[port,setPort]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'directory'}
-                                label='ディレクトリパス'
+                    <TextField2 key={'database'}
+                                label='データベース名'
                                 required={true}
                                 readOnly={readOnly}
-                                state={[directory,setDirectory]}
+                                state={[database,setDatabase]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key={'userId'}

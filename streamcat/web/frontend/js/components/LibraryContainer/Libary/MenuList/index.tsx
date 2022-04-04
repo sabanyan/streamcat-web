@@ -5,32 +5,25 @@ import { FlatButton } from "Shared/Input";
 import { FolderAllowlist, FolderType } from 'Model/Library'
 import { CreateFolderButton } from 'Components/LibraryContainer/CreateFolderButton';
 import { CreateRemoteFolderButton } from 'Components/LibraryContainer/CreateRemoteFolderButton';
+import { CreateProjectButton } from 'Components/LibraryContainer/CreateProjectButton';
+import { CreateFlowButton } from 'Components/LibraryContainer/CreateFlowButton';
+import { CreateDatabaseButton } from 'Components/LibraryContainer/CreateDatabaseButton';
 
 interface Props {
     parent: FolderType;
     allowlist: FolderAllowlist;
     fetchFolder: () => void;
-    onClickNewFlow: () => void;
-    onClickNewProject: () => void;
     onClickImportFlow: () => void;
     onClickCSVUpload: () => void;
-    onClickAddDatabase: () => void;
 }
 
 const MenuList = (props: Props) => {
-    const { parent, allowlist, fetchFolder, onClickNewFlow, onClickNewProject,
-        onClickCSVUpload, onClickAddDatabase, onClickImportFlow } = props;
+    const { parent, allowlist, fetchFolder, onClickCSVUpload, onClickImportFlow } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
 
     createProject = allowlist.createProject ? <>
-        <FlatButton icon={"icon-add"} onClick={onClickNewProject}>プロジェクトの追加</FlatButton>
-        <Spacer height={8} />
-    </> : null;
-
-    // 現状は、プロジェクト単位でインポートされる
-    importProject = allowlist.import ? <>
-        <FlatButton icon={"icon-upload"} onClick={onClickImportFlow}>フローのアップロード</FlatButton>
+        <CreateProjectButton parent={parent} onSuccess={fetchFolder} />
         <Spacer height={8} />
     </> : null;
 
@@ -40,9 +33,9 @@ const MenuList = (props: Props) => {
     </> : null;
 
     createFile = allowlist.createFile ? <>
-        <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの追加</FlatButton>
+        <CreateFlowButton parent={parent} onSuccess={fetchFolder} />
         <Spacer height={8} />
-        <FlatButton icon={"icon-add"} onClick={onClickAddDatabase}>データベースの追加</FlatButton>
+        <CreateDatabaseButton parent={parent} onSuccess={fetchFolder} />
         <Spacer height={8} />
         <CreateRemoteFolderButton parent={parent} onSuccess={fetchFolder}/>
         <Spacer height={8} />
@@ -50,6 +43,12 @@ const MenuList = (props: Props) => {
 
     upload = allowlist.upload ? <>
         <FlatButton icon={"icon-upload"} onClick={onClickCSVUpload}>ファイルアップロード</FlatButton>
+        <Spacer height={8} />
+    </> : null;
+
+    // 現状は、プロジェクト単位でインポートされる
+    importProject = allowlist.import ? <>
+        <FlatButton icon={"icon-upload"} onClick={onClickImportFlow}>フローのアップロード</FlatButton>
         <Spacer height={8} />
     </> : null;
 

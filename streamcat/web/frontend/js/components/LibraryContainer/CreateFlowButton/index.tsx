@@ -1,18 +1,18 @@
 import React from 'react';
-import { FolderType } from 'Model/Library';
+import { FolderType, FlowType } from 'Model/Library';
 import { DialogButton, TextField2 } from 'Components/shared/Input';
 import { EditBox } from '../EditBox';
 
 type Props = {
     parent:FolderType;
-    onSuccess:(newFolder:FolderType) => void;
+    onSuccess:(newFlow:FlowType) => void;
 };
 
 /**
- * フォルダの追加ボタン
+ * フローの追加ボタン
  * @param props 
  */
-export const CreateFolderButton = (props:Props) => {
+export const CreateFlowButton = (props:Props) => {
     const { parent, onSuccess } = props;
 
     // 初期表示値
@@ -25,23 +25,23 @@ export const CreateFolderButton = (props:Props) => {
         setLabel(initLabel);
     };
 
-    // フォルダの新規追加処理
-    const create = () => parent.createFolder(label.value);
+    // フローの新規追加処理
+    const create = () => parent.createFlow(label.value);
 
-    return <DialogButton label={'フォルダの追加'}
+    return <DialogButton label={'フローの追加'}
                          icon='add'
                          large={true} >{[
         // Contents
         (closeDialog) => [
             <EditBox
-                key='createFolder'
+                key='createFlow'
                 // 編集ロック=ONの場合は編集不可
                 createMode={true}
                 values = {[label]}
                 initValues={initValues}
                 create={create}
-                onSuccess={newFolder => {
-                    onSuccess(newFolder as FolderType);
+                onSuccess={newFlow => {
+                    onSuccess(newFlow as FlowType);
                     closeDialog();
                 }}
                 onCancel={closeDialog} >{[

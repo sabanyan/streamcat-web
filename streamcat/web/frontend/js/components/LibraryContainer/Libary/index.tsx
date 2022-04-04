@@ -1470,10 +1470,7 @@ const Library = () => {
                         parent={parentFolder}
                         allowlist={parentFolder!.allowlist}
                         fetchFolder={fetchFolder}
-                        onClickAddDatabase={onClickAddDatabase}
                         onClickCSVUpload={onClickCSVUpload}
-                        onClickNewFlow={onClickNewFlow}
-                        onClickNewProject={onClickNewProject}
                         onClickImportFlow={onClickImportFlow}
                     />;
                 } else {

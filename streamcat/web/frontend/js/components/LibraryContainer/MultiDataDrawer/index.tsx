@@ -3,6 +3,7 @@ import { Drawer2 } from "Components/shared/Input";
 import { DatumType, FolderType } from "Model/Library";
 import { MoveButton } from "../MoveButton";
 import { DeleteButton } from "../DeleteButton";
+import { EditLockCheckbox } from "../EditLockCheckbox";
 
 type Props = {
     parent: FolderType;

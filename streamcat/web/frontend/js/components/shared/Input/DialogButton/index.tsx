@@ -5,6 +5,8 @@ import { Button2 } from "Components/shared/Input";
 type Props = {
     label: string;
     dialogTitle?: string;
+    icon?: 'add';
+    large?: boolean;
     readOnly?:boolean;
     // ボタン
     // (DialogButtonにおいてダイアログの開閉状態を制御したいので
@@ -16,7 +18,7 @@ type Props = {
 };
 
 export const DialogButton = (props:Props) => {
-    const {label, readOnly} = props;
+    const {label, icon, large, readOnly} = props;
     const dialogTitle = props.dialogTitle || label;
     const [ contents, buttons ] = props.children
 
@@ -33,7 +35,10 @@ export const DialogButton = (props:Props) => {
 
     return <>
         {/* ダイアログを開くボタン */}
-        <Button2 disabled={readOnly} onClick={openDialog}>{label}</Button2>
+        <Button2 icon={icon}
+                large={large}
+                disabled={readOnly}
+                onClick={openDialog}>{label}</Button2>
         {/* ダイアログ */}
         <Dialog // ある程度の横幅を設定する
                 fullWidth={true}
