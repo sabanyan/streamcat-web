@@ -77,40 +77,6 @@ const get = <TDatumType>(url: string, params?: {}) => {
 };
 
 /**
- * GET APIを発行する
- * @param url 
- */
- const download = (url: string, accept: string, fileName: string, params?: {}) => {
-    if(params) {
-        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
-    }
-    return fetch(
-        url,
-        {
-            method: 'GET',
-            headers: {
-                'Accept': accept
-            }
-        }
-    ).then(
-        res => res.blob()
-    ).then(
-        // Fetch API to force download file
-        // https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
-        blob => {
-            const href = window.URL.createObjectURL(blob);
-            Object.assign(
-                document.createElement('a'),
-                {
-                    href,
-                    download: fileName
-                }
-            ).click();
-        }
-    );
-};
-
-/**
  * POST APIを発行する
  * @param url
  * @throws {ErrorResponse}
@@ -183,6 +149,69 @@ const del = (url: string, body={}) => {
     );
 };
 
+/**
+ * GET APIを発行してファイルをダウンロードする
+ * @param url 
+ */
+const download = (url: string, accept: string, fileName: string, params?: {}) => {
+    if(params) {
+        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+    }
+    return fetch(
+        url,
+        {
+            method: 'GET',
+            headers: {
+                'Accept': accept
+            }
+        }
+    ).then(
+        res => res.blob()
+    ).then(
+        // Fetch API to force download file
+        // https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
+        blob => {
+            const href = window.URL.createObjectURL(blob);
+            Object.assign(
+                document.createElement('a'),
+                {
+                    href,
+                    download: fileName
+                }
+            ).click();
+        }
+    );
+};
+
+/**
+ * POST APIを発行してファイルをアップロードする
+ * @param url
+ * @throws {ErrorResponse}
+ */
+const upload = <TDatumType>(url:string, body:{}) => {
+    // FormDataオブジェクトにAPIパラメタを格納する
+    const formData = new FormData();
+    for(const key in body){
+        formData.append(key, body[key])
+    };
+    return fetch(
+        url,
+        {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+                // Content-Typeを指定するとAPI発行に失敗する
+            }
+        }
+    ).then<CommonResponse<TDatumType>>(
+        res => res.json()
+    ).then<TDatumType>(json => {
+        const datum = unwrapJson(json)
+        // DatumArrayのshift()を用いてdatumに各種関数を付与する
+        return datum && (new DatumArray([datum as any])).shift();
+    });
+};
 
 /**
  * DatumにWebAPIを発行する関数を付与する
@@ -261,15 +290,15 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                                         inputs : inputs,
                                         trigger: trigger});
                 d.createFrame = (label, file) =>
-                    post<FrameType>(`/api/v0/frames`,
-                                    {parent: d.uuid,
-                                     label : label,
-                                     file  : file});
+                    upload<FrameType>(`/api/v0/frames`,
+                                      {parent: d.uuid,
+                                       label : label,
+                                       file  : file});
                 d.createDocument = (label, file) =>
-                    post<DocumentType>(`/api/v0/documents`,
-                                       {parent: d.uuid,
-                                        label : label,
-                                        file  : file});
+                    upload<DocumentType>(`/api/v0/documents`,
+                                         {parent: d.uuid,
+                                          label : label,
+                                          file  : file});
 
                 if(datum.type === 'project') {
                     const d = datum as ParentProjectType;
