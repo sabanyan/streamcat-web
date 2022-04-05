@@ -303,7 +303,7 @@ class FrameTestCase(ApiTestCaseBase):
         data = result['data']
 
         # DBにframeデータが生成されているか
-        self.assertIsNotNone(self.factory.data.find_by_uuid(data['outs'][0]['uuid']))
+        self.assertIsNotNone(self.factory.data.find_by_uuid(data['outs'][0]['datum']))
 
         # ラベルとIDチェック
         self.assertEqual(data['outs'][0]['id'], 'd1')
@@ -703,7 +703,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'd')
         self.assertEqual(outs[0]['label'], 'd')
-        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNone(outs[0]['parent'])
         self.assertEqual(outs[0]['args']['column_names'], ['id'])
         self.assertIsNotNone(outs[0].get('contents'))
@@ -783,7 +783,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'd')
         self.assertEqual(outs[0]['label'], 'd')
-        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNone(outs[0]['parent'])
         self.assertEqual(outs[0]['args']['column_names'], ['id'])
         self.assertIsNotNone(outs[0].get('contents'))
@@ -931,7 +931,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'd2')
         self.assertEqual(outs[0]['label'], 'd2')
-        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNone(outs[0]['parent'])
         self.assertEqual(outs[0]['args']['column_names'], ['id%0n','amount','seq'])
         self.assertIsNotNone(outs[0].get('contents'))
@@ -1096,7 +1096,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'f_d2')
         self.assertEqual(outs[0]['label'], 'f_d2')
-        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNotNone(outs[0]['parent'])
         self.assertEqual(outs[0]['args'], {})
         self.assertIsNone(outs[0].get('contents'))

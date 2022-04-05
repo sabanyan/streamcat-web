@@ -378,11 +378,11 @@ class FileTestCase(ApiTestCaseBase):
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'f1_d1')
         self.assertEqual(outs[0]['label'], 'f1_d1')
-        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNotNone(outs[0]['parent'])
 
         # フローの実行結果が出力されていること
-        result = self.get_uri(f"/api/v0/flows/{outs[0]['uuid']}", self.USER1)
+        result = self.get_uri(f"/api/v0/flows/{outs[0]['datum']}", self.USER1)
         self.assertEqual(result['data']['type'], 'flow')
         self.assertTrue(result['data']['label'].startswith('京阪乗る人おけいはん'))
 

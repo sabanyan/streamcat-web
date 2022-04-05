@@ -690,12 +690,12 @@ def _make_new_acitivity(flow:object, lock_uuid:str=None, args:dict={}) -> dict:
             'label': activity.label,
             'outs' :  [{'id'    : point.id, 
                         'label' : point.label,
-                        'uuid'  : out.uuid,
-                        'parent': None if is_vis(out) else out.find_parent().uuid,
-                        'args': {'column_names':out.column_names} if is_vis(out) else {},
-                        'contents': VisConverter(out) if is_vis(out) else None
+                        'datum' : datum.uuid,
+                        'parent': None if is_vis(datum) else datum.find_parent().uuid,
+                        'args': {'column_names':datum.column_names} if is_vis(datum) else {},
+                        'contents': VisConverter(datum) if is_vis(datum) else None
                         }
-                        for point, out in activity.outs
+                        for point, datum in activity.outs
                       ]
     }
 
