@@ -353,7 +353,7 @@ type Outs = {
     // 出力Pointのラベル名
     label: string;
     // 出力データのUUID
-    uuid: string;
+    datum: string;
     // 出力データが格納されているフォルダのUUID
     parent: string | null;
     // 出力データの列名一覧
