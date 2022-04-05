@@ -2,10 +2,8 @@ import React from "react";
 import {Autocomplete,
         AutocompleteRenderInputParams,
         AutocompleteChangeReason,
-        TextField, 
-        ListItemText,
-        List,
-        Typography} from "@mui/material";
+        TextField} from "@mui/material";
+import {List2} from "Components/shared/Input";
 
 type Props<T> = {
     label: string;
@@ -55,21 +53,7 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
         // 
         // 入力不可の場合
         //
-        <>
-            <Typography variant='caption'
-                        color='textSecondary'
-                        sx={{lineHeight:'0'}}>{label}</Typography>
-            <List disablePadding={true}
-                  color="textPrimary"
-                  sx={{ lineHeight:'0',
-                        paddingLeft:1,
-                        paddingTop:0,
-                        paddingBottom:0}} >{
-                values.map((value, index) =>
-                    <ListItemText key={index}>{getLabel(value)}</ListItemText>
-                )
-            }</List>
-        </>:
+        <List2 label={label} items={values.map(value=>getLabel(value))} />:
         // 
         // 入力可の場合
         //
