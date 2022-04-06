@@ -22,7 +22,7 @@ import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/Libra
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType, ProjectType } from "Model/Library";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType, ProjectType, ActivityType } from "Model/Library";
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import LibraryUtil from "Utils/LibraryUtil";
@@ -38,6 +38,7 @@ import { TrashDrawer } from '../TrashDrawer'
 import { ProjectDrawer } from '../ProjectDrawer';
 import { FrameDrawer } from '../FrameDrawer';
 import { UnkownDrawer } from '../UnkownDrawer';
+import { ActivityDrawer } from '../ActivityDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1366,31 +1367,26 @@ const Library = () => {
 
             if (body.type === "trash") {
                 WebUtil.navigateURL(WebUtil.webURL("/trashes" + dialogOption));
-            }
-            if (body.type === "folder") {
+            }else if (body.type === "folder") {
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption));
-            }
-            if (body.type === "project") {
+            }else if (body.type === "project") {
                 WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
-            }
-            if (body.type === "database") {
+            }else if (body.type === "database") {
                 onClickEditDatabase(body as DatabaseType);
-            }
-            if (body.type === "frame") {
+            }else if (body.type === "frame") {
                 if (mode === Constants.library.mode.frame_select) {
                     // データソースの追加時
                     onClickApply(body);
                     return;
                 }
                 window.open(WebUtil.webURL("/preview?step_id=null&dialog=false&frame_uuid=" + body.uuid + "&title=" + StringUtil.urlEncode(body.label)));
-            }
-            if (body.type === "flow") {
-                window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
-            }
-            if (body.type === "document") {
+            }else if (body.type === "document") {
                 window.open(WebUtil.webURL("/documents/" + body.uuid));
+            }else if (body.type === "flow") {
+                window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
+            }else if (body.type==='activity') {
+                window.open(WebUtil.webURL("/flows/" + (body as ActivityType).flowUuid + dialogOption));
             }
-
         };
 
         const onClickCell = (cell: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
@@ -1641,6 +1637,7 @@ const Library = () => {
                         parent={parentFolder}
                         frame={selectedDatas[0] as FrameType}
                         onSuccess={refreshLibrary} />,
+        activity:   <ActivityDrawer activity={selectedDatas[0] as ActivityType} />,
         trash:      <TrashFolderDrawer
                         trashFolder={selectedDatas[0] as TrashType} />,
 

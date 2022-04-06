@@ -362,6 +362,15 @@ type Outs = {
     contents: string | null;
 };
 
+type Exs = {
+    // 出力Pointのid
+    id: string;
+    // 出力Pointのラベル名
+    label: string;
+    // エラーメッセージ
+    message: string;
+};
+
 /**
  * Activityを格納するオブジェクト型
  */
@@ -372,5 +381,5 @@ export type ActivityType = DatumType & {
     // 出力結果情報
     outs: Outs[];
     caches: [];
-    exs: [];
+    exs: Exs[];
 };
