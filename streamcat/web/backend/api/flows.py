@@ -726,6 +726,15 @@ def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     raise NoResultsException('実行結果は出力されませんでした.')
 
 
+@mod.route('/schedules/<schedule_uuid>', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_schedule(schedule_uuid):
+    """
+    指定したスケジュールを取得する
+    """
+    return g.factory.data.find_by_uuid(schedule_uuid)
+
 @mod.route('/schedules', methods=['POST'])
 @login_required_api
 @api_base
@@ -739,6 +748,32 @@ def make_new_schedule():
     schedule = parent.create_schedule(req['label'], req['flow'], args=args, trigger=req['trigger'])
     schedule.save()
     return schedule.reload()
+
+@mod.route('/schedules/<schedule_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_schedule(schedule_uuid):
+    """
+    スケジュールのラベルを変更する、またはスケジュールを移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has('parent'):
+        if req.has('label'):
+            raise Exception('labelとはparent属性は同時に指定できません')
+        # scheduleを移動する
+        schedule = g.factory.data.find_by_uuid(schedule_uuid)
+        return schedule.move(req['parent'])
+    elif req.has_all('flow', 'trigger'):
+        label = req.get('label') or schedule.label
+        args = req.get('args') or {}
+        schedule = g.factory.data.find_by_uuid(schedule_uuid)
+        return schedule.update_data(label, req['flow'], args=args, trigger=req['trigger'])
+    elif req.has('label'):
+        schedule = g.factory.data.find_by_uuid(schedule_uuid)
+        return schedule.update_label(req['label'])
+    else:
+        raise Exception('parent,labelのいずれか一つ、またはflowとtriggerを指定してください')
 
 @mod.route('/schedules/<schedule_uuid>', methods=['DELETE'])
 @login_required_api
