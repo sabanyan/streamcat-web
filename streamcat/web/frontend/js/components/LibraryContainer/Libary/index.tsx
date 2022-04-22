@@ -22,7 +22,7 @@ import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/Libra
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType, ProjectType, ActivityType } from "Model/Library";
+import { DatumType, ParentProjectType, ParentFolderType, ParentTrashType , RemoteFolderType, DatabaseType, FrameType, Member, FlowType, FolderType, TrashType, ProjectType, ActivityType, ScheduleType } from "Model/Library";
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import LibraryUtil from "Utils/LibraryUtil";
@@ -39,6 +39,7 @@ import { ProjectDrawer } from '../ProjectDrawer';
 import { FrameDrawer } from '../FrameDrawer';
 import { UnkownDrawer } from '../UnkownDrawer';
 import { ActivityDrawer } from '../ActivityDrawer';
+import { ScheduleDrawer } from '../ScheduleDrawer';
 
 /**
  * ライブラリ画面に表示するDatumの表示行
@@ -1383,6 +1384,11 @@ const Library = () => {
             }else if (body.type === "document") {
                 window.open(WebUtil.webURL("/documents/" + body.uuid));
             }else if (body.type === "flow") {
+                if(mode===Constants.library.mode.flow_select){
+                    // フロー選択モードの場合
+                    onClickApply(body);
+                    return;
+                }
                 window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
             }else if (body.type==='activity') {
                 window.open(WebUtil.webURL("/flows/" + (body as ActivityType).flowUuid + dialogOption));
@@ -1458,7 +1464,7 @@ const Library = () => {
                 menuList = <ApplyMenuList
                     onClickApply={onClickSelectDestination}
                 />;
-            } else if (mode === Constants.library.mode.frame_select) {
+            } else if (mode===Constants.library.mode.frame_select || mode===Constants.library.mode.flow_select) {
                 return null;
             } else {
                 if (!inject_is_trash) {
@@ -1526,9 +1532,15 @@ const Library = () => {
                                         case "project":
                                         case Constants.library.type.remoteFolder:
                                         case Constants.library.type.database:
-
                                             body.clickable = true;
                                     }
+                                }else if(mode===Constants.library.mode.flow_select){
+                                    switch(body.type){
+                                        case 'flow':
+                                        case 'folder':
+                                        case 'project':
+                                            body.clickable = true;
+                                    };
                                 } else {
                                     body.clickable = true;
                                     if (body.type === "database") body.clickable = false;
@@ -1636,6 +1648,11 @@ const Library = () => {
                         createMode={false}
                         parent={parentFolder}
                         frame={selectedDatas[0] as FrameType}
+                        onSuccess={refreshLibrary} />,
+        schedule:   <ScheduleDrawer
+                        createMode={false}
+                        parent={parentFolder}
+                        schedule={selectedDatas[0] as ScheduleType}
                         onSuccess={refreshLibrary} />,
         activity:   <ActivityDrawer activity={selectedDatas[0] as ActivityType} />,
         trash:      <TrashFolderDrawer

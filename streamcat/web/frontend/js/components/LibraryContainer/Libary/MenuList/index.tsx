@@ -9,6 +9,7 @@ import { CreateFlowButton } from 'Components/LibraryContainer/CreateFlowButton';
 import { CreateDatabaseButton } from 'Components/LibraryContainer/CreateDatabaseButton';
 import { UploadFileButton } from 'Components/LibraryContainer/UploadFileButton';
 import { UploadFlowButton } from 'Components/LibraryContainer/UploadFlowButton';
+import { CreateScheduleButton } from 'Components/LibraryContainer/CreateScheduleButton';
 
 interface Props {
     parent: FolderType;
@@ -37,6 +38,8 @@ const MenuList = (props: Props) => {
         <CreateDatabaseButton parent={parent} onSuccess={fetchFolder} />
         <Spacer height={8} />
         <CreateRemoteFolderButton parent={parent} onSuccess={fetchFolder}/>
+        <Spacer height={8} />
+        <CreateScheduleButton parent={parent} onSuccess={fetchFolder}/>
         <Spacer height={8} />
     </> : null;
 

@@ -5,7 +5,11 @@ import { ErrorResponse } from 'Utils/APIUtil2';
 import { DatumType } from "Model/Library";
 import LibraryUtil from "Utils/LibraryUtil";
 import { Button2 } from "Components/shared/Input";
-import { Value } from 'Components/shared/Input/TextField2';
+
+type Value ={
+    value: any;
+    isError: boolean;
+};
 
 type Props = {
     readOnly?: boolean;
@@ -64,8 +68,12 @@ export const EditBox = (props:Props) => {
         setEditBoxError(createMode);
     }, [datum,createMode]);
 
-    // テキストボックスのエラー状態が変更された時、確定ボタンの押下可否を更新する
-    const onErrorChange = (isError:boolean) => {
+    /**
+     * テキストボックスのエラー状態が変更された時、確定ボタンの押下可否を更新する
+     * @param isError エラー状態
+     * @param prevIsError 直前のエラー状態(Tabsの切り替え時にfalseを指定するため)
+     */
+    const onErrorChange = (isError:boolean, prevIsError=true) => {
         if(isError){
             // エラーの場合は、確定ボタンを無効にする
             setEditBoxError(true);
@@ -73,7 +81,8 @@ export const EditBox = (props:Props) => {
             // エラー状態の変更前における、全てのエラー状態のテキストボックスを数える
             const errorCount = values.filter(value => value.isError).length;
             // このイベントハンドラを呼び出したテキストボックスの変更前のエラー状態は、trueなのでその分を引く
-            (errorCount - 1) === 0 && setEditBoxError(false);
+            const myPrevErrorCount = prevIsError? 1: 0;
+            setEditBoxError((errorCount - myPrevErrorCount) > 0);
         }
     };
 
