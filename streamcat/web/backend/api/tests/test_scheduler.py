@@ -27,7 +27,7 @@ class SchedulerTest(ApiTestCaseBase):
         data = {
             'parent': project_uuid,
             'label' : '私のスケジュール',
-            'flow'  : flow_uuid,
+            'runnable' : flow_uuid,
             'trigger': {
                 'type' : 'date',
                 'date' : '2121-09-10 11:22:30'
@@ -49,7 +49,7 @@ class SchedulerTest(ApiTestCaseBase):
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
-        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['download'])
         self.assertFalse(result['data']['allowlist']['export'])
         self.assertTrue(result['data']['allowlist']['copy'])
         self.assertTrue(result['data']['allowlist']['move'])

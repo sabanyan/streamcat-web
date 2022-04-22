@@ -745,7 +745,12 @@ def make_new_schedule():
     req = RequestJson(request.json)
     parent = g.factory.data.find_by_uuid(req['parent'])
     args = req.get('args') or {}
-    schedule = parent.create_schedule(req['label'], req['flow'], args=args, trigger=req['trigger'])
+    inputs = req.get('inputs') or {}
+    schedule = parent.create_schedule(req['label'],
+                                      req['runnable'],
+                                      args=args,
+                                      inputs=inputs,
+                                      trigger=req['trigger'])
     schedule.save()
     return schedule.reload()
 
@@ -764,11 +769,16 @@ def update_schedule(schedule_uuid):
         # scheduleを移動する
         schedule = g.factory.data.find_by_uuid(schedule_uuid)
         return schedule.move(req['parent'])
-    elif req.has_all('flow', 'trigger'):
+    elif req.has_all('runnable', 'trigger'):
         label = req.get('label') or schedule.label
         args = req.get('args') or {}
+        inputs = req.get('inputs') or {}
         schedule = g.factory.data.find_by_uuid(schedule_uuid)
-        return schedule.update_data(label, req['flow'], args=args, trigger=req['trigger'])
+        return schedule.update_data(label,
+                                    req['runnable'],
+                                    args=args,
+                                    inputs=inputs,
+                                    trigger=req['trigger'])
     elif req.has('label'):
         schedule = g.factory.data.find_by_uuid(schedule_uuid)
         return schedule.update_label(req['label'])
