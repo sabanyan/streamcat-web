@@ -4,6 +4,7 @@ import { Drawer2, FixedField2 } from "Components/shared/Input";
 import { DatumType, TrashType } from "Model/Library";
 import { MoveButton } from "../MoveButton";
 import { PutbackButton } from "../PutbackButton";
+import { CreatorField } from "../CreatorField";
 
 type Props = {
     trashFolder: TrashType;
@@ -31,11 +32,6 @@ export const TrashDrawer = (props:Props) => {
         <FixedField2 key={'prevFolderPath'}
                      label='捨てる前の場所'
                      value={datum.prevFolderPath || ''} />
-        <FixedField2 key={'creator'}
-                     label='作成者'
-                     value={datum.creator} />
-        <FixedField2 key={'createdAt'}
-                     label='作成日時'
-                     value={datum.createdAt} />
+        <CreatorField key={'creator'} datum={datum} />
     </Drawer2>;
 };

@@ -7,6 +7,7 @@ import { EditBox } from "../EditBox";
 import { DownloadCsvButton } from "../DownloadCsvButton";
 import StringUtil from "Utils/StringUtil";
 import Constants from "Constants/index";
+import { CreatorField } from "../CreatorField";
 
 type Props = {
     createMode: boolean;
@@ -119,12 +120,7 @@ export const FrameDrawer = (props:Props) => {
                             readOnly={readOnly}
                             state={[newline, setNewline]}
                             onErrorChange={onErrorChange} />,
-                <FixedField2 key={'creator'}
-                             label='作成者'
-                             value={frame.creator} />,
-                <FixedField2 key={'createdAt'}
-                             label='作成日時'
-                             value={frame.createdAt} />
+                <CreatorField key={'creator'} datum={frame} />
             ]
         ]}</EditBox>
     </Drawer2>;

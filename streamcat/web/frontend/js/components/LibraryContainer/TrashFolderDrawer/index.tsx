@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import { TrashType } from "Model/Library";
 import { Drawer2, FixedField2 } from "Components/shared/Input";
 import { TrashAllButton } from "../TrashAllButton";
+import { CreatorField } from "../CreatorField";
 
 type Props = {
     trashFolder: TrashType;
@@ -18,11 +19,6 @@ export const TrashFolderDrawer = (props:Props) => {
         <FixedField2 key={'label'}
                      label='ラベル'
                      value={trashFolder.label} />
-        <FixedField2 key={'creator'}
-                     label='作成者'
-                     value={trashFolder.creator} />
-        <FixedField2 key={'createdAt'}
-                     label='作成日時'
-                     value={trashFolder.createdAt} />
+        <CreatorField key={'creator'} datum={trashFolder} />
     </Drawer2>;
 };

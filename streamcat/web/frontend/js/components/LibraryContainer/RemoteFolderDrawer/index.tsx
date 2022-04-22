@@ -1,9 +1,10 @@
 import React from "react"
 import { FolderType, RemoteFolderType } from "Model/Library";
-import { Drawer2, FixedField2,Select2, TextField2 } from "Components/shared/Input";
+import { Drawer2, Select2, TextField2 } from "Components/shared/Input";
 import { MoveButton } from "../MoveButton";
 import { DeleteButton } from "../DeleteButton";
 import { EditBox } from "../EditBox";
+import { CreatorField } from "../CreatorField";
 
 type Props = {
     createMode: boolean;
@@ -129,12 +130,7 @@ export const RemoteFolderDrawer = (props:Props) => {
                             state={[password,setPassword]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <FixedField2 key={'creator'}
-                             label='作成者'
-                             value={remoteFolder.creator} />,
-                <FixedField2 key={'createdAt'}
-                             label='作成日時'
-                             value={remoteFolder.createdAt} />
+                <CreatorField key={'creator'} datum={remoteFolder} />
             ]
         ]}</EditBox>
     </Drawer2>;

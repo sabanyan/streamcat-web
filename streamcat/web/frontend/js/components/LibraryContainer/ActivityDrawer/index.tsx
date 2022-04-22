@@ -4,6 +4,7 @@ import { ActivityType } from "Model/Library";
 import { Drawer2, FixedField2, List2 } from "Components/shared/Input";
 import WebUtil from "Utils/WebUtil";
 import StringUtil from "Utils/StringUtil";
+import { CreatorField } from "../CreatorField";
 
 type Props = {
     activity: ActivityType;
@@ -53,7 +54,7 @@ export const ActivityDrawer = (props:Props) => {
     };
 
     // 実行結果へのリンク
-    const resultLinks = activity.outs.map(out => 
+    const resultLinks = activity.outs.map(out =>
         <Link underline='none'
             // リンクをポイントしたときにカーソル形状をボタンと同じにする
             component='button'
@@ -91,11 +92,6 @@ export const ActivityDrawer = (props:Props) => {
         <List2       key={'results'}
                      label='実行結果'
                      items={[...resultLinks, ...errors]} />
-        <FixedField2 key={'creator'}
-                     label='作成者'
-                     value={activity.creator} />
-        <FixedField2 key={'createdAt'}
-                     label='作成日時'
-                     value={activity.createdAt} />
+        <CreatorField key={'creator'} datum={activity} />
     </Drawer2>;
 };

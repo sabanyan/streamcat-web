@@ -1,10 +1,11 @@
 import React from "react"
 import { DatumType, FolderType, Member, ProjectType } from "Model/Library";
-import { Drawer2, FixedField2, TextField2 } from "Components/shared/Input";
+import { Drawer2, TextField2 } from "Components/shared/Input";
 import { DeleteButton } from "../DeleteButton";
 import { EditBox } from "../EditBox";
 import { DownloadFlowButton } from "../DownloadFlowButton";
 import { MembersSelect } from "../MembersSelect";
+import { CreatorField } from "../CreatorField";
 
 type Props = {
     createMode: boolean;
@@ -118,12 +119,7 @@ export const ProjectDrawer = (props:Props) => {
                                 ownerState={[owners, setOwners]}
                                 editorState={[editors, setEditors]}
                                 readerState={[readers, setReaders]} />,
-                <FixedField2 key={'creator'}
-                             label='作成者'
-                             value={project.creator} />,
-                <FixedField2 key={'createdAt'}
-                             label='作成日時'
-                             value={project.createdAt} />,
+                <CreatorField key={'creator'} datum={project} />
             ]
         ]}</EditBox>
     </Drawer2>;
