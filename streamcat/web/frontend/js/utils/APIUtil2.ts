@@ -284,12 +284,12 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                                     flow  : flow});
                 d.createSchedule = (label, runnableUUID, args, inputs, trigger) =>
                     post<ScheduleType>(`/api/v0/schedules`,
-                                       {parent : d.uuid,
-                                        label  : label,
-                                        runnableUUID: runnableUUID,
-                                        args   : args,
-                                        inputs : inputs,
-                                        trigger: trigger});
+                                       {parent  : d.uuid,
+                                        label   : label,
+                                        runnable: runnableUUID,
+                                        args    : args,
+                                        inputs  : inputs,
+                                        trigger : trigger});
                 d.createFrame = (label, file) =>
                     upload<FrameType>(`/api/v0/frames`,
                                       {parent: d.uuid,
@@ -391,6 +391,13 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {label:label});
                 d.delete = () =>
                     del(`/api/v0/schedules/${d.uuid}`);
+                d.update = (label, runnableUUID, args, inputs, trigger) =>
+                    put<ScheduleType>(`/api/v0/schedules/${d.uuid}`,
+                                      { label   : label,
+                                        runnable: runnableUUID,
+                                        args    : args,
+                                        inputs  : inputs,
+                                        trigger : trigger});
             }else if(datum.type === 'frame') {
                 const d = datum as FrameType;
                 d.move = (parent) => 
