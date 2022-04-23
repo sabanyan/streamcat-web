@@ -1,15 +1,15 @@
 import React from 'react';
+import { useAsyncResource } from 'use-async-resource';
 import dayjs from 'dayjs';
 import { FolderType, ScheduleType } from 'Model/Library';
+import { APIUtil2 } from 'Utils/APIUtil2';
 import { TextField2, DatePicker2, TimePicker2, Tabs2, Drawer2 } from 'Components/shared/Input';
-import { EditBox } from '../EditBox';
-import { Value } from '../FlowLinkField';
 import { Value as DateValue } from 'Components/shared/Input/DatePicker2';
+import { Value } from '../FlowLinkField';
+import { EditBox } from '../EditBox';
 import { FlowLinkField } from '../FlowLinkField';
 import { MoveButton } from '../MoveButton';
 import { DeleteButton } from '../DeleteButton';
-import { APIUtil2 } from 'Utils/APIUtil2';
-import { useAsyncResource } from 'use-async-resource';
 import { CreatorField } from '../CreatorField';
 
 // 日付と時刻を一つにまとめる
@@ -17,21 +17,10 @@ const mergeDateAndTime = (date:dayjs.Dayjs|null, time:dayjs.Dayjs|null) => {
     if(!date || !time){
         return null;
     }
-    // const ret = date.clone();
     return date.hour(time.hour()).
                 minute(time.minute()).
                 second(time.second()).
                 millisecond(time.millisecond());
-};
-
-// 指定した日付に開始時刻を設定する
-const beginOfDate = (date:dayjs.Dayjs|null) => {
-    return mergeDateAndTime(date, dayjs('00:00:00.000', 'HH:mm:ss.SSS'));
-};
-
-// 指定した日付に終了時刻を設定する
-const endOfDate = (date:dayjs.Dayjs|null) => {
-    return mergeDateAndTime(date, dayjs('23:59:59.999', 'HH:mm:ss.SSS'));
 };
 
 // Triggerを作成する
@@ -46,8 +35,10 @@ export const makeTrigger = (tabIndex : number,
         case 0:
             return {
                 type: 'interval',
-                start_date: beginOfDate(beginDate)?.toISOString(),
-                end_date: endOfDate(endDate)?.toISOString(),
+                // 指定した日付の開始時刻を設定する
+                start_date: beginDate?.startOf('day').toISOString(),
+                // 指定した日付の終了時刻を設定する
+                end_date: endDate?.endOf('day').toISOString(),
                 seconds: parseInt(seconds),
             };
         case 1:
@@ -151,8 +142,6 @@ export const ScheduleDrawer = (props:Props) => {
         1: [],
         2: [date, time]
     };
-
-    console.log('>> ', dayjs('23:59:59.999', 'HH:mm:ss.SSS'))
 
     return <Drawer2>
         <EditBox
