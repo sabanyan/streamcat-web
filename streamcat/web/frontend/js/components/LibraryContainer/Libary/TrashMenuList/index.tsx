@@ -1,16 +1,19 @@
 import React from 'react';
 import * as style from "./style.scss";
 import {FlatButton} from "Shared/Input";
+import { TrashAllButton } from 'Components/LibraryContainer/TrashAllButton';
+import { TrashType } from 'Model/Library';
 
 interface Props {
-    onClickDeleteAll: () => void;
+    trashFolder: TrashType;
+    onSuccess: () => void;
 }
 
 const TrashMenuList = (props: Props) => {
-    const {onClickDeleteAll} = props;
+    const {trashFolder, onSuccess} = props;
 
     return <div className={style.menuList}>
-        <FlatButton icon={"icon-trash"} danger={true} onClick={onClickDeleteAll}>ゴミ箱を空にする</FlatButton>
+        <TrashAllButton large={true} trashFolder={trashFolder} onSuccess={onSuccess}/>
     </div>;
 };
 

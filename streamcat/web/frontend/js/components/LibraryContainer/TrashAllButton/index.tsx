@@ -5,12 +5,13 @@ import { Button2, DialogButton } from "Components/shared/Input";
 
 type Props = {
     readOnly?: boolean;
+    large?: boolean;
     trashFolder: TrashType;
     onSuccess?: () => void;
 };
 
 export const TrashAllButton = (props:Props) => {
-    const {readOnly, trashFolder, onSuccess} = props;
+    const {readOnly, large, trashFolder, onSuccess} = props;
 
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
@@ -30,6 +31,8 @@ export const TrashAllButton = (props:Props) => {
     const enabled = trashFolder.allowlist.delete;
 
     return <DialogButton label={'ゴミ箱を空にする'}
+                         icon='trash'
+                         large={large}
                          dialogTitle={'ゴミ箱にある項目を完全に消去してもよろしいですか？'}
                          readOnly={!enabled || readOnly}>{[
         // Contents
