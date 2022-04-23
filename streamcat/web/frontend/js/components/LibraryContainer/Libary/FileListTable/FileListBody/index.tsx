@@ -1,6 +1,6 @@
 import React from 'react';
+import dayjs from 'dayjs';
 import { LinkButton } from "Shared/Input";
-import moment from "moment";
 import classnames from "classnames";
 import style from "./style.scss";
 import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
@@ -70,7 +70,7 @@ const FileListBody = (props: Props) => {
                 {body.creator}
             </td>
             <td className={style.date}>
-                {moment(body.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}
+                {dayjs(body.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}
             </td>
         </tr>;
     });

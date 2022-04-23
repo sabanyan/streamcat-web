@@ -8,7 +8,7 @@ module.exports = (env) => {
       mode: mode,
       //ref:https://qiita.com/pirosikick/items/c77db84dbed4c447a6fe
       entry: {
-        vendor: ['react', 'react-dom', 'react-redux', 'classnames', 'dagre', 'eventemitter3', 'moment']
+        vendor: ['react', 'react-dom', 'react-redux', 'classnames', 'dagre', 'eventemitter3']
       },
       output: {
         path: `${__dirname}/web/frontend/static/js`,
