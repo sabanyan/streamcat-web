@@ -173,9 +173,12 @@ const PaperScroller = (props: Props) => {
         }
     };
 
-    const isOnClickPaper = (e) => {
+    const isOnClickPaper = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         //e._dispatchListeners.length は step がクリックされた場合は 2　それ以外は 1
-        return (e._dispatchListeners.length == 1);
+        // return (e._dispatchListeners.length == 1);
+
+        // TODO: _dispatchListenersが存在しなくなったので代わりに以下のようにしたが、うまくいってなさそう
+        return (e.target.dispatchEvent.length === 1);
     };
 
     const {editor, children} = props;
