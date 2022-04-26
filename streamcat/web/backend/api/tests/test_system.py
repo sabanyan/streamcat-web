@@ -2088,6 +2088,61 @@ class SystemTestCase(ApiTestCaseBase):
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
 
+    def test_join_project_usr_admin(self):
+        """
+        ユーザ管理者は、プロジェクト管理者に自身を追加できること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'ワルサーP38'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者からユーザ管理者を一旦削除する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクト管理者にユーザ管理者を追加する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'ワルサーP38')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['modifiedAt'], project_modified_at)
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ(USER1)
+        self.assertEqual(len(result['data']['members']), 1)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER1.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_join_project_inactive_user(self):
         """
         Projectに論理削除状態のユーザを追加できないこと
