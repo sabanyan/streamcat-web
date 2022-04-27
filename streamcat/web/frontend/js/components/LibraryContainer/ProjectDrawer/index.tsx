@@ -27,28 +27,25 @@ export const ProjectDrawer = (props:Props) => {
 
     // 初期表示値
     const initLabel = {value:createMode? '': project.label, isError:createMode};
+    const initOwners = {value:filterByType(project.members, 'Owner'), isError:createMode};
+    const initEditors = {value:filterByType(project.members, 'Writer'), isError:false};
+    const initReaders = {value:filterByType(project.members, 'Reader'), isError:false};
 
     // テキストボックスの値
     const [label, setLabel] = React.useState(initLabel);
     // プロジェクト管理者
-    const [owners, setOwners] = React.useState(
-        filterByType(project?.members, 'Owner')
-    );
+    const [owners, setOwners] = React.useState(initOwners);
     // 編集者
-    const [editors, setEditors] = React.useState(
-        filterByType(project?.members, 'Writer')
-    ); 
+    const [editors, setEditors] = React.useState(initEditors);
     // 閲覧者
-    const [readers, setReaders] = React.useState(
-        filterByType(project?.members, 'Reader')
-    ); 
+    const [readers, setReaders] = React.useState(initReaders);
 
     // 値の初期化処理
     const initValues = () => {
         setLabel(initLabel);
-        setOwners(filterByType(project?.members, 'Owner'));
-        setEditors(filterByType(project?.members, 'Writer'));
-        setReaders(filterByType(project?.members, 'Reader'));
+        setOwners(initOwners);
+        setEditors(initEditors);
+        setReaders(initReaders);
     };
 
     // プロジェクトの新規追加処理
@@ -64,21 +61,21 @@ export const ProjectDrawer = (props:Props) => {
             );
         }
         // プロジェクトメンバを更新するPromiseを追加する
-        const newOnwers = owners.map(member => ({
+        const newOnwers = owners.value.map(member => ({
             uuid: member.value,
             type: 'Owner' as 'Owner'
         }));
-        const newEditors = editors.map(member => ({
+        const newEditors = editors.value.map(member => ({
             uuid: member.value,
             type: 'Writer' as 'Writer'
         }));
-        const newReaders = readers.map(member => ({
+        const newReaders = readers.value.map(member => ({
             uuid: member.value,
             type: 'Reader' as 'Reader'
         }));
         promises.push(
             project.initMembers(
-                [...newOnwers,...newEditors,...newReaders],
+                [...newOnwers, ...newEditors, ...newReaders],
                 project.modifiedAt
             )
         );
@@ -89,7 +86,7 @@ export const ProjectDrawer = (props:Props) => {
     return <Drawer2>
         <EditBox createMode={createMode}
                  datum={project}
-                 values = {[label]}
+                 values = {[label,owners]}
                  initValues={initValues}
                  create={create}
                  update={update}
@@ -118,7 +115,8 @@ export const ProjectDrawer = (props:Props) => {
                                 visible={project.allowlist.findMember}
                                 ownerState={[owners, setOwners]}
                                 editorState={[editors, setEditors]}
-                                readerState={[readers, setReaders]} />,
+                                readerState={[readers, setReaders]}
+                                onErrorChange={onErrorChange} />,
                 <CreatorField key={'creator'} datum={project} />
             ]
         ]}</EditBox>

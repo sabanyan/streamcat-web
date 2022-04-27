@@ -4,13 +4,15 @@ import { DatumType } from "Model/Library";
 import { APIUtil2 } from "Utils/APIUtil2";
 import { MultiSelect2 } from "Components/shared/Input";
 import { SelectItem } from "Components/shared/Input/Select2";
+import { Value as MultiValue } from 'Components/shared/Input/MultiSelect2';
 
 type Props = {
     readOnly?:boolean;
     visible?: boolean;
-    ownerState?:  [SelectItem[], (value:React.SetStateAction<SelectItem[]>)=>void];
-    editorState?: [SelectItem[], (value:React.SetStateAction<SelectItem[]>)=>void];
-    readerState?: [SelectItem[], (value:React.SetStateAction<SelectItem[]>)=>void];
+    ownerState:  [MultiValue<SelectItem>, (value:React.SetStateAction<MultiValue<SelectItem>>)=>void];
+    editorState: [MultiValue<SelectItem>, (value:React.SetStateAction<MultiValue<SelectItem>>)=>void];
+    readerState: [MultiValue<SelectItem>, (value:React.SetStateAction<MultiValue<SelectItem>>)=>void];
+    onErrorChange?: (isError:boolean) => void;
     onSuccess?: (targets:DatumType[]) => void;
 };
 
@@ -19,10 +21,10 @@ type Props = {
 const getAllUsers = () => APIUtil2.findUsers('', true)
 
 export const MembersSelect = (props:Props) => {
-    const {readOnly, visible} = props;
-    const [owners, setOwners] = props.ownerState || [[], () => {}];
-    const [editors, setEditors] = props.editorState || [[], () => {}];
-    const [readers, setReaders] = props.readerState || [[], () => {}];
+    const {readOnly, visible, onErrorChange} = props;
+    const [owners, setOwners] = props.ownerState;
+    const [editors, setEditors] = props.editorState;
+    const [readers, setReaders] = props.readerState;
 
     // ここで全ユーザの取得を開始する
     const [usersReader] = useAsyncResource(getAllUsers, []);
@@ -53,18 +55,20 @@ export const MembersSelect = (props:Props) => {
                 label='プロジェクト管理者'
                 readOnly={readOnly}
                 required={true}
+                requiredMessage='少なくとも1人のプロジェクト管理者を設定してください'
                 items={allUsers}
                 state={[owners, setOwners]}
                 isEqual={isEaual}
-                isDisabledItem={item => isDisabledItem(item, editors, readers)}
-                getLabel={owner=>owner.label}/>
+                isDisabledItem={item => isDisabledItem(item, editors.value, readers.value)}
+                getLabel={owner=>owner.label}
+                onErrorChange={onErrorChange}/>
             <MultiSelect2<SelectItem>
                 label='編集者'
                 readOnly={readOnly}
                 items={allUsers}
                 state={[editors, setEditors]}
                 isEqual={isEaual}
-                isDisabledItem={item => isDisabledItem(item, owners, readers)}
+                isDisabledItem={item => isDisabledItem(item, owners.value, readers.value)}
                 getLabel={owner=>owner.label}/>
             <MultiSelect2<SelectItem>
                 label='閲覧者'
@@ -72,7 +76,7 @@ export const MembersSelect = (props:Props) => {
                 items={allUsers}
                 state={[readers, setReaders]}
                 isEqual={isEaual}
-                isDisabledItem={item => isDisabledItem(item, owners, editors)}
+                isDisabledItem={item => isDisabledItem(item, owners.value, editors.value)}
                 getLabel={owner=>owner.label}/>
         </>:
             // プロジェクトメンバの表示権限がない場合は何も表示しない

@@ -5,32 +5,65 @@ import {Autocomplete,
         TextField} from "@mui/material";
 import {List2} from "Components/shared/Input";
 
+export type Value<T> ={
+    value: T[];
+    isError: boolean;
+};
+
 type Props<T> = {
     label: string;
     readOnly?: boolean;
     required?: boolean;
+    requiredMessage?:string;
     items: T[];
-    state?: [T[], (value:React.SetStateAction<T[]>)=>void];
+    state?: [Value<T>, (value:React.SetStateAction<Value<T>>)=>void];
     isEqual: (item:T, value:T) => boolean;
     isDisabledItem: (item:T) => boolean;
     getLabel: (value:T) => string;
-    onChange?: (values:T[]) => void;
+    onChange?: (value:Value<T>) => void;
+    onErrorChange?:(isError:boolean) => void;
 };
 
 export const MultiSelect2 = <T,>(props:Props<T>) => {
+
+    // 親コンポーネントで変更可能なvalue.isErrorの値に依存しないよう
+    // value.valueの値からエラー状態を判定する
+    const isError = (value:T[]) => {
+        // 入力必須、かつ入力値が空の場合はエラーにする
+        return !!required && (!value || value.length===0);
+    };
+
     const {label, readOnly, required, items, isEqual, isDisabledItem: isDisabledItem, getLabel} = props;
+    const requiredMessage = props.requiredMessage || '入力必須です';
+    const [value, setValue] = props.state || [{value:[],isError:isError([])}, () => {}];
     const onChange = props.onChange || (() => {});
+    const onErrorChange = props.onErrorChange || (() => {});
 
-    const [values, setValues] = props.state || [[], () => {}];
+    // 入力値の変更の有無
+    const [valueChanged, setValueChanged] = React.useState(false);
 
+    // 初期処理
+    React.useEffect(() => {
+        // value.isErrorに誤った初期値が設定された場合は修正する
+        setValue({value:value.value, isError:isError(value.value)});
+    }, []);
+    
     // 入力値が変更された時の処理
     const onChangeValue = ( e:React.SyntheticEvent<Element,Event>,
-                            values:T[],
+                            newValues:T[],
                             reason:AutocompleteChangeReason) => {
+        // 入力必須、かつ入力値が空の場合はエラーにする
+        const error = isError(newValues);
+        // 入力値が一度でも変更されたらtrueを設定する
+        setValueChanged(true);
         // 入力値を設定する
-        setValues(values);
+        setValue({value:newValues, isError:error});
         // イベントハンドラを呼び出す
-        onChange(values);
+        onChange({value:newValues, isError:error});
+        // エラー状態が変わった場合はイベントハンドラを呼び出す
+        if(error!==isError(value.value)){
+            onErrorChange(error);
+        }
     };
 
     // テキストボックス
@@ -46,6 +79,11 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
                     margin='dense'
                     // 枠線を設定する
                     variant='outlined'
+                    // 入力値が空の場合はエラーにする
+                    // (未入力時はエラー表示をしない)
+                    error={valueChanged && isError(value.value)}
+                    // エラーメッセージ
+                    helperText={(valueChanged && isError(value.value))? requiredMessage: ''}
                     {...params} />;
 
     return <>{
@@ -53,7 +91,7 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
         // 
         // 入力不可の場合
         //
-        <List2 label={label} items={values.map(value=>getLabel(value))} />:
+        <List2 label={label} items={value.value.map(value=>getLabel(value))} />:
         // 
         // 入力可の場合
         //
@@ -69,8 +107,8 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
                         // 選択肢からタグのラベルを返す関数
                         getOptionLabel={getLabel}
                         // 初期表示値
-                        defaultValue={values}
-                        value={values}
+                        defaultValue={value.value}
+                        value={value.value}
                         onChange={onChangeValue}
                         // 紐付けるテキストボックス
                         renderInput={renderInput} />
