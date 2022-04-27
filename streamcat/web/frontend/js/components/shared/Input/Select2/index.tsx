@@ -15,7 +15,7 @@ export type Value = {
 export type SelectItem = {
     label: string;
     value: string;
-}
+};
 
 type Props = {
     label:string;
