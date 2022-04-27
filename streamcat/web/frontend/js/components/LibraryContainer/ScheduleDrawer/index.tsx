@@ -19,13 +19,14 @@ export type SelectItem = {
 };
 
 const dayOfWeeks = {
-    0: '日',
-    1: '月',
-    2: '火',
-    3: '水',
-    4: '木',
-    5: '金',
-    6: '土'
+    // The first weekday is always monday.
+    0: '月',
+    1: '火',
+    2: '水',
+    3: '木',
+    4: '金',
+    5: '土',
+    6: '日',
 };
 
 // 
@@ -122,12 +123,12 @@ const mergeDateAndTime = (date:dayjs.Dayjs|null, time:dayjs.Dayjs|null) => {
 const convToListStr = (selectedItems:SelectItem[]) => {
     // 未選択の場合はnullを返す
     if(selectedItems.length===0){
-        return null;
+        return '*';
     }
     // 毎日時が選択されている場合はnullを返す
     const everyDatetimeIsSelected = selectedItems.findIndex(item => item.value===null) >= 0;
     if(everyDatetimeIsSelected){
-        return null;
+        return '*';
     }
     // 選択された日時をカンマ区切りで返す
     return selectedItems.map(item => item.value).join(',');
@@ -227,8 +228,8 @@ export const ScheduleDrawer = (props:Props) => {
 
     const triggerCron = (cronPropertyName:string) => {
         if(cronPropertyName in schedule.trigger){
-            const values:string|null = schedule.trigger[cronPropertyName];
-            if(values===null){
+            const values:string = schedule.trigger[cronPropertyName];
+            if(values==='*'){
                 // 毎日時
                 return [null];
             }else{

@@ -6,7 +6,18 @@ import { EditBox } from '../EditBox';
 import { Value } from '../FlowLinkField';
 import { Value as DateValue } from 'Components/shared/Input/DatePicker2';
 import { FlowLinkField } from '../FlowLinkField';
-import { makeTrigger, SelectItem, isEaual, compare, isDisabledItem, allMonths, allDays, allDayOfWeeks, allHours, allMinutes } from '../ScheduleDrawer';
+import {
+    makeTrigger,
+    SelectItem,
+    isEaual,
+    compare,
+    isDisabledItem,
+    allMonths,
+    allDays,
+    allDayOfWeeks,
+    allHours,
+    allMinutes
+} from '../ScheduleDrawer';
 
 type Props = {
     parent:FolderType;
@@ -81,7 +92,7 @@ export const CreateScheduleButton = (props:Props) => {
     // タブIndexと入力項目の対応テーブル
     const triggerFieldTable = {
         0: [beginDate, endDate, seconds],
-        1: [],
+        1: [beginDate, endDate, months, days, dayOfWeeks, hours, minutes],
         2: [date, time]
     };
 
