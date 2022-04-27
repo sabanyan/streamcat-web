@@ -18,6 +18,7 @@ type Props<T> = {
     items: T[];
     state?: [Value<T>, (value:React.SetStateAction<Value<T>>)=>void];
     isEqual: (item:T, value:T) => boolean;
+    compare?: (item1:T, item2:T) => number;
     isDisabledItem: (item:T) => boolean;
     getLabel: (value:T) => string;
     onChange?: (value:Value<T>) => void;
@@ -33,7 +34,7 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
         return !!required && (!value || value.length===0);
     };
 
-    const {label, readOnly, required, items, isEqual, isDisabledItem: isDisabledItem, getLabel} = props;
+    const {label, readOnly, required, items, isEqual, compare, isDisabledItem: isDisabledItem, getLabel} = props;
     const requiredMessage = props.requiredMessage || '入力必須です';
     const [value, setValue] = props.state || [{value:[],isError:isError([])}, () => {}];
     const onChange = props.onChange || (() => {});
@@ -52,6 +53,11 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
     const onChangeValue = ( e:React.SyntheticEvent<Element,Event>,
                             newValues:T[],
                             reason:AutocompleteChangeReason) => {
+        // 値が追加された場合はソートする
+        if(reason==='selectOption' && compare){
+            // ソート処理は破壊的であることに留意
+            newValues.sort(compare);
+        }
         // 入力必須、かつ入力値が空の場合はエラーにする
         const error = isError(newValues);
         // 入力値が一度でも変更されたらtrueを設定する

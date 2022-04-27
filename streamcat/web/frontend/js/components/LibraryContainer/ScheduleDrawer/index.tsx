@@ -102,11 +102,11 @@ const convToMinuteItem = (minute:number|null):SelectItem => {
 };
 
 // 全ての選択日時を作成する
-const allMonths  = [null, ...Array(12).keys()].map(convToMonthItem);
-const allDays    = [null, ...Array(31).keys()].map(convToDayItem);
-const allDayOfWeeks = [null, ...Array(7).keys()].map(convToDayOfWeekItem);
-const allHours   = [null, ...Array(24).keys()].map(convToHourItem);
-const allMinutes = [null, ...Array(60).keys()].map(convToMinuteItem);
+export const allMonths  = [null, ...Array(12).keys()].map(convToMonthItem);
+export const allDays    = [null, ...Array(31).keys()].map(convToDayItem);
+export const allDayOfWeeks = [null, ...Array(7).keys()].map(convToDayOfWeekItem);
+export const allHours   = [null, ...Array(24).keys()].map(convToHourItem);
+export const allMinutes = [null, ...Array(60).keys()].map(convToMinuteItem);
 
 // 日付と時刻を一つにまとめる
 const mergeDateAndTime = (date:dayjs.Dayjs|null, time:dayjs.Dayjs|null) => {
@@ -174,6 +174,30 @@ export const makeTrigger = (tabIndex : number,
             };
         default:
             throw new Error(`unknown tab index (${tabIndex})`);
+    }
+};
+
+// 選択肢の比較関数
+export const isEaual = (item:SelectItem, value:SelectItem) => item.value===value.value;
+
+// 選択肢の大小比較関数
+export const compare = (item1:SelectItem, item2:SelectItem) => (item1.value || 0) - (item2.value || 0);
+
+// 毎日時が選択された場合は他は選択できないこと
+export const isDisabledItem = (item:SelectItem, selectedItems:SelectItem[]) => {
+    // 未選択の場合は選択肢の制限は無い
+    if(selectedItems.length===0){
+        return false;
+    }
+    // 毎日時の選択の有無
+    const everyDatetimeIsSelected = selectedItems.findIndex(item => item.value===null) >= 0;
+    // 
+    if(everyDatetimeIsSelected){
+        // 毎日時が選択されている場合は他の選択肢は選択できない
+        return item.value!==null;
+    }else{
+        // 毎日時が選択されていない場合は他の選択肢は選択できる
+        return item.value===null;
     }
 };
 
@@ -309,27 +333,6 @@ export const ScheduleDrawer = (props:Props) => {
         2: [date, time]
     };
 
-    // 選択肢の比較関数
-    const isEaual = (item:SelectItem, value:SelectItem) => item.value===value.value;
-
-    // 毎日時が選択された場合は他は選択できないこと
-    const isDisabledItem = (item:SelectItem, selectedItems:SelectItem[]) => {
-        // 未選択の場合は選択肢の制限は無い
-        if(selectedItems.length===0){
-            return false;
-        }
-        // 毎日時の選択の有無
-        const everyDatetimeIsSelected = selectedItems.findIndex(item => item.value===null) >= 0;
-        // 
-        if(everyDatetimeIsSelected){
-            // 毎日時が選択されている場合は他の選択肢は選択できない
-            return item.value!==null;
-        }else{
-            // 毎日時が選択されていない場合は他の選択肢は選択できる
-            return item.value===null;
-        }
-    };
-
     return <Drawer2>
         <EditBox
             key='createSchedule'
@@ -419,6 +422,7 @@ export const ScheduleDrawer = (props:Props) => {
                             items={allMonths}
                             state={[months, setMonths]}
                             isEqual={isEaual}
+                            compare={compare}
                             isDisabledItem={item => isDisabledItem(item, months.value)}
                             getLabel={item=>item.label}
                             onErrorChange={onErrorChange}/>
@@ -429,6 +433,7 @@ export const ScheduleDrawer = (props:Props) => {
                             items={allDays}
                             state={[days, setDays]}
                             isEqual={isEaual}
+                            compare={compare}
                             isDisabledItem={item => isDisabledItem(item, days.value)}
                             getLabel={item=>item.label}
                             onErrorChange={onErrorChange}/>
@@ -439,6 +444,7 @@ export const ScheduleDrawer = (props:Props) => {
                             items={allDayOfWeeks}
                             state={[dayOfWeeks, setDayOfWeeks]}
                             isEqual={isEaual}
+                            compare={compare}
                             isDisabledItem={item => isDisabledItem(item, dayOfWeeks.value)}
                             getLabel={item=>item.label}
                             onErrorChange={onErrorChange}/>
@@ -449,6 +455,7 @@ export const ScheduleDrawer = (props:Props) => {
                             items={allHours}
                             state={[hours, setHours]}
                             isEqual={isEaual}
+                            compare={compare}
                             isDisabledItem={item => isDisabledItem(item, hours.value)}
                             getLabel={item=>item.label}
                             onErrorChange={onErrorChange}/>
@@ -459,6 +466,7 @@ export const ScheduleDrawer = (props:Props) => {
                             items={allMinutes}
                             state={[minutes, setMinutes]}
                             isEqual={isEaual}
+                            compare={compare}
                             isDisabledItem={item => isDisabledItem(item, minutes.value)}
                             getLabel={item=>item.label}
                             onErrorChange={onErrorChange}/>

@@ -1,12 +1,12 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import { FolderType, ScheduleType } from 'Model/Library';
-import { DialogButton, TextField2, DatePicker2, TimePicker2, Tabs2 } from 'Components/shared/Input';
+import { DialogButton, TextField2, DatePicker2, TimePicker2, Tabs2, MultiSelect2 } from 'Components/shared/Input';
 import { EditBox } from '../EditBox';
 import { Value } from '../FlowLinkField';
 import { Value as DateValue } from 'Components/shared/Input/DatePicker2';
 import { FlowLinkField } from '../FlowLinkField';
-import { makeTrigger } from '../ScheduleDrawer';
+import { makeTrigger, SelectItem, isEaual, compare, isDisabledItem, allMonths, allDays, allDayOfWeeks, allHours, allMinutes } from '../ScheduleDrawer';
 
 type Props = {
     parent:FolderType;
@@ -25,17 +25,25 @@ export const CreateScheduleButton = (props:Props) => {
     const initFlow = {value:null, isError:true};
     const initDate = {value:null, isError:true};
     const initSeconds = {value:'', isError:true};
+    const initCron:{value:SelectItem[], isError:boolean} = {value:[], isError:true};
 
     // テキストボックスの値
     const [label, setLabel] = React.useState(initLabel);
     const [flow, setFlow] = React.useState<Value>(initFlow);
-    // 起動日時の値
     const [tabIndex, setTabIndex] = React.useState(0);
+    // 一度だけ起動
     const [date, setDate] = React.useState<DateValue>(initDate);
     const [time, setTime] = React.useState<DateValue>(initDate);
+    // 指定秒間隔で起動
     const [beginDate, setBeingDate] = React.useState<DateValue>(initDate);
     const [endDate, setEndDate] = React.useState<DateValue>(initDate);
     const [seconds, setSeconds] = React.useState(initSeconds);
+    // 指定日時毎に起動
+    const [months, setMonths] = React.useState(initCron);
+    const [days, setDays] = React.useState(initCron);
+    const [dayOfWeeks, setDayOfWeeks] = React.useState(initCron);
+    const [hours, setHours] = React.useState(initCron);
+    const [minutes, setMinutes] = React.useState(initCron);
 
     // 値の初期化処理
     const initValues = () => {
@@ -47,6 +55,11 @@ export const CreateScheduleButton = (props:Props) => {
         setBeingDate(initDate);
         setEndDate(initDate);
         setSeconds(initSeconds);
+        setMonths(initCron);
+        setDays(initCron);
+        setDayOfWeeks(initCron);
+        setHours(initCron);
+        setMinutes(initCron);
     };
 
     // Triggerを作成する
@@ -56,11 +69,11 @@ export const CreateScheduleButton = (props:Props) => {
                                 date.value,
                                 time.value,
                                 seconds.value,
-                                [],
-                                [],
-                                [],
-                                [],
-                                []);
+                                months.value,
+                                days.value,
+                                dayOfWeeks.value,
+                                hours.value,
+                                minutes.value);
 
     // スケジュールの新規追加処理
     const create = () => parent.createSchedule(label.value, flow.value?.uuid || '', {}, {}, trigger);
@@ -137,6 +150,76 @@ export const CreateScheduleButton = (props:Props) => {
                                         onErrorChange={onErrorChange} />
                         </span>
                         <span title='指定日時毎に起動'>
+                            <DatePicker2 key='beginDate'
+                                        label='開始日付'
+                                        required={true}
+                                        readOnly={readOnly}
+                                        minDate={dayjs()}
+                                        maxDate={endDate.value || undefined}
+                                        state={[beginDate, setBeingDate]}
+                                        onErrorChange={onErrorChange} />
+                            <DatePicker2 key='endDate'
+                                        label='終了日付'
+                                        required={true}
+                                        readOnly={readOnly}
+                                        minDate={beginDate.value || dayjs()}
+                                        state={[endDate, setEndDate]}
+                                        onErrorChange={onErrorChange} />
+                            <MultiSelect2<SelectItem>
+                                label='月'
+                                readOnly={readOnly}
+                                required={true}
+                                items={allMonths}
+                                state={[months, setMonths]}
+                                isEqual={isEaual}
+                                compare={compare}
+                                isDisabledItem={item => isDisabledItem(item, months.value)}
+                                getLabel={item=>item.label}
+                                onErrorChange={onErrorChange}/>
+                            <MultiSelect2<SelectItem>
+                                label='日'
+                                readOnly={readOnly}
+                                required={true}
+                                items={allDays}
+                                state={[days, setDays]}
+                                isEqual={isEaual}
+                                compare={compare}
+                                isDisabledItem={item => isDisabledItem(item, days.value)}
+                                getLabel={item=>item.label}
+                                onErrorChange={onErrorChange}/>
+                            <MultiSelect2<SelectItem>
+                                label='曜日'
+                                readOnly={readOnly}
+                                required={true}
+                                items={allDayOfWeeks}
+                                state={[dayOfWeeks, setDayOfWeeks]}
+                                isEqual={isEaual}
+                                compare={compare}
+                                isDisabledItem={item => isDisabledItem(item, dayOfWeeks.value)}
+                                getLabel={item=>item.label}
+                                onErrorChange={onErrorChange}/>
+                            <MultiSelect2<SelectItem>
+                                label='時'
+                                readOnly={readOnly}
+                                required={true}
+                                items={allHours}
+                                state={[hours, setHours]}
+                                isEqual={isEaual}
+                                compare={compare}
+                                isDisabledItem={item => isDisabledItem(item, hours.value)}
+                                getLabel={item=>item.label}
+                                onErrorChange={onErrorChange}/>
+                            <MultiSelect2<SelectItem>
+                                label='分'
+                                readOnly={readOnly}
+                                required={true}
+                                items={allMinutes}
+                                state={[minutes, setMinutes]}
+                                isEqual={isEaual}
+                                compare={compare}
+                                isDisabledItem={item => isDisabledItem(item, minutes.value)}
+                                getLabel={item=>item.label}
+                                onErrorChange={onErrorChange}/>
                         </span>
                         <span title='一度だけ起動'>
                             <DatePicker2 key='date'
