@@ -3,7 +3,7 @@ import {Autocomplete,
         AutocompleteRenderInputParams,
         AutocompleteChangeReason,
         TextField} from "@mui/material";
-import {List2} from "Components/shared/Input";
+import {Array2, List2} from "Components/shared/Input";
 
 export type Value<T> ={
     value: T[];
@@ -15,6 +15,7 @@ type Props<T> = {
     readOnly?: boolean;
     required?: boolean;
     requiredMessage?:string;
+    readOnlyLayout?: 'array'|'list';
     items: T[];
     state?: [Value<T>, (value:React.SetStateAction<Value<T>>)=>void];
     isEqual: (item:T, value:T) => boolean;
@@ -34,7 +35,7 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
         return !!required && (!value || value.length===0);
     };
 
-    const {label, readOnly, required, items, isEqual, compare, isDisabledItem: isDisabledItem, getLabel} = props;
+    const {label, readOnly, required, items, readOnlyLayout, isEqual, compare, isDisabledItem: isDisabledItem, getLabel} = props;
     const requiredMessage = props.requiredMessage || '入力必須です';
     const [value, setValue] = props.state || [{value:[],isError:isError([])}, () => {}];
     const onChange = props.onChange || (() => {});
@@ -94,11 +95,14 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
 
     return <>{
         readOnly?
-        // 
+        //
         // 入力不可の場合
         //
-        <List2 label={label} items={value.value.map(value=>getLabel(value))} />:
-        // 
+        (readOnlyLayout==='list'?
+            <List2  label={label} items={value.value.map(value=>getLabel(value))} />:
+            <Array2 label={label} items={value.value.map(value=>getLabel(value))} />
+        ):
+        //
         // 入力可の場合
         //
         <Autocomplete //複数選択可

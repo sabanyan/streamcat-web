@@ -55,7 +55,8 @@ export const MembersSelect = (props:Props) => {
                 label='プロジェクト管理者'
                 readOnly={readOnly}
                 required={true}
-                requiredMessage='少なくとも1人のプロジェクト管理者を設定してください'
+                requiredMessage='1人以上のプロジェクト管理者を設定してください'
+                readOnlyLayout='list'
                 items={allUsers}
                 state={[owners, setOwners]}
                 isEqual={isEaual}
@@ -65,6 +66,7 @@ export const MembersSelect = (props:Props) => {
             <MultiSelect2<SelectItem>
                 label='編集者'
                 readOnly={readOnly}
+                readOnlyLayout='list'
                 items={allUsers}
                 state={[editors, setEditors]}
                 isEqual={isEaual}
@@ -73,6 +75,7 @@ export const MembersSelect = (props:Props) => {
             <MultiSelect2<SelectItem>
                 label='閲覧者'
                 readOnly={readOnly}
+                readOnlyLayout='list'
                 items={allUsers}
                 state={[readers, setReaders]}
                 isEqual={isEaual}
