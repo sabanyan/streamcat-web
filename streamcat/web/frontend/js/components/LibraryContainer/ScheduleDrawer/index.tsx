@@ -18,6 +18,9 @@ export type SelectItem = {
     value: number|null;
 };
 
+// Webブラウザのタイムゾーン文字列を取得する
+const timezone = window.Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 const dayOfWeeks = {
     // The first weekday is always monday.
     0: '月',
@@ -166,7 +169,9 @@ export const makeTrigger = (tabIndex : number,
                 day_of_week: convToListStr(dayOfWeeks),
                 day       : convToListStr(days),
                 hour      : convToListStr(hours),
-                minute    : convToListStr(minutes)
+                minute    : convToListStr(minutes),
+                // APSchedulerはUTCの設定なので、クライアントのタイムゾーンを指定する
+                timezone  : timezone
             };
         case 2:
             return {
@@ -199,6 +204,30 @@ export const isDisabledItem = (item:SelectItem, selectedItems:SelectItem[]) => {
     }else{
         // 毎日時が選択されていない場合は他の選択肢は選択できる
         return item.value===null;
+    }
+};
+
+// 選択した月に存在しない日は選択できないこと
+export const isDisabledDay = (dayItem:SelectItem, months:SelectItem[]) => {
+    if(dayItem.value===30){
+        // 30日は2月に存在しない
+        return months.findIndex(month => 
+            month.value!==2) < 0;
+    }else if(dayItem.value===31){
+        // 31日は小の月に存在しない
+        return months.findIndex(month => 
+            month.value===null ||
+            month.value===1 ||
+            month.value===3 ||
+            month.value===5 ||
+            month.value===7 ||
+            month.value===8 ||
+            month.value===10||
+            month.value===12
+        ) < 0;
+    }else{
+        // OK
+        return false;
     }
 };
 
@@ -435,7 +464,7 @@ export const ScheduleDrawer = (props:Props) => {
                             state={[days, setDays]}
                             isEqual={isEaual}
                             compare={compare}
-                            isDisabledItem={item => isDisabledItem(item, days.value)}
+                            isDisabledItem={item => isDisabledItem(item, days.value) || isDisabledDay(item, months.value)}
                             getLabel={item=>item.label}
                             onErrorChange={onErrorChange}/>
                         <MultiSelect2<SelectItem>

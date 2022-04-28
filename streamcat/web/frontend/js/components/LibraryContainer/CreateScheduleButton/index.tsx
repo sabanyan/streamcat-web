@@ -12,6 +12,7 @@ import {
     isEaual,
     compare,
     isDisabledItem,
+    isDisabledDay,
     allMonths,
     allDays,
     allDayOfWeeks,
@@ -195,7 +196,7 @@ export const CreateScheduleButton = (props:Props) => {
                                 state={[days, setDays]}
                                 isEqual={isEaual}
                                 compare={compare}
-                                isDisabledItem={item => isDisabledItem(item, days.value)}
+                                isDisabledItem={item => isDisabledItem(item, days.value) || isDisabledDay(item, months.value)}
                                 getLabel={item=>item.label}
                                 onErrorChange={onErrorChange}/>
                             <MultiSelect2<SelectItem>
