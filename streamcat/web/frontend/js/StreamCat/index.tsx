@@ -17,6 +17,7 @@ import {NotAllowed} from 'Components/NotAllowedContainer';
 import {setNetworkStatusAction} from 'Modules/flowEditor';
 import {NetworkStatusValue} from 'Model/Flow/FlowModel';
 import { APIUtil2 } from 'Utils/APIUtil2';
+import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
     viewId: ViewId
@@ -83,9 +84,14 @@ const StreamCat = (props: Props) => {
     const nav = readNavigation();
 
     const renderNavigationBar = () => {
-        return <div className={style.nav}>
-            <NavigationBar navigation={nav} />
-        </div>;
+        const isDialog = HttpUtil.getURLParam("dialog");
+        if(isDialog){
+            return <></>;
+        }else{
+            return <div className={style.nav}>
+                <NavigationBar navigation={nav} />
+            </div>;
+        }
     };
 
     const renderView = (viewId: ViewId) => {
