@@ -1,5 +1,5 @@
 import React from 'react';
-import {Menu, MenuItem, Button, Link, Avatar, Divider} from '@mui/material';
+import {Menu, MenuItem, Button, Link, Avatar, Divider, Typography} from '@mui/material';
 import {WebUtil} from 'Utils/index';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import { Spacer } from "Shared/Base";
@@ -51,7 +51,7 @@ const AccountMenu = (props: Props) => {
                 onClick={handleClick}>
             <Avatar src={baseUrl + 'images/icon/user.svg'} variant='rounded' sx={{width:24, height:24}}/>
             <Spacer width={8} />
-            {navigation?.user.name}
+            <Typography color='common.white'>{navigation?.user.name}</Typography>
         </Button>
         <Menu id='basic-menu'
               anchorEl={anchorEl}
