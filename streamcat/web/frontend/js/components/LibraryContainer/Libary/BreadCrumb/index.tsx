@@ -20,12 +20,12 @@ export const BreadCrumb = (props: Props) => {
 
     return <Breadcrumbs aria-label='breadcrumb' className={style.breadCrumb}>
         {
-            links.map(link => (
+            links.map((link, index) => (
                 link.current ?
                 // 現在の表示フォルダ
-                <Text>{link.label}</Text>:
+                <Text key='current'>{link.label}</Text>:
                 // 先祖フォルダ
-                <Link href={link.url} underline='none'>
+                <Link key={index} href={link.url} underline='none'>
                     {link.label}
                 </Link>
             ))
