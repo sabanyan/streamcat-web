@@ -13,9 +13,10 @@ export const Array2 = (props:Props) => {
         <Typography variant='caption'
                     color='textSecondary'
                     sx={{lineHeight:'0'}}>{label}</Typography>
-        <div>{items.map(item =>
-            <Typography variant="body1"
-                        color="textPrimary"
+        <div>{items.map((item, index) =>
+            <Typography key={index}
+                        variant='body1'
+                        color='textPrimary'
                         component='span'
                         sx={{lineHeight:'1',
                             paddingLeft:1,
