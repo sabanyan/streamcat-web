@@ -12,11 +12,12 @@ from .api_test_case_base import ApiTestCaseBase
 class FlowTestCase(ApiTestCaseBase):
 
     def setUp(self):
+        super().setUp()
         app.testing = True
         self.client = app.test_client()
 
     def tearDown(self):
-        pass
+        super().tearDown()
 
     def test_new_flow(self):
         """
@@ -356,6 +357,9 @@ class FlowTestCase(ApiTestCaseBase):
         flow_uuid = str(uuid.uuid4())
         flow_path = 'backend/api/tests/flows/168d23c2-f835-4392-ba0e-76e94a08b719.json'
         self.save_flow_to_library(flow_uuid, flow_path)
+
+        # 作成を確定する
+        self.factory.end()
 
         # フレームを、フロー格納フォルダに格納する
         f = (io.BytesIO(b"thisisaframefile"), 'wearetestmen.csv')
@@ -866,5 +870,8 @@ def setUpFlow(self, flow_json={}):
 
     # フローデータをライブラリに保存する
     test_flow.save()
+
+    # 作成を確定する
+    self.factory.end()
 
     return test_flow_uuid

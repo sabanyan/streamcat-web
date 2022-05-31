@@ -41,6 +41,10 @@ class ApiTestCaseBase(TestCaseBase):
             root = self.factory.data.load_root()
             frame = root.create_frame(file_path_obj.name, f)
             frame.save()
+
+        # 作成を確定する
+        self.factory.end()
+
         # save()によりreadable=Noneになるため再取得する
         return self.factory.data.find_by_uuid(frame.uuid).uuid
 

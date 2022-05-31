@@ -22,9 +22,11 @@ class DataStoreTestCase(ApiTestCaseBase):
                             '',
                             '',
                             [{'name':'connectionString', 'type':'string', 'label':'postgreSQLへの接続文字列'}])
-        self.factory0._session.add(store1)
-        self.factory0._session.add(store2)
-        self.factory0._session.commit()
+        store1.save()
+        store2.save()
+
+        # 作成を確定する
+        self.factory0.end()
 
         # GET /stores
         result = self.get_uri('/api/v0/stores', self.USER0)
