@@ -3829,6 +3829,19 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
         remote_folder_uuid = result['data']['uuid']
 
+        # フォルダの下にスケジュールを作成する
+        data = {
+            'parent': project_uuid,
+            'label' : '私のスケジュール',
+            'runnable' : flow_uuid,
+            'trigger': {
+                'type' : 'date',
+                'date' : '2121-09-10 11:22:30'
+            }
+        }
+        result = self.post_uri('/api/v0/schedules', data, self.USER2)
+        schedule_uuid = result['data']['uuid']
+
         # # フォルダの下にAWS S3を作成する
         # data = {
         #     'parent': folder_uuid,
@@ -3876,22 +3889,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 編集者メンバは、キャッシュを取得する
-        # result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 編集者メンバは、キャッシュを取得する
+        result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # 編集者メンバは、アクティビティフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
@@ -3931,6 +3944,28 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
+        # 編集者メンバは、プロジェクトを取得する
+        # (GET /projects で取得する)
+        results = self.get_uri('/api/v0/projects', self.USER2)
+        self.assertGreater(len(results['data']), 0)
+        result0 = [result for result in results['data'] if result['label'] == '暴れん坊将軍'][0]
+        self.assertTrue(result0['allowlist']['read'])
+        self.assertFalse(result0['allowlist']['createProject'])
+        self.assertTrue(result0['allowlist']['createFolder'])
+        self.assertTrue(result0['allowlist']['createFile'])
+        self.assertFalse(result0['allowlist']['update'])
+        self.assertFalse(result0['allowlist']['delete'])
+        self.assertFalse(result0['allowlist']['execute'])
+        self.assertFalse(result0['allowlist']['move'])
+        self.assertTrue(result0['allowlist']['copy'])
+        self.assertTrue(result0['allowlist']['upload'])
+        self.assertFalse(result0['allowlist']['import'])
+        self.assertTrue(result0['allowlist']['download'])
+        self.assertFalse(result0['allowlist']['export'])
+        self.assertFalse(result0['allowlist']['findMember'])
+        self.assertFalse(result0['allowlist']['updateMember'])
+        self.assertFalse(result0['allowlist']['lock'])
+
         # 編集者メンバは、フォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
@@ -3967,23 +4002,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertTrue(result['data']['allowlist']['lock'])
 
-        # # 編集者メンバは、フレームを取得する
-        # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
-        # print(result)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 編集者メンバは、フレームを取得する
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # 編集者メンバは、Databaseを取得する
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
@@ -4015,6 +4049,24 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertTrue(result['data']['allowlist']['copy'])
         self.assertNotIn('upload', result['data']['allowlist'])
         self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 編集者メンバは、スケジュールを取得する
+        result = self.get_uri(f'/api/v0/schedules/{schedule_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['export'])
         self.assertFalse(result['data']['allowlist']['findMember'])
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
@@ -4117,6 +4169,28 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
+        # 閲覧者メンバは、プロジェクトを取得する
+        # (GET /projects で取得する)
+        results = self.get_uri('/api/v0/projects', self.USER2)
+        self.assertGreater(len(results['data']), 0)
+        result0 = [result for result in results['data'] if result['label'] == '暴れん坊将軍'][0]
+        self.assertTrue(result0['allowlist']['read'])
+        self.assertFalse(result0['allowlist']['createProject'])
+        self.assertFalse(result0['allowlist']['createFolder'])
+        self.assertFalse(result0['allowlist']['createFile'])
+        self.assertFalse(result0['allowlist']['update'])
+        self.assertFalse(result0['allowlist']['delete'])
+        self.assertFalse(result0['allowlist']['execute'])
+        self.assertFalse(result0['allowlist']['move'])
+        self.assertFalse(result0['allowlist']['copy'])
+        self.assertFalse(result0['allowlist']['upload'])
+        self.assertFalse(result0['allowlist']['import'])
+        self.assertFalse(result0['allowlist']['download'])
+        self.assertFalse(result0['allowlist']['export'])
+        self.assertFalse(result0['allowlist']['findMember'])
+        self.assertFalse(result0['allowlist']['updateMember'])
+        self.assertFalse(result0['allowlist']['lock'])
+
         # 閲覧者メンバは、フォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
@@ -4154,22 +4228,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 閲覧者メンバは、フレームを取得する
-        # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['update'])
-        # self.assertFalse(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertFalse(result['data']['allowlist']['move'])
-        # self.assertFalse(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 閲覧者メンバは、フレームを取得する
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # 閲覧者メンバは、Databaseを取得する
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
@@ -4201,6 +4275,24 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['copy'])
         self.assertNotIn('upload', result['data']['allowlist'])
         self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 閲覧者メンバは、スケジュールを取得する
+        result = self.get_uri(f'/api/v0/schedules/{schedule_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['export'])
         self.assertFalse(result['data']['allowlist']['findMember'])
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
@@ -4303,6 +4395,28 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertTrue(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
+        # プロジェクト管理者は、プロジェクトを取得する
+        # (GET /projects で取得する)
+        results = self.get_uri('/api/v0/projects', self.USER2)
+        self.assertGreater(len(results['data']), 0)
+        result0 = [result for result in results['data'] if result['label'] == '暴れん坊将軍'][0]
+        self.assertTrue(result0['allowlist']['read'])
+        self.assertFalse(result0['allowlist']['createProject'])
+        self.assertTrue(result0['allowlist']['createFolder'])
+        self.assertTrue(result0['allowlist']['createFile'])
+        self.assertTrue(result0['allowlist']['update'])
+        self.assertTrue(result0['allowlist']['delete'])
+        self.assertFalse(result0['allowlist']['execute'])
+        self.assertFalse(result0['allowlist']['move'])
+        self.assertTrue(result0['allowlist']['copy'])
+        self.assertTrue(result0['allowlist']['upload'])
+        self.assertFalse(result0['allowlist']['import'])
+        self.assertTrue(result0['allowlist']['download'])
+        self.assertFalse(result0['allowlist']['export'])
+        self.assertTrue(result0['allowlist']['findMember'])
+        self.assertTrue(result0['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
         # プロジェクト管理者は、フォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
@@ -4340,22 +4454,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertTrue(result['data']['allowlist']['lock'])
 
-        # # プロジェクト管理者は、フレームを取得する
-        # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # プロジェクト管理者は、フレームを取得する
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # プロジェクト管理者は、Databaseを取得する
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
@@ -4387,6 +4501,24 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertTrue(result['data']['allowlist']['copy'])
         self.assertNotIn('upload', result['data']['allowlist'])
         self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # プロジェクト管理者は、スケジュールを取得する
+        result = self.get_uri(f'/api/v0/schedules/{schedule_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['export'])
         self.assertFalse(result['data']['allowlist']['findMember'])
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])

@@ -78,7 +78,7 @@ class ProjectTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
-                'label' : '新しいプロジェクト'}
+                'label' : '私の新しいプロジェクト'}
         result = self.post_uri('/api/v0/projects', data, self.USER2)
         project_uuid = result['data']['uuid']
 
@@ -88,12 +88,34 @@ class ProjectTestCase(ApiTestCaseBase):
         # 結果の件数は1件以上である
         self.assertGreater(len(results['data']), 0)
 
+        # 作成したプロジェクトを抽出する
+        result0 = [result for result in results['data'] if result['label'] == '私の新しいプロジェクト'][0]
+
         # 作成したプロジェクトが取得できることを検証する
-        result0 = results['data'][0]
         self.assertIsNotNone(result0['uuid'])
         self.assertEqual(result0['type'], 'project')
+        self.assertEqual(result0['label'], '私の新しいプロジェクト')
         self.assertIsNotNone(result0['creator'])
         self.assertIsNotNone(result0['createdAt'])
+
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result0['allowlist']['read'])
+        self.assertFalse(result0['allowlist']['createProject'])
+        self.assertTrue(result0['allowlist']['createFolder'])
+        self.assertTrue(result0['allowlist']['createFile'])
+        self.assertTrue(result0['allowlist']['update'])
+        self.assertTrue(result0['allowlist']['delete'])
+        self.assertFalse(result0['allowlist']['execute'])
+        self.assertFalse(result0['allowlist']['move'])
+        self.assertTrue(result0['allowlist']['copy'])
+        self.assertTrue(result0['allowlist']['upload'])
+        self.assertTrue(result0['allowlist']['download'])
+        # 一般ユーザはプロジェクトのインポートとエクスポートの権限を持たない
+        self.assertFalse(result0['allowlist']['import'])
+        self.assertFalse(result0['allowlist']['export'])
+        self.assertTrue(result0['allowlist']['findMember'])
+        self.assertTrue(result0['allowlist']['updateMember'])
+        self.assertFalse(result0['allowlist']['lock'])
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -146,11 +168,55 @@ class ProjectTestCase(ApiTestCaseBase):
 
     def test_get_project(self):
         """
-        GET /projects APIをテストする
+        一般ユーザがGET /projects APIを発行する
+        """
+        # プロジェクトを作成する
+        root = self.factory2.data.load_root()
+        project = root.create_project_folder('フロー格納プロジェクトA')
+        project.save()
+
+        # プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project.uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'フロー格納プロジェクトA')
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertTrue(result['data']['allowlist']['createFolder'])
+        self.assertTrue(result['data']['allowlist']['createFile'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['upload'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        # 一般ユーザはプロジェクトのインポートとエクスポートの権限を持たない
+        self.assertFalse(result['data']['allowlist']['import'])
+        self.assertFalse(result['data']['allowlist']['export'])
+        self.assertTrue(result['data']['allowlist']['findMember'])
+        self.assertTrue(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project.uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_get_project_usr_admin(self):
+        """
+        ユーザ管理者がGET /projects APIを発行する
         """
         # プロジェクトを作成する
         root = self.factory.data.load_root()
-        project = root.create_project_folder('フロー格納フォルダA')
+        project = root.create_project_folder('フロー格納プロジェクトB')
         project.save()
 
         # プロジェクトを取得する
@@ -159,9 +225,28 @@ class ProjectTestCase(ApiTestCaseBase):
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], project.uuid)
         self.assertEqual(result['data']['type'], 'project')
-        self.assertEqual(result['data']['label'], 'フロー格納フォルダA')
+        self.assertEqual(result['data']['label'], 'フロー格納プロジェクトB')
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertTrue(result['data']['allowlist']['createFolder'])
+        self.assertTrue(result['data']['allowlist']['createFile'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['upload'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        # ユーザ管理者はプロジェクトのインポートとエクスポートの権限を持つ
+        self.assertTrue(result['data']['allowlist']['import'])
+        self.assertTrue(result['data']['allowlist']['export'])
+        self.assertTrue(result['data']['allowlist']['findMember'])
+        self.assertTrue(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # プロジェクトをほかす
         self.delete_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
