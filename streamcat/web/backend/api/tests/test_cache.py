@@ -21,14 +21,14 @@ class CacheTestCase(ApiTestCaseBase):
             'label': 'テストフローです',
             'ports': [[],[]],
             'params': [],
-            'description': ""
+            'description': ''
         }
         node = {
-            "id": datum_id,
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": cache.uuid,
-            "cacheCreatedAt": '2019/01/01'
+            'id': datum_id,
+            'type': 'frame',
+            'dataSource': 'csv',
+            'uuid': cache.uuid,
+            'cacheCreatedAt': '2019/01/01'
         }
         flow_json['nodes']=[]
         flow_json['nodes'].append(node)
@@ -37,4 +37,5 @@ class CacheTestCase(ApiTestCaseBase):
         test_flow = root.create_flow('テストフローです', FlowData(flow_json))
         test_flow.save()
 
-        self.delete_uri('/api/v0/caches?of=%s.%s' % (test_flow.uuid, datum_id), self.USER1)
+        # キャッシュを削除する
+        self.delete_uri(f'/api/v0/caches?of={test_flow.uuid}.{datum_id}', self.USER1)

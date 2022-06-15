@@ -91,15 +91,19 @@ def delete_cache():
     """
     指定したフローのキャッシュを削除する
     """
+    if 'of' not in request.args:
+        raise Exception('URI引数"of"が指定されていません')
+
     # 引数から削除対象のノードidを取得する
     ofs = request.args['of'].split('.')
     flow_uuid = ofs[0]
     node_id = ofs[1]
 
     # 対象のフローの排他ロックのUUIDを取得する
-    if request.json is None:
+    if request.headers.get('Content-Type') != 'application/json':
         lock_uuid = None
     else:
+        # NOTE: Content-Typeがapplication/jsonでない場合は、request.json()で例外が発生する
         req = RequestJson(request.json)
         lock_uuid = req.get('lock')
 
