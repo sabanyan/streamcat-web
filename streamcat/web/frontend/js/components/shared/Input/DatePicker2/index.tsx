@@ -28,11 +28,11 @@ export const DatePicker2 = (props:Props) => {
 
     const isError = (value:dayjs.Dayjs|null) => {
         // 入力必須、かつ入力値が空の場合はエラーにする
-        return !!required && !value;
+        return (!!required && !value) || (!!value && !value.isValid());
     };
 
     const {label, readOnly, required, minDate, maxDate} = props;
-    const requiredMessage = props.requiredMessage || '入力必須です';
+    const requiredMessage = props.requiredMessage || '不正な日付です';
     const [value, setValue] = props.state || [{value:null,isError:isError(null)}, () => {}];
     const onChange = props.onChange || (() => {});
     const onErrorChange = props.onErrorChange || (() => {});

@@ -76,16 +76,16 @@ export const CreateScheduleButton = (props:Props) => {
 
     // Triggerを作成する
     const trigger = makeTrigger(tabIndex,
-                                beginDate.value,
-                                endDate.value,
-                                date.value,
-                                time.value,
-                                seconds.value,
-                                months.value,
-                                days.value,
-                                dayOfWeeks.value,
-                                hours.value,
-                                minutes.value);
+                                beginDate,
+                                endDate,
+                                date,
+                                time,
+                                seconds,
+                                months,
+                                days,
+                                dayOfWeeks,
+                                hours,
+                                minutes);
 
     // スケジュールの新規追加処理
     const create = () => parent.createSchedule(label.value, flow.value?.uuid || '', {}, {}, trigger);

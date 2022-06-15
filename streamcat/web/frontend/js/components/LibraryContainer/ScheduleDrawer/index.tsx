@@ -18,6 +18,11 @@ export type SelectItem = {
     value: number|null;
 };
 
+type SelectValue = {
+    value: SelectItem[];
+    isError: boolean;
+};
+
 // Webブラウザのタイムゾーン文字列を取得する
 const timezone = window.Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -139,44 +144,56 @@ const convToListStr = (selectedItems:SelectItem[]) => {
 
 // Triggerを作成する
 export const makeTrigger = (tabIndex : number,
-                            beginDate: dayjs.Dayjs|null,
-                            endDate  : dayjs.Dayjs|null,
-                            date     : dayjs.Dayjs|null,
-                            time     : dayjs.Dayjs|null,
-                            seconds  : string,
-                            months   : SelectItem[],
-                            days     : SelectItem[],
-                            dayOfWeeks: SelectItem[],
-                            hours    : SelectItem[],
-                            minutes  : SelectItem[]) => {
+                            beginDate: DateValue,
+                            endDate  : DateValue,
+                            date     : DateValue,
+                            time     : DateValue,
+                            seconds  : {value:any; isError:boolean},
+                            months   : SelectValue,
+                            days     : SelectValue,
+                            dayOfWeeks: SelectValue,
+                            hours    : SelectValue,
+                            minutes  : SelectValue) => {
     // 選択されたタブによって起動日時の指定方法を決定する
     switch(tabIndex){
         case 0:
+            // 不正な日付の場合は空を返す
+            if(beginDate.isError || endDate.isError){
+                return {};
+            }
             return {
                 type: 'interval',
                 // 指定した日付の開始時刻を設定する
-                start_date: beginDate?.startOf('day').toISOString(),
+                start_date: beginDate.value?.startOf('day').toISOString(),
                 // 指定した日付の終了時刻を設定する
-                end_date: endDate?.endOf('day').toISOString(),
-                seconds: parseInt(seconds),
+                end_date: endDate.value?.endOf('day').toISOString(),
+                seconds: parseInt(seconds.value),
             };
         case 1:
+            // 不正な日付の場合は空を返す
+            if(beginDate.isError || endDate.isError){
+                return {};
+            }
             return {
                 type: 'cron',
-                start_date: beginDate?.startOf('day').toISOString(),
-                end_date  : endDate?.endOf('day').toISOString(),
-                month     : convToListStr(months),
-                day_of_week: convToListStr(dayOfWeeks),
-                day       : convToListStr(days),
-                hour      : convToListStr(hours),
-                minute    : convToListStr(minutes),
+                start_date: beginDate.value?.startOf('day').toISOString(),
+                end_date  : endDate.value?.endOf('day').toISOString(),
+                month     : convToListStr(months.value),
+                day_of_week: convToListStr(dayOfWeeks.value),
+                day       : convToListStr(days.value),
+                hour      : convToListStr(hours.value),
+                minute    : convToListStr(minutes.value),
                 // APSchedulerはUTCの設定なので、クライアントのタイムゾーンを指定する
                 timezone  : timezone
             };
         case 2:
+            // 不正な日時の場合は空を返す
+            if(date.isError || time.isError){
+                return {};
+            }
             return {
                 type: 'date',
-                date: mergeDateAndTime(date, time)?.toISOString(),
+                date: mergeDateAndTime(date.value, time.value)?.toISOString(),
             };
         default:
             throw new Error(`unknown tab index (${tabIndex})`);
@@ -339,16 +356,16 @@ export const ScheduleDrawer = (props:Props) => {
 
     // Triggerを作成する
     const trigger = makeTrigger(tabIndex,
-                                beginDate.value,
-                                endDate.value,
-                                date.value,
-                                time.value,
-                                seconds.value,
-                                months.value,
-                                days.value,
-                                dayOfWeeks.value,
-                                hours.value,
-                                minutes.value);
+                                beginDate,
+                                endDate,
+                                date,
+                                time,
+                                seconds,
+                                months,
+                                days,
+                                dayOfWeeks,
+                                hours,
+                                minutes);
 
     // スケジュールの新規追加処理
     const create = () => parent.createSchedule(label.value, flow.value?.uuid || '', {}, {}, trigger);
