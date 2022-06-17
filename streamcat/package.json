@@ -15,8 +15,8 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "npx webpack --config webpack.dll.config.js --env=development && npx webpack --env=development --watch",
-		"dll": "npx webpack --config webpack.dll.config.js",
-		"build": "npx webpack --config webpack.dll.config.js --env=production && npx webpack --env=production",
+		"build": "npx webpack --config webpack.dll.config.js --env=production  && npx webpack --env=production",
+		"dll"  : "npx webpack --config webpack.dll.config.js",
 		"lint": "npx eslint .",
 		"test": "jest --maxWorkers=1",
 		"testwatch": "jest --watchAll",
