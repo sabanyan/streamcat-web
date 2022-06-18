@@ -7,6 +7,7 @@ from ...api.tests.api_test_case_base import ApiTestCaseBase
 
 class HtmlTestCase(ApiTestCaseBase):
     def setUp(self):
+        super().setUp()
         app.testing = True
         self.client = app.test_client()
         # ログインするとCookieにトークンが格納される

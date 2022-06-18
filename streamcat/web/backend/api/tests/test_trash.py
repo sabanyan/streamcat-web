@@ -277,6 +277,9 @@ class TrashTestCase(ApiTestCaseBase):
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         flow.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フォルダ1をほかすが、中のフレームはフローで使用中なのでエラーになる
         with self.assertRaises(AssertionError) as e:
             self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -643,6 +646,9 @@ class TrashTestCase(ApiTestCaseBase):
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         flow.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フォルダ1をほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
         
@@ -719,6 +725,9 @@ class TrashTestCase(ApiTestCaseBase):
         flow2 = root.create_flow('フロー2', self.get_flow_with_source(frame_uuid_2))
         flow2.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フォルダ1をほかすが、中のフレームは全てフローで使用中なのでエラーになる
         with self.assertRaises(AssertionError) as e:
             self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -769,6 +778,9 @@ class TrashTestCase(ApiTestCaseBase):
         # フレーム1を参照するフローを作成する
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         flow.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # フォルダ2内にフレーム2を作成する
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
@@ -831,6 +843,9 @@ class TrashTestCase(ApiTestCaseBase):
         import io
         FLOW_FOLDER_UUID = self.factory.data.load_flow_folder().uuid
         FLOW_FOLDER_LABEL = self.factory.data.load_flow_folder().label
+
+        # 作成を確定する
+        self.factory.end()
 
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
@@ -978,6 +993,9 @@ class TrashTestCase(ApiTestCaseBase):
         flow = project1.create_flow('サブフロー1', self.get_flow_with_source(frame1.uuid))
         flow.save()
         flow = self.factory.data.find_by_uuid(flow.uuid)
+
+        # 作成を確定する
+        self.factory.end()
 
         # 削除前にフローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
@@ -1136,6 +1154,9 @@ class TrashTestCase(ApiTestCaseBase):
         # サブフローを作成する
         subflow = root.create_flow('サブフロー', self.get_flow_with_source(frame_uuid_1))
         subflow.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # 削除前にフローのロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':subflow.uuid}, self.USER1)

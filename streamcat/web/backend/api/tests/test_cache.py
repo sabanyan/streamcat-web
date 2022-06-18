@@ -37,5 +37,8 @@ class CacheTestCase(ApiTestCaseBase):
         test_flow = root.create_flow('テストフローです', FlowData(flow_json))
         test_flow.save()
 
-        # キャッシュを削除する
-        self.delete_uri(f'/api/v0/caches?of={test_flow.uuid}.{datum_id}', self.USER1)
+        # 作成を確定する
+        self.factory.end()
+
+		# キャッシュを削除する
+        self.delete_uri('/api/v0/caches?of=%s.%s' % (test_flow.uuid, datum_id), self.USER1)

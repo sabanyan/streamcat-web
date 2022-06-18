@@ -199,6 +199,9 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
         new_user.update_password('hogehoge88')
 
+        # 登録を確定する
+        self.factory.end()
+
         # ユーザ管理者は、ユーザ情報を変更する
         expected = {
             'email': '変更後＠aiueo.co.jp',
@@ -246,6 +249,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
         new_user.update_password('fuurinkazann')
+
+        # 登録を確定する
+        self.factory.end()
 
         # ユーザ情報を変更する
         expected = {
@@ -363,6 +369,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
         new_user.update_password('bishamontenn123')
+
+        # 変更を確定する
+        self.factory.end()
 
         # 他人のユーザ情報を変更する
         data = {
@@ -606,6 +615,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 仮登録状態から登録状態にする
         USER_X.update_password('_)(*&^%$#@!')
 
+        # 変更を確定する
+        self.factory.end()
+
         # ユーザ2は、本登録処理をする
         # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
         self.post_register_complete(self.USER2.uuid, 'adminpass0')
@@ -671,7 +683,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
-        
+
     def test_get_tmp_user_with_roles(self):
         """
         一度も登録状態になっていないUserの本人ロールは存在しない
@@ -1175,6 +1187,9 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
         new_user.update_password('alslb**^a#2a@aa0O')
 
+        # 変更を確定する
+        self.factory.end()
+
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
 
@@ -1199,6 +1214,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
         new_user.update_password('passoiuyt*')
+
+        # 変更を確定する
+        self.factory.end()
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
@@ -3010,6 +3028,8 @@ class SystemTestCase(ApiTestCaseBase):
         project1_writers_role.init_authz(activity.id, read=True, write=True, own=True)
         # Activityをほかす
         activity.throw_away()
+        # 削除を確定する
+        self.factory.end()
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)

@@ -19,6 +19,7 @@ class FrameTestCase(ApiTestCaseBase):
     database_conn = DatabaseConn(conn_json)
 
     def setUp(self):
+        super().setUp()
         self.root = self.factory.data.load_root()
         self.root_path = self.root.path
         # テスト用のフロー
@@ -78,6 +79,8 @@ class FrameTestCase(ApiTestCaseBase):
         from streamcat.store import FlowData
         new_flow = parent.create_flow(label, FlowData(flow_json))
         new_flow.save()
+        # 作成を確定する
+        self.factory.end()
         # save()によりreadable=Noneになるため再取得する
         return new_flow.reload()
 
@@ -1039,6 +1042,9 @@ class FrameTestCase(ApiTestCaseBase):
         db = self.root.create_database('postgresql', self.database_conn)
         db.uuid = 'c410cd16-2529-498d-8e7f-490ffa58dc95'
         db.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         from streamcat.engine.tests.make_flow_json import postgre_src, postgre_dst
 

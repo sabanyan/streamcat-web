@@ -10,6 +10,7 @@ from .api_test_case_base import ApiTestCaseBase
 class FileTestCase(ApiTestCaseBase):
 
     def setUp(self):
+        super().setUp()
         app.testing = True
         self.TESTDATA_DIR = self.factory.data.load_root().path
 
@@ -106,6 +107,9 @@ class FileTestCase(ApiTestCaseBase):
         flow = root.create_simple_flow('Export用フロー', frame)
         flow.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フローをエクスポートする
         result = self.get_file(f'/api/v0/archives/flows/{flow.uuid}', self.USER1)
         self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
@@ -192,12 +196,18 @@ class FileTestCase(ApiTestCaseBase):
         flow2 = folder2.create_simple_flow('Export用フロー2', frame2)
         flow2.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フローをエクスポートする
         result = self.get_file(f'/api/v0/archives/flows/{project1.uuid}', self.USER1)
         self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
 
         # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
         project1.update_label('うごげ〜')
+
+        # 作成と変更を確定する
+        self.factory.end()
 
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:

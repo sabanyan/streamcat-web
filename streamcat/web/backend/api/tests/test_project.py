@@ -6,12 +6,6 @@ from .api_test_case_base import ApiTestCaseBase
 
 class ProjectTestCase(ApiTestCaseBase):
 
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def get_row_by_sql(self, sql):
         """
         指定したSQL文を発行し、一つの結果行を取得する
@@ -175,6 +169,9 @@ class ProjectTestCase(ApiTestCaseBase):
         project = root.create_project_folder('フロー格納プロジェクトA')
         project.save()
 
+        # 作成を確定する
+        self.factory2.end()
+
         # プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER2)
 
@@ -219,6 +216,9 @@ class ProjectTestCase(ApiTestCaseBase):
         project = root.create_project_folder('フロー格納プロジェクトB')
         project.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
 
@@ -262,6 +262,9 @@ class ProjectTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
         project = root.create_project_folder('フロー格納フォルダ')
         project.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # PUT /projects
         new_label = '変更後のフォルダ名'
