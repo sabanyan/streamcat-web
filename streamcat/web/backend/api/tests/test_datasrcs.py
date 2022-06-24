@@ -59,7 +59,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "o",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd']
                 }
             ]
         ]
@@ -121,7 +121,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "o",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd']
                 }
             ]
         ]
@@ -178,7 +178,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "o",
                     "nodeId": "d",
-                    "type": "frame"
+                    "types": ["mcmd"]
                 }
             ]
         ]
@@ -275,7 +275,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['frame']
                 }
             ],
             []
@@ -342,7 +342,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd','matrix']
                 }
             ],
             []
@@ -406,7 +406,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "type": "frame"
+                    "types": ["frame"]
                 }
             ],
             []
