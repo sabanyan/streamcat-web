@@ -120,6 +120,33 @@ def delete_cache():
     cache.throw_away()
 
 
+def _make_beam_datasrc_json(root) -> dict:
+    """
+    Apache Beamライブラリデータソースを作成する
+    TODO: 間に合わせの実装
+    """
+    from streamcat.depo.std.commands import CommandLink
+
+    label = 'ライブラリ(Apache Beam)'
+    loader_cmd = CommandLink('beam_loader').resolve()
+    args = {'uuid':'@[uuid]'}
+    params = [
+        {
+            "name": "uuid",
+            "type": "frame",
+            "label": "ファイルを指定する",
+            "optional": False
+        }
+    ]
+    # データソースを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datasource = root.create_datasource(label, root, loader_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+    datasrc_json['classification'] = 'data_source'
+    datasrc_json['flow'] = datasource.flow_data.to_json()
+    return datasrc_json
+
 @mod.route('/datasrcs', methods=['GET'])
 @login_required_api
 @api_base
@@ -213,6 +240,11 @@ def fetch_datasrcs():
         datasrc_json['flow'] = datasource_flow_data.to_json(ignore_authz=True)
         # データソースの一覧に格納する
         datasrcs_json.append(datasrc_json)
+
+    # Apache Beamライブラリデータソースをデータソースの一覧に格納する
+    # TODO: 間に合わせの実装
+    beam_datasrc_json = _make_beam_datasrc_json(root)
+    datasrcs_json.append(beam_datasrc_json)
 
     return datasrcs_json
 
