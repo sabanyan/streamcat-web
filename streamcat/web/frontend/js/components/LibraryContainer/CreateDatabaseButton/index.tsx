@@ -50,7 +50,7 @@ export const CreateDatabaseButton = (props:Props) => {
                                                 userId.value,
                                                 password.value);
 
-    return <DialogButton label={'データベースの追加'}
+    return <DialogButton label='データベースの追加'
                          icon='add'
                          large={true} >{[
         // Contents

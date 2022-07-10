@@ -31,7 +31,7 @@ export const PutbackButton = (props:Props) => {
     // NOTE: ゴミ箱から戻す操作の逆操作は削除であるため、削除権限の有無で判定する
     const enabled = datum.allowlist.delete;
 
-    return <DialogButton label={'戻す'}
+    return <DialogButton label='戻す'
                          dialogTitle={`${datum.label} を捨てる前の場所に戻しますか？`}
                          readOnly={!enabled || readOnly}>{[
         // Contents

@@ -18,7 +18,7 @@ export const UploadFlowButton = (props:Props) => {
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
-    return <DialogButton label={'フローのアップロード'}
+    return <DialogButton label='フローのアップロード'
                          icon='upload'
                          large={true} >{[
         // Contents

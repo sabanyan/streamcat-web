@@ -20,7 +20,6 @@ import {
 } from 'Model/Library';
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import {LockType} from 'Model/Locks';
-import { newDataDest } from 'Modules/flowEditor';
 
 
 // NOTE: JavaScriptではJavaのようにcatch構文で例外オブジェクトに型に応じて処理を振り分ける事はできない

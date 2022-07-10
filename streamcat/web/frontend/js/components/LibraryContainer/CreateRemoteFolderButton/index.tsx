@@ -49,7 +49,7 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                                     userId.value,
                                                     password.value);
 
-    return <DialogButton label={'リモートフォルダの追加'}
+    return <DialogButton label='リモートフォルダの追加'
                          icon='add'
                          large={true} >{[
         // Contents

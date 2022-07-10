@@ -18,7 +18,7 @@ export const UploadFileButton = (props:Props) => {
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
-    return <DialogButton label={'ファイルアップロード'}
+    return <DialogButton label='ファイルアップロード'
                          icon='upload'
                          large={true} >{[
         // Contents

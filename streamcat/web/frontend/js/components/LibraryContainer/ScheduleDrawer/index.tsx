@@ -411,7 +411,7 @@ export const ScheduleDrawer = (props:Props) => {
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
                 <FlowLinkField  key='flow'
-                                label={'起動させるフロー'}
+                                label='起動させるフロー'
                                 required={true}
                                 readOnly={readOnly}
                                 parent={parent}

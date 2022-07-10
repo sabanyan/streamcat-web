@@ -30,7 +30,7 @@ export const TrashAllButton = (props:Props) => {
     // 選択中の全てのDatumが更新可能の場合にTrue
     const enabled = trashFolder.allowlist.delete;
 
-    return <DialogButton label={'ゴミ箱を空にする'}
+    return <DialogButton label='ゴミ箱を空にする'
                          icon='trash'
                          large={large}
                          dialogTitle={'ゴミ箱にある項目を完全に消去してもよろしいですか？'}

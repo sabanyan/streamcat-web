@@ -63,7 +63,7 @@ export const DeleteButton = (props:Props) => {
                             prevLabel + ', ' + label
                         );
 
-    return <DialogButton label={'削除'}
+    return <DialogButton label='削除'
                          dialogTitle={`${targetLabels}を削除しますか？`}
                          readOnly={!enabled || readOnly}>{[
         // Contents

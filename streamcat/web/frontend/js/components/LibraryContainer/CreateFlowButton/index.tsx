@@ -28,7 +28,7 @@ export const CreateFlowButton = (props:Props) => {
     // フローの新規追加処理
     const create = () => parent.createFlow(label.value);
 
-    return <DialogButton label={'フローの追加'}
+    return <DialogButton label='フローの追加'
                          icon='add'
                          large={true} >{[
         // Contents

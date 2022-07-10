@@ -28,7 +28,7 @@ export const CreateFolderButton = (props:Props) => {
     // フォルダの新規追加処理
     const create = () => parent.createFolder(label.value);
 
-    return <DialogButton label={'フォルダの追加'}
+    return <DialogButton label='フォルダの追加'
                          icon='add'
                          large={true} >{[
         // Contents

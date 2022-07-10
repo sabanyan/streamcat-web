@@ -28,7 +28,7 @@ export const CreateProjectButton = (props:Props) => {
     // プロジェクトの新規追加処理
     const create = () => parent.createProject(label.value);
 
-    return <DialogButton label={'プロジェクトの追加'}
+    return <DialogButton label='プロジェクトの追加'
                          icon='add'
                          large={true} >{[
         // Contents
