@@ -25,7 +25,7 @@ export const Button2 = (props:Props) => {
     // TODO: とりあえずlarge=trueの場合は左に寄せる
     const align = large? {justifyContent: 'flex-start'}: {};
     // ボタンのサイズ設定
-    const size = large? {height:0.26, typography:'subtitle1'}: {};
+    const size = large? {height:'3rem', typography:'subtitle1'}: {};
 
     return <Button  // ラベルの左側にアイコンを表示する
                     startIcon={icon}
