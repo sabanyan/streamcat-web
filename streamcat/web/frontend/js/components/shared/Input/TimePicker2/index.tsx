@@ -2,9 +2,8 @@ import React from 'react';
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
 import {TextField} from '@mui/material';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import AdapterDayjs from '@mui/lab/AdapterDayjs';
-import TimePicker from '@mui/lab/TimePicker';
+import { TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FixedField2 } from '../FixedField2';
 
 export type Value = {

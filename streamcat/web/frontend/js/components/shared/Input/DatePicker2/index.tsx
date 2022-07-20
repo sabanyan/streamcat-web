@@ -2,9 +2,8 @@ import React from 'react';
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
 import {TextField} from '@mui/material';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import AdapterDayjs from '@mui/lab/AdapterDayjs';
-import DatePicker from '@mui/lab/DatePicker';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FixedField2 } from '../FixedField2';
 
 export type Value = {
@@ -73,9 +72,8 @@ export const DatePicker2 = (props:Props) => {
         // 
         // 入力可の場合
         // 
-        <LocalizationProvider dateAdapter={AdapterDayjs} locale={ja} >
+        <LocalizationProvider dateAdapter={AdapterDayjs} dateFormats={{monthAndYear:'YYYY年 M月'}} locale={ja} >
         <DatePicker label={label}
-                    // inputFormat='YYYY-MM-DD'
                     inputFormat='YYYY-MM-DD'
                     mask='____-__-__'
                     minDate={minDate}
