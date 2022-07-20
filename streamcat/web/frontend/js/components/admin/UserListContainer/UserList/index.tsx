@@ -4,9 +4,9 @@ import {useEffect, useRef, useState} from 'react';
 import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
 import {UserListUser, UserProject, UserRole} from 'Types/index';
 import {Flex, Loader, Spacer} from 'Shared/Base';
-import {MenuList} from 'UserListContainer/UserList/MenuList';
-import {UserListTable} from 'UserListContainer/UserList/UserListTable';
-import {ITableBody} from 'UserListContainer/UserList/UserListTable/UserListBody';
+import {MenuList} from 'Components/admin/UserListContainer/MenuList';
+import {UserListTable} from 'UserListContainer/UserListTable';
+import {ITableBody} from 'UserListContainer/UserListTable/UserListBody';
 import {ModalManager} from 'Shared/Modal';
 import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
 import {TextField} from 'Shared/Input';
@@ -18,7 +18,7 @@ import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelect
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 import {Simulate} from "react-dom/test-utils";
 import error = Simulate.error;
-import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
+import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
 import {NavigationType} from 'Model/Navigation/NavigationModel';

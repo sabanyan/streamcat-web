@@ -1,6 +1,6 @@
 import React from "react";
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { Button2 } from "Components/shared/Input";
+import { Button2 } from "Shared/Input";
 
 type Props = {
     label: string;

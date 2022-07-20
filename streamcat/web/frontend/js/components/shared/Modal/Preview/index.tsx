@@ -6,7 +6,7 @@ import { HttpUtil } from 'Utils/index';
 import style from '../Core/style.scss';
 import Visualizer from 'Shared/Visualizer';
 import {Contents} from 'Shared/Inspector';
-import { useStreamCatNotifications } from 'Components/shared/Notification';
+import { useStreamCatNotifications } from 'Shared/Notification';
 
 type Props = {
     id: string;

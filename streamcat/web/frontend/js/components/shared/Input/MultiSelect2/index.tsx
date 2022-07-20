@@ -3,7 +3,7 @@ import {Autocomplete,
         AutocompleteRenderInputParams,
         AutocompleteChangeReason,
         TextField} from "@mui/material";
-import {Array2, List2} from "Components/shared/Input";
+import {Array2, List2} from "Shared/Input";
 
 export type Value<T> ={
     value: T[];

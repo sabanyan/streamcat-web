@@ -9,7 +9,7 @@ import {CommandSelector} from "FlowEditorContainer/Command";
 import {DataFrameDetailType, MastType} from "Types/index";
 import {Loader} from "Shared/Base";
 import { FlowType, Port } from "Model/Library";
-import { useStreamCatNotifications } from "Components/shared/Notification";
+import { useStreamCatNotifications } from "Shared/Notification";
 
 type Props = {
     selected_data_source_detail: DataFrameDetailType;
