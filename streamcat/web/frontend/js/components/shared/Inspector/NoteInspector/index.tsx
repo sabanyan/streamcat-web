@@ -150,7 +150,7 @@ const NoteInspector = (props: Props) => {
                 }} />
             <Spacer height={6} />
             <DropDownList
-                key={'fontSize'}
+                key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
                 defaultValue={fontSize}
                 disabled={baseInspectorDisabled}
@@ -160,7 +160,7 @@ const NoteInspector = (props: Props) => {
             />
             <Spacer height={12} />
             <DropDownList
-                key={'color'}
+                key='color'
                 onChange={(e, data, label) => onChangeColor(e, data, label)}
                 defaultValue={color}
                 disabled={baseInspectorDisabled}

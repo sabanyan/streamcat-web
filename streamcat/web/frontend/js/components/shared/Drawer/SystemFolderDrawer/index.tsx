@@ -11,9 +11,9 @@ export const SystemFolderDrawer = (props:Props) => {
     const { folder } = props;
 
     return <Drawer2>
-        <FixedField2 key={'label'}
+        <FixedField2 key='label'
                      label='ラベル'
                      value={folder.label} />
-        <CreatorField key={'creator'} datum={folder} />
+        <CreatorField key='creator' datum={folder} />
     </Drawer2>;
 };

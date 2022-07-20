@@ -73,24 +73,24 @@ export const DatabaseDrawer = (props:Props) => {
                  onSuccess={datum=>onSuccess(datum as DatabaseType)} >{[
             // ボタン
             [
-                <MoveButton key={'move'}
+                <MoveButton key='move'
                             parent={parent} 
                             targets={[datum]}
                             onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />,
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[datum]}
                               onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />
             ],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
-                <TextField2 key={'label'}
+                <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <Select2    key={'dbms'}
+                <Select2    key='dbms'
                             label='DBMS'
                             required={true}
                             items={[{label:'PostgreSQL',value:'postgresql'},
@@ -98,14 +98,14 @@ export const DatabaseDrawer = (props:Props) => {
                             readOnly={readOnly}
                             state={[dbms,setDbms]}
                             onErrorChange={onErrorChange} />,
-                <TextField2 key={'hostname'}
+                <TextField2 key='hostname'
                             label='ホスト名またはIPアドレス'
                             required={true}
                             readOnly={readOnly}
                             state={[hostname,setHostname]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'port'}
+                <TextField2 key='port'
                             label='ポート番号'
                             type='number'
                             required={true}
@@ -113,26 +113,26 @@ export const DatabaseDrawer = (props:Props) => {
                             state={[port,setPort]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'database'}
+                <TextField2 key='database'
                             label='データベース名'
                             required={true}
                             readOnly={readOnly}
                             state={[database,setDatabase]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'userId'}
+                <TextField2 key='userId'
                             label='ユーザーID'
                             readOnly={readOnly}
                             state={[userId,setUserId]}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'password'}
+                <TextField2 key='password'
                             label='パスワード'
                             type='password'
                             readOnly={readOnly}
                             state={[password,setPassword]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <CreatorField key={'creator'} datum={datum} />
+                <CreatorField key='creator' datum={datum} />
             ]
         ]}</EditBox>
     </Drawer2>;

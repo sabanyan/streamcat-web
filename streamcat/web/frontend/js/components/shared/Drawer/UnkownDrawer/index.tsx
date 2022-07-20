@@ -17,17 +17,17 @@ export const UnkownDrawer = (props:Props) => {
 
     return <Drawer2>
         <Box>
-            <MoveButton key={'move'}
+            <MoveButton key='move'
                         parent={parent}
                         targets={[datum]}
                         onSuccess={onSuccess} />
-            <DeleteButton key={'del'}
+            <DeleteButton key='del'
                           targets={[datum]}
                           onSuccess={onSuccess} />
         </Box>
-        <FixedField2 key={'label'}
+        <FixedField2 key='label'
                      label='ラベル'
                      value={datum.label} />
-        <CreatorField key={'creator'} datum={datum} />
+        <CreatorField key='creator' datum={datum} />
     </Drawer2>;
 };

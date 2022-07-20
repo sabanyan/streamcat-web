@@ -16,9 +16,9 @@ export const TrashFolderDrawer = (props:Props) => {
         <Box>
             <TrashAllButton trashFolder={trashFolder} />
         </Box>
-        <FixedField2 key={'label'}
+        <FixedField2 key='label'
                      label='ラベル'
                      value={trashFolder.label} />
-        <CreatorField key={'creator'} datum={trashFolder} />
+        <CreatorField key='creator' datum={trashFolder} />
     </Drawer2>;
 };

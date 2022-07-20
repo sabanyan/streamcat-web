@@ -93,15 +93,15 @@ export const ProjectDrawer = (props:Props) => {
                  onSuccess={datum=>onSuccess(datum as ProjectType)} >{[
             // ボタン
             [
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[project]}
                               onSuccess={(data)=>onSuccess(data[0] as ProjectType)} />,
-                <DownloadFlowButton key={'download'}
+                <DownloadFlowButton key='download'
                                     targets={[project]} />
             ],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
-                <TextField2 key={'label'}
+                <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
@@ -117,7 +117,7 @@ export const ProjectDrawer = (props:Props) => {
                                 editorState={[editors, setEditors]}
                                 readerState={[readers, setReaders]}
                                 onErrorChange={onErrorChange} />,
-                <CreatorField key={'creator'} datum={project} />
+                <CreatorField key='creator' datum={project} />
             ]
         ]}</EditBox>
     </Drawer2>;

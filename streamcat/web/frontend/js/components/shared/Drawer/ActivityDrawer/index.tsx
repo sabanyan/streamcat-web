@@ -80,18 +80,18 @@ export const ActivityDrawer = (props:Props) => {
     );
 
     return <Drawer2>
-        <FixedField2 key={'label'}
+        <FixedField2 key='label'
                      label='ラベル'
                      value={activity.label} />
-        <FixedField2 key={'startAt'}
+        <FixedField2 key='startAt'
                      label='開始日時'
                      value={formatDateTime(activity.startAt)} />
-        <FixedField2 key={'interval'}
+        <FixedField2 key='interval'
                      label='処理時間'
                      value={interval(new Date(activity.endAt), new Date(activity.startAt))} />
-        <List2       key={'results'}
+        <List2       key='results'
                      label='実行結果'
                      items={[...resultLinks, ...errors]} />
-        <CreatorField key={'creator'} datum={activity} />
+        <CreatorField key='creator' datum={activity} />
     </Drawer2>;
 };

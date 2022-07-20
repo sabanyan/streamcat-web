@@ -84,43 +84,43 @@ export const FrameDrawer = (props:Props) => {
                  onSuccess={datum=>onSuccess(datum as FrameType)} >{[
             // ボタン
             [
-                <MoveButton key={'move'}
+                <MoveButton key='move'
                             parent={parent} 
                             targets={[frame]}
                             onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[frame]}
                               onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
-                <DownloadCsvButton  key={'download'}
+                <DownloadCsvButton  key='download'
                                     targets={[frame]} />
             ],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
-                <TextField2 key={'label'}
+                <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <FixedField2 key={'size'}
+                <FixedField2 key='size'
                              label='ファイルサイズ'
                              value={ConvToFileSizeStr(frame.fileSize)} />,
-                <Select2    key={'encoding'}
+                <Select2    key='encoding'
                             label='文字コード'
                             required={true}
                             items={encodingItems}
                             readOnly={readOnly}
                             state={[encoding, setEncoding]}
                             onErrorChange={onErrorChange} />,
-                <Select2    key={'newline'}
+                <Select2    key='newline'
                             label='改行コード'
                             required={true}
                             items={newlineItems}
                             readOnly={readOnly}
                             state={[newline, setNewline]}
                             onErrorChange={onErrorChange} />,
-                <CreatorField key={'creator'} datum={frame} />
+                <CreatorField key='creator' datum={frame} />
             ]
         ]}</EditBox>
     </Drawer2>;

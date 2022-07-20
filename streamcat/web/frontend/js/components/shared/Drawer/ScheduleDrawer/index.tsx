@@ -392,11 +392,11 @@ export const ScheduleDrawer = (props:Props) => {
             onSuccess={datum=>onSuccess(datum as ScheduleType)} >{[
             // ボタン
             [
-                <MoveButton key={'move'}
+                <MoveButton key='move'
                             parent={parent} 
                             targets={[schedule]}
                             onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />,
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[schedule]}
                               onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />
             ],
@@ -438,7 +438,7 @@ export const ScheduleDrawer = (props:Props) => {
                                     minDate={beginDate.value || dayjs()}
                                     state={[endDate, setEndDate]}
                                     onErrorChange={onErrorChange} />
-                        <TextField2 key={'seconds'}
+                        <TextField2 key='seconds'
                                     label='秒数'
                                     type='number'
                                     required={true}
@@ -534,7 +534,7 @@ export const ScheduleDrawer = (props:Props) => {
                                     onErrorChange={onErrorChange} />
                     </span>
                 </Tabs2>,
-                <CreatorField key={'creator'} datum={schedule} />
+                <CreatorField key='creator' datum={schedule} />
             ]
         ]}</EditBox>
     </Drawer2>;

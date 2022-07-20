@@ -49,7 +49,7 @@ export const CreateFlowButton = (props:Props) => {
                 [],
                 // テキストボックス
                 (readOnly, onErrorChange, onEnterKeyPress) => [
-                    <TextField2 key={'label'}
+                    <TextField2 key='label'
                                 label='ラベル'
                                 required={true}
                                 readOnly={readOnly}

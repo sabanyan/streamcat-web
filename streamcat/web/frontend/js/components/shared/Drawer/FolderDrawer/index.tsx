@@ -45,26 +45,26 @@ export const FolderDrawer = (props:Props) => {
                  onSuccess={datum=>onSuccess(datum as FolderType)} >{[
             // ボタン
             [
-                <MoveButton key={'move'}
+                <MoveButton key='move'
                             parent={parent} 
                             targets={[folder]}
                             onSuccess={(data)=>onSuccess(data[0] as FolderType)} />,
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[folder]}
                               onSuccess={(data)=>onSuccess(data[0] as FolderType)} />,
-                <DownloadFlowButton key={'download'}
+                <DownloadFlowButton key='download'
                                     targets={[folder]} />
             ],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
-                <TextField2 key={'label'}
+                <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <CreatorField key={'creator'} datum={folder} />
+                <CreatorField key='creator' datum={folder} />
             ]
         ]}</EditBox>
     </Drawer2>;

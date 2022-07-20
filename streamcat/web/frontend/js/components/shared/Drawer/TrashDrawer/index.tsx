@@ -17,21 +17,21 @@ export const TrashDrawer = (props:Props) => {
 
     return <Drawer2>
         <Box>
-            <PutbackButton key={'putback'}
+            <PutbackButton key='putback'
                         trashFolder={trashFolder}
                         datum={datum}
                         onSuccess={datum => onSuccess && onSuccess([datum])}/>
-            <MoveButton key={'move'}
+            <MoveButton key='move'
                         parent={trashFolder}
                         targets={[datum]}
                         onSuccess={onSuccess} />
         </Box>
-        <FixedField2 key={'label'}
+        <FixedField2 key='label'
                      label='ラベル'
                      value={datum.label} />
-        <FixedField2 key={'prevFolderPath'}
+        <FixedField2 key='prevFolderPath'
                      label='捨てる前の場所'
                      value={datum.prevFolderPath || ''} />
-        <CreatorField key={'creator'} datum={datum} />
+        <CreatorField key='creator' datum={datum} />
     </Drawer2>;
 };

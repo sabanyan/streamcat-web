@@ -71,7 +71,7 @@ export const CreateDatabaseButton = (props:Props) => {
                 [],
                 // テキストボックス
                 (readOnly, onErrorChange, onEnterKeyPress) => [
-                    <TextField2 key={'label'}
+                    <TextField2 key='label'
                                 label='ラベル'
                                 required={true}
                                 readOnly={readOnly}
@@ -79,7 +79,7 @@ export const CreateDatabaseButton = (props:Props) => {
                                 state={[label, setLabel]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <Select2    key={'dbms'}
+                    <Select2    key='dbms'
                                 label='DBMS'
                                 required={true}
                                 items={[{label:'PostgreSQL',value:'postgresql'},
@@ -87,14 +87,14 @@ export const CreateDatabaseButton = (props:Props) => {
                                 readOnly={readOnly}
                                 state={[dbms,setDbms]}
                                 onErrorChange={onErrorChange} />,
-                    <TextField2 key={'hostname'}
+                    <TextField2 key='hostname'
                                 label='ホスト名またはIPアドレス'
                                 required={true}
                                 readOnly={readOnly}
                                 state={[hostname,setHostname]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'port'}
+                    <TextField2 key='port'
                                 label='ポート番号'
                                 type='number'
                                 required={true}
@@ -102,19 +102,19 @@ export const CreateDatabaseButton = (props:Props) => {
                                 state={[port,setPort]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'database'}
+                    <TextField2 key='database'
                                 label='データベース名'
                                 required={true}
                                 readOnly={readOnly}
                                 state={[database,setDatabase]}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'userId'}
+                    <TextField2 key='userId'
                                 label='ユーザーID'
                                 readOnly={readOnly}
                                 state={[userId,setUserId]}
                                 onEnterKeyPress={onEnterKeyPress} />,
-                    <TextField2 key={'password'}
+                    <TextField2 key='password'
                                 label='パスワード'
                                 type='password'
                                 readOnly={readOnly}

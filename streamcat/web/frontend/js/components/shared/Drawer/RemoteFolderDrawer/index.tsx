@@ -73,64 +73,64 @@ export const RemoteFolderDrawer = (props:Props) => {
                  onSuccess={datum=>onSuccess(datum as RemoteFolderType)} >{[
             // ボタン
             [
-                <MoveButton key={'move'}
+                <MoveButton key='move'
                             parent={parent} 
                             targets={[remoteFolder]}
                             onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[remoteFolder]}
                               onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />
             ],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
-                <TextField2 key={'label'}
+                <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <Select2    key={'protocol'}
+                <Select2    key='protocol'
                             label='プロトコル'
                             required={true}
                             items={[{label:'Samba',value:'smb'}]}
                             readOnly={readOnly}
                             state={[protocol, setProtocol]}
                             onErrorChange={onErrorChange} />,
-                <TextField2 key={'hostname'}
+                <TextField2 key='hostname'
                             label='ホスト名またはIPアドレス'
                             required={true}
                             readOnly={readOnly}
                             state={[hostname,setHostname]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'domain'}
+                <TextField2 key='domain'
                             label='ドメイン名'
                             required={true}
                             readOnly={readOnly}
                             state={[domain,setDomain]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'directory'}
+                <TextField2 key='directory'
                             label='ディレクトリパス'
                             required={true}
                             readOnly={readOnly}
                             state={[directory,setDirectory]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'userId'}
+                <TextField2 key='userId'
                             label='ユーザーID'
                             readOnly={readOnly}
                             state={[userId,setUserId]}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <TextField2 key={'password'}
+                <TextField2 key='password'
                             label='パスワード'
                             type='password'
                             readOnly={readOnly}
                             state={[password,setPassword]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <CreatorField key={'creator'} datum={remoteFolder} />
+                <CreatorField key='creator' datum={remoteFolder} />
             ]
         ]}</EditBox>
     </Drawer2>;

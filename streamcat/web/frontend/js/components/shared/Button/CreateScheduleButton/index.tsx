@@ -153,7 +153,7 @@ export const CreateScheduleButton = (props:Props) => {
                                         minDate={beginDate.value || dayjs()}
                                         state={[endDate, setEndDate]}
                                         onErrorChange={onErrorChange} />
-                            <TextField2 key={'seconds'}
+                            <TextField2 key='seconds'
                                         label='秒数'
                                         type='number'
                                         required={true}

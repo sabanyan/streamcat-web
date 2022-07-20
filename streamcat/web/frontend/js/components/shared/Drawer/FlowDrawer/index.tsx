@@ -53,19 +53,19 @@ export const FlowDrawer = (props:Props) => {
                  onSuccess={datum=>onSuccess(datum as FlowType)} >{[
             // ボタン
             [
-                <MoveButton key={'move'}
+                <MoveButton key='move'
                             parent={parent} 
                             targets={[flow]}
                             onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
-                <DeleteButton key={'del'}
+                <DeleteButton key='del'
                               targets={[flow]}
                               onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
-                <DuplicateButton key={'duplicate'}
+                <DuplicateButton key='duplicate'
                                  targets={[flow]}
                                  onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
-                <DownloadFlowButton key={'download'}
+                <DownloadFlowButton key='download'
                                     targets={[flow]} />,
-                <EditLockCheckbox key={'editLock'}
+                <EditLockCheckbox key='editLock'
                                   target={flow}
                                   // 編集ロックの値はこのコンポーネント内では保持しない
                                   state={[{value:flow.editLock,isError:false}, ()=>{}]}
@@ -73,14 +73,14 @@ export const FlowDrawer = (props:Props) => {
             ],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
-                <TextField2 key={'label'}
+                <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <CreatorField key={'creator'} datum={flow} />
+                <CreatorField key='creator' datum={flow} />
             ]
         ]}</EditBox>
     </Drawer2>;
