@@ -275,7 +275,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    'types': ['frame']
+                    'types': ['mcmd']
                 }
             ],
             []
@@ -406,7 +406,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "types": ["frame"]
+                    "types": ["mcmd"]
                 }
             ],
             []
