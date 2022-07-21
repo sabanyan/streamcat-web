@@ -832,10 +832,15 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
 
       const newNode = newDataSrc(props);
       const dstNodes = newDstNodes(dstNodeIds, dstNodesPositionAndSize, dstProps);
-      // Portの追加
-      outPorts.forEach(outPort => {
-        newState.flow!.flow.ports[0].upsertPort(outPort);
-      })
+      // データソースの出力ノードをフロー入力Portに設定する
+      dstNodes.forEach(dstNode => {
+        const port = {
+          label: dstNode.label,
+          nodeId: dstNode.id,
+          type: dstNode.type
+        };
+        newState.flow!.flow.ports[0].upsertPort(port);
+      });
 
       let nodes: any[] = newState.flow!.flow.nodes;
       nodes.push(newNode);
@@ -858,11 +863,19 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
 
       const { newNodePositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, srcNodeIds, []);
 
-      // Portの追加
-      const inPorts: Port[] = dataDest.ports[0];
-      inPorts.forEach(inPort => {
-        newState.flow!.flow.ports[1].upsertPort(inPort);
-      })
+      const srcNodes = newState.flow!.flow.nodes.filter(
+        node => srcNodeIds.includes(node.id)
+      );
+
+      // データデストの入力ノードをフロー出力Portに設定する
+      srcNodes.forEach(srcNode => {
+        const port = {
+          label: srcNode.label,
+          nodeId: srcNode.id,
+          type: srcNode.type
+        };
+        newState.flow!.flow.ports[1].upsertPort(port);
+      });
 
       let args = {};
       // default value
