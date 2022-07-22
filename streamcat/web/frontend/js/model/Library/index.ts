@@ -303,6 +303,9 @@ export type Command = {
         lockUUID?: string
     ) => Promise<FlowType>;
     duplicate:() => Promise<FlowType>;
+    deleteCache:(
+        nodeId: string
+    ) => Promise<void>;
 };
 
 /**

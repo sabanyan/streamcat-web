@@ -382,6 +382,8 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     put<FlowType>(`/api/v0/flows/${d.uuid}`, {editLock:editLock, lock:lockUUID});
                 d.duplicate = () =>
                     post(`/api/v0/flows`, {source:d.uuid});
+                d.deleteCache = (nodeId) =>
+                    del(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
             }else if(datum.type === 'schedule') {
                 const d = datum as ScheduleType;
                 d.move = (parent) => 
