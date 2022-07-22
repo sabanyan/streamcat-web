@@ -9,7 +9,7 @@ import style from './style.scss';
 import { APIUtil2, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DataFrameDetailType, StepModelType } from 'Types/index';
+import { StepModelType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
@@ -57,7 +57,7 @@ import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Utils/APIUtil2';
-import { FlowType } from 'Model/Library';
+import { FlowType, FrameType } from 'Model/Library';
 
 const getLock = (targetUUID:string, notifyWarning:Function) => {
     return APIUtil2.createLock(targetUUID).catch(e => {
@@ -182,7 +182,7 @@ const FlowEditor = () => {
     const setZoom = useCallback(({ offset, value }) => {
         dispatch(setZoomAction({ offset, value }));
     }, []);
-    const updateDataFrameDetail = useCallback((detail: DataFrameDetailType) => {
+    const updateDataFrameDetail = useCallback((detail: FrameType) => {
         dispatch(updateDataFrameDetailAction(detail));
     }, []);
     // const addNote = useCallback((x: number, y: number) => {

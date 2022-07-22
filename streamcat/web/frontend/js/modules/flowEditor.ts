@@ -4,9 +4,8 @@ import { FlowUtil, GraphUtil, StateUtil, ZoomUtil } from "Utils/index";
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, StepModelType } from "../types";
-import { DataFrameDetailType } from "Types/index";
 import _ from "lodash";
-import { FlowType, Port } from "Model/Library";
+import { FlowType, FrameType, Port } from "Model/Library";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -1491,7 +1490,7 @@ export const setZoomAction = ({ offset, value }) => {
  * @param dataFrame
  * @returns {{dataFrame: DataFrameStepModel, type: string}}
  */
-export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
+export const updateDataFrameDetailAction = (detail: FrameType) => {
   return {
     detail: detail,
     type: UPDATE_DATA_SOURCE_DETAIL_ACTION

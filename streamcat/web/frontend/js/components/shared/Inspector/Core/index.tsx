@@ -13,8 +13,8 @@ import {
 } from 'Shared/Inspector'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import { DataFrameDetailType, MastType } from "Types/index";
-import { FlowType } from 'Model/Library';
+import { MastType } from "Types/index";
+import { FlowType, FrameType } from 'Model/Library';
 
 type InspectorProps = {
   inspector: { width: number };
@@ -23,7 +23,7 @@ type InspectorProps = {
   nodes: [];
   mast: MastType;
   selected_tab_id: string;
-  selected_data_source_detail: DataFrameDetailType;
+  selected_data_source_detail: FrameType;
   lockUUID: string | undefined;
   updateDataFrameDetail: Function
   addStep: Function;

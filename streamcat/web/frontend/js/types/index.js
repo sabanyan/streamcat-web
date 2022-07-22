@@ -154,11 +154,11 @@ export type DownloadButtonType = {
   download: string;
 }
 
-export type DataFrameDetailType = {
-  contents: {};
-  numberOfLines: string;
-  lastModifiedAt: string;
-}
+// export type DataFrameDetailType = {
+//   contents: {};
+//   numberOfLines: string;
+//   lastModifiedAt: string;
+// }
 
 export type BreadCrumbHistoryType = {
   id: string,

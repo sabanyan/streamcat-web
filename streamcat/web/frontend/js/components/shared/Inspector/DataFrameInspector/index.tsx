@@ -6,13 +6,13 @@ import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
 import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {DataFrameDetailType, MastType} from "Types/index";
+import {MastType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { FlowType, Port } from "Model/Library";
+import { FlowType, FrameType, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 
 type Props = {
-    selected_data_source_detail: DataFrameDetailType;
+    selected_data_source_detail: FrameType;
     mast: MastType;
     deleteSteps: Function;
     selectSteps: Function;
