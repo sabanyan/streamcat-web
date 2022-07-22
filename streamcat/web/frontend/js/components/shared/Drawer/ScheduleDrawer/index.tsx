@@ -2,7 +2,7 @@ import React from 'react';
 import dayjs from 'dayjs';
 import { useAsyncResource } from 'use-async-resource';
 import { FolderType, ScheduleType } from 'Model/Library';
-import { APIUtil2 } from 'Utils/APIUtil2';
+import { Api } from 'Api';
 import { TextField2, DatePicker2, TimePicker2, Tabs2, Drawer2 } from 'Shared/Input';
 import { Value as DateValue } from 'Shared/Input/DatePicker2';
 import { Value } from 'Shared/Input/FlowLinkField';
@@ -259,7 +259,7 @@ export const ScheduleDrawer = (props:Props) => {
     const { createMode, parent, schedule, onSuccess } = props;
 
     // 起動させるフローを取得する
-    const [flowReader] = useAsyncResource(APIUtil2.findFlow, schedule.runnableUUID);
+    const [flowReader] = useAsyncResource(Api.findFlow, schedule.runnableUUID);
 
     const triggerDate = (datePropertyName:string) => {
         // DatePickerにundefinedを渡すと現在日時が表示されるので、未入力の場合はnullを渡す

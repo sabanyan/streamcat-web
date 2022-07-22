@@ -1,7 +1,8 @@
 import React from 'react';
 
 import {CommandParamType} from 'Types/index';
-import {APIUtil2, StateUtil} from 'Utils/index';
+import { Api } from 'Api';
+import {StateUtil} from 'Utils/index';
 import style from './style.scss';
 
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
@@ -163,7 +164,7 @@ export default class Visualizer extends React.Component<Props, State> {
         const limit: number = this.state.args['limit'] || 100;
 
         // GET /frames?contents=on を発行する
-        return APIUtil2.findFrame(frameUuid, true, offset, limit).then(frame => {
+        return Api.findFrame(frameUuid, true, offset, limit).then(frame => {
             const headers = frame.args!.column_names;
             const contents = frame.contents;
             const result = {
@@ -212,7 +213,7 @@ export default class Visualizer extends React.Component<Props, State> {
         let promise: Promise<ActivityType>;
         if(frameUuid){
             // POST /vizsを発行する
-            promise = APIUtil2.createFrameVis(
+            promise = Api.createFrameVis(
                 frameUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
@@ -221,7 +222,7 @@ export default class Visualizer extends React.Component<Props, State> {
             )
         }else{
             // POST /vizsを発行する
-            promise = APIUtil2.createFlowVis(
+            promise = Api.createFlowVis(
                 flowUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,

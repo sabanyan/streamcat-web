@@ -1,6 +1,6 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
-import { APIUtil2 } from "Utils/APIUtil2";
+import { Api } from 'Api';
 import { FrameType } from "Model/Library";
 import { Button2 } from "Shared/Input";
 
@@ -18,7 +18,7 @@ export const DownloadCsvButton = (props:Props) => {
 
     // Frameをダウンロードする
     const downloadFrame = (frame:FrameType) => {
-        return APIUtil2.downloadFrame(frame.uuid, frame.label).then(() => {
+        return Api.downloadFrame(frame.uuid, frame.label).then(() => {
             notifySuccess('CSVをダウンロードしました', frame.label);
         }).catch((e) => {
             notifyError(`CSVダウンロードエラー(${frame.label})`, e.message);

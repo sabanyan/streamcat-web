@@ -3,7 +3,7 @@ import {
     putBase,
     getBase as get,
     makeArrayCtor
-} from 'Utils/APIUtilBase';
+} from './ApiUtilBase';
 
 const put = (url: string, body: {}) => {
     return putBase<SelfUserType>(url, body).then<SelfUserType>(user => {
@@ -31,12 +31,12 @@ const SelfUserArray = makeArrayCtor<SelfUserType>(user => {
 /**
  * Web APIを発行する関数を纏めるクラス
  */
-export class SelfUserAPI {
+export const SelfUserApi = {
     /**
      * GET /users/selfを発行してログインUserを取得する
      * @throws {ErrorResponse}
      */
-     static findSelfUser = (exceptInactive?:boolean, roles?: boolean, projects?: boolean) => {
+    findSelfUser: (exceptInactive?:boolean, roles?: boolean, projects?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {except_inactive?:string, roles?:string, projects?:string} = {};
         exceptInactive && (params.except_inactive = 'on');
@@ -45,5 +45,5 @@ export class SelfUserAPI {
         return get<SelfUserType>('/api/v0/users/self', params).then(user => {
             return new SelfUserArray([user]).shift() as SelfUserType;
         });
-    };
-}
+    }
+};

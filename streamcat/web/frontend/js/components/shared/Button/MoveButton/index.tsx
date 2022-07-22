@@ -4,7 +4,7 @@ import HttpUtil from "Utils/HttpUtil";
 import LibraryUtil from "Utils/LibraryUtil";
 import { Button2 } from "Shared/Input";
 import { DatumType, FolderType } from "Model/Library";
-import { LockAPI } from "Utils/LockAPI";
+import { Api } from 'Api';
 
 type Props = {
     readOnly?:boolean;
@@ -36,7 +36,7 @@ export const MoveButton = (props:Props) => {
         let promise: Promise<DatumType>;
         if (datum.type === 'flow') {
             // Flowの場合は、Lockを取得してから移動する
-            promise = LockAPI.createLock(datum.uuid).then(lock => {
+            promise = Api.createLock(datum.uuid).then(lock => {
                 // Datumを移動する
                 return datum.move(newParent, lock.uuid).finally(() => {
                     // Flowの移動が完了した後に、Lockを解除する

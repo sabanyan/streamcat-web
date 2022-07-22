@@ -2,7 +2,7 @@
 import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel} from 'Model/index'
-import { APIUtil2, ErrorUtil, ReactDomUtil } from '.'
+import { Api } from 'Api';
 
 export default class FlowUtil {
 
@@ -126,7 +126,7 @@ export default class FlowUtil {
     })
 
     // フローを実行する
-    return APIUtil2.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch(error => {
+    return Api.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch(error => {
       let message = new MessageModel(error);
       console.log(error);
       if(error.code===-4){

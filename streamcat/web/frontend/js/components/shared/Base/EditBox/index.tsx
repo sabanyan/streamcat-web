@@ -1,7 +1,7 @@
 import React from "react"
 import { Box } from "@mui/material"
 import { useStreamCatNotifications } from 'Shared/Notification';
-import { ErrorResponse } from 'Utils/APIUtilBase';
+import { ErrorResponse } from 'Api';
 import { DatumType } from "Model/Library";
 import LibraryUtil from "Utils/LibraryUtil";
 import { Button2 } from "Shared/Input";

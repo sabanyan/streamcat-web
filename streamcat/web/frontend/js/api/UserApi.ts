@@ -4,7 +4,7 @@ import {
     getBase as get,
     delBase as del,
     makeArrayCtor
-} from 'Utils/APIUtilBase';
+} from './ApiUtilBase';
 
 const put = (url: string, body: {}) => {
     return putBase<UserType>(url, body).then<UserType>(user => {
@@ -38,12 +38,12 @@ const UserArray = makeArrayCtor<UserType>(user => {
 /**
  * Web APIを発行する関数を纏めるクラス
  */
-export class UserAPI {
+export const UserApi = {
     /**
      * GET /usersを発行してUserを取得する
      * @throws {ErrorResponse}
      */
-     static findUsers = (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
+    findUsers: (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {q?:string, except_inactive?:string, roles?:string, projects?:string} = {};
         q && (params.q = q);
@@ -53,5 +53,5 @@ export class UserAPI {
         return get<UserType[]>('/api/v0/users', params).then(users => {
             return new UserArray(users);
         });
-    };
-}
+    }
+};

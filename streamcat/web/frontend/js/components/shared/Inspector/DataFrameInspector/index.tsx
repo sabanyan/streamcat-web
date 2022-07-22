@@ -1,6 +1,7 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import Constants from "Constants/index";
-import {APIUtil, APIUtil2, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
+import { Api } from 'Api';
+import {GraphUtil, ModalUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
@@ -278,7 +279,7 @@ const DataFrameInspector = (props: Props) => {
         preview = <Button onClick={() => onClickPreview()}
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {
-            const onClick = () => APIUtil2.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
+            const onClick = () => Api.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
             download = <DownloadButton onClick={onClick} download disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }

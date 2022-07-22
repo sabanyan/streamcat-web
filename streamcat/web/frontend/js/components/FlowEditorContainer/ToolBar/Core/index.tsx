@@ -4,7 +4,8 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { DataFrameStepModel, NoteStepModel, NoteStepModelProps } from 'Model/index';
-import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil, APIUtil2 } from 'Utils/index';
+import { Api } from 'Api';
+import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
 import { Loader } from 'Shared/Base';
 import { HistoryType, LibraryListDataType, UploadedFileType } from 'Types/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
@@ -132,7 +133,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     flowUpdate() {
-        APIUtil2.findFlow(inject_flow_uuid).then(flow => {
+        Api.findFlow(inject_flow_uuid).then(flow => {
             this.props.refreshFlow(flow);
         }).then(() => {
             this.setState({

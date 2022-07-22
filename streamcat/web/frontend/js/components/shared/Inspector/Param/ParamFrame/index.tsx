@@ -1,7 +1,8 @@
 import React from 'react'
 import { DatumType } from 'Model/Library';
 import { CommandParamType } from 'Types/index'
-import { HttpUtil, APIUtil2 } from 'Utils/index';
+import { Api } from 'Api';
+import { HttpUtil } from 'Utils/index';
 import style from './style.scss'
 
 type Props = {
@@ -35,7 +36,7 @@ export class ParamFrame extends React.Component<Props, State> {
         if(!value){
             return;
         }
-        APIUtil2.findFrame(value).then(frame => {
+        Api.findFrame(value).then(frame => {
             this.setState({ path: frame.folderPath + '/' + frame.label });
         }).catch(e => {
             this.setState(initialState);
@@ -85,7 +86,7 @@ export class ParamFrame extends React.Component<Props, State> {
 
         if(parentUUID){
             // NOTE: GET /foldersはProjectも取得できる(隠し機能)
-            APIUtil2.findFolder(parentUUID).then(folder => {
+            Api.findFolder(parentUUID).then(folder => {
                 // 入力フレーム選択ダイアログは、編集中フローの親フォルダを初期表示する
                 openSelectDialog(getApiPath(folder));
             });

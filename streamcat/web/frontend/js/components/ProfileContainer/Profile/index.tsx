@@ -6,8 +6,7 @@ import {ModalManager} from 'Shared/Modal'
 import {Button, LinkButton, TextField} from 'Shared/Input'
 import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
 import {NavigationType, SelfUserType} from 'Model/Navigation/NavigationModel';
-import { ErrorResponse } from 'Utils/APIUtilBase';
-import { SelfUserAPI } from 'Utils/SelfUserAPI'
+import { Api, ErrorResponse } from 'Api';
 
 /**
  * ======================================================
@@ -48,7 +47,7 @@ export const Profile = (props: Props) => {
     const {navigation} = props;
 
     // ここでログインUserの取得を開始する
-    const [selfUserReader] = useAsyncResource(SelfUserAPI.findSelfUser, []);
+    const [selfUserReader] = useAsyncResource(Api.findSelfUser, []);
 
     // 通知機能メソッドの取得
     const {notifySuccess, notifyError} = useStreamCatNotifications();

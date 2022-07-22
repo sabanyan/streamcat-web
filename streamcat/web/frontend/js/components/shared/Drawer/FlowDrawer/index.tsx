@@ -8,7 +8,7 @@ import { EditLockCheckbox } from "Shared/Input/EditLockCheckbox";
 import { DuplicateButton } from "Shared/Button/DuplicateButton";
 import { DownloadFlowButton } from "Shared/Button/DownloadFlowButton";
 import { CreatorField } from "Shared/Input/CreatorField";
-import { LockAPI } from "Utils/LockAPI";
+import { Api } from 'Api';
 
 type Props = {
     createMode: boolean;
@@ -35,7 +35,7 @@ export const FlowDrawer = (props:Props) => {
     const create = () => parent.createFlow(label.value);
 
     // フローの更新処理
-    const update = () => LockAPI.createLock(flow.uuid).then(lock =>
+    const update = () => Api.createLock(flow.uuid).then(lock =>
         flow.rename(label.value, lock.uuid).finally(() =>
             lock.delete()
         )

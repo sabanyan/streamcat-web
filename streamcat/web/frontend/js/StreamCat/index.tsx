@@ -16,7 +16,7 @@ import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
 import {setNetworkStatusAction} from 'Modules/flowEditor';
 import {NetworkStatusValue} from 'Model/Flow/FlowModel';
-import { APIUtil2 } from 'Utils/APIUtil2';
+import {Api} from 'Api';
 import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
@@ -37,10 +37,10 @@ export enum ViewId {
 
 const getNavigation = (viewId: ViewId) => {
     if(viewId !== ViewId.Undefined){
-        return APIUtil2.findNavigation();
+        return Api.findNavigation();
     }else{
         // Login画面の場合はAPIを発行しない
-        return APIUtil2.findNull();
+        return Api.findNull();
     }
 }
 

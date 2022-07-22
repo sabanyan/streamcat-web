@@ -1,6 +1,6 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
-import { APIUtil2 } from "Utils/APIUtil2";
+import { Api } from 'Api';
 import { ProjectType, FolderType, FlowType } from "Model/Library";
 import { Button2 } from "Shared/Input";
 
@@ -20,7 +20,7 @@ export const DownloadFlowButton = (props:Props) => {
 
     // Datumをダウンロードする
     const downloadDatum = (datum:FlowAndFolderType) => {
-        return APIUtil2.downloadFlow(datum.uuid, datum.label).then(() => {
+        return Api.downloadFlow(datum.uuid, datum.label).then(() => {
             notifySuccess('フローをダウンロードしました', datum.label);
         }).catch((e) => {
             notifyError(`フローダウンロードエラー(${datum.label})`, e.message);

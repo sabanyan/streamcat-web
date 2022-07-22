@@ -29,7 +29,8 @@
         "Model/*": ["./web/frontend/js/model/*"],
         "Modules/*": ["./web/frontend/js/modules/*"],
         "Types/*": ["./web/frontend/js/types/*"],
-        "Utils/*": ["./web/frontend/js/utils/*"]
+        "Utils/*": ["./web/frontend/js/utils/*"],
+        "Api"    : ["./web/frontend/js/api"]
       },
 
       /* Module Resolution Options */

@@ -1,9 +1,8 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
-import { ErrorResponse } from "Utils/APIUtilBase";
+import { Api, ErrorResponse } from 'Api';
 import { FlowType } from "Model/Library";
 import { Checkbox2 } from "Shared/Input";
-import { LockAPI } from "Utils/LockAPI";
 
 export type Value = {
     readOnly?:boolean;
@@ -37,7 +36,7 @@ export const EditLockCheckbox = (props:Props) => {
     // Flowを編集ロックする
     const editLockFlow = (datum:FlowType, editLock:boolean) => {
         // Lockを取得してから編集ロックを変更する
-        return LockAPI.createLock(datum.uuid).then(lock => {
+        return Api.createLock(datum.uuid).then(lock => {
             // Flowの編集ロックを変更する
             return datum.updateLock(editLock, lock.uuid).then(updated => {
                 return updated;

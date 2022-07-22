@@ -6,7 +6,8 @@ import { Edge, Selector, Step } from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
-import { APIUtil2, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
+import { Api } from 'Api';
+import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
 import { StepModelType } from 'Types/index';
@@ -56,12 +57,11 @@ import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
-import { ErrorResponse } from 'Utils/APIUtilBase';
+import { ErrorResponse } from 'Api';
 import { FlowType, FrameType } from 'Model/Library';
-import { LockAPI } from 'Utils/LockAPI';
 
 const getLock = (targetUUID:string, notifyWarning:Function) => {
-    return LockAPI.createLock(targetUUID).catch(e => {
+    return Api.createLock(targetUUID).catch(e => {
         if(e instanceof Promise){
             // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
             throw e;
@@ -237,14 +237,14 @@ const FlowEditor = () => {
                     alert("フロー名を指定してください")
                 } else {
                     // フローを別名保存する
-                    APIUtil2.findFolder(folderUuid).then(folder => {
+                    Api.findFolder(folderUuid).then(folder => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
                             const targetFlow = flow;
                             targetFlow.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
-                            LockAPI.createLock(anotherFlow.uuid).then(lock => {
+                            Api.createLock(anotherFlow.uuid).then(lock => {
                                 // 新規に作成した newFlow の uuid を設定して保存する
                                 saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
                                     // 転移する前にnewFlowのロックは一度解除する
@@ -397,7 +397,7 @@ const FlowEditor = () => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        LockAPI.createLock(inject_flow_uuid, modifiedAt).then(lock => {
+        Api.createLock(inject_flow_uuid, modifiedAt).then(lock => {
                 setLock(lock);
                 // モードは変更せずに ReadOnly だけオフにする
                 setReadOnly(false);
@@ -506,7 +506,7 @@ const FlowEditor = () => {
 
         // サブフローの一覧を取得する
         preRequest.push(
-            APIUtil2.findSubflows().then(subflows => {
+            Api.findSubflows().then(subflows => {
                 const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
                 window.subflows = subflowModels;
                 addMaster({ subflows: subflowModels });
@@ -515,21 +515,21 @@ const FlowEditor = () => {
 
         // データソースの一覧を取得する
         preRequest.push(
-            APIUtil2.findDataSrcs().then(datasrcs => {
+            Api.findDataSrcs().then(datasrcs => {
                 addMaster({ datasrcs: datasrcs });
             })
         );
 
         // データデストの一覧を取得する
         preRequest.push(
-            APIUtil2.findDataDsts().then(datadsts => {
+            Api.findDataDsts().then(datadsts => {
                 addMaster({ datadsts: datadsts });
             })
         );
 
         // Commandの一覧を取得する
         preRequest.push(
-            APIUtil2.findCommands().then(commands => {
+            Api.findCommands().then(commands => {
                 const commandModels = commands.map(command => new CommandModel(command as any));
                 window.commands = commandModels;
                 addMaster({ commands: commandModels });
@@ -538,7 +538,7 @@ const FlowEditor = () => {
 
         // VCommandの一覧を取得する
         preRequest.push(
-            APIUtil2.findVCommands().then(visualizers => {
+            Api.findVCommands().then(visualizers => {
                 const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
                 window.visualizers = visualizerModels;
                 addMaster({ visualizers: visualizerModels });
@@ -548,7 +548,7 @@ const FlowEditor = () => {
         Promise.all(preRequest).then(() => {
             // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
             // これらを取得した後に、findFlowを実行する
-            return APIUtil2.findFlow(inject_flow_uuid).then(flow => {
+            return Api.findFlow(inject_flow_uuid).then(flow => {
                 // HTML headのtitleにフロー名を設定する
                 // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
                 document.title = "📐" + flow.label;

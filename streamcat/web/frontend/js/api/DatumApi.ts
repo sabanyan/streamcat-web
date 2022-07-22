@@ -26,7 +26,7 @@ import {
     getBase as get,
     delBase as del,
     makeArrayCtor
-} from 'Utils/APIUtilBase';
+} from './ApiUtilBase';
 
 const post = <TDatumType>(url: string, body: {}) => {
     return postBase<TDatumType>(url, body).then<TDatumType>(datum => {
@@ -330,33 +330,33 @@ PortArray.prototype.toJSON = function(){
 /**
  * Web APIを発行する関数を纏めるクラス
  */
-export class APIUtil2 {
+export const DatumApi = {
 
     /**
      * Web APIを発行せず、nullを返すPromiseを返す
      */
-    static findNull = () => {
+    findNull: () => {
         return new Promise<null>(resolve => {
             // Promiseオブジェクトをfullfilled状態にする
             resolve(null);
         });
-    };
+    },
 
     /**
      * Web APIを発行せず、[]を返すPromiseを返す
      */
-    static findEmpty = () => {
+    findEmpty: () => {
         return new Promise<[]>(resolve => {
             // Promiseオブジェクトをfullfilled状態にする
             resolve([]);
         });
-    };
+    },
 
     /**
      * GET /libraryを発行してルートフォルダを取得する
      * @throws {ErrorResponse}
      */
-    static findLibrary = (members?: boolean) => {
+    findLibrary: (members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {members?:string} = {};
         members && (params.members = 'on');
@@ -365,25 +365,25 @@ export class APIUtil2 {
             folder.children = new DatumArray(folder.children);
             return folder;
         });
-    };
+    },
 
     /**
      * GET /trashesを発行してゴミ箱を取得する
      * @throws {ErrorResponse}
      */
-    static findTrash = () => {
+    findTrash: () => {
         return get<ParentTrashType>('/api/v0/trashes').then(trash => {
             trash = (new DatumArray([trash])).shift() as any;
             trash.children = new DatumArray(trash.children);
             return trash;
         });
-    };
+    },
 
     /**
      * GET /projectsを発行して全てのプロジェクトを取得する
      * @throws {ErrorResponse}
      */
-    static findProjects = (onRoot?: boolean, exceptMyProject?: boolean, members?: boolean):Promise<ProjectType[]> => {
+    findProjects: (onRoot?: boolean, exceptMyProject?: boolean, members?: boolean):Promise<ProjectType[]> => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {on_root?:string, except_myproject?:string, members?:string} = {};
         onRoot && (params.on_root = 'on');
@@ -392,14 +392,14 @@ export class APIUtil2 {
         return get<ProjectType[]>('/api/v0/projects', params).then(projects => {
             return new DatumArray(projects) as any;
         });
-    };
+    },
 
     /**
      * GET /projectsを発行してプロジェクトを取得する
      * @param uuid 取得するプロジェクトのUUID
      * @throws {ErrorResponse}
      */
-    static findProject = (uuid: string, members?: boolean) => {
+    findProject: (uuid: string, members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {members?:string} = {};
         members && (params.members = 'on');
@@ -408,27 +408,27 @@ export class APIUtil2 {
             project.children = new DatumArray(project.children);
             return project;
         });
-    };
+    },
 
     /**
      * GET /foldersを発行してフォルダを取得する
      * @param uuid 取得するフォルダのUUID
      * @throws {ErrorResponse}
      */
-    static findFolder = (uuid: string) => {
+    findFolder: (uuid: string) => {
         return get<ParentFolderType>(`/api/v0/folders/${uuid}`).then(folder => {
             folder = (new DatumArray([folder])).shift() as any;
             folder.children = new DatumArray(folder.children);
             return folder;
         });
-    };
+    },
 
     /**
      * GET /flowsを発行してフローを取得する
      * @param uuid 取得するフローのUUID
      * @throws {ErrorResponse}
      */
-    static findFlow = (uuid: string) => {
+    findFlow: (uuid: string) => {
         return get<FlowType>(`/api/v0/flows/${uuid}`).then(flow => {
             flow = (new DatumArray([flow])).shift() as any;
             const flowJson = flow.flow;
@@ -447,24 +447,24 @@ export class APIUtil2 {
             }
             return flow;
         });
-    };
+    },
 
     /**
      * GET /archives/flowsを発行してフローのファイルを取得する
      * @param uuid 取得するフローまたはフォルダのUUID
      */
-    static downloadFlow = (uuid: string, label: string) => {
+    downloadFlow: (uuid: string, label: string) => {
         const accept = `application/gzip`;
         const fileName = label + '.tgz';
         return download(`/api/v0/archives/flows/${uuid}`, accept, fileName);
-    };
+    },
 
     /**
      * GET /framesを発行してフレームを取得する
      * @param uuid 取得するフレームのUUID
      * @throws {ErrorResponse}
      */
-    static findFrame = (uuid: string, contents?: boolean, offset?: number, limit?: number) => {
+    findFrame: (uuid: string, contents?: boolean, offset?: number, limit?: number) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         let params: {contents?:string, offset?:number, limit?:number} = {};
         contents && (params.contents = 'on');
@@ -474,13 +474,13 @@ export class APIUtil2 {
             frame = (new DatumArray([frame])).shift() as any;
             return frame;
         });
-    };
+    },
 
     /**
      * GET /framesを発行してフレームのファイルを取得する
      * @param uuid 取得するフレームのUUID
      */
-    static downloadFrame = (uuid: string, label: string, encoding?: string) => {
+    downloadFrame: (uuid: string, label: string, encoding?: string) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
         const params = {contents:true};
         const accept = `text/csv; charset=${encoding||'utf-8'}`;
@@ -492,84 +492,84 @@ export class APIUtil2 {
             fileName = label + '.csv';
         }
         return download(`/api/v0/frames/${uuid}`, accept, fileName, params);
-    };
+    },
 
     /**
      * GET /subflowsを発行してサブフローを取得する
      * @throws {ErrorResponse}
      */
-    static findSubflows = () => {
+    findSubflows: () => {
         return get<Flow[]>('/api/v0/subflows');
-    };
+    },
 
     /**
      * GET /datasrcsを発行してデータソースを取得する
      * @throws {ErrorResponse}
      */
-    static findDataSrcs = () => {
+    findDataSrcs: () => {
         return get<Flow[]>('/api/v0/datasrcs');
-    };
+    },
 
     /**
      * GET /datadstsを発行してデータデストを取得する
      * @throws {ErrorResponse}
      */
-    static findDataDsts = () => {
+    findDataDsts: () => {
         return get<Flow[]>('/api/v0/datadsts');
-    };
+    },
 
     /**
      * GET /commandsを発行してCommandを取得する
      * @throws {ErrorResponse}
      */
-    static findCommands = () => {
+    findCommands: () => {
         return get<Command[]>('/api/v0/commands');
-    };
+    },
 
     /**
      * GET /vcommandsを発行してVCommandを取得する
      * @throws {ErrorResponse}
      */
-    static findVCommands = () => {
+    findVCommands: () => {
         return get<Command[]>('/api/v0/vcommands');
-    };
+    },
 
     /**
      * GET /navigationを発行してNavigationを取得する
      * @throws {ErrorResponse}
      */
-    static findNavigation = () => {
+    findNavigation: () => {
         return get<NavigationType>('/api/v0/navigation');
-    };
+    },
 
     /**
      * POST /vizsを発行してフローをプレビューする
      * @param flowUUID
      * @throws {ErrorResponse}
      */
-    static createFlowVis = (flowUUID:string, args:{}, lockUUID?:string) => {
+    createFlowVis: (flowUUID:string, args:{}, lockUUID?:string) => {
         const body = {uuid:flowUUID, args:args, lock:lockUUID};
         return post<ActivityType>('/api/v0/vizs', body);
-    };
+    },
 
     /**
      * POST /vizsを発行してFrameをプレビューする
      * @param flowUUID
      * @throws {ErrorResponse}
      */
-    static createFrameVis = (frameUUID:string, args:{}) => {
+    createFrameVis: (frameUUID:string, args:{}) => {
         const body = {frame:frameUUID, args:args};
         return post<ActivityType>('/api/v0/vizs', body);
-    };
+    },
 
     /**
      * POST /activitiesを発行してフローを実行する
      * @param flowUUID
      * @throws {ErrorResponse}
      */
-    static createActivity = (flowUUID:string, args:{}, lockUUID?:string) => {
+    createActivity: (flowUUID:string, args:{}, lockUUID?:string) => {
         const body = {uuid:flowUUID, args:args, lock:lockUUID};
         return post<ActivityType>('/api/v0/activities', body);
-    };
+    }
 
-}
+};

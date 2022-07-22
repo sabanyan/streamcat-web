@@ -5,8 +5,8 @@ import { EmptyState, Spacer } from 'Shared/Base';
 import { Flex } from 'Shared/Base/Layouts/Flex';
 import { NotificationManager, useStreamCatNotifications } from 'Shared/Notification';
 import Constants from 'Constants/index';
-import { APIUtil2,
-        ErrorUtil,
+import { Api } from 'Api';
+import { ErrorUtil,
         HttpUtil,
         ReactDomUtil,
         StringUtil,
@@ -57,27 +57,27 @@ const getParentFolder = () => {
     if(inject_folder_uuid){
         if(inject_is_project){
             // プロジェクトを表示する場合
-            return APIUtil2.findProject(inject_folder_uuid);
+            return Api.findProject(inject_folder_uuid);
         }else{
             // フォルダを表示する場合
-            return APIUtil2.findFolder(inject_folder_uuid);
+            return Api.findFolder(inject_folder_uuid);
         }
     }else if(inject_is_trash) {
         // ゴミ箱を表示する場合
-        return APIUtil2.findTrash();
+        return Api.findTrash();
     }else{
         // ルートフォルダを表示する場合
-        return APIUtil2.findLibrary();
+        return Api.findLibrary();
     }
 };
 
 const getProjects = (members:boolean) => {
     if(inject_folder_uuid || inject_is_trash){
         // ルートフォルダ以外の場合は何もしない
-        return APIUtil2.findEmpty();
+        return Api.findEmpty();
     }else{
         // ルートフォルダを表示する場合
-        return APIUtil2.findProjects(true, false, members);
+        return Api.findProjects(true, false, members);
     }
 };
 
@@ -119,7 +119,7 @@ export const Library = () => {
     const mode = HttpUtil.getURLParam('mode') ? HttpUtil.getURLParam('mode') : Constants.library.mode.list;
 
     const getVisualizers = () => {
-        APIUtil2.findVCommands().then(visualizers => {
+        Api.findVCommands().then(visualizers => {
             const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
             setVisualizers(visualizerModels);
         });
