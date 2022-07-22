@@ -56,11 +56,12 @@ import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
-import { ErrorResponse } from 'Utils/APIUtil2';
+import { ErrorResponse } from 'Utils/APIUtilBase';
 import { FlowType, FrameType } from 'Model/Library';
+import { LockAPI } from 'Utils/LockAPI';
 
 const getLock = (targetUUID:string, notifyWarning:Function) => {
-    return APIUtil2.createLock(targetUUID).catch(e => {
+    return LockAPI.createLock(targetUUID).catch(e => {
         if(e instanceof Promise){
             // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
             throw e;
@@ -243,7 +244,7 @@ const FlowEditor = () => {
                             const targetFlow = flow;
                             targetFlow.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
-                            APIUtil2.createLock(anotherFlow.uuid).then(lock => {
+                            LockAPI.createLock(anotherFlow.uuid).then(lock => {
                                 // 新規に作成した newFlow の uuid を設定して保存する
                                 saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
                                     // 転移する前にnewFlowのロックは一度解除する
@@ -396,7 +397,7 @@ const FlowEditor = () => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        APIUtil2.createLock(inject_flow_uuid, modifiedAt).then(lock => {
+        LockAPI.createLock(inject_flow_uuid, modifiedAt).then(lock => {
                 setLock(lock);
                 // モードは変更せずに ReadOnly だけオフにする
                 setReadOnly(false);

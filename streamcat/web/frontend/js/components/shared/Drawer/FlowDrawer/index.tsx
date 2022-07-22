@@ -4,11 +4,11 @@ import { Drawer2, TextField2 } from "Shared/Input";
 import { MoveButton } from "Shared/Button/MoveButton";
 import { DeleteButton } from "Shared/Button/DeleteButton";
 import { EditBox } from "Shared/Base/EditBox";
-import { APIUtil2 } from "Utils/APIUtil2";
 import { EditLockCheckbox } from "Shared/Input/EditLockCheckbox";
 import { DuplicateButton } from "Shared/Button/DuplicateButton";
 import { DownloadFlowButton } from "Shared/Button/DownloadFlowButton";
 import { CreatorField } from "Shared/Input/CreatorField";
+import { LockAPI } from "Utils/LockAPI";
 
 type Props = {
     createMode: boolean;
@@ -35,7 +35,7 @@ export const FlowDrawer = (props:Props) => {
     const create = () => parent.createFlow(label.value);
 
     // フローの更新処理
-    const update = () => APIUtil2.createLock(flow.uuid).then(lock =>
+    const update = () => LockAPI.createLock(flow.uuid).then(lock =>
         flow.rename(label.value, lock.uuid).finally(() =>
             lock.delete()
         )

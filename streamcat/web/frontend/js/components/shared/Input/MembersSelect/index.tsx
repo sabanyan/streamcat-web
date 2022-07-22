@@ -1,10 +1,10 @@
 import React from "react";
 import { useAsyncResource } from "use-async-resource";
 import { DatumType } from "Model/Library";
-import { APIUtil2 } from "Utils/APIUtil2";
 import { MultiSelect2 } from "Shared/Input";
 import { SelectItem } from "Shared/Input/Select2";
 import { Value as MultiValue } from 'Shared/Input/MultiSelect2';
+import { UserAPI } from "Utils/UserAPI";
 
 type Props = {
     readOnly?:boolean;
@@ -18,7 +18,7 @@ type Props = {
 
 // useAsyncResourceに渡す関数はコンポーネントの外で定義しないと
 // useAsyncResourceのキャッシュが機能しない
-const getAllUsers = () => APIUtil2.findUsers('', true)
+const getAllUsers = () => UserAPI.findUsers('', true)
 
 export const MembersSelect = (props:Props) => {
     const {readOnly, visible, onErrorChange} = props;

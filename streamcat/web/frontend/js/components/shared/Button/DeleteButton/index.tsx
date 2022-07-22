@@ -1,9 +1,9 @@
 import React from "react";
-import { APIUtil2 } from "Utils/APIUtil2";
 import { useStreamCatNotifications } from "Shared/Notification";
 import LibraryUtil from "Utils/LibraryUtil";
 import { Button2, DialogButton } from "Shared/Input";
 import { DatumType } from "Model/Library";
+import { LockAPI } from "Utils/LockAPI";
 
 type Props = {
     readOnly?:boolean;
@@ -21,7 +21,7 @@ export const DeleteButton = (props:Props) => {
         let promise: Promise<void>;
         if (datum.type === 'flow') {
             // Flowの場合は、Lockを取得してから削除する
-            promise = APIUtil2.createLock(datum.uuid).then(lock => {
+            promise = LockAPI.createLock(datum.uuid).then(lock => {
                 // Datumを削除する
                 return datum.delete(lock.uuid).finally(() => {
                     // Flowの削除が完了した後に、Lockを解除する
