@@ -224,28 +224,14 @@ const DataFrameInspector = (props: Props) => {
         });
     };
 
-
     const deleteCache = () => {
-        const {selected_step_ids, deleteCache, updateDataFrameDetail} = props;
+        const {flow, selected_step_ids, deleteCache, updateDataFrameDetail} = props;
         const id = (selected_step_ids as any)[0];
-        const url = "caches?of=" + inject_flow_uuid + "." + id;
 
-        APIUtil.delete(url).then((response) => {
-            if (!response.data.success) {
-                notifyError('実行エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)));
-            }
-            if (response.data.success) {
-                deleteCache(id);
-                const selected_step = getSelectedStep();
-                if (selected_step.hasData() && selected_step.uuid) {
-                    //TODO 将来的にはページングなどの対応が必要
-                    APIUtil2.findFrame(selected_step.uuid).then(frame => {
-                        updateDataFrameDetail(frame);
-                    });
-                } else {
-                    updateDataFrameDetail({});
-                }
-            }
+        // キャッシュを削除する
+        flow.deleteCache(id).then(() => {
+            deleteCache(id);
+            updateDataFrameDetail({});
         });
     };
 
