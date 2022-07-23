@@ -1,5 +1,6 @@
 import {UserRole} from 'Types/index';
 import Constants from 'Constants/index';
+import { RoleType } from 'Model/Navigation/NavigationModel';
 export default class AdminUtil {
     static getUserStatus = (status: string): string => {
         switch (status) {
@@ -15,11 +16,11 @@ export default class AdminUtil {
         return '';
     };
 
-    static hasUserAdmin = (admin_types: [UserRole]):boolean =>{
+    static hasUserAdmin = (admin_types: RoleType[]):boolean =>{
        return !!(admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.USR_ADMIN))
     }
 
-    static hasSystemAdmin = (admin_types: [UserRole]):boolean =>{
+    static hasSystemAdmin = (admin_types: RoleType[]):boolean =>{
         return !!(admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.SYS_ADMIN))
     }
 

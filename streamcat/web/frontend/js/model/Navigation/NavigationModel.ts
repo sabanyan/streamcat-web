@@ -12,7 +12,7 @@ type NavigationAllowlist = {
     deleteUser: boolean;
 };
 
-type RoleType = {
+export type RoleType = {
     uuid: string;
     name: string;
     systemRole: 'SYS_ADMIN' | 'USR_ADMIN' | 'EVERYONE' | 'EDIT_LOCK';

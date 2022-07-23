@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import style from '../style.scss'
 import {BaseInspector, Resizer} from 'Shared/Inspector'
-import {UserListUser} from 'Types/index'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
 import {APIUtil, ModalUtil, ReactDomUtil} from 'Utils/index';
@@ -10,9 +9,10 @@ import ErrorUtil from 'Utils/ErrorUtil';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 import { useStreamCatNotifications } from 'Shared/Notification'
+import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
-    selectedData?: UserListUser;
+    selectedData: UserType2;
     onClickDelete?: Function;
     onBlurTitle?: Function;
     onClickEdit?: Function;
@@ -44,8 +44,8 @@ const UserListInspector = (props: Props) => {
     const {notifyError} = useStreamCatNotifications();
     
     useEffect(() => {
-        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedData.roles))
-        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedData.roles))
+        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedData?.roles || []))
+        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedData?.roles || []))
     }, [selectedData])
 
     useEffect(()=>{
@@ -173,7 +173,7 @@ const UserListInspector = (props: Props) => {
         return _activateAdminRole(Constants.admin.systemRole.USR_ADMIN,uuid,active);
     }
 
-    const renderButtons = (data?: UserListUser) => {
+    const renderButtons = (data?: UserType2) => {
         const {onClickDelete,selectedData} = props
         let del
         const availableDelete = (selectedData.state !== Constants.admin.userStatus.inactive);
@@ -254,7 +254,7 @@ const UserListInspector = (props: Props) => {
     }
 
 
-    const renderDetail = (data?: UserListUser) => {
+    const renderDetail = (data?: UserType2) => {
         let result: any = []
 
         if (!data) return result
@@ -291,7 +291,7 @@ const UserListInspector = (props: Props) => {
                 let tempPasswordLabel = <React.Fragment key={"password"}>
                     <div><label>{display.password}</label></div>
                     <div
-                        className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password.length)}</div>
+                        className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password?.length || 0)}</div>
                 </React.Fragment>
                 result.push(tempPasswordLabel)
                 const _onClickShowPassword = () => {
@@ -369,7 +369,7 @@ const UserListInspector = (props: Props) => {
         </React.Fragment>
     }
 
-    const renderSelect = (data?: UserListUser) => {
+    const renderSelect = (data?: UserType2) => {
         return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}

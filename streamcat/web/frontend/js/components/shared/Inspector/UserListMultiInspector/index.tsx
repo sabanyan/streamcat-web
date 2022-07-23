@@ -1,19 +1,19 @@
 import React from 'react'
 import style from '../style.scss'
 import {BaseInspector, Resizer} from 'Shared/Inspector'
-import {UserListUser} from 'Types/index'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
+import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
-    selectedDatas: UserListUser[];
-    onClickDelete?: Function;
+    selectedDatas: UserType2[];
+    onClickDelete?: () => void;
 }
 
 const UserListMultiInspector = (props: Props) => {
     const {selectedDatas} = props
 
-    const renderButtons = (data?: UserListUser) => {
+    const renderButtons = () => {
         const {selectedDatas, onClickDelete} = props
 
         let del
@@ -24,7 +24,7 @@ const UserListMultiInspector = (props: Props) => {
 
         // 複数選択の場合
         if (selectedDatas.length >= 1) {
-            if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+            if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete()} icon={'delete'}>削除する</Button>
         }
         return <React.Fragment>
             {del}
@@ -35,7 +35,7 @@ const UserListMultiInspector = (props: Props) => {
         <BaseInspector key={JSON.stringify(selectedDatas)} label={""} disabled={true}>
             <div className={style.inspector}>
                 <div className={style.actions}>
-                    {renderButtons(selectedDatas)}
+                    {renderButtons()}
                 </div>
                 <div className={style.detail}>
 

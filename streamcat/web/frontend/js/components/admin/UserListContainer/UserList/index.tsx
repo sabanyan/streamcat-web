@@ -2,7 +2,7 @@ import React from 'react'
 import style from './style.scss';
 import {useEffect, useRef, useState} from 'react';
 import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
-import {UserListUser, UserProject, UserRole} from 'Types/index';
+import {UserProject, UserRole} from 'Types/index';
 import {Flex, Loader, Spacer} from 'Shared/Base';
 import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
@@ -21,8 +21,14 @@ import error = Simulate.error;
 import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
-import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
+
+export type UserType2 = UserType & {
+    selected: boolean;
+    // 仮登録状態、かつ操作ユーザがユーザ管理者権限を持つ場合は仮パスワードも返す
+    password?: string;
+};
 
 interface Props {
     navigation: NavigationType | null;
@@ -36,9 +42,9 @@ const UserList = (props: Props) => {
     // 読み込み完了を設定する
     const [isFinished, setIsFinished] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [users, setUsers] = useState<UserListUser[]>([]);
-    const [lastSelectedCell, setLastSelectedCell] = useState<UserListUser | null>(null);
-    const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
+    const [users, setUsers] = useState<UserType2[]>([]);
+    const [lastSelectedCell, setLastSelectedCell] = useState<UserType2 | null>(null);
+    const [selectedDatas, setSelectedDatas] = useState<UserType2[]>([]);
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
     const [projects,setProjects] = useState<UserProject[]>([]);
@@ -75,7 +81,7 @@ const UserList = (props: Props) => {
         setIsLoading(true);
         const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
         return APIUtil.get(url).then((response) => {
-            const users: UserListUser[] = response.data.data;
+            const users: UserType2[] = response.data.data;
             //setUsers(users);
             filterUsers(users);
             setIsLoading(false);
@@ -137,7 +143,7 @@ const UserList = (props: Props) => {
     }
 
     // ユーザを削除する
-    const deleteUser = (userListUser: UserListUser)=>{
+    const deleteUser = (userListUser: UserType2)=>{
         const url = 'users/' + userListUser.uuid;
         return APIUtil.delete(url).then((response)=>{
             setIsLoading(false);
@@ -207,7 +213,7 @@ const UserList = (props: Props) => {
                     }
                 );
                 setIsLoading(true);
-                selectedDatas.forEach((selectedData: UserListUser) => {
+                selectedDatas.forEach((selectedData: UserType2) => {
                     queue.push(deleteUser, [selectedData]);
                 });
                 queue.push(setIsLoading, [false]);
@@ -227,25 +233,29 @@ const UserList = (props: Props) => {
     // ユーザ一覧を表示する
     const renderUserList = () => {
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => {
-            let data: UserListUser = users.find(user=>(cell.uuid === user.uuid));
+            let data = users.find(user=>(cell.uuid === user.uuid));
+            if(!data){
+                return;
+            }
+            let selectedUser = data;
             if (event) event.stopPropagation();
             if (event && (event.metaKey || event.ctrlKey)) {
-                data.selected = true;
+                selectedUser.selected = true;
                 // command or ctrl + click
-                if (selectedDatas.includes(data)) {
-                    data.selected = !data.selected;
-                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
-                    if(!data.selected){
+                if (selectedDatas.includes(selectedUser)) {
+                    selectedUser.selected = !selectedUser.selected;
+                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== selectedUser.uuid));
+                    if(!selectedUser.selected){
                         setLastSelectedCell(null);
                     }
                 } else {
-                    selectedDatas.push(data);
-                    setLastSelectedCell(data);
+                    selectedDatas.push(selectedUser);
+                    setLastSelectedCell(selectedUser);
                 }
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = users.findIndex(user=> data.uuid === user.uuid);
+                let current = users.findIndex(user=> selectedUser.uuid === user.uuid);
                 if (lastSelectedCell) {
                     let last =  users.findIndex(user=> lastSelectedCell.uuid === user.uuid);
                     let min, max;
@@ -256,7 +266,7 @@ const UserList = (props: Props) => {
                         min = current;
                         max = last;
                     }
-                    const selectedDatas: UserListUser[] = users.slice(min, max + 1).map((user) => {
+                    const selectedDatas: UserType2[] = users.slice(min, max + 1).map((user) => {
                         user.selected = true;
                         return user;
                     });
@@ -265,9 +275,9 @@ const UserList = (props: Props) => {
             } else {
                 // 単一選択
                 clearSelected();
-                data.selected = true;
-                setSelectedDatas([data]);
-                setLastSelectedCell(data);
+                selectedUser.selected = true;
+                setSelectedDatas([selectedUser]);
+                setLastSelectedCell(selectedUser);
             }
             clickedUserListCell.current = true;
         };
@@ -277,13 +287,13 @@ const UserList = (props: Props) => {
         const onClickHeader= (header: ITableHeader) => {
             if (header.sort) {
                 if(header.key === "projects"){
-                    setUsers(lodash.orderBy(users, (e: UserListUser)=>{
-                        const projects = e.projects.length
+                    setUsers(lodash.orderBy(users, (e: UserType2)=>{
+                        const projects = e.projects?.length || 0;
                         return projects
                     }, header.sort));
                 }else if(header.key === "admin_types"){
-                    setUsers(lodash.orderBy(users, (e: UserListUser)=>{
-                        const roles = e.roles.filter(role => (role.systemRole != "EVERYONE"))
+                    setUsers(lodash.orderBy(users, (e: UserType2)=>{
+                        const roles = e.roles?.filter(role => (role.systemRole != "EVERYONE")) || [];
                         return JSON.stringify(roles)
                     }, header.sort));
                 } else{
@@ -294,8 +304,8 @@ const UserList = (props: Props) => {
             }
         }
 
-        const bodies: ITableBody[] = users.map((user: UserListUser) => {
-            let projects = [];
+        const bodies: ITableBody[] = users.map((user: UserType2) => {
+            let projects: {uuid: string, label: string}[] = [];
             if (user && Array.isArray(user.projects) && user.projects ) {
                 projects = user.projects.map((project: UserProject) => {
                     return {
@@ -305,7 +315,7 @@ const UserList = (props: Props) => {
                 });
             }
 
-            let admin_types = []
+            let admin_types: {uuid: string, systemRole: string}[] =[];
             if (user && user.roles && Array.isArray(user.roles)) {
                 admin_types = user.roles.map((role: UserRole) => {
                     return {
@@ -316,7 +326,7 @@ const UserList = (props: Props) => {
             }
 
             let selected = false;
-            selectedDatas.forEach((selectedUser:UserListUser)=>{
+            selectedDatas.forEach((selectedUser:UserType2)=>{
                 if(user.uuid === selectedUser.uuid){
                     selected = true
                 }
@@ -556,7 +566,7 @@ const UserList = (props: Props) => {
 
     const clearSelected = () => {
         setSelectedDatas([]);
-        setUsers(users.map((user: UserListUser) => {
+        setUsers(users.map((user: UserType2) => {
             user.selected = false;
             return user;
         }));
@@ -652,16 +662,16 @@ const UserList = (props: Props) => {
     }
 
     // 取得済みのユーザーをフィルターする
-    const filterUsers = (_users:UserListUser[]) => {
+    const filterUsers = (_users:UserType2[]) => {
         // 選択されている条件を抽出する
         const {selectedProjectUUIDs,selectedStatusTypes, hasNoFilter} = getSelectedFilter();
         // ユーザーをフィルターする
         let newFilteredUsers = _users;
         // 該当プロジェクトに属しているユーザのみ抽出
         if(selectedProjectUUIDs.length){
-            newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
                 let hasFound = false
-                user.projects.forEach((project:UserProject)=>{
+                user.projects?.forEach((project:UserProject)=>{
                     // 該当するプロジェクトがあるか
                     selectedProjectUUIDs.forEach((selectedProjectUUID)=>{
                         if(project.uuid === selectedProjectUUID){
@@ -674,7 +684,7 @@ const UserList = (props: Props) => {
         }
         // 該当するステータスのユーザのみ抽出
         if(selectedStatusTypes.length){
-            newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
                 let hasFound = false
                 selectedStatusTypes.forEach((state)=>{
                     if(user.state === state){

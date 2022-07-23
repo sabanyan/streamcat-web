@@ -186,18 +186,6 @@ export type dropDownListItem = {
   object?: {}
 }
 
-export interface UserListUser extends TableCell{
-  uuid:      string;
-  email:     string;
-  name:      string;
-  state:     string;
-  creator:   string;
-  createdAt: Date;
-  roles:     UserRole[];
-  password?: string;
-  projects?: UserProject[];
-}
-
 export interface TableCell {
   selected?: boolean;
 }
