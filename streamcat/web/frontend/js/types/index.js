@@ -59,46 +59,6 @@ export type LibraryListDataType = {
   selected: boolean;
 }
 
-export type ServersDataType = {
-  id: string;//Directory,SMB,PostgreSQL
-  version: string;
-  label: string;
-  description: string;
-  url: string;
-  params: DirectoryExtendsDataType | SMBExtendsDataType | PostgreSQLExtendsDataType
-}
-
-export type DirectoryExtendsDataType = {
-  directoryPath: string
-}
-
-export type SMBExtendsDataType = {
-  user: string;
-  password: string;
-  server: string;
-  port: string;
-  domain: string;
-  directoryPath: string
-}
-
-export type PostgreSQLExtendsDataType = {
-  user: string;
-  password: string;
-  server: string;
-  port: string;
-  database: string;
-}
-
-export type RunResponseNameType = {
-  id: string,
-  uuid: string
-}
-
-export type RunResponseType = {
-  name: [RunResponseNameType];
-  success: boolean;
-}
-
 export type UploadedFileType = {
   file: File | null,
   uuid?: string,
@@ -152,19 +112,6 @@ export type DownloadButtonType = {
   danger: boolean;
   href: string;
   download: string;
-}
-
-// export type DataFrameDetailType = {
-//   contents: {};
-//   numberOfLines: string;
-//   lastModifiedAt: string;
-// }
-
-export type BreadCrumbHistoryType = {
-  id: string,
-  label: string,
-  url: string,
-  current: boolean,
 }
 
 export type RunArgsType = {
