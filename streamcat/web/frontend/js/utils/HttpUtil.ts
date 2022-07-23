@@ -1,5 +1,4 @@
 //@flow
-import axios from 'axios'
 
 class HttpUtil {
   config: {}
@@ -17,35 +16,9 @@ class HttpUtil {
     }
   }
 
-  httpUrl (path: string) {
-    return '/' + path
-  }
-
   windowOpen (path: string, callBackApply: Function, option: string = 'width=1200,height=600') {
     window.open('/' + path, 'child', option)
     window['onCallbackApply'] = callBackApply
-  }
-
-  get (path: string, data?: {}) {
-    const url = this.httpUrl(path)
-    return axios.get(url, {params: data})
-  }
-
-  post (path: string, data: {}, config?: {}) {
-    const merged_config = this.mergeConfig(config)
-    const url = this.httpUrl(path)
-    return axios.post(url, data, merged_config)
-  }
-
-  put (path: string, data: {}, config?: {}) {
-    const merged_config = this.mergeConfig(config)
-    const url = this.httpUrl(path)
-    return axios.put(url, data, merged_config)
-  }
-
-  delete (path: string, data: {}) {
-    const url = this.httpUrl(path)
-    return axios.delete(url, data)
   }
 
   getURLParam (paramName: string) {
