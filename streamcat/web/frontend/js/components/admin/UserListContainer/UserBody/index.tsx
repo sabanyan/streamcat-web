@@ -1,39 +1,25 @@
-import React from 'react'
-import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
+import React from 'react';
+import {useEffect, useState} from 'react';
 import style from './style.scss';
-import {useEffect, useRef, useState} from 'react';
 import {Api} from 'Api';
 import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
 import {UserProject, UserRole} from 'Types/index';
-import {Flex, Loader, Spacer} from 'Shared/Base';
+import {Flex, Spacer} from 'Shared/Base';
 import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
 import {ITableBody} from 'UserListContainer/UserListTable/UserListBody';
 import {ModalManager} from 'Shared/Modal';
-import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
+import {useStreamCatNotifications} from 'Shared/Notification';
 import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import Select from 'react-select';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
-import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
-import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
-import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
-import {Simulate} from "react-dom/test-utils";
-import error = Simulate.error;
 import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
-import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 import { UserType2 } from 'Components/admin/UserListContainer/UserList'
-
-const getUsers = (keyword?: string) => {
-    const q = keyword;
-    const exceptInActive = false;
-    const roles = true;
-    const projects = true
-    return Api.findUsers(q, exceptInActive, roles, projects);
-};
 
 interface Props {
     navigation: NavigationType | null;
@@ -41,17 +27,12 @@ interface Props {
     selectedProjectUUIDs: string[];
     selectedStatusTypes: string[];
     hasNoFilter: boolean;
-
     selectableProjects: UserProject[];
-
     lastSelectedCell: [UserType2|null, (value:React.SetStateAction<UserType2|null>)=>void];
     selectedDatas: [UserType2[], (value:React.SetStateAction<UserType2[]>)=>void];
-}
+};
 
 export const UserBody = (props: Props) => {
-
-    console.log("UserBody hasNoFilter", props.hasNoFilter);
-
     const {
         keyword,
         selectedProjectUUIDs,
@@ -63,47 +44,25 @@ export const UserBody = (props: Props) => {
     const [lastSelectedCell, setLastSelectedCell] = props.lastSelectedCell;
     const [selectedDatas, setSelectedDatas] = props.selectedDatas;
 
-    // 全てのユーザを取得する
-    // const [usersReader, refreshUsers] = useAsyncResource(getUsers, keyword);
-
     // 通知機能メソッドの取得
     const {notifyError} = useStreamCatNotifications();
 
-    // 読み込み完了を設定する
-    // const [isFinished, setIsFinished] = useState<boolean>(false);
-    // const [isLoading, setIsLoading] = useState<boolean>(true);
+    // UserListTableに表示するUserリスト
     const [users, setUsers] = useState<UserType2[]>([]);
-    // const [users, setUsers] = useState<UserType2[]>(usersReader().map(user => ({
-    //     selected: false,
-    //     ...user
-    // })));
-    // const [lastSelectedCell, setLastSelectedCell] = useState<UserType2 | null>(null);
-    // const [selectedDatas, setSelectedDatas] = useState<UserType2[]>([]);
-    // const [keyword,setKeyword] = useState<string>("");
-    // const [projects,setProjects] = useState<UserProject[]>([]);
-    // const [selectableProjects,setSelectableProjects] = useState<UserProject[]>([]);
 
     // ユーザ一覧を取得する
     const fetchUsers = (keyword?: string) => {
-        // APIをたたく
-        const params = {
-            projects: 'on',
-            roles: 'on',
-            query: keyword
-        };
-        // setIsLoading(true);
-        const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
-        return APIUtil.get(url).then((response) => {
-            const users: UserType2[] = response.data.data;
-            //setUsers(users);
-            filterUsers(users);
-            // setIsLoading(false);
-            // setIsFinished(true);
+        return Api.findUsers(keyword, false, true, true).then(users => {
+            // 取得したUserを条件に従いフィルタリングする
+            filterUsers(
+                users.map(user => ({
+                    selected: false,
+                    ...user
+                }))
+            );
         }).catch((error) => {
             console.log(error);
             notifyError('ユーザー一覧取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
-            // setIsLoading(false);
-            // setIsFinished(true);
         });
     };
 
@@ -115,24 +74,23 @@ export const UserBody = (props: Props) => {
             name: name,
             password: null
         };
-        // setIsLoading(true);
         const url = 'users'
         // ユーザーの作成
         const newUserResponse = await APIUtil.post(url,body).catch(error=>{
-            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",error)
-            return Promise.reject()
+            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",error);
+            return Promise.reject();
         })
         if(!newUserResponse.data.success){
-            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",newUserResponse.data.message)
-            return Promise.reject()
+            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",newUserResponse.data.message);
+            return Promise.reject();
         }
         if(projectUUIDs){
             // プロジェクトへの追加
             const json = newUserResponse.data.data;
-            joinProject(json.uuid,projectUUIDs)
+            joinProject(json.uuid,projectUUIDs);
         }
-        return Promise.resolve(newUserResponse)
-    }
+        return Promise.resolve(newUserResponse);
+    };
 
     // ユーザをプロジェクトに紐付ける
     const joinProject = (userUUID: string, projectUUIDs: string[]) => {
@@ -158,13 +116,10 @@ export const UserBody = (props: Props) => {
     // ユーザを削除する
     const deleteUser = (userListUser: UserType2)=>{
         const url = 'users/' + userListUser.uuid;
-        return APIUtil.delete(url).then((response)=>{
-            // setIsLoading(false);
-        }).catch((error) => {
+        return APIUtil.delete(url).catch((error) => {
             notifyError('ユーザー削除エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
-            // setIsLoading(false);
         });
-    }
+    };
 
     // ユーザのパスワードをリセットする
     const resetUserPassword = (uuid: string) =>{
@@ -174,24 +129,10 @@ export const UserBody = (props: Props) => {
         }
         return APIUtil.put(url,body).then((response)=>{
             fetchUsers();
-            // setIsLoading(false);
         }).catch((error) => {
             notifyError('パスワードリセットエラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
-            // setIsLoading(false);
         });
-    }
-
-    // useEffect(() => {
-    //     fetchUsers();
-    //     // fetchProjects(false);
-    //     // fetchProjects(true);
-    // }, []);
-
-    // useEffect(()=>{
-    //     // キーワードが変更されると同時に fetch する
-    //     fetchUsers(keyword)
-    // },[keyword])
-
+    };
 
     useEffect(()=>{
         if(selectedDatas.length === 1){
@@ -212,7 +153,7 @@ export const UserBody = (props: Props) => {
                 }
             })
         }
-    }, [selectedDatas])
+    }, [selectedDatas]);
 
     useEffect(()=>{
         // ユーザ削除の確認ダイアログ
@@ -226,18 +167,16 @@ export const UserBody = (props: Props) => {
                         , "timeout": 0            //The timeout period
                     }
                 );
-                // setIsLoading(true);
                 selectedDatas.forEach((selectedData: UserType2) => {
                     queue.push(deleteUser, [selectedData]);
                 });
-                // queue.push(setIsLoading, [false]);
                 queue.push(fetchUsers, []);
                 queue.start();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
                 clearSelected();
             },
         })
-    },[selectedDatas])
+    },[selectedDatas]);
 
     // ユーザ一覧を表示する
     const renderUserList = () => {
@@ -288,11 +227,11 @@ export const UserBody = (props: Props) => {
                 setSelectedDatas([selectedUser]);
                 setLastSelectedCell(selectedUser);
             }
-            // clickedUserListCell.current = true;
         };
-        const onClickFileName = () => {
 
+        const onClickFileName = () => {
         };
+
         const onClickHeader= (header: ITableHeader) => {
             if (header.sort) {
                 if(header.key === "projects"){
@@ -381,7 +320,6 @@ export const UserBody = (props: Props) => {
                 }
                 const projectUUIDs = Array.isArray(selectedOption)?selectedOption.map(option=>option.value as string):null;
                 createNewUser(newUserName,newUserEmail, projectUUIDs).then((response) => {
-                    // setIsLoading(false);
                     fetchUsers();
                     if(!response.data.success){
                         notifyError('ユーザー作成エラー', ReactDomUtil.renderToString(response.data.message));
@@ -415,19 +353,18 @@ export const UserBody = (props: Props) => {
                     clearField();
                 }).catch(() => {
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
-                    // setIsLoading(false);
                 })
             }, onClickCancel: ()=>{
                 clearField();
             }
         })
-    },[newUserEmail,newUserName, selectedOption])
+    },[newUserEmail,newUserName, selectedOption]);
 
     const clearField = () =>{
         setNewUserName("");
         setNewUserEmail("");
         setSelectedOption(null);
-    }
+    };
 
     // メニューを表示
     const renderMenuList = () => {
@@ -581,17 +518,12 @@ export const UserBody = (props: Props) => {
         }));
     };
 
-    // const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
-    // const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
-
     useEffect(()=>{
         // フィルターが変更される都度ユーザをフィルタリングする
         const {hasNoFilter} = props;
         if(hasNoFilter){
-            // console.log("fetchUsers",selectedProjectUUIDs.length, selectedStatusTypes.length);
             fetchUsers(keyword);
         }else{
-            // console.log("filterList",selectedProjectUUIDs.length, selectedStatusTypes.length);
             filterUsers(users);
         }
     },[selectedProjectUUIDs, selectedStatusTypes, hasNoFilter])
