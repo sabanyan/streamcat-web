@@ -98,7 +98,7 @@ const UserListInspector = (props: Props) => {
         // 削除済みのユーザーをもとに戻す
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UNDELETE_USER, onClickDone: async () => {
-                await unDeleteUser(selectedData.uuid);
+                await unDeleteUser(selectedData);
                 if(onChangedList)onChangedList();
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             },onClickCancel: ()=>{
@@ -109,17 +109,9 @@ const UserListInspector = (props: Props) => {
         })
     }, [selectedData,systemAdminChecked,userAdminChecked])
 
-    const unDeleteUser = async (uuid:string)=>{
-        const url = 'users/' + uuid;
-        return APIUtil.put(url, {state:'active'}).then((response)=>{
-            if(response.data.success){
-                return Promise.resolve(response)
-            }else {
-                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(response.data.message));
-                return Promise.reject()
-            }
-        }).catch((error) => {
-            notifyError('ユーザー削除エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
+    const unDeleteUser = async (user: UserType2)=>{
+        return user.undelete().catch(e=>{
+            notifyError('ユーザを論理削除から登録状態に戻せませんでした', e.message);
         });
     }
 
