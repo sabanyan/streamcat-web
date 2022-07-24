@@ -20,7 +20,7 @@ interface Props {
     navigation: NavigationType | null;
 }
 
-export const UserList2 = (props: Props) => {
+export const UserList = (props: Props) => {
 
     console.log("UserList2");
 

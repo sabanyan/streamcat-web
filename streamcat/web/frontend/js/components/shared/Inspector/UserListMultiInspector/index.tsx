@@ -3,7 +3,7 @@ import style from '../style.scss'
 import {BaseInspector, Resizer} from 'Shared/Inspector'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
-import { UserType2 } from 'Components/admin/UserListContainer/UserList2'
+import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
     selectedDatas: UserType2[];
