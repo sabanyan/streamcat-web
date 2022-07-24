@@ -481,7 +481,7 @@ const UserList = (props: Props) => {
         return <>
             <Spacer minWidth={40}/>
             <Flex flexDirection={'column'} fluid={true} width={280}>
-                <Spacer height={160}/>
+                <Spacer height={60}/>
                 <MenuList onClickNewUser={onClickNewUser}/>
             </Flex>
         </>
@@ -664,7 +664,7 @@ const UserList = (props: Props) => {
     // 取得済みのユーザーをフィルターする
     const filterUsers = (_users:UserType2[]) => {
         // 選択されている条件を抽出する
-        const {selectedProjectUUIDs,selectedStatusTypes, hasNoFilter} = getSelectedFilter();
+        const {selectedProjectUUIDs, selectedStatusTypes, hasNoFilter} = getSelectedFilter();
         // ユーザーをフィルターする
         let newFilteredUsers = _users;
         // 該当プロジェクトに属しているユーザのみ抽出
@@ -767,42 +767,47 @@ const UserList = (props: Props) => {
         return <>
             {renderLoadingIcon()}
             <Flex justifyContent={'center'} fluid={true}>
-                {renderInspector()}
                 <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
                       onMouseDown={onMouseDownUserList}>
                     <Spacer width={40}/>
                     <Flex flexDirection={'column'}>
                         <Spacer height={40}/>
-                        <div className={style.pageTitleHeader}>
-                            <div className={style.searchHeaderContainer}>
-                                <div className={style.pageTitle}>
-                                    ユーザー管理
+                        <Flex flexDirection={'row'}>
+                            <div className={style.pageTitleHeader}>
+                                <div className={style.searchHeaderContainer}>
+                                    <div className={style.pageTitle}>
+                                        ユーザー管理
+                                    </div>
+                                    <div className={style.searchBarContainer}>
+                                        <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                                    </div>
                                 </div>
-                                <div className={style.searchBarContainer}>
-                                    <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                                <Spacer height={20}/>
+                                <div className={style.resultAndFilterContainer}>
+                                    <div className={style.resultCount}>
+                                        表示されている件数 {users.length}件
+                                    </div>
+                                    <div className={style.filterLinkContainer}>
+                                        <FilterListLinkButton
+                                            list={filterList}
+                                            onClickFilterCategoryItem={onClickCategoryItem}
+                                            onClickFilterListItem={onClickListItem}
+                                        >検索フィルタ</FilterListLinkButton>
+                                        <Spacer width={20}/>
+                                        <FilterSelectedList onClickRemove={onClickRemove} list={filterList}/>
+                                    </div>
                                 </div>
                             </div>
-                            <Spacer height={20}/>
-                            <div className={style.resultAndFilterContainer}>
-                                <div className={style.resultCount}>
-                                    表示されている件数 {users.length}件
-                                </div>
-                                <div className={style.filterLinkContainer}>
-                                    <FilterListLinkButton
-                                        list={filterList}
-                                        onClickFilterCategoryItem={onClickCategoryItem}
-                                        onClickFilterListItem={onClickListItem}
-                                    >検索フィルタ</FilterListLinkButton>
-                                    <Spacer width={20}/>
-                                    <FilterSelectedList onClickRemove={onClickRemove} list={filterList}/>
-                                </div>
-                            </div>
-                        </div>
+                            <Spacer width={420}/>
+                        </Flex>
                         <Spacer height={30}/>
-                        {renderUserList()}
+                        <Flex flexDirection={'row'}>
+                            {renderUserList()}
+                            {renderMenuList()}
+                            {renderInspector()}
+                        </Flex>
                         <Spacer height={80}/>
                     </Flex>
-                    {renderMenuList()}
                     <Spacer width={40}/>
                 </Flex>
             </Flex>
