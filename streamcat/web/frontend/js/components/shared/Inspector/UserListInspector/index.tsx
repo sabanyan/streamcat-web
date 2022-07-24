@@ -9,7 +9,7 @@ import ErrorUtil from 'Utils/ErrorUtil';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 import { useStreamCatNotifications } from 'Shared/Notification'
-import { UserType2 } from 'Components/admin/UserListContainer/UserList'
+import { UserType2 } from 'Components/admin/UserListContainer/UserList2'
 
 interface Props {
     selectedData: UserType2;

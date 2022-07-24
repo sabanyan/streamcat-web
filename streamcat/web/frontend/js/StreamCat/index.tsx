@@ -11,6 +11,7 @@ import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
 import {UserList} from 'UserListContainer/UserList';
+import {UserList2} from 'UserListContainer/UserList2';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
@@ -112,7 +113,7 @@ const StreamCat = (props: Props) => {
                 viewComponent = <Preview/>;
                 break;
             case ViewId.User_List:
-                viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
+                viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList2 navigation={nav}/>:<NotAllowed/>;
                 break;
             default:
                 break;

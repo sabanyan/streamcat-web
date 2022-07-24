@@ -68,8 +68,13 @@ def update_users_info(func):
     return deco
 
 def _update_user_roles_info(user_data):
-    user = g.factory.user.find_by_uuid(user_data['uuid'])
-    user_data.update({'roles' : user.get_joined_roles()})
+    try:
+        user = g.factory.user.find_by_uuid(user_data['uuid'])
+        user_data.update({'roles' : user.get_joined_roles()})
+    except Exception as e:
+        # NOTE: PostgreSQLのデフォルトの分離レベルは
+        #       READ COMMITTEDなので、Phantom Readが発生する可能性がある
+        raise e
     return user_data
 
 def _update_user_projects_info(user_data):
