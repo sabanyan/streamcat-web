@@ -1,10 +1,19 @@
 import {UserType} from 'Model/Navigation/NavigationModel';
 import {
+    postBase,
     putBase,
     getBase as get,
     delBase as del,
     makeArrayCtor
 } from './ApiUtilBase';
+
+const post = (url: string, body: {}) => {
+    return postBase<UserType>(url, body).then<UserType>(user => {
+        // UserArrayのshift()を用いてuserに各種関数を付与する
+        // NOTE: shift()は必ずUserオブジェクトを返す
+        return user && (new UserArray([user])).shift() as UserType;
+    });
+};
 
 const put = (url: string, body: {}) => {
     return putBase<UserType>(url, body).then<UserType>(user => {
@@ -53,5 +62,15 @@ export const UserApi = {
         return get<UserType[]>('/api/v0/users', params).then(users => {
             return new UserArray(users);
         });
+    },
+
+    /**
+     * POST /usersを発行してUserを作成する
+     * @throws {ErrorResponse}
+     */
+    createUser: (email: string, name: string, password?: string) => {
+        let body: {email: string, name: string, password?: string} = {email, name};
+        password && (body.password = password);
+        return post('/api/v0/users', body);
     }
 };

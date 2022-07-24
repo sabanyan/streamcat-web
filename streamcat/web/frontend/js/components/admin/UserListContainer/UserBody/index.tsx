@@ -67,29 +67,14 @@ export const UserBody = (props: Props) => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = async (name: string,email: string, projectUUIDs: string[] | null ) => {
-        // APIをたたく
-        const body = {
-            email: email,
-            name: name,
-            password: null
-        };
-        const url = 'users'
-        // ユーザーの作成
-        const newUserResponse = await APIUtil.post(url,body).catch(error=>{
-            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",error);
-            return Promise.reject();
-        })
-        if(!newUserResponse.data.success){
-            ErrorUtil.notifyError(notifyError,"ユーザー作成エラー",newUserResponse.data.message);
-            return Promise.reject();
-        }
-        if(projectUUIDs){
-            // プロジェクトへの追加
-            const json = newUserResponse.data.data;
-            joinProject(json.uuid,projectUUIDs);
-        }
-        return Promise.resolve(newUserResponse);
+    const createNewUser = async (name: string, email: string, projectUUIDs: string[] | null ) => {
+        return Api.createUser(email, name).then(user => {
+            // UserをProjectに参加させる
+            joinProject(user.uuid, projectUUIDs || []);
+            return user;
+        }).catch(e => {
+            notifyError('ユーザー作成エラー', e.message);
+        });
     };
 
     // ユーザをプロジェクトに紐付ける
@@ -114,23 +99,18 @@ export const UserBody = (props: Props) => {
     }
 
     // ユーザを削除する
-    const deleteUser = (userListUser: UserType2)=>{
-        const url = 'users/' + userListUser.uuid;
-        return APIUtil.delete(url).catch((error) => {
-            notifyError('ユーザー削除エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
+    const deleteUser = (user: UserType2)=>{
+        return user.delete().catch(e => {
+            notifyError('ユーザー削除エラー', e.message);
         });
     };
 
     // ユーザのパスワードをリセットする
-    const resetUserPassword = (uuid: string) =>{
-        const url = 'users/' + uuid;
-        const body = {
-            password: null
-        }
-        return APIUtil.put(url,body).then((response)=>{
+    const resetUserPassword = (user: UserType2) =>{
+        return user.resetPassword().then(user => {
             fetchUsers();
-        }).catch((error) => {
-            notifyError('パスワードリセットエラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
+        }).catch(e => {
+            notifyError('パスワードリセットエラー', e.message);
         });
     };
 
@@ -140,7 +120,7 @@ export const UserBody = (props: Props) => {
             // パスワードリセットの処理
             ModalUtil.registerModal({
                 id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
-                    resetUserPassword(selectedData.uuid).finally(() => {
+                    resetUserPassword(selectedData).finally(() => {
                         ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
                         clearSelected();
                     })
@@ -319,15 +299,14 @@ export const UserBody = (props: Props) => {
                     return
                 }
                 const projectUUIDs = Array.isArray(selectedOption)?selectedOption.map(option=>option.value as string):null;
-                createNewUser(newUserName,newUserEmail, projectUUIDs).then((response) => {
+                createNewUser(newUserName,newUserEmail, projectUUIDs).then(user => {
                     fetchUsers();
-                    if(!response.data.success){
-                        notifyError('ユーザー作成エラー', ReactDomUtil.renderToString(response.data.message));
+                    if(!user){
+                        notifyError('ユーザー作成エラー');
                         ModalUtil.closeModal(Constants.modal.ADD_USER)
                         clearField();
                         return
                     }
-                    const data = response.data.data
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
                     const project = (selectedOption && selectedOption.label)?<div>所属: {selectedOption.label}</div>: null;
                     ModalUtil.emitModal({
@@ -341,10 +320,10 @@ export const UserBody = (props: Props) => {
                                 </div>
                                 <Spacer height={20}/>
                                 <div className={style.addUserDetails}>
-                                    <div>名前: {data.name}</div>
-                                    <div>Email: {data.email}</div>
+                                    <div>名前: {user.name}</div>
+                                    <div>Email: {user.email}</div>
                                     {project}
-                                    <div>仮パスワード: {data.password}</div>
+                                    <div>仮パスワード: {user.password}</div>
                                 </div>
                             </form>
                             <div className={'mt-8px'}/>

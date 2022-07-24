@@ -14,8 +14,6 @@ import { UserBody } from '../UserBody';
 
 export type UserType2 = UserType & {
     selected: boolean;
-    // 仮登録状態、かつ操作ユーザがユーザ管理者権限を持つ場合は仮パスワードも返す
-    password?: string;
 };
 
 interface Props {

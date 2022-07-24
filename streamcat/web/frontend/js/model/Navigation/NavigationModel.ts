@@ -28,6 +28,8 @@ type UserBaseType = {
   email: string;
   name: string;
   state: 'tmp' | 'active' | 'inactive' | 'expired';
+  // 仮登録状態、かつ操作ユーザがユーザ管理者権限を持つ場合は仮パスワードも返す
+  password?: string;
   creator: string;
   createdAt: string;
   roles?: RoleType[];
