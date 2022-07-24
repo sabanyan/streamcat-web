@@ -1,30 +1,15 @@
-import React from 'react'
-import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
-import style from './style.scss';
+import React from 'react';
 import {useEffect, useRef, useState} from 'react';
+import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
+import style from './style.scss';
 import {Api} from 'Api';
-import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
-import {UserProject, UserRole} from 'Types/index';
-import {Flex, Loader, Spacer} from 'Shared/Base';
-import {MenuList} from 'Components/admin/UserListContainer/MenuList';
-import {UserListTable} from 'UserListContainer/UserListTable';
-import {ITableBody} from 'UserListContainer/UserListTable/UserListBody';
-import {ModalManager} from 'Shared/Modal';
-import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
-import {TextField} from 'Shared/Input';
+import {Flex, Spacer} from 'Shared/Base';
+import {NotificationManager} from 'Shared/Notification';
 import Constants from 'Constants/index';
-import Select from 'react-select';
-import {UserListInspector} from 'Shared/Inspector/UserListInspector';
 import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
-import {Simulate} from "react-dom/test-utils";
-import error = Simulate.error;
-import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
-import * as lodash from 'lodash';
-import Queue from "promise-queue-plus";
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
-import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 import { UserBody } from '../UserBody';
 
 export type UserType2 = UserType & {
@@ -45,12 +30,7 @@ export const UserList2 = (props: Props) => {
     const exceptMyProject = true;
     const [projectsReader, refreshProjects] = useAsyncResource(Api.findProjects, true, exceptMyProject);
 
-    // 通知機能メソッドの取得
-    const {notifyError} = useStreamCatNotifications();
-
     // 読み込み完了を設定する
-    // const [isFinished, setIsFinished] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [users, setUsers] = useState<UserType2[]>([]);
     const [lastSelectedCell, setLastSelectedCell] = useState<UserType2 | null>(null);
     const [selectedDatas, setSelectedDatas] = useState<UserType2[]>([]);
