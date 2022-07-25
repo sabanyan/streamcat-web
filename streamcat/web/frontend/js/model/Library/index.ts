@@ -169,6 +169,9 @@ export type ProjectType = FolderType & {
         members: {uuid:string, type:MemberType}[],
         lastModifiedAt: string
     ) => Promise<ProjectType>;
+    joinMember:(
+        member: {uuid:string, type:MemberType}
+    ) => Promise<void>;
 };
 
 /**

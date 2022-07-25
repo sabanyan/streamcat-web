@@ -52,7 +52,7 @@ const UserListInspector = (props: Props) => {
         // 権限更新確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN, onClickDone: () => {
-                activateSystemAdminRole(selectedData.uuid,systemAdminChecked).catch(_=>{
+                activateSystemAdminRole(selectedData, systemAdminChecked).catch(_=>{
                     setSystemAdminChecked(!systemAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN)
@@ -66,7 +66,7 @@ const UserListInspector = (props: Props) => {
         })
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData.uuid,userAdminChecked).catch(_=>{
+                activateUserAdminRole(selectedData, userAdminChecked).catch(_=>{
                     setUserAdminChecked(!userAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN)
@@ -81,7 +81,7 @@ const UserListInspector = (props: Props) => {
         // 自分のユーザー管理権限を剥奪する場合
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData.uuid,false).then((res)=>{
+                activateUserAdminRole(selectedData, false).then((res)=>{
                     WebUtil.logout();
                 }).catch(_=>{
                     setUserAdminChecked(true);
@@ -115,54 +115,42 @@ const UserListInspector = (props: Props) => {
         });
     }
 
-    // システム権限を更新する
-    const _activateAdminRole = async (role:string, uuid: string,active: boolean) =>{
-        let url;
-        switch (role){
-            case Constants.admin.systemRole.USR_ADMIN:
-                url = 'roles/usr_admin/users/' + uuid;
-                break;
-            case Constants.admin.systemRole.SYS_ADMIN:
-                url = 'roles/sys_admin/users/' + uuid;
-                break;
-            default:
-                break;
-        }
-        if (!url)return;
+    // システム管理権限を更新する
+    const activateSystemAdminRole = (user: UserType2, active: boolean) => {
         const {onChangedUserSystemAdminRole} = props;
+
         if(active){
-            const response = await APIUtil.put(url).catch((error) => {
-                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
-                return Promise.reject()
+            return user.joinSysAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
             });
-            if(response.data.success){
-                if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
-            }else {
-                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(response.data.message));
-                return Promise.reject()
-            }
-            return response;
         }else{
-            const response = await APIUtil.delete(url).catch((error) => {
-                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
-                return Promise.reject()
+            return user.leaveSysAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
             });
-
-            if(response.data.success){
-                if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
-            }else {
-                notifyError('システム権限更新エラー', ReactDomUtil.renderToString(response.data.message));
-                return Promise.reject()
-            }
-            return response;
         }
-    }
+    };
 
-    const activateSystemAdminRole = (uuid: string,active: boolean) =>{
-        return _activateAdminRole(Constants.admin.systemRole.SYS_ADMIN,uuid,active);
-    }
-    const activateUserAdminRole = (uuid: string,active: boolean) =>{
-        return _activateAdminRole(Constants.admin.systemRole.USR_ADMIN,uuid,active);
+    // ユーザー管理権限を更新する
+    const activateUserAdminRole = (user: UserType2, active: boolean) => {
+        const {onChangedUserSystemAdminRole} = props;
+
+        if(active){
+            return user.joinUsrAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
+            });
+        }else{
+            return user.leaveUsrAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
+            });
+        }
     }
 
     const renderButtons = (data?: UserType2) => {

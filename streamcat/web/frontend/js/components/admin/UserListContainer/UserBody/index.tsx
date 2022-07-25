@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import Select from 'react-select';
 import style from './style.scss';
 import {Api} from 'Api';
-import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
+import {ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
 import {Flex, Spacer} from 'Shared/Base';
 import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
@@ -66,10 +66,10 @@ export const UserBody = (props: Props) => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = async (name: string, email: string, projectUUIDs: string[] | null ) => {
+    const createNewUser = async (name: string, email: string, projects: ProjectType[]) => {
         return Api.createUser(email, name).then(user => {
             // UserをProjectに参加させる
-            joinProject(user.uuid, projectUUIDs || []);
+            joinProject(user.uuid, projects);
             return user;
         }).catch(e => {
             notifyError('ユーザー作成エラー', e.message);
@@ -77,25 +77,15 @@ export const UserBody = (props: Props) => {
     };
 
     // ユーザをプロジェクトに紐付ける
-    const joinProject = (userUUID: string, projectUUIDs: string[]) => {
-        projectUUIDs.forEach(projectUUID => {
-            const url = 'projects/' + projectUUID + '/users/' + userUUID;
-            const body = {
-                'memberType': 'Reader'
-            };
-            (async() => {
-                const response = await APIUtil.put(url, body).catch(error => {
-                    ErrorUtil.notifyError(notifyError, 'プロジェクト追加エラー', error)
-                    return Promise.reject()
+    const joinProject = (userUUID: string, projects: ProjectType[]) => {
+        Promise.all(
+            projects.map(project => {
+                return project.joinMember({uuid:userUUID, type:'Reader'}).catch(e => {
+                    notifyError('プロジェクト追加エラー', e.message);
                 });
-                if (!response.data.success) {
-                    ErrorUtil.notifyError(notifyError, 'プロジェクト追加エラー', response.data.message)
-                    return Promise.reject()
-                }
-                return Promise.resolve(response);
-            })();
-        });
-    }
+            })
+        );
+    };
 
     // ユーザを削除する
     const deleteUser = (user: UserType2)=>{
@@ -269,14 +259,13 @@ export const UserBody = (props: Props) => {
             return body
         });
 
-
         return <UserListTable bodies={bodies} onClickCell={onClickCell} onClickFileName={onClickFileName}
                               onClickHeader={onClickHeader}/>
     };
 
     const [newUserName, setNewUserName] = useState<string | null>(null);
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-    const [selectedOption, setSelectedOption] = useState<ProjectType | null>(null);
+    const [selectedProjects, setSelectedProjects] = useState<ProjectType[]>([]);
 
 
     useEffect(()=>{
@@ -291,8 +280,7 @@ export const UserBody = (props: Props) => {
                     alert("E-mailを入力してください")
                     return
                 }
-                const projectUUIDs = Array.isArray(selectedOption)?selectedOption.map(option=>option.value as string):null;
-                createNewUser(newUserName,newUserEmail, projectUUIDs).then(user => {
+                createNewUser(newUserName,newUserEmail, selectedProjects).then(user => {
                     fetchUsers();
                     if(!user){
                         notifyError('ユーザー作成エラー');
@@ -301,7 +289,9 @@ export const UserBody = (props: Props) => {
                         return
                     }
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
-                    const project = (selectedOption && selectedOption.label)?<div>所属: {selectedOption.label}</div>: null;
+                    const projectDiv = (selectedProjects.length > 0)?
+                        <div>所属: {selectedProjects.map(project => `${project.label}`).join(', ')}</div>:
+                        <></>;
                     ModalUtil.emitModal({
                         id: Constants.modal.ADD_USER_CONFIRM,
                         visible: true,
@@ -315,7 +305,7 @@ export const UserBody = (props: Props) => {
                                 <div className={style.addUserDetails}>
                                     <div>名前: {user.name}</div>
                                     <div>Email: {user.email}</div>
-                                    {project}
+                                    {projectDiv}
                                     <div>仮パスワード: {user.password}</div>
                                 </div>
                             </form>
@@ -330,12 +320,12 @@ export const UserBody = (props: Props) => {
                 clearField();
             }
         })
-    },[newUserEmail,newUserName, selectedOption]);
+    },[newUserEmail,newUserName, selectedProjects]);
 
     const clearField = () =>{
         setNewUserName("");
         setNewUserEmail("");
-        setSelectedOption(null);
+        setSelectedProjects([]);
     };
 
     // メニューを表示
@@ -343,12 +333,6 @@ export const UserBody = (props: Props) => {
 
         const onClickNewUser = () => {
             // モーダル表示
-            const options = selectableProjects.map(project => {
-                return {
-                    label: project.label,
-                    value: project.uuid
-                }
-            })
             clearField();
             ModalUtil.emitModal({
                 id: Constants.modal.ADD_USER,
@@ -375,11 +359,19 @@ export const UserBody = (props: Props) => {
                         </div>
                         <div className={style.select}>
                             <Select
-                                defaultValue={selectedOption}
-                                onChange={selectedProjects => {
-                                    selectedProjects.forEach(project => setSelectedOption(project))
-                                }}
-                                options={selectableProjects}
+                                onChange={selectedOptions =>
+                                    setSelectedProjects(
+                                        selectedOptions.map(option => 
+                                            selectableProjects.find(project => project.uuid===option.value) || null
+                                        ).filter(option =>
+                                            option!==null
+                                        ) as ProjectType[]
+                                    )
+                                }
+                                options={selectableProjects.map(project => ({
+                                    label: project.label,
+                                    value: project.uuid
+                                }))}
                                 placeholder={""}
                                 isMulti={true}
                                 isSearchable={false}

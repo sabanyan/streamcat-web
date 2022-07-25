@@ -22,8 +22,6 @@ interface Props {
 
 export const UserList = (props: Props) => {
 
-    console.log("UserList2");
-
     // 全てのプロジェクトを取得する
     const exceptMyProject = true;
     const [projectsReader, refreshProjects] = useAsyncResource(Api.findProjects, true, exceptMyProject);

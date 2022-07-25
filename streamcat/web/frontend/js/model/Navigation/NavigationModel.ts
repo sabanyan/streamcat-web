@@ -41,6 +41,10 @@ export type UserType = UserBaseType & {
     updateEMail: (email:string) => Promise<UserType>;
     updatePassword: (password:string) => Promise<UserType>;
     resetPassword: () => Promise<UserType>;
+    joinSysAdminRole: () => Promise<void>;
+    leaveSysAdminRole: () => Promise<void>;
+    joinUsrAdminRole: () => Promise<void>;
+    leaveUsrAdminRole: () => Promise<void>;
     undelete: () => Promise<UserType>;
     delete: () => Promise<void>;
 };

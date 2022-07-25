@@ -15,11 +15,11 @@ const post = (url: string, body: {}) => {
     });
 };
 
-const put = (url: string, body: {}) => {
-    return putBase<UserType>(url, body).then<UserType>(user => {
+const put = <TUserType>(url: string, body: {}) => {
+    return putBase<TUserType>(url, body).then<TUserType>(user => {
         // UserArrayのshift()を用いてuserに各種関数を付与する
         // NOTE: shift()は必ずUserオブジェクトを返す
-        return user && (new UserArray([user])).shift() as UserType;
+        return user && (new UserArray([user as any])).shift() as any;
     });
 };
 
@@ -38,6 +38,14 @@ const UserArray = makeArrayCtor<UserType>(user => {
         put(`/api/v0/users/${user.uuid}`, {password:password});
     user.resetPassword = () => 
         put(`/api/v0/users/${user.uuid}`, {password:null});
+    user.joinSysAdminRole = () =>
+        put(`/api/v0/roles/sys_admin/users/${user.uuid}`, {});
+    user.leaveSysAdminRole = () =>
+        del(`/api/v0/roles/sys_admin/users/${user.uuid}`);
+    user.joinUsrAdminRole = () =>
+        put(`/api/v0/roles/usr_admin/users/${user.uuid}`, {});
+    user.leaveUsrAdminRole = () =>
+        del(`/api/v0/roles/usr_admin/users/${user.uuid}`);
     user.undelete = () =>
         put(`/api/v0/users/${user.uuid}`, {state:'active'});
     user.delete = () =>

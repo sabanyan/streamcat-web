@@ -5,7 +5,7 @@ import style from './style.scss';
 import classnames from 'classnames';
 import { DataFrameStepModel, NoteStepModel, NoteStepModelProps } from 'Model/index';
 import { Api } from 'Api';
-import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
+import { FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
 import { Loader } from 'Shared/Base';
 import { HistoryType, LibraryListDataType, UploadedFileType } from 'Types/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
@@ -149,7 +149,6 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
 
         HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
             const selected_data: LibraryListDataType = args;
-            let parameters = {};
             //データソースを追加
             const props: any = {
                 type: selected_data.type,
@@ -167,24 +166,24 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
         });
     }
 
-    onChangeFile(e: any) {
-        const selectedFiles: FileList = e.target.files;
-        if (selectedFiles) {
-            const uploadFile: File = selectedFiles[0];
-            APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
-                const { success } = response.data;
-                const json = response.data;
-                if (success) {
-                    this.uploadedFile = {
-                        label: json.data.label,
-                        uuid: json.data.uuid,
-                        file: uploadFile
-                    };
-                    this.forceUpdate();
-                }
-            });
-        }
-    }
+    // onChangeFile(e: any) {
+    //     const selectedFiles: FileList = e.target.files;
+    //     if (selectedFiles) {
+    //         const uploadFile: File = selectedFiles[0];
+    //         APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
+    //             const { success } = response.data;
+    //             const json = response.data;
+    //             if (success) {
+    //                 this.uploadedFile = {
+    //                     label: json.data.label,
+    //                     uuid: json.data.uuid,
+    //                     file: uploadFile
+    //                 };
+    //                 this.forceUpdate();
+    //             }
+    //         });
+    //     }
+    // }
 
     onClickZoomIn(e: Event) {
         this.props.setZoom({ offset: 10 });

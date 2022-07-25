@@ -177,6 +177,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
                 del(`/api/v0/projects/${d.uuid}`);
             d.initMembers = (members, lastModifiedAt) =>
                 put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
+            d.joinMember = (member) =>
+                put<void>(`/api/v0/projects/${d.uuid}/users/${member.uuid}`, {memberType:member.type});
         }else if(datum.type === 'folder') {
             const d = datum as ParentFolderType;
             // プロジェクトはルート直下でしか作成できない
