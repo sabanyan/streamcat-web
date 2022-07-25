@@ -132,21 +132,3 @@ export type dropDownListItem = {
   value: string,
   object?: {}
 }
-
-export interface TableCell {
-  selected?: boolean;
-}
-
-export interface IFilterCategoryItem {
-  id: string;
-  label: string;
-  multiple: boolean;
-  data: IFilterListItem[];
-  disabled?: boolean;
-}
-
-export interface IFilterListItem {
-  id: string;
-  label: string;
-  selected: boolean;
-}

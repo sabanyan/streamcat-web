@@ -6,25 +6,26 @@ import {Button} from 'Shared/Input'
 import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
-    selectedDatas: UserType2[];
+    selectedUsers: UserType2[];
     onClickDelete?: () => void;
 }
 
 const UserListMultiInspector = (props: Props) => {
-    const {selectedDatas} = props
+    const {selectedUsers: selectedUsers} = props
 
     const renderButtons = () => {
-        const {selectedDatas, onClickDelete} = props
+        const {selectedUsers, onClickDelete} = props
 
         let del
 
-        const availableDelete = ([...selectedDatas].findIndex((user)=>{
+        const availableDelete = ([...selectedUsers].findIndex((user)=>{
             return (user.state !== Constants.admin.userStatus.inactive)
         }) !== -1);
 
         // 複数選択の場合
-        if (selectedDatas.length >= 1) {
-            if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete()} icon={'delete'}>削除する</Button>
+        if (selectedUsers.length >= 1) {
+            if (onClickDelete && availableDelete)
+                del = <Button danger={true} onClick={() => onClickDelete()} icon={'delete'}>削除する</Button>
         }
         return <React.Fragment>
             {del}
@@ -32,7 +33,7 @@ const UserListMultiInspector = (props: Props) => {
     }
 
     return <Resizer>
-        <BaseInspector key={JSON.stringify(selectedDatas)} label={""} disabled={true}>
+        <BaseInspector key={JSON.stringify(selectedUsers)} label={""} disabled={true}>
             <div className={style.inspector}>
                 <div className={style.actions}>
                     {renderButtons()}
@@ -42,8 +43,7 @@ const UserListMultiInspector = (props: Props) => {
                 </div>
             </div>
         </BaseInspector>
-    </Resizer>
-
-}
+    </Resizer>;
+};
 
 export default UserListMultiInspector

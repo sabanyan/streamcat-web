@@ -22,32 +22,46 @@ import { ProjectType } from 'Model/Library';
 
 interface Props {
     navigation: NavigationType | null;
+    allProjects: ProjectType[];
     keyword: string;
-    selectedProjectUUIDs: string[];
-    selectedStatusTypes: string[];
-    hasNoFilter: boolean;
-    selectableProjects: ProjectType[];
-    lastSelectedCell: [UserType2|null, (value:React.SetStateAction<UserType2|null>)=>void];
-    selectedDatas: [UserType2[], (value:React.SetStateAction<UserType2[]>)=>void];
+    selectedProjects: string[];
+    selectedStatuses: string[];
+    selectedUsers: [UserType2[], (value:React.SetStateAction<UserType2[]>)=>void];
+    lastSelectedUser: [UserType2|null, (value:React.SetStateAction<UserType2|null>)=>void];
 };
 
 export const UserBody = (props: Props) => {
     const {
+        allProjects,
         keyword,
-        selectedProjectUUIDs,
-        selectedStatusTypes,
-        hasNoFilter,
-        selectableProjects,
+        selectedProjects,
+        selectedStatuses,
     } = props;
 
-    const [lastSelectedCell, setLastSelectedCell] = props.lastSelectedCell;
-    const [selectedDatas, setSelectedDatas] = props.selectedDatas;
+    const [selectedUsers, setSelectedUsers] = props.selectedUsers;
+    const [lastSelectedUser, setLastSelectedUser] = props.lastSelectedUser;
 
     // 通知機能メソッドの取得
     const {notifyError} = useStreamCatNotifications();
 
     // UserListTableに表示するUserリスト
     const [users, setUsers] = useState<UserType2[]>([]);
+
+    useEffect(() => {
+        fetchUsers(keyword);
+    }, [keyword]);
+
+    // フィルターが変更される都度Userをフィルタリングする
+    useEffect(()=>{
+        const hasNoFilter = selectedProjects.length===0 && selectedStatuses.length===0;
+        if(hasNoFilter){
+            fetchUsers(keyword);
+        }else{
+            // FIXME: フィルタが追加された場合は正常動作するが、
+            // フィルタ済みのUserは復活できないので、フィルタが一部削除された場合はUserが追加できない
+            filterUsers(users);
+        }
+    },[selectedProjects, selectedStatuses])
 
     // ユーザ一覧を取得する
     const fetchUsers = (keyword?: string) => {
@@ -62,6 +76,53 @@ export const UserBody = (props: Props) => {
         }).catch((error) => {
             notifyError('ユーザー一覧取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
         });
+    };
+
+    // 取得済みのユーザーをフィルターする
+    const filterUsers = (_users:UserType2[]) => {
+        // ユーザーをフィルターする
+        let newFilteredUsers = _users;
+        // 該当プロジェクトに属しているユーザのみ抽出
+        if(selectedProjects.length){
+            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
+                let hasFound = false
+                user.projects?.forEach(project => {
+                    // 該当するプロジェクトがあるか
+                    selectedProjects.forEach((selectedProjectUUID)=>{
+                        if(project.uuid === selectedProjectUUID){
+                            hasFound = true
+                        }
+                    })
+                })
+                return hasFound
+            })
+        }
+        // 該当するステータスのユーザのみ抽出
+        if(selectedStatuses.length){
+            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
+                let hasFound = false
+                selectedStatuses.forEach((state)=>{
+                    if(user.state === state){
+                        hasFound = true
+                    }
+                });
+                return hasFound;
+            })
+        }
+
+        // フィルターしていない場合は、user を再取得する
+        const hasNoFilter = selectedProjects.length===0 && selectedStatuses.length===0;
+        if(hasNoFilter){
+            // // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+            // // 200ms ほど間隔をあけてから再検索を行う
+            setUsers(_users);
+            return
+        }
+        // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+        // 200ms ほど間隔をあけてからフィルタリングする
+        setTimeout(()=>{
+            setUsers(newFilteredUsers)
+        },200)
     };
 
     // ユーザを新規に作成する
@@ -103,12 +164,12 @@ export const UserBody = (props: Props) => {
     };
 
     useEffect(()=>{
-        if(selectedDatas.length === 1){
-            const selectedData = selectedDatas[0];
+        if(selectedUsers.length === 1){
+            const selectedUser = selectedUsers[0];
             // パスワードリセットの処理
             ModalUtil.registerModal({
                 id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
-                    resetUserPassword(selectedData).finally(() => {
+                    resetUserPassword(selectedUser).finally(() => {
                         ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
                         clearSelected();
                     })
@@ -121,14 +182,14 @@ export const UserBody = (props: Props) => {
                 }
             })
         }
-    }, [selectedDatas]);
+    }, [selectedUsers]);
 
     useEffect(()=>{
         // ユーザ削除の確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 const promises = Promise.all(
-                    selectedDatas.map(user => deleteUser(user))
+                    selectedUsers.map(user => deleteUser(user))
                 );
                 promises.then(() => {
                     fetchUsers();
@@ -138,7 +199,7 @@ export const UserBody = (props: Props) => {
                 });
             },
         })
-    },[selectedDatas]);
+    },[selectedUsers]);
 
     // ユーザ一覧を表示する
     const renderUserList = () => {
@@ -152,22 +213,22 @@ export const UserBody = (props: Props) => {
             if (event && (event.metaKey || event.ctrlKey)) {
                 selectedUser.selected = true;
                 // command or ctrl + click
-                if (selectedDatas.includes(selectedUser)) {
+                if (selectedUsers.includes(selectedUser)) {
                     selectedUser.selected = !selectedUser.selected;
-                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== selectedUser.uuid));
+                    setSelectedUsers(selectedUsers.filter(d => d.uuid !== selectedUser.uuid));
                     if(!selectedUser.selected){
-                        setLastSelectedCell(null);
+                        setLastSelectedUser(null);
                     }
                 } else {
-                    selectedDatas.push(selectedUser);
-                    setLastSelectedCell(selectedUser);
+                    selectedUsers.push(selectedUser);
+                    setLastSelectedUser(selectedUser);
                 }
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
                 let current = users.findIndex(user=> selectedUser.uuid === user.uuid);
-                if (lastSelectedCell) {
-                    let last =  users.findIndex(user=> lastSelectedCell.uuid === user.uuid);
+                if (lastSelectedUser) {
+                    let last =  users.findIndex(user=> lastSelectedUser.uuid === user.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -176,18 +237,18 @@ export const UserBody = (props: Props) => {
                         min = current;
                         max = last;
                     }
-                    const selectedDatas: UserType2[] = users.slice(min, max + 1).map((user) => {
+                    const selectedUsers: UserType2[] = users.slice(min, max + 1).map((user) => {
                         user.selected = true;
                         return user;
                     });
-                    setSelectedDatas(selectedDatas);
+                    setSelectedUsers(selectedUsers);
                 }
             } else {
                 // 単一選択
                 clearSelected();
                 selectedUser.selected = true;
-                setSelectedDatas([selectedUser]);
-                setLastSelectedCell(selectedUser);
+                setSelectedUsers([selectedUser]);
+                setLastSelectedUser(selectedUser);
             }
         };
 
@@ -236,7 +297,7 @@ export const UserBody = (props: Props) => {
             }
 
             let selected = false;
-            selectedDatas.forEach((selectedUser:UserType2)=>{
+            selectedUsers.forEach((selectedUser:UserType2)=>{
                 if(user.uuid === selectedUser.uuid){
                     selected = true
                 }
@@ -264,8 +325,7 @@ export const UserBody = (props: Props) => {
 
     const [newUserName, setNewUserName] = useState<string | null>(null);
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-    const [selectedProjects, setSelectedProjects] = useState<ProjectType[]>([]);
-
+    const [joinProjects, setJoinProjects] = useState<ProjectType[]>([]);
 
     useEffect(()=>{
         if (newUserName === null || newUserEmail === null) return;
@@ -279,7 +339,7 @@ export const UserBody = (props: Props) => {
                     alert('E-mailを入力してください')
                     return
                 }
-                createNewUser(newUserName,newUserEmail, selectedProjects).then(user => {
+                createNewUser(newUserName,newUserEmail, joinProjects).then(user => {
                     fetchUsers();
                     if(!user){
                         notifyError('ユーザー作成エラー');
@@ -288,8 +348,8 @@ export const UserBody = (props: Props) => {
                         return
                     }
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
-                    const projectDiv = (selectedProjects.length > 0)?
-                        <div>所属: {selectedProjects.map(project => `${project.label}`).join(', ')}</div>:
+                    const projectDiv = (joinProjects.length > 0)?
+                        <div>所属: {joinProjects.map(project => `${project.label}`).join(', ')}</div>:
                         <></>;
                     ModalUtil.emitModal({
                         id: Constants.modal.ADD_USER_CONFIRM,
@@ -319,12 +379,12 @@ export const UserBody = (props: Props) => {
                 clearField();
             }
         })
-    },[newUserEmail,newUserName, selectedProjects]);
+    },[newUserEmail,newUserName, joinProjects]);
 
     const clearField = () =>{
         setNewUserName('');
         setNewUserEmail('');
-        setSelectedProjects([]);
+        setJoinProjects([]);
     };
 
     // メニューを表示
@@ -359,15 +419,15 @@ export const UserBody = (props: Props) => {
                         <div className={style.select}>
                             <Select
                                 onChange={selectedOptions =>
-                                    setSelectedProjects(
+                                    setJoinProjects(
                                         selectedOptions.map(option => 
-                                            selectableProjects.find(project => project.uuid===option.value) || null
+                                            allProjects.find(project => project.uuid===option.value) || null
                                         ).filter(option =>
                                             option!==null
                                         ) as ProjectType[]
                                     )
                                 }
-                                options={selectableProjects.map(project => ({
+                                options={allProjects.map(project => ({
                                     label: project.label,
                                     value: project.uuid
                                 }))}
@@ -400,11 +460,11 @@ export const UserBody = (props: Props) => {
 
     // ペインを表示
     const renderInspector = ():React.ReactNode => {
-        if (!selectedDatas.length) return null;
+        if (!selectedUsers.length) return null;
 
         const onClickDelete = () => {
             let targets: string[] = [];
-            selectedDatas.forEach((user) => {
+            selectedUsers.forEach((user) => {
                 targets.push(user.name);
             });
 
@@ -422,17 +482,17 @@ export const UserBody = (props: Props) => {
         };
 
         // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
-        if(selectedDatas.length >= 2){
+        if(selectedUsers.length >= 2){
             return <UserListMultiInspector
-                selectedDatas={selectedDatas}
+                selectedUsers={selectedUsers}
                 onClickDelete={onClickDelete}
             />;
         }
 
-        const selectedData = selectedDatas[0];
+        const selectedUser = selectedUsers[0];
 
         const onClickPasswordReset = ()=>{
-            const name = selectedData.name;
+            const name = selectedUser.name;
             ModalUtil.emitModal({
                 id: Constants.modal.RESET_USER_PASSWORD,
                 visible: true,
@@ -466,7 +526,7 @@ export const UserBody = (props: Props) => {
 
         return <UserListInspector
             navigation={navigation}
-            selectedData={selectedData}
+            selectedUser={selectedUser}
             onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
@@ -476,70 +536,12 @@ export const UserBody = (props: Props) => {
     };
 
     const clearSelected = () => {
-        setSelectedDatas([]);
+        setSelectedUsers([]);
         setUsers(users.map((user: UserType2) => {
             user.selected = false;
             return user;
         }));
     };
-
-    useEffect(()=>{
-        // フィルターが変更される都度ユーザをフィルタリングする
-        const {hasNoFilter} = props;
-        if(hasNoFilter){
-            fetchUsers(keyword);
-        }else{
-            filterUsers(users);
-        }
-    },[selectedProjectUUIDs, selectedStatusTypes, hasNoFilter])
-
-    // 取得済みのユーザーをフィルターする
-    const filterUsers = (_users:UserType2[]) => {
-        // 選択されている条件を抽出する
-        const {selectedProjectUUIDs, selectedStatusTypes, hasNoFilter} = props;
-        // ユーザーをフィルターする
-        let newFilteredUsers = _users;
-        // 該当プロジェクトに属しているユーザのみ抽出
-        if(selectedProjectUUIDs.length){
-            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
-                let hasFound = false
-                user.projects?.forEach(project => {
-                    // 該当するプロジェクトがあるか
-                    selectedProjectUUIDs.forEach((selectedProjectUUID)=>{
-                        if(project.uuid === selectedProjectUUID){
-                            hasFound = true
-                        }
-                    })
-                })
-                return hasFound
-            })
-        }
-        // 該当するステータスのユーザのみ抽出
-        if(selectedStatusTypes.length){
-            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
-                let hasFound = false
-                selectedStatusTypes.forEach((state)=>{
-                    if(user.state === state){
-                        hasFound = true
-                    }
-                });
-                return hasFound;
-            })
-        }
-
-        // フィルターしていない場合は、user を再取得する
-        if(hasNoFilter){
-            // // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-            // // 200ms ほど間隔をあけてから再検索を行う
-            setUsers(_users);
-            return
-        }
-        // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-        // 200ms ほど間隔をあけてからフィルタリングする
-        setTimeout(()=>{
-            setUsers(newFilteredUsers)
-        },200)
-    }
 
     // 描画する
     return <>

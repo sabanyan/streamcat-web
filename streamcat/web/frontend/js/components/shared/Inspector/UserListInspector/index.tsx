@@ -11,7 +11,7 @@ import { useStreamCatNotifications } from 'Shared/Notification'
 import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
-    selectedData: UserType2;
+    selectedUser: UserType2;
     onClickDelete?: Function;
     onBlurTitle?: Function;
     onClickEdit?: Function;
@@ -35,7 +35,7 @@ const display = {
 
 const UserListInspector = (props: Props) => {
     const {navigation, onChangedList} = props;
-    const {selectedData, onBlurTitle} = props
+    const {selectedUser, onBlurTitle} = props
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [systemAdminChecked, setSystemAdminChecked] = useState<boolean>(false)
     const [userAdminChecked, setUserAdminChecked] = useState<boolean>(false)
@@ -43,15 +43,15 @@ const UserListInspector = (props: Props) => {
     const {notifyError} = useStreamCatNotifications();
     
     useEffect(() => {
-        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedData?.roles || []))
-        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedData?.roles || []))
-    }, [selectedData])
+        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedUser?.roles || []))
+        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedUser?.roles || []))
+    }, [selectedUser])
 
     useEffect(()=>{
         // 権限更新確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN, onClickDone: () => {
-                activateSystemAdminRole(selectedData, systemAdminChecked).catch(_=>{
+                activateSystemAdminRole(selectedUser, systemAdminChecked).catch(_=>{
                     setSystemAdminChecked(!systemAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN)
@@ -65,7 +65,7 @@ const UserListInspector = (props: Props) => {
         })
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData, userAdminChecked).catch(_=>{
+                activateUserAdminRole(selectedUser, userAdminChecked).catch(_=>{
                     setUserAdminChecked(!userAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN)
@@ -80,7 +80,7 @@ const UserListInspector = (props: Props) => {
         // 自分のユーザー管理権限を剥奪する場合
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData, false).then((res)=>{
+                activateUserAdminRole(selectedUser, false).then((res)=>{
                     WebUtil.logout();
                 }).catch(_=>{
                     setUserAdminChecked(true);
@@ -97,7 +97,7 @@ const UserListInspector = (props: Props) => {
         // 削除済みのユーザーをもとに戻す
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UNDELETE_USER, onClickDone: async () => {
-                await unDeleteUser(selectedData);
+                await unDeleteUser(selectedUser);
                 if(onChangedList)onChangedList();
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             },onClickCancel: ()=>{
@@ -106,7 +106,7 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             }
         })
-    }, [selectedData,systemAdminChecked,userAdminChecked])
+    }, [selectedUser,systemAdminChecked,userAdminChecked])
 
     const unDeleteUser = async (user: UserType2)=>{
         return user.undelete().catch(e=>{
@@ -153,17 +153,18 @@ const UserListInspector = (props: Props) => {
     }
 
     const renderButtons = (data?: UserType2) => {
-        const {onClickDelete,selectedData} = props
+        const {onClickDelete, selectedUser} = props
         let del
-        const availableDelete = (selectedData.state !== Constants.admin.userStatus.inactive);
-        if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+        const availableDelete = (selectedUser.state !== Constants.admin.userStatus.inactive);
+        if (onClickDelete && availableDelete)
+            del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>;
         return <React.Fragment>
             {del}
         </React.Fragment>
     }
 
     const onChangeSystemAdmin = (e:React.ChangeEvent<HTMLInputElement>)=>{
-        const {selectedData} = props;
+        const {selectedUser} = props;
         if(e.target.value === Constants.admin.systemRole.SYS_ADMIN){
             setSystemAdminChecked(e.target.checked);
             // システム管理者がチェックされていた場合
@@ -189,7 +190,7 @@ const UserListInspector = (props: Props) => {
         }else if(e.target.value === Constants.admin.systemRole.USR_ADMIN){
             // ユーザー管理者がチェックされていた場合
             setUserAdminChecked(e.target.checked);
-            const isMe = (navigation && navigation.user.uuid === selectedData.uuid)
+            const isMe = (navigation && navigation.user.uuid === selectedUser.uuid)
             const needLogout = isMe && !e.target.checked
             if(needLogout){
                 ModalUtil.emitModal({
@@ -342,7 +343,6 @@ const UserListInspector = (props: Props) => {
 
         }
 
-
         return <React.Fragment>
             {result}
         </React.Fragment>
@@ -359,11 +359,11 @@ const UserListInspector = (props: Props) => {
             </div>
         </div>
     }
-    let label = selectedData.name
-    let content = renderSelect(selectedData)
+    let label = selectedUser.name
+    let content = renderSelect(selectedUser)
 
     return <Resizer>
-        <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={onBlurTitle} disabled={true}>
+        <BaseInspector key={selectedUser.uuid} label={label} onBlurTitle={onBlurTitle} disabled={true}>
             {content}
         </BaseInspector>
     </Resizer>

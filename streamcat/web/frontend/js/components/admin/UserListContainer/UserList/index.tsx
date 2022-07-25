@@ -1,14 +1,13 @@
 import React from 'react';
-import {useEffect, useRef, useState} from 'react';
+import {useRef, useState} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import style from './style.scss';
 import {Api} from 'Api';
+import Constants from 'Constants/index';
 import {Flex, Spacer} from 'Shared/Base';
 import {NotificationManager} from 'Shared/Notification';
-import Constants from 'Constants/index';
-import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
+import {FilterListLinkButton, IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelectedList';
-import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import { UserBody } from '../UserBody';
 
@@ -18,219 +17,197 @@ export type UserType2 = UserType & {
 
 interface Props {
     navigation: NavigationType | null;
-}
+};
 
 export const UserList = (props: Props) => {
 
     // 全てのプロジェクトを取得する
     const exceptMyProject = true;
-    const [projectsReader, refreshProjects] = useAsyncResource(Api.findProjects, true, exceptMyProject);
+    const [projectsReader] = useAsyncResource(Api.findProjects, true, exceptMyProject);
 
-    // 読み込み完了を設定する
-    const [users, setUsers] = useState<UserType2[]>([]);
-    const [lastSelectedCell, setLastSelectedCell] = useState<UserType2 | null>(null);
-    const [selectedDatas, setSelectedDatas] = useState<UserType2[]>([]);
+    // 全てのプロジェクト
+    const [allProjects] = useState(projectsReader());
+    // キーワード条件
+    const [keyword, setKeyword] = useState('');
+    // 所属プロジェクト条件
+    const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+    // ユーザ状態条件
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+    // UserBodyコンポーネントで選択中のUser
+    const [selectedUsers, setSelectedUsers] = useState<UserType2[]>([]);
+    // UserBodyコンポーネントで最後に選択したUser
+    const [lastSelectedUser, setLastSelectedUser] = useState<UserType2 | null>(null);
+    // UserBodyコンポーネントをクリックした時にtrueにする
     const clickedUserListCell = useRef(false);
-    const [keyword,setKeyword] = useState<string>('');
-    const [selectableProjects,setSelectableProjects] = useState(projectsReader());
 
-    const setInitialFilterList = () => {
-        const projectData: IFilterListItem[] = selectableProjects.map((project) => {
-            return {
-                id: project.uuid,
-                label: project.label,
-                selected: false
-            }
-        });
+    const getSelectedSub = (filterItems: IFilterListItem[]) => {
+        return filterItems.filter(listItem => listItem.selected).map(listItem => listItem.id);
+    };
 
-        const statusData: IFilterListItem[] = [{
-            id: Constants.admin.userStatus.tmp,
-            label: '仮登録',
-            selected: false
-        }, {
-            id: Constants.admin.userStatus.active,
-            label: '利用中',
-            selected: false
-        }, {
-            id: Constants.admin.userStatus.inactive,
-            label: '削除済',
-            selected: false
-        }, {
-            id: Constants.admin.userStatus.expired,
-            label: '失効中',
-            selected: false
-        }];
-
-        const list: IFilterCategoryItem[] = [
-            {
-                id: 'project',
-                label: '所属プロジェクト',
-                multiple: false,
-                data: projectData,
-                disabled: !(projectData.length)
-            },
-            {
-                id: 'status',
-                label: 'ステータス',
-                multiple: true,
-                data: statusData
-            }
-        ]
-        setFilterList(list);
-    }
-
-    useEffect(() => {
-        setInitialFilterList()
-    }, [selectableProjects])
-
-    const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
-    const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
-
-    const getSelectedFilter = ()=>{
-        let selectedProjectUUIDs: string[] = []
-        let selectedStatusTypes: string[] = []
-        filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
+    const getSelected = (categoryItems: IFilterCategoryItem[])=>{
+        let selectedProjects: string[] = []
+        let selectedStatuses: string[] = []
+        categoryItems.forEach((categoryListItem: IFilterCategoryItem)=>{
             if(categoryListItem.id === 'project'){
-                categoryListItem.data.forEach((listItem: IFilterListItem)=>{
-                    if(listItem.selected){
-                        selectedProjectUUIDs.push(listItem.id);
-                    }
-                })
+                selectedProjects = getSelectedSub(categoryListItem.data);
             }else if(categoryListItem.id === 'status'){
-                categoryListItem.data.forEach((listItem: IFilterListItem)=>{
-                    if(listItem.selected){
-                        selectedStatusTypes.push(listItem.id);
-                    }
-                })
+                selectedStatuses = getSelectedSub(categoryListItem.data);
             }
         })
         return {
-            selectedProjectUUIDs: selectedProjectUUIDs,
-            selectedStatusTypes: selectedStatusTypes,
-            hasNoFilter: (!selectedProjectUUIDs.length && !selectedStatusTypes.length)
+            selectedProjects: selectedProjects,
+            selectedStatuses: selectedStatuses,
         }
-    }
-
-    // 描画する
-    const renderAll = () => {
-
-        const onClickBody = () => {
-            // UserBodyをクリックしたら押下フラグをtrueにする
-            clickedUserListCell.current = true;
-        }
-
-        const onClickUserList = () => {
-            // 押下フラグがfalseの場合にユーザの選択を解除する
-            if (!clickedUserListCell.current) {
-                // 選択状態を一旦解除
-                setSelectedDatas([]);
-                setLastSelectedCell(null);
-            }
-            // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
-            clickedUserListCell.current = false;
-        };
-
-        const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
-            setKeyword(e.target.value)
-        }
-
-        const removeSelectedCategory = (selectedCategory: IFilterCategoryItem)=>{
-            return filterList.map(category =>{
-                if(category.id === selectedCategory.id){
-                    category.data = category.data.map((listItem)=>{
-                        if(listItem.selected){
-                            return {...listItem,selected:false}
-                        }
-                        return listItem
-                    })
-                    return category
-                }
-                return category
-            });
-        }
-
-        const onClickRemove = (selectedCategory: IFilterCategoryItem)=>{
-            // クリックされたカテゴリを非選択状態にする
-            setFilterList(removeSelectedCategory(selectedCategory))
-        }
-        const onClickCategoryItem = (selectedCategoryItem: IFilterCategoryItem)=>{
-            setSelectedCategory(selectedCategoryItem)
-        }
-        const onClickListItem = (selectedListItems: IFilterListItem[])=>{
-            // 選択状態にする
-            const newList = filterList.map(category =>{
-                if(category.id === selectedCategory.id){
-                    category.data = category.data.map((listItem)=>{
-                        let hasFound = false
-                        selectedListItems.forEach(selectedListItem => {
-                            if(listItem.id === selectedListItem.id){
-                                hasFound = true
-                            }
-                        })
-                        return {...listItem,selected:hasFound}
-                    })
-                    return category
-                }
-                return category
-            });
-            setFilterList(newList)
-        }
-
-        return <>
-            {/* {renderLoadingIcon()} */}
-            <Flex justifyContent={'center'} fluid={true}>
-                <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                      onClick={onClickUserList}>
-                    <Spacer width={40}/>
-                    <Flex flexDirection={'column'}>
-                        <Spacer height={40}/>
-                        <Flex flexDirection={'row'}>
-                            <div className={style.pageTitleHeader}>
-                                <div className={style.searchHeaderContainer}>
-                                    <div className={style.pageTitle}>
-                                        ユーザー管理
-                                    </div>
-                                    <div className={style.searchBarContainer}>
-                                        <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
-                                    </div>
-                                </div>
-                                <Spacer height={20}/>
-                                <div className={style.resultAndFilterContainer}>
-                                    <div className={style.resultCount}>
-                                        表示されている件数 {users.length}件
-                                    </div>
-                                    <div className={style.filterLinkContainer}>
-                                        <FilterListLinkButton
-                                            list={filterList}
-                                            onClickFilterCategoryItem={onClickCategoryItem}
-                                            onClickFilterListItem={onClickListItem}
-                                        >検索フィルタ</FilterListLinkButton>
-                                        <Spacer width={20}/>
-                                        <FilterSelectedList onClickRemove={onClickRemove} list={filterList}/>
-                                    </div>
-                                </div>
-                            </div>
-                            <Spacer width={420}/>
-                        </Flex>
-                        <Spacer height={30}/>
-                        <Flex flexDirection={'row'} onClick={onClickBody}>
-                            <AsyncResourceContent fallback={<p>Loading...</p>}>
-                            <UserBody navigation={props.navigation}
-                                    keyword={keyword}
-                                    selectableProjects={selectableProjects}
-                                    lastSelectedCell = {[lastSelectedCell, setLastSelectedCell]}
-                                    selectedDatas = {[selectedDatas, setSelectedDatas]}
-                                    {...getSelectedFilter()}/>
-                            </AsyncResourceContent>
-                        </Flex>
-                        <Spacer height={80}/>
-                    </Flex>
-                    <Spacer width={40}/>
-                </Flex>
-            </Flex>
-            <NotificationManager/>
-        </>
     };
 
-    return renderAll()
+    const makeCategoryItems = (selectedProjects: string[],
+                                selectedStatuses: string[]): IFilterCategoryItem[] => {
+        return [{
+            id      : 'project',
+            label   : '所属プロジェクト',
+            multiple: false,
+            data    : allProjects.map((project) => {
+                return {
+                    id      : project.uuid,
+                    label   : project.label,
+                    selected: selectedProjects.includes(project.uuid)
+                }
+            }),
+            disabled: !(allProjects.length)
+        }, {
+            id      : 'status',
+            label   : 'ステータス',
+            multiple: true,
+            data    : [{
+                id: Constants.admin.userStatus.tmp,
+                label: '仮登録',
+                selected: selectedStatuses.includes(Constants.admin.userStatus.tmp)
+            }, {
+                id: Constants.admin.userStatus.active,
+                label: '利用中',
+                selected: selectedStatuses.includes(Constants.admin.userStatus.active)
+            }, {
+                id: Constants.admin.userStatus.inactive,
+                label: '削除済',
+                selected: selectedStatuses.includes(Constants.admin.userStatus.inactive)
+            }, {
+                id: Constants.admin.userStatus.expired,
+                label: '失効中',
+                selected: selectedStatuses.includes(Constants.admin.userStatus.expired)
+            }]
+        }];
+    };
+
+    // FilterListLinkButton、FilterSelectedListコンポーネントに設定する値を作成する
+    const categoryItems = makeCategoryItems(selectedProjects, selectedStatuses);
+
+    const onClickBody = () => {
+        // UserBodyをクリックしたら押下フラグをtrueにする
+        clickedUserListCell.current = true;
+    };
+
+    const onClickUserList = () => {
+        // 押下フラグがfalseの場合にユーザの選択を解除する
+        if (!clickedUserListCell.current) {
+            // 選択状態を一旦解除
+            setSelectedUsers([]);
+            setLastSelectedUser(null);
+        }
+        // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
+        clickedUserListCell.current = false;
+    };
+
+    const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setKeyword(e.target.value)
+    };
+
+    const onClickListItem = (categoryId: string, selectedListItems: IFilterListItem[]) => {
+        // Project : 新たに選択されたProjectだけが渡される
+        // Status  : 既に選択済みのStatusも含めて渡される
+        if(categoryId === 'project'){
+            // Project選択時はselectedがfalseになるので、trueに変更する
+            selectedListItems.forEach(selectedListItem => {
+                selectedListItem.selected = true;
+            });
+            // 選択されたProjectを条件に設定する
+            setSelectedProjects([...getSelectedSub(selectedListItems), ...selectedProjects]);
+        }else if(categoryId === 'status'){
+            // 選択されたStatusを条件に設定する
+            setSelectedStatuses(getSelectedSub(selectedListItems));
+        }
+    };
+
+    const onClickRemove = (selectedCategory: IFilterCategoryItem)=>{
+        // 削除されたProjectまたはStatusを取得する
+        const removed = getSelected([selectedCategory]);
+
+        // 選択済みのProjectから削除されたProjectを除外する
+        setSelectedProjects(
+            selectedProjects.filter(selectedProjectUUID =>
+                !removed.selectedProjects.includes(selectedProjectUUID))
+        );
+
+        // 選択済みのStatusから削除されたStatusを除外する
+        setSelectedStatuses(
+            selectedStatuses.filter(selectedStatusType =>
+                !removed.selectedStatuses.includes(selectedStatusType))
+        );
+    };
+
+    return <>
+        <Flex justifyContent={'center'} fluid={true}>
+            <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
+                    onClick={onClickUserList}>
+                <Spacer width={40}/>
+                <Flex flexDirection={'column'}>
+                    <Spacer height={40}/>
+                    <Flex flexDirection={'row'}>
+                        <div className={style.pageTitleHeader}>
+                            <div className={style.searchHeaderContainer}>
+                                <div className={style.pageTitle}>
+                                    ユーザー管理
+                                </div>
+                                <div className={style.searchBarContainer}>
+                                    <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                                </div>
+                            </div>
+                            <Spacer height={20}/>
+                            <div className={style.resultAndFilterContainer}>
+                                <div className={style.resultCount}>
+                                    {/* FIXME: users変数をUserBodyコンポーネントに移動したので件数を取得できなくなった */}
+                                    表示されている件数 {0}件
+                                </div>
+                                <div className={style.filterLinkContainer}>
+                                    <FilterListLinkButton
+                                        list={categoryItems}
+                                        onClickFilterCategoryItem={()=>{}}
+                                        onClickFilterListItem={onClickListItem}
+                                    >検索フィルタ</FilterListLinkButton>
+                                    <Spacer width={20}/>
+                                    <FilterSelectedList onClickRemove={onClickRemove} list={categoryItems}/>
+                                </div>
+                            </div>
+                        </div>
+                        <Spacer width={420}/>
+                    </Flex>
+                    <Spacer height={30}/>
+                    <Flex flexDirection={'row'} onClick={onClickBody}>
+                        <AsyncResourceContent fallback={<p>Loading...</p>}>
+                        <UserBody navigation={props.navigation}
+                                allProjects={allProjects}
+                                keyword={keyword}
+                                selectedProjects={selectedProjects}
+                                selectedStatuses={selectedStatuses}
+                                selectedUsers = {[selectedUsers, setSelectedUsers]}
+                                lastSelectedUser = {[lastSelectedUser, setLastSelectedUser]}
+                        />
+                        </AsyncResourceContent>
+                    </Flex>
+                    <Spacer height={80}/>
+                </Flex>
+                <Spacer width={40}/>
+            </Flex>
+        </Flex>
+        <NotificationManager/>
+    </>;
 };
