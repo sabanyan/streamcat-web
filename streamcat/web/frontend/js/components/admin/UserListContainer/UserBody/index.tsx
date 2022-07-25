@@ -139,21 +139,15 @@ export const UserBody = (props: Props) => {
         // ユーザ削除の確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                let queue = Queue(
-                    1, // concurrency
-                    {
-                        "retry": 0               //Number of retries
-                        , "retryIsJump": false     //retry now?
-                        , "timeout": 0            //The timeout period
-                    }
+                const promises = Promise.all(
+                    selectedDatas.map(user => deleteUser(user))
                 );
-                selectedDatas.forEach((selectedData: UserType2) => {
-                    queue.push(deleteUser, [selectedData]);
+                promises.then(() => {
+                    fetchUsers();
+                }).finally(() => {
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                    clearSelected();
                 });
-                queue.push(fetchUsers, []);
-                queue.start();
-                ModalUtil.closeModal(Constants.modal.CONFIRM);
-                clearSelected();
             },
         })
     },[selectedDatas]);
