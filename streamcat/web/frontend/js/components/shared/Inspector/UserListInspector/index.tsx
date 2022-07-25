@@ -170,7 +170,7 @@ const UserListInspector = (props: Props) => {
             ModalUtil.emitModal({
                 id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN,
                 visible: true,
-                done: (e.target.checked)?"付与する":"外す",
+                done: (e.target.checked)?'付与する':'外す',
                 danger: (!e.target.checked),
                 content: <div className={style.modal}>
                     <form>
@@ -195,7 +195,7 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.emitModal({
                     id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN,
                     visible: true,
-                    done: "外す",
+                    done: '外す',
                     danger: true,
                     content: <div className={style.modal}>
                         <form>
@@ -211,7 +211,7 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.emitModal({
                     id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN,
                     visible: true,
-                    done: (e.target.checked)?"付与する":"外す",
+                    done: (e.target.checked)?'付与する':'外す',
                     danger: (!e.target.checked),
                     content: <div className={style.modal}>
                         <form>
@@ -239,7 +239,7 @@ const UserListInspector = (props: Props) => {
         if (!data) return result
 
         if (data.email) {
-            let label = <React.Fragment key={"email"}>
+            let label = <React.Fragment key={'email'}>
                 <div><label>{display.email}</label></div>
                 <div className={'mb-8px'}>{data.email}</div>
             </React.Fragment>
@@ -250,7 +250,7 @@ const UserListInspector = (props: Props) => {
             let projects = data.projects.map((project) => {
                 return <div key={project.uuid} className={style.project}>{project.label}</div>
             })
-            const projectElements = <React.Fragment key={"projects"}>
+            const projectElements = <React.Fragment key={'projects'}>
                 <div><label>{display.projects}({data.projects.length})</label></div>
                 <div className={'mb-8px'}>{projects}</div>
             </React.Fragment>
@@ -259,7 +259,7 @@ const UserListInspector = (props: Props) => {
         }
 
         if (data.state) {
-            let state = <React.Fragment key={"state"}>
+            let state = <React.Fragment key={'state'}>
                 <div><label>{display.state}</label></div>
                 <div className={'mb-8px'}>{AdminUtil.getUserStatus(data.state)}</div>
             </React.Fragment>
@@ -267,7 +267,7 @@ const UserListInspector = (props: Props) => {
 
             const {onClickShowPassword} = props;
             if (data.state === Constants.admin.userStatus.tmp && onClickShowPassword) {
-                let tempPasswordLabel = <React.Fragment key={"password"}>
+                let tempPasswordLabel = <React.Fragment key={'password'}>
                     <div><label>{display.password}</label></div>
                     <div
                         className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password?.length || 0)}</div>
@@ -276,12 +276,12 @@ const UserListInspector = (props: Props) => {
                 const _onClickShowPassword = () => {
                     setShowPassword(true)
                 }
-                let showPasswordElement = (!showPassword)?<div key={"showPassword"} className={'mb-8px'}><Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button></div>:null;
+                let showPasswordElement = (!showPassword)?<div key={'showPassword'} className={'mb-8px'}><Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button></div>:null;
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
             if ((data.state === Constants.admin.userStatus.active || data.state === Constants.admin.userStatus.expired) && onClickPasswordReset) {
-                let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
+                let resetPasswordEelement = <div key={'resetPassword'} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
             if (data.state === Constants.admin.userStatus.inactive){
@@ -289,7 +289,7 @@ const UserListInspector = (props: Props) => {
                     ModalUtil.emitModal({
                         id: Constants.modal.CONFIRM_UNDELETE_USER,
                         visible: true,
-                        done: "利用中に戻す",
+                        done: '利用中に戻す',
                         danger: false,
                         content: <div className={style.modal}>
                             <form>
@@ -300,7 +300,7 @@ const UserListInspector = (props: Props) => {
                         </div>
                     });
                 }
-                let unDeleteElement = <div key={"undelete"} className={'mb-8px'}>
+                let unDeleteElement = <div key={'undelete'} className={'mb-8px'}>
                     <Button danger={false} onClick={()=>{onClickUndelete()}}>利用中に戻す</Button>
                 </div>
                 result.push(unDeleteElement);
@@ -308,12 +308,12 @@ const UserListInspector = (props: Props) => {
         }
 
         if (data.roles){
-            result.push(<div key={"adminTypes"}><label>{display.admin_types}</label></div>)
-            let systemAdminCheckboxElement = <React.Fragment key={"systemAdminCheckbox"}>
+            result.push(<div key={'adminTypes'}><label>{display.admin_types}</label></div>)
+            let systemAdminCheckboxElement = <React.Fragment key={'systemAdminCheckbox'}>
                 <div>
                     <label htmlFor={Constants.admin.systemRole.SYS_ADMIN}>
                         <input id={Constants.admin.systemRole.SYS_ADMIN}
-                               type="checkbox"
+                               type='checkbox'
                                checked={systemAdminChecked}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.SYS_ADMIN}
@@ -324,11 +324,11 @@ const UserListInspector = (props: Props) => {
                 </div>
             </React.Fragment>
             result.push(systemAdminCheckboxElement)
-            let userAdminCheckboxElement = <React.Fragment key={"userAdminCheckbox"}>
+            let userAdminCheckboxElement = <React.Fragment key={'userAdminCheckbox'}>
                 <div className={'mb-8px'}>
                     <label htmlFor={Constants.admin.systemRole.USR_ADMIN}>
                         <input id={Constants.admin.systemRole.USR_ADMIN}
-                               type="checkbox"
+                               type='checkbox'
                                checked={userAdminChecked}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.USR_ADMIN}

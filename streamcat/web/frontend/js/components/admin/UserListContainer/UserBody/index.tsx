@@ -60,7 +60,6 @@ export const UserBody = (props: Props) => {
                 }))
             );
         }).catch((error) => {
-            console.log(error);
             notifyError('ユーザー一覧取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
         });
     };
@@ -197,14 +196,14 @@ export const UserBody = (props: Props) => {
 
         const onClickHeader= (header: ITableHeader) => {
             if (header.sort) {
-                if(header.key === "projects"){
+                if(header.key === 'projects'){
                     setUsers(lodash.orderBy(users, (e: UserType2)=>{
                         const projects = e.projects?.length || 0;
                         return projects
                     }, header.sort));
-                }else if(header.key === "admin_types"){
+                }else if(header.key === 'admin_types'){
                     setUsers(lodash.orderBy(users, (e: UserType2)=>{
-                        const roles = e.roles?.filter(role => (role.systemRole != "EVERYONE")) || [];
+                        const roles = e.roles?.filter(role => (role.systemRole != 'EVERYONE')) || [];
                         return JSON.stringify(roles)
                     }, header.sort));
                 } else{
@@ -273,11 +272,11 @@ export const UserBody = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_USER, onClickDone: () => {
                 if(!newUserName.length){
-                    alert("名前を入力してください")
+                    alert('名前を入力してください')
                     return
                 }
                 if(!newUserEmail.length){
-                    alert("E-mailを入力してください")
+                    alert('E-mailを入力してください')
                     return
                 }
                 createNewUser(newUserName,newUserEmail, selectedProjects).then(user => {
@@ -323,8 +322,8 @@ export const UserBody = (props: Props) => {
     },[newUserEmail,newUserName, selectedProjects]);
 
     const clearField = () =>{
-        setNewUserName("");
-        setNewUserEmail("");
+        setNewUserName('');
+        setNewUserEmail('');
         setSelectedProjects([]);
     };
 
@@ -372,10 +371,10 @@ export const UserBody = (props: Props) => {
                                     label: project.label,
                                     value: project.uuid
                                 }))}
-                                placeholder={""}
+                                placeholder={''}
                                 isMulti={true}
                                 isSearchable={false}
-                                noOptionsMessage={_=>"選択できるプロジェクトがありません"}
+                                noOptionsMessage={_=>'選択できるプロジェクトがありません'}
                             />
                         </div>
                     </form>
@@ -416,7 +415,7 @@ export const UserBody = (props: Props) => {
                 danger: true,
                 content: <div className={style.modal}>
                     <div>
-                        {targets.join(",")} を削除しますか？
+                        {targets.join(',')} を削除しますか？
                     </div>
                 </div>
             });

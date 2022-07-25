@@ -4,7 +4,7 @@ import style from './style.scss';
 import {Badge} from 'Shared/Base/Badge';
 import {Spacer} from 'Shared/Base';
 import AdminUtil from 'Utils/AdminUtil';
-import ImageUtil from "Utils/ImageUtil";
+import ImageUtil from 'Utils/ImageUtil';
 
 export interface ITableBody {
     uuid: string;
@@ -52,9 +52,9 @@ const UserListBody = (props: Props) => {
             const spacer = (index)?<React.Fragment key={index}><Spacer width={8}/></React.Fragment>:null
             switch (type.systemRole) {
                 case 'USR_ADMIN':
-                    return <React.Fragment key={index}>{spacer}<Badge color={"darkGreen"}>ユーザー</Badge></React.Fragment>;
+                    return <React.Fragment key={index}>{spacer}<Badge color={'darkGreen'}>ユーザー</Badge></React.Fragment>;
                 case 'SYS_ADMIN':
-                    return <React.Fragment key={index}>{spacer}<Badge color={"darkBlue"}>システム</Badge></React.Fragment>;
+                    return <React.Fragment key={index}>{spacer}<Badge color={'darkBlue'}>システム</Badge></React.Fragment>;
                 case 'EVERYONE':
                 default:
                     return null
@@ -79,7 +79,7 @@ const UserListBody = (props: Props) => {
         return <tr key={body.uuid} className={classnames(style.row, {[style.selected]: body.selected})}
                    onClick={(event) => onClick(event, body)}>
             <td>
-                {ImageUtil.getIconElement("icon-user")}
+                {ImageUtil.getIconElement('icon-user')}
                 {body.name}
             </td>
             <td>

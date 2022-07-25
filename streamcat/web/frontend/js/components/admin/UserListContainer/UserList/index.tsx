@@ -7,7 +7,7 @@ import {Flex, Spacer} from 'Shared/Base';
 import {NotificationManager} from 'Shared/Notification';
 import Constants from 'Constants/index';
 import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
-import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
+import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelectedList';
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import { UserBody } from '../UserBody';
@@ -31,7 +31,7 @@ export const UserList = (props: Props) => {
     const [lastSelectedCell, setLastSelectedCell] = useState<UserType2 | null>(null);
     const [selectedDatas, setSelectedDatas] = useState<UserType2[]>([]);
     const clickedUserListCell = useRef(false);
-    const [keyword,setKeyword] = useState<string>("");
+    const [keyword,setKeyword] = useState<string>('');
     const [selectableProjects,setSelectableProjects] = useState(projectsReader());
 
     const setInitialFilterList = () => {
@@ -63,14 +63,14 @@ export const UserList = (props: Props) => {
 
         const list: IFilterCategoryItem[] = [
             {
-                id: "project",
+                id: 'project',
                 label: '所属プロジェクト',
                 multiple: false,
                 data: projectData,
                 disabled: !(projectData.length)
             },
             {
-                id: "status",
+                id: 'status',
                 label: 'ステータス',
                 multiple: true,
                 data: statusData
@@ -90,13 +90,13 @@ export const UserList = (props: Props) => {
         let selectedProjectUUIDs: string[] = []
         let selectedStatusTypes: string[] = []
         filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
-            if(categoryListItem.id === "project"){
+            if(categoryListItem.id === 'project'){
                 categoryListItem.data.forEach((listItem: IFilterListItem)=>{
                     if(listItem.selected){
                         selectedProjectUUIDs.push(listItem.id);
                     }
                 })
-            }else if(categoryListItem.id === "status"){
+            }else if(categoryListItem.id === 'status'){
                 categoryListItem.data.forEach((listItem: IFilterListItem)=>{
                     if(listItem.selected){
                         selectedStatusTypes.push(listItem.id);
@@ -122,7 +122,6 @@ export const UserList = (props: Props) => {
         const onClickUserList = () => {
             // 押下フラグがfalseの場合にユーザの選択を解除する
             if (!clickedUserListCell.current) {
-                console.log("UserList2: onMouseDownUserList", clickedUserListCell.current);
                 // 選択状態を一旦解除
                 setSelectedDatas([]);
                 setLastSelectedCell(null);

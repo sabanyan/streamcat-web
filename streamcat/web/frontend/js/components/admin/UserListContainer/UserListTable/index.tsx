@@ -1,6 +1,6 @@
 import React from 'react';
-import {useState} from "react";
-import * as style from "./style.scss";
+import {useState} from 'react';
+import * as style from './style.scss';
 import {
     ITableHeader,
     TTableHeaderSortType,
@@ -21,11 +21,11 @@ const UserListTable = (props: Props) => {
     const {onClickHeader, onClickFileName, onClickCell, bodies, minWidth} = props;
 
     const initialHeaders = [
-        {label: "名前", key: "name"},
-        {label: "E-mail", key: "email", width: 200},
-        {label: "所属プロジェクト", key: "projects", width: 220},
-        {label: "ステータス", key: "state", width: 220},
-        {label: "StreamCat 管理権限", key: "admin_types", width: 220}
+        {label: '名前', key: 'name'},
+        {label: 'E-mail', key: 'email', width: 200},
+        {label: '所属プロジェクト', key: 'projects', width: 220},
+        {label: 'ステータス', key: 'state', width: 220},
+        {label: 'StreamCat 管理権限', key: 'admin_types', width: 220}
     ];
     const [headers, setHeaders] = useState<ITableHeader[]>(initialHeaders);
 
@@ -50,12 +50,12 @@ const UserListTable = (props: Props) => {
 
     const onChangeSort = (sort: TTableHeaderSortType) => {
         switch (sort) {
-            case "asc":
-                return "desc";
-            case "desc":
+            case 'asc':
+                return 'desc';
+            case 'desc':
                 return null;
             default:
-                return "asc";
+                return 'asc';
         }
     };
 
