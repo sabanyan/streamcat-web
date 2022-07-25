@@ -137,22 +137,6 @@ export interface TableCell {
   selected?: boolean;
 }
 
-export interface UserRole {
-  uuid:       string;
-  name:       string;
-  systemRole: string;
-  creator:    string;
-  createdAt:  Date;
-}
-
-export interface UserProject {
-  uuid:      string;
-  type:      string;
-  label:     string;
-  creator:   string;
-  createdAt: Date;
-}
-
 export interface IFilterCategoryItem {
   id: string;
   label: string;

@@ -34,7 +34,6 @@ export const UserList = (props: Props) => {
     const [selectedDatas, setSelectedDatas] = useState<UserType2[]>([]);
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
-    // const [projects,setProjects] = useState<UserProject[]>([]);
     const [selectableProjects,setSelectableProjects] = useState(projectsReader());
 
     const setInitialFilterList = () => {

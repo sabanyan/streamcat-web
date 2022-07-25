@@ -3,7 +3,6 @@ import {useEffect, useState} from 'react';
 import style from './style.scss';
 import {Api} from 'Api';
 import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
-import {UserProject, UserRole} from 'Types/index';
 import {Flex, Spacer} from 'Shared/Base';
 import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
@@ -16,10 +15,10 @@ import Select from 'react-select';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
 import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
-import Queue from "promise-queue-plus";
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 import { UserType2 } from 'Components/admin/UserListContainer/UserList'
+import { ProjectType } from 'Model/Library';
 
 interface Props {
     navigation: NavigationType | null;
@@ -27,7 +26,7 @@ interface Props {
     selectedProjectUUIDs: string[];
     selectedStatusTypes: string[];
     hasNoFilter: boolean;
-    selectableProjects: UserProject[];
+    selectableProjects: ProjectType[];
     lastSelectedCell: [UserType2|null, (value:React.SetStateAction<UserType2|null>)=>void];
     selectedDatas: [UserType2[], (value:React.SetStateAction<UserType2[]>)=>void];
 };
@@ -229,7 +228,7 @@ export const UserBody = (props: Props) => {
         const bodies: ITableBody[] = users.map((user: UserType2) => {
             let projects: {uuid: string, label: string}[] = [];
             if (user && Array.isArray(user.projects) && user.projects ) {
-                projects = user.projects.map((project: UserProject) => {
+                projects = user.projects.map(project => {
                     return {
                         uuid: project.uuid,
                         label: project.label
@@ -239,7 +238,7 @@ export const UserBody = (props: Props) => {
 
             let admin_types: {uuid: string, systemRole: string}[] =[];
             if (user && user.roles && Array.isArray(user.roles)) {
-                admin_types = user.roles.map((role: UserRole) => {
+                admin_types = user.roles.map(role => {
                     return {
                         systemRole: role.systemRole,
                         uuid: role.uuid
@@ -277,7 +276,7 @@ export const UserBody = (props: Props) => {
 
     const [newUserName, setNewUserName] = useState<string | null>(null);
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-    const [selectedOption, setSelectedOption] = useState<UserProject | null>(null);
+    const [selectedOption, setSelectedOption] = useState<ProjectType | null>(null);
 
 
     useEffect(()=>{
@@ -344,7 +343,7 @@ export const UserBody = (props: Props) => {
 
         const onClickNewUser = () => {
             // モーダル表示
-            const options = selectableProjects.map((project:UserProject)=>{
+            const options = selectableProjects.map(project => {
                 return {
                     label: project.label,
                     value: project.uuid
@@ -377,8 +376,10 @@ export const UserBody = (props: Props) => {
                         <div className={style.select}>
                             <Select
                                 defaultValue={selectedOption}
-                                onChange={setSelectedOption}
-                                options={options}
+                                onChange={selectedProjects => {
+                                    selectedProjects.forEach(project => setSelectedOption(project))
+                                }}
+                                options={selectableProjects}
                                 placeholder={""}
                                 isMulti={true}
                                 isSearchable={false}
@@ -511,7 +512,7 @@ export const UserBody = (props: Props) => {
         if(selectedProjectUUIDs.length){
             newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
                 let hasFound = false
-                user.projects?.forEach((project:UserProject)=>{
+                user.projects?.forEach(project => {
                     // 該当するプロジェクトがあるか
                     selectedProjectUUIDs.forEach((selectedProjectUUID)=>{
                         if(project.uuid === selectedProjectUUID){

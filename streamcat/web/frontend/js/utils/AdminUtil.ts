@@ -1,4 +1,3 @@
-import {UserRole} from 'Types/index';
 import Constants from 'Constants/index';
 import { RoleType } from 'Model/Navigation/NavigationModel';
 export default class AdminUtil {
@@ -17,11 +16,11 @@ export default class AdminUtil {
     };
 
     static hasUserAdmin = (admin_types: RoleType[]):boolean =>{
-       return !!(admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.USR_ADMIN))
+       return !!(admin_types.find(role => role.systemRole==Constants.admin.systemRole.USR_ADMIN))
     }
 
     static hasSystemAdmin = (admin_types: RoleType[]):boolean =>{
-        return !!(admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.SYS_ADMIN))
+        return !!(admin_types.find(role => role.systemRole==Constants.admin.systemRole.SYS_ADMIN))
     }
 
     static replaceAsterisk = (length: number): string => {
