@@ -1,5 +1,6 @@
 import React from 'react';
 import {useEffect, useState} from 'react';
+import Select from 'react-select';
 import style from './style.scss';
 import {Api} from 'Api';
 import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
@@ -11,7 +12,6 @@ import {ModalManager} from 'Shared/Modal';
 import {useStreamCatNotifications} from 'Shared/Notification';
 import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
-import Select from 'react-select';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
 import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
 import * as lodash from 'lodash';

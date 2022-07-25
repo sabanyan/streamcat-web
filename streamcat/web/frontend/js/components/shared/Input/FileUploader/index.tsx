@@ -1,6 +1,4 @@
 import React from 'react'
-import axios from 'axios'
-import Queue from 'promise-queue-plus'
 import classnames from 'classnames'
 
 import style from './style.scss'
@@ -102,24 +100,18 @@ export default class FileUploader extends React.Component<Props, State> {
   uploadSync() {
     const { notify, parent } = this.props
 
-    let queue = Queue(
-      1, // concurrency
-      {
-        "retry": 0               //Number of retries
-        , "retryIsJump": false     //retry now?
-        , "timeout": 0            //The timeout period
-      }
-    )
-
     const uploadTargets = this.state.uploadFiles.filter((uploadFile) => {
       if (uploadFile.status !== Status.Success) return true
       return false
-    })
-    uploadTargets.forEach((uploadFile, index) => {
-      queue.push(this.promisedUpload, [uploadFile, parent, this])
-    })
-    queue.push(this.notifyUpload, [uploadTargets, notify, this])
-    queue.start()
+    });
+
+    Promise.all(
+      uploadTargets.map((uploadFile, index) => {
+        return this.promisedUpload(uploadFile, parent, this);
+      })
+    ).finally(() => {
+      this.notifyUpload(uploadTargets, notify, this);
+    });
   }
 
   promisedUpload(uploadFile:UploadFile, parent:FolderType, self=this) {
