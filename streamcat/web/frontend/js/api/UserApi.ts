@@ -5,7 +5,7 @@ import {
     getBase as get,
     delBase as del,
     makeArrayCtor
-} from './ApiUtilBase';
+} from './ApiBase';
 
 const post = (url: string, body: {}) => {
     return postBase<UserType>(url, body).then<UserType>(user => {

@@ -1,4 +1,3 @@
-export {default as APIUtil} from './APIUtil'
 export {default as CommandUtil} from './CommandUtil'
 export {default as DetectUtil} from './DetectUtil'
 export {default as ErrorUtil} from './ErrorUtil'

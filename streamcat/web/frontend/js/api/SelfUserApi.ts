@@ -3,7 +3,7 @@ import {
     putBase,
     getBase as get,
     makeArrayCtor
-} from './ApiUtilBase';
+} from './ApiBase';
 
 const put = (url: string, body: {}) => {
     return putBase<SelfUserType>(url, body).then<SelfUserType>(user => {

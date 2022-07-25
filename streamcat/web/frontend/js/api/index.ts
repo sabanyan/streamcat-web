@@ -1,2 +1,2 @@
 export {Api} from './Api';
-export {ErrorResponse} from './ApiUtilBase';
+export {ErrorResponse} from './ApiBase';

@@ -4,7 +4,7 @@ import {
     putBase as put,
     delBase as del,
     makeArrayCtor
-} from './ApiUtilBase';
+} from './ApiBase';
 
 const post = (url: string, body: {}) => {
     return postBase<LockType>(url, body).then<LockType>(lock => {

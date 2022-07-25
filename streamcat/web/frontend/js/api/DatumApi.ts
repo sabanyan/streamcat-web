@@ -26,7 +26,7 @@ import {
     getBase as get,
     delBase as del,
     makeArrayCtor
-} from './ApiUtilBase';
+} from './ApiBase';
 
 const post = <TDatumType>(url: string, body: {}) => {
     return postBase<TDatumType>(url, body).then<TDatumType>(datum => {
