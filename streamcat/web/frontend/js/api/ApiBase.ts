@@ -185,18 +185,31 @@ export const makeArrayCtor = <TType>(setAPIFunc: (datum:TType)=>void) : Ctor<TTy
                                         thisArg?: any) {
         // this: new ArrayCtor()で生成するオブジェクト
         return ArrayCtor.prototype.map.apply(this, [datum => datum]).find(callbackfn, thisArg);
-    }
+    };
 
     // slice関数をオーバーライドする
     ArrayCtor.prototype.slice = function(start?: number, end?: number) {
         // this: new ArrayCtor()で生成するオブジェクト
         return ArrayCtor.prototype.map.apply(this, [datum => datum]).slice(start, end);
-    }
+    };
 
     // shift関数をオーバーライドする
     ArrayCtor.prototype.shift = function() {
         // this: new ArrayCtor()で生成するオブジェクト
         return ArrayCtor.prototype.map.apply(this, [datum => datum]).shift();
+    };
+
+    // pop関数をオーバーライドする
+    ArrayCtor.prototype.pop = function() {
+        // this: new ArrayCtor()で生成するオブジェクト
+        return ArrayCtor.prototype.map.apply(this, [datum => datum]).pop();
+    };
+
+    // filter関数をオーバーライドする
+    ArrayCtor.prototype.filter = function(callbackfn: (value: TType, index: number, array: TType[]) => boolean,
+                                          thisArg?: any) {
+        // this: new ArrayCtor()で生成するオブジェクト
+        return ArrayCtor.prototype.map.apply(this, [datum => datum]).filter(callbackfn, thisArg);
     };
 
     return ArrayCtor as any;
