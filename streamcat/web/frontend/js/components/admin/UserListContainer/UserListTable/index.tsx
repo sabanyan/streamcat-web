@@ -13,14 +13,17 @@ import {UserListBody} from 'UserListContainer/UserListTable/UserListBody';
 
 interface Props {
     bodies: UserType[];
-    selectedUsers: UserType[];
+    selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
+    lastSelectedUser: [UserType|null, (value:React.SetStateAction<UserType|null>)=>void];
     onClickFileName: (body: UserType, event?: React.SyntheticEvent<any, Event>) => void;
-    onClickCell: (body: UserType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
     minWidth?: number | string;
 }
 
 const UserListTable = (props: Props) => {
-    const {onClickFileName, onClickCell, bodies, selectedUsers, minWidth} = props;
+    const {bodies, minWidth, onClickFileName} = props;
+
+    const [selectedUsers, setSelectedUsers] = props.selectedUsers;
+    const [lastSelectedUser, setLastSelectedUser] = props.lastSelectedUser;
 
     const initialHeaders = [
         {label: '名前', key: 'name'},
@@ -52,6 +55,57 @@ const UserListTable = (props: Props) => {
                     sort: header===clickHeader? shiftSortOrder(header.sort): null
             }))
         );
+    };
+
+    const onClickCell = (cell: UserType, event?: React.MouseEvent<HTMLTableRowElement>) => {
+        const selectedUser = bodies.find(user=>(cell.uuid === user.uuid));
+
+        if(!selectedUser){
+            return;
+        }
+
+        if(event){
+            event.stopPropagation();
+        }
+
+        if (event && (event.metaKey || event.ctrlKey)) {
+            // command or ctrl + click
+            if (selectedUsers.includes(selectedUser)) {
+                setSelectedUsers(
+                    selectedUsers.filter(d => d.uuid !== selectedUser.uuid)
+                );
+            } else {
+                selectedUsers.push(selectedUser);
+                setLastSelectedUser(selectedUser);
+            }
+        } else if (event && event.shiftKey) {
+            // shift + click
+            clearSelected();// 選択状態を一旦解除
+            let current = bodies.findIndex(user=> selectedUser.uuid === user.uuid);
+            if (lastSelectedUser) {
+                let last = bodies.findIndex(user=> lastSelectedUser.uuid === user.uuid);
+                let min, max;
+                if (current >= last) {
+                    min = last;
+                    max = current;
+                } else {
+                    min = current;
+                    max = last;
+                }
+                setSelectedUsers(
+                    bodies.slice(min, max + 1)
+                );
+            }
+        } else {
+            // 単一選択
+            clearSelected();
+            setSelectedUsers([selectedUser]);
+            setLastSelectedUser(selectedUser);
+        }
+    };
+
+    const clearSelected = () => {
+        setSelectedUsers([]);
     };
 
     // 押下状態のヘッダを取得する

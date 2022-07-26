@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import style from '../style.scss'
+import { useStreamCatNotifications } from 'Shared/Notification'
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import {BaseInspector, Resizer} from 'Shared/Inspector'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
 import {ModalUtil} from 'Utils/index';
 import AdminUtil from 'Utils/AdminUtil';
-import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
-import { useStreamCatNotifications } from 'Shared/Notification'
 
 interface Props {
     selectedUser: UserType;
@@ -149,7 +149,7 @@ const UserListInspector = (props: Props) => {
                 notifyError('システム権限更新エラー', e.message);
             });
         }
-    }
+    };
 
     const renderButtons = (data?: UserType) => {
         const {onClickDelete, selectedUser} = props
@@ -160,7 +160,7 @@ const UserListInspector = (props: Props) => {
         return <React.Fragment>
             {del}
         </React.Fragment>
-    }
+    };
 
     const onChangeSystemAdmin = (e:React.ChangeEvent<HTMLInputElement>)=>{
         const {selectedUser} = props;
@@ -230,8 +230,7 @@ const UserListInspector = (props: Props) => {
             }
 
         }
-    }
-
+    };
 
     const renderDetail = (data?: UserType) => {
         let result: any = []
@@ -358,6 +357,7 @@ const UserListInspector = (props: Props) => {
             </div>
         </div>
     }
+
     let label = selectedUser.name
     let content = renderSelect(selectedUser)
 

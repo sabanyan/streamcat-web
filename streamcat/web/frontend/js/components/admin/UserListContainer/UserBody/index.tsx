@@ -142,76 +142,7 @@ export const UserBody = (props: Props) => {
         });
     };
 
-    // ユーザ一覧を表示する
-    const renderUserList = () => {
-
-        const onClickCell = (cell: UserType, event?: React.MouseEvent<HTMLTableRowElement>) => {
-            const selectedUser = filterdUsers.find(user=>(cell.uuid === user.uuid));
-
-            if(!selectedUser){
-                return;
-            }
-
-            if(event){
-                event.stopPropagation();
-            }
-
-            if (event && (event.metaKey || event.ctrlKey)) {
-                // command or ctrl + click
-                if (selectedUsers.includes(selectedUser)) {
-                    setSelectedUsers(
-                        selectedUsers.filter(d => d.uuid !== selectedUser.uuid)
-                    );
-                } else {
-                    selectedUsers.push(selectedUser);
-                    setLastSelectedUser(selectedUser);
-                }
-            } else if (event && event.shiftKey) {
-                // shift + click
-                clearSelected();// 選択状態を一旦解除
-                let current = filterdUsers.findIndex(user=> selectedUser.uuid === user.uuid);
-                if (lastSelectedUser) {
-                    let last = filterdUsers.findIndex(user=> lastSelectedUser.uuid === user.uuid);
-                    let min, max;
-                    if (current >= last) {
-                        min = last;
-                        max = current;
-                    } else {
-                        min = current;
-                        max = last;
-                    }
-                    setSelectedUsers(
-                        filterdUsers.slice(min, max + 1)
-                    );
-                }
-            } else {
-                // 単一選択
-                clearSelected();
-                setSelectedUsers([selectedUser]);
-                setLastSelectedUser(selectedUser);
-            }
-        };
-
-        return <UserListTable bodies={filterdUsers}
-                              selectedUsers={selectedUsers}
-                              onClickCell={onClickCell}
-                              onClickFileName={()=>{}} />
-    };
-
-    // メニューを表示
-    const renderMenuList = () => {
-        return <>
-            <Spacer minWidth={40}/>
-            <Flex flexDirection={'column'} fluid={true} width={280}>
-                <Spacer height={60}/>
-                <MenuList navigation={navigation}
-                          allProjects={allProjects}
-                          onSuccess={reloadUsers} />
-            </Flex>
-        </>
-    };
-
-    // ペインを表示
+    // ペインを表示する
     const renderInspector = ():React.ReactNode => {
         if (!selectedUsers.length) return null;
 
@@ -287,8 +218,21 @@ export const UserBody = (props: Props) => {
 
     // 描画する
     return <>
-        {renderUserList()}
-        {renderMenuList()}
+        {/* ユーザリスト */}
+        <UserListTable  bodies={filterdUsers}
+                        selectedUsers={[selectedUsers, setSelectedUsers]}
+                        lastSelectedUser={[lastSelectedUser, setLastSelectedUser]}
+                        onClickFileName={()=>{}} />
+
+        {/* メニューボタン */}
+        <Spacer minWidth={40}/>
+        <Flex flexDirection={'column'} fluid={true} width={280}>
+            <Spacer height={60}/>
+            <MenuList navigation={navigation}
+                        allProjects={allProjects}
+                        onSuccess={reloadUsers} />
+        </Flex>
+        {/* ペイン */}
         {renderInspector()}
         <ModalManager />
     </>;
