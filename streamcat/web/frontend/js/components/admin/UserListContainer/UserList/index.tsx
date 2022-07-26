@@ -21,8 +21,6 @@ export const UserList = (props: Props) => {
     const exceptMyProject = true;
     const [projectsReader] = useAsyncResource(Api.findProjects, true, exceptMyProject);
 
-    // 全てのプロジェクト
-    const [allProjects] = useState(projectsReader());
     // キーワード条件
     const [keyword, setKeyword] = useState('');
     // 所属プロジェクト条件
@@ -35,6 +33,9 @@ export const UserList = (props: Props) => {
     const [lastSelectedUser, setLastSelectedUser] = useState<UserType | null>(null);
     // UserBodyコンポーネントをクリックした時にtrueにする
     const clickedUserListCell = useRef(false);
+
+    // 全てのプロジェクト
+    const allProjects = projectsReader();
 
     const getSelectedSub = (filterItems: IFilterListItem[]) => {
         return filterItems.filter(listItem => listItem.selected).map(listItem => listItem.id);

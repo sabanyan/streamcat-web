@@ -1,8 +1,7 @@
 import React from 'react';
 import {useEffect, useState} from 'react';
-import Select from 'react-select';
 import style from './style.scss';
-import { resourceCache, useAsyncResource } from 'use-async-resource';
+import { useAsyncResource } from 'use-async-resource';
 import {Api} from 'Api';
 import {ModalUtil} from 'Utils/index';
 import {Flex, Spacer} from 'Shared/Base';
@@ -10,7 +9,6 @@ import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
 import {ModalManager} from 'Shared/Modal';
 import {useStreamCatNotifications} from 'Shared/Notification';
-import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
@@ -38,6 +36,7 @@ interface Props {
 export const UserBody = (props: Props) => {
 
     const {
+        navigation,
         allProjects,
         keyword,
         selectedProjects,
@@ -123,31 +122,7 @@ export const UserBody = (props: Props) => {
 
         // ユーザを再取得する
         getUsers(keyword).then(users =>
-            setUsers(users.map(user => ({
-                selected: false,
-                ...user
-        }))));
-    };
-
-    // ユーザを新規に作成する
-    const createNewUser = async (name: string, email: string, projects: ProjectType[]) => {
-        return Api.createUser(email, name).then(user => {
-            // UserをProjectに参加させる
-            joinProject(user.uuid, projects);
-            return user;
-        }).catch(e => {
-            notifyError('ユーザー作成エラー', e.message);
-        });
-    };
-
-    // ユーザをプロジェクトに紐付ける
-    const joinProject = (userUUID: string, projects: ProjectType[]) => {
-        Promise.all(
-            projects.map(project => {
-                return project.joinMember({uuid:userUUID, type:'Reader'}).catch(e => {
-                    notifyError('プロジェクト追加エラー', e.message);
-                });
-            })
+            setUsers(users)
         );
     };
 
@@ -223,137 +198,15 @@ export const UserBody = (props: Props) => {
                               onClickFileName={()=>{}} />
     };
 
-    const [newUserName, setNewUserName] = useState<string | null>(null);
-    const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-    const [joinProjects, setJoinProjects] = useState<ProjectType[]>([]);
-
-    useEffect(()=>{
-        if (newUserName === null || newUserEmail === null) return;
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_USER, onClickDone: () => {
-                if(!newUserName.length){
-                    alert('名前を入力してください')
-                    return
-                }
-                if(!newUserEmail.length){
-                    alert('E-mailを入力してください')
-                    return
-                }
-                createNewUser(newUserName,newUserEmail, joinProjects).then(user => {
-                    reloadUsers();
-                    if(!user){
-                        notifyError('ユーザー作成エラー');
-                        ModalUtil.closeModal(Constants.modal.ADD_USER)
-                        clearField();
-                        return
-                    }
-                    ModalUtil.closeModal(Constants.modal.ADD_USER)
-                    const projectDiv = (joinProjects.length > 0)?
-                        <div>所属: {joinProjects.map(project => `${project.label}`).join(', ')}</div>:
-                        <></>;
-                    ModalUtil.emitModal({
-                        id: Constants.modal.ADD_USER_CONFIRM,
-                        visible: true,
-                        done: '閉じる',
-                        content: <div className={style.modal}>
-                            <form>
-                                <div className={style.addUserLabel}>
-                                    新規ユーザーの仮登録が完了しました。
-                                </div>
-                                <Spacer height={20}/>
-                                <div className={style.addUserDetails}>
-                                    <div>名前: {user.name}</div>
-                                    <div>Email: {user.email}</div>
-                                    {projectDiv}
-                                    <div>仮パスワード: {user.password}</div>
-                                </div>
-                            </form>
-                            <div className={'mt-8px'}/>
-                        </div>
-                    });
-                    clearField();
-                }).catch(() => {
-                    ModalUtil.closeModal(Constants.modal.ADD_USER)
-                })
-            }, onClickCancel: ()=>{
-                clearField();
-            }
-        })
-    },[newUserEmail,newUserName, joinProjects]);
-
-    const clearField = () =>{
-        setNewUserName('');
-        setNewUserEmail('');
-        setJoinProjects([]);
-    };
-
     // メニューを表示
     const renderMenuList = () => {
-
-        const onClickNewUser = () => {
-            // モーダル表示
-            clearField();
-            ModalUtil.emitModal({
-                id: Constants.modal.ADD_USER,
-                visible: true,
-                done: '作成する',
-                content: <div className={style.modal}>
-                    <form>
-                        <div className={style.label}>
-                            名前
-                        </div>
-                        <div className={style.textField}>
-                            <TextField onChange={(e) => setNewUserName(e.target.value)}/>
-                        </div>
-                        <Spacer height={9}/>
-                        <div className={style.label}>
-                            E-mail
-                        </div>
-                        <div className={style.textField}>
-                            <TextField onChange={(e) => setNewUserEmail(e.target.value)}/>
-                        </div>
-                        <Spacer height={14}/>
-                        <div className={style.label}>
-                            所属プロジェクト
-                        </div>
-                        <div className={style.select}>
-                            <Select
-                                onChange={selectedOptions =>
-                                    setJoinProjects(
-                                        selectedOptions.map(option => 
-                                            allProjects.find(project => project.uuid===option.value) || null
-                                        ).filter(option =>
-                                            option!==null
-                                        ) as ProjectType[]
-                                    )
-                                }
-                                options={allProjects.map(project => ({
-                                    label: project.label,
-                                    value: project.uuid
-                                }))}
-                                placeholder={''}
-                                isMulti={true}
-                                isSearchable={false}
-                                noOptionsMessage={_=>'選択できるプロジェクトがありません'}
-                            />
-                        </div>
-                    </form>
-                    <div className={'mt-8px'}/>
-                </div>
-            });
-        };
-
-        const {navigation} = props;
-        if(navigation && navigation.allowlist && !navigation.allowlist.createUser){
-            // ユーザ作成権限がない場合は、メニューを表示しない
-            return null;
-        }
-
         return <>
             <Spacer minWidth={40}/>
             <Flex flexDirection={'column'} fluid={true} width={280}>
                 <Spacer height={60}/>
-                <MenuList onClickNewUser={onClickNewUser}/>
+                <MenuList navigation={navigation}
+                          allProjects={allProjects}
+                          onSuccess={reloadUsers} />
             </Flex>
         </>
     };
