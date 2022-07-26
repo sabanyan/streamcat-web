@@ -2,8 +2,9 @@ import React from 'react';
 import {useEffect, useState} from 'react';
 import Select from 'react-select';
 import style from './style.scss';
+import { resourceCache, useAsyncResource } from 'use-async-resource';
 import {Api} from 'Api';
-import {ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import {Flex, Spacer} from 'Shared/Base';
 import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
@@ -13,12 +14,18 @@ import {useStreamCatNotifications} from 'Shared/Notification';
 import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
-import {ITableHeader} from 'LibraryContainer/FileListTable/FileListHeader';
-import * as lodash from 'lodash';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 import { ProjectType } from 'Model/Library';
+
+const getUsers = (keyword?: string) => {
+    const q = keyword;
+    const exceptInActive = false;
+    const roles = true;
+    const projects = true
+    return Api.findUsers(q, exceptInActive, roles, projects);
+};
 
 interface Props {
     navigation: NavigationType | null;
@@ -31,6 +38,7 @@ interface Props {
 };
 
 export const UserBody = (props: Props) => {
+
     const {
         allProjects,
         keyword,
@@ -41,88 +49,100 @@ export const UserBody = (props: Props) => {
     const [selectedUsers, setSelectedUsers] = props.selectedUsers;
     const [lastSelectedUser, setLastSelectedUser] = props.lastSelectedUser;
 
+    // 全てのユーザを取得する
+    const [usersReader, refreshUsers] = useAsyncResource(getUsers, keyword);
+
     // 通知機能メソッドの取得
     const {notifyError} = useStreamCatNotifications();
 
     // UserListTableに表示するUserリスト
-    const [users, setUsers] = useState<UserType2[]>([]);
+    const [users, setUsers] = useState(
+        usersReader().map(user => ({
+            selected: false,
+            ...user
+        }))
+    );
 
+    // kewwordが変更されたら、ユーザを再取得する
     useEffect(() => {
-        fetchUsers(keyword);
+        setUsers(
+            usersReader().map(user => ({
+                selected: false,
+                ...user
+            }))
+        );
     }, [keyword]);
 
-    // フィルターが変更される都度Userをフィルタリングする
     useEffect(()=>{
-        const hasNoFilter = selectedProjects.length===0 && selectedStatuses.length===0;
-        if(hasNoFilter){
-            fetchUsers(keyword);
-        }else{
-            // FIXME: フィルタが追加された場合は正常動作するが、
-            // フィルタ済みのUserは復活できないので、フィルタが一部削除された場合はUserが追加できない
-            filterUsers(users);
-        }
-    },[selectedProjects, selectedStatuses])
-
-    // ユーザ一覧を取得する
-    const fetchUsers = (keyword?: string) => {
-        return Api.findUsers(keyword, false, true, true).then(users => {
-            // 取得したUserを条件に従いフィルタリングする
-            filterUsers(
-                users.map(user => ({
-                    selected: false,
-                    ...user
-                }))
-            );
-        }).catch((error) => {
-            notifyError('ユーザー一覧取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)));
+        // ユーザ削除の確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                const promises = Promise.all(
+                    selectedUsers.map(user => deleteUser(user))
+                );
+                promises.then(() => {
+                    // fetchUsers();
+                    reloadUsers();
+                }).finally(() => {
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                    clearSelected();
+                });
+            },
         });
+
+        if(selectedUsers.length === 1){
+            const selectedUser = selectedUsers[0];
+            // パスワードリセットの処理
+            ModalUtil.registerModal({
+                id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
+                    resetUserPassword(selectedUser).finally(() => {
+                        ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
+                        clearSelected();
+                    })
+                },
+            })
+            // ユーザ作成後の確認ダイアログ
+            ModalUtil.registerModal({
+                id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
+                    ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
+                }
+            })
+        }
+    }, [selectedUsers]);
+
+    // フィルタリングしたusersを取得する
+    const filterdUsers = users.filter(user =>
+        // Projectが指定されていない場合は全てのUserを抽出する
+        selectedProjects.length ===0 ||
+        // 指定されたProjectに属するUserを抽出する
+        user.projects?.some(project =>
+            selectedProjects.includes(project.uuid)
+        )
+    ).filter(user =>
+        // ステータスが指定されていない場合は全てのUserを抽出する
+        selectedStatuses.length ===0 ||
+        // 指定されたステータスに属するUserを抽出する
+        selectedStatuses.includes(user.state)
+    );
+
+    const clearSelected = () => {
+        setSelectedUsers([]);
+        setUsers(users.map((user: UserType2) => {
+            user.selected = false;
+            return user;
+        }));
     };
 
-    // 取得済みのユーザーをフィルターする
-    const filterUsers = (_users:UserType2[]) => {
-        // ユーザーをフィルターする
-        let newFilteredUsers = _users;
-        // 該当プロジェクトに属しているユーザのみ抽出
-        if(selectedProjects.length){
-            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
-                let hasFound = false
-                user.projects?.forEach(project => {
-                    // 該当するプロジェクトがあるか
-                    selectedProjects.forEach((selectedProjectUUID)=>{
-                        if(project.uuid === selectedProjectUUID){
-                            hasFound = true
-                        }
-                    })
-                })
-                return hasFound
-            })
-        }
-        // 該当するステータスのユーザのみ抽出
-        if(selectedStatuses.length){
-            newFilteredUsers = newFilteredUsers.filter((user:UserType2)=>{
-                let hasFound = false
-                selectedStatuses.forEach((state)=>{
-                    if(user.state === state){
-                        hasFound = true
-                    }
-                });
-                return hasFound;
-            })
-        }
+    const reloadUsers = () => {
+        // // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
+        // resourceCache(getUsers).clear();
 
-        // フィルターしていない場合は、user を再取得する
-        const hasNoFilter = selectedProjects.length===0 && selectedStatuses.length===0;
-        if(hasNoFilter){
-            // // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-            // // 200ms ほど間隔をあけてから再検索を行う
-            setUsers(_users);
-            return
-        }
-        // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-        // 200ms ほど間隔をあけてからフィルタリングする
-        setTimeout(()=>{
-            setUsers(newFilteredUsers)
-        },200)
+        // ユーザを再取得する
+        getUsers(keyword).then(users =>
+            setUsers(users.map(user => ({
+                selected: false,
+                ...user
+        }))));
     };
 
     // ユーザを新規に作成する
@@ -157,58 +177,19 @@ export const UserBody = (props: Props) => {
     // ユーザのパスワードをリセットする
     const resetUserPassword = (user: UserType2) =>{
         return user.resetPassword().then(user => {
-            fetchUsers();
+            reloadUsers();
         }).catch(e => {
             notifyError('パスワードリセットエラー', e.message);
         });
     };
 
-    useEffect(()=>{
-        if(selectedUsers.length === 1){
-            const selectedUser = selectedUsers[0];
-            // パスワードリセットの処理
-            ModalUtil.registerModal({
-                id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
-                    resetUserPassword(selectedUser).finally(() => {
-                        ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
-                        clearSelected();
-                    })
-                },
-            })
-            // ユーザ作成後の確認ダイアログ
-            ModalUtil.registerModal({
-                id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
-                    ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
-                }
-            })
-        }
-    }, [selectedUsers]);
-
-    useEffect(()=>{
-        // ユーザ削除の確認ダイアログ
-        ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM, onClickDone: () => {
-                const promises = Promise.all(
-                    selectedUsers.map(user => deleteUser(user))
-                );
-                promises.then(() => {
-                    fetchUsers();
-                }).finally(() => {
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                    clearSelected();
-                });
-            },
-        })
-    },[selectedUsers]);
-
     // ユーザ一覧を表示する
     const renderUserList = () => {
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => {
-            let data = users.find(user=>(cell.uuid === user.uuid));
-            if(!data){
+            const selectedUser = filterdUsers.find(user=>(cell.uuid === user.uuid));
+            if(!selectedUser){
                 return;
             }
-            let selectedUser = data;
             if (event) event.stopPropagation();
             if (event && (event.metaKey || event.ctrlKey)) {
                 selectedUser.selected = true;
@@ -226,9 +207,9 @@ export const UserBody = (props: Props) => {
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = users.findIndex(user=> selectedUser.uuid === user.uuid);
+                let current = filterdUsers.findIndex(user=> selectedUser.uuid === user.uuid);
                 if (lastSelectedUser) {
-                    let last =  users.findIndex(user=> lastSelectedUser.uuid === user.uuid);
+                    let last = filterdUsers.findIndex(user=> lastSelectedUser.uuid === user.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -237,7 +218,7 @@ export const UserBody = (props: Props) => {
                         min = current;
                         max = last;
                     }
-                    const selectedUsers: UserType2[] = users.slice(min, max + 1).map((user) => {
+                    const selectedUsers: UserType2[] = filterdUsers.slice(min, max + 1).map((user) => {
                         user.selected = true;
                         return user;
                     });
@@ -252,30 +233,7 @@ export const UserBody = (props: Props) => {
             }
         };
 
-        const onClickFileName = () => {
-        };
-
-        const onClickHeader= (header: ITableHeader) => {
-            if (header.sort) {
-                if(header.key === 'projects'){
-                    setUsers(lodash.orderBy(users, (e: UserType2)=>{
-                        const projects = e.projects?.length || 0;
-                        return projects
-                    }, header.sort));
-                }else if(header.key === 'admin_types'){
-                    setUsers(lodash.orderBy(users, (e: UserType2)=>{
-                        const roles = e.roles?.filter(role => (role.systemRole != 'EVERYONE')) || [];
-                        return JSON.stringify(roles)
-                    }, header.sort));
-                } else{
-                    setUsers(lodash.orderBy(users, header.key, header.sort));
-                }
-            } else {
-                fetchUsers()
-            }
-        }
-
-        const bodies: ITableBody[] = users.map((user: UserType2) => {
+        const bodies: ITableBody[] = filterdUsers.map((user: UserType2) => {
             let projects: {uuid: string, label: string}[] = [];
             if (user && Array.isArray(user.projects) && user.projects ) {
                 projects = user.projects.map(project => {
@@ -311,7 +269,7 @@ export const UserBody = (props: Props) => {
                 email: user.email,
                 name: user.name,
                 projects: projects,
-                status: user.state,
+                state: user.state,
                 uuid: user.uuid,
                 selected: selected,
                 password: user.password
@@ -319,8 +277,9 @@ export const UserBody = (props: Props) => {
             return body
         });
 
-        return <UserListTable bodies={bodies} onClickCell={onClickCell} onClickFileName={onClickFileName}
-                              onClickHeader={onClickHeader}/>
+        return <UserListTable bodies={bodies}
+                              onClickCell={onClickCell}
+                              onClickFileName={()=>{}} />
     };
 
     const [newUserName, setNewUserName] = useState<string | null>(null);
@@ -340,7 +299,7 @@ export const UserBody = (props: Props) => {
                     return
                 }
                 createNewUser(newUserName,newUserEmail, joinProjects).then(user => {
-                    fetchUsers();
+                    reloadUsers();
                     if(!user){
                         notifyError('ユーザー作成エラー');
                         ModalUtil.closeModal(Constants.modal.ADD_USER)
@@ -513,13 +472,10 @@ export const UserBody = (props: Props) => {
         const availablePasswordReset = (navigation && navigation.allowlist && navigation.allowlist.updateUser);
         const availableDelete = (navigation && navigation.allowlist && navigation.allowlist.deleteUser);
         const availableShowPassword = (navigation && navigation.allowlist && navigation.allowlist.readUserPassword);
-        const onChangedUserSystemAdminRole = ()=>{
-            fetchUsers();
-        }
 
         const onChangedList = ()=>{
             // ユーザー一覧を再更新
-            fetchUsers();
+            reloadUsers();
             // 選択されているセルを解除（ペインを閉じる）
             clearSelected();
         }
@@ -530,17 +486,9 @@ export const UserBody = (props: Props) => {
             onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
-            onChangedUserSystemAdminRole={onChangedUserSystemAdminRole}
+            onChangedUserSystemAdminRole={()=>reloadUsers()}
             onChangedList={onChangedList}
         />
-    };
-
-    const clearSelected = () => {
-        setSelectedUsers([]);
-        setUsers(users.map((user: UserType2) => {
-            user.selected = false;
-            return user;
-        }));
     };
 
     // 描画する

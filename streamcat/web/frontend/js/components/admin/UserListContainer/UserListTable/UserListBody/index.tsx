@@ -10,7 +10,7 @@ export interface ITableBody {
     uuid: string;
     name: string;
     email: string;
-    status: string;
+    state: string;
     admin_types: {
         uuid: string,
         systemRole: string,
@@ -89,7 +89,7 @@ const UserListBody = (props: Props) => {
                 {renderProjects(body.projects)}
             </td>
             <td>
-                {AdminUtil.getUserStatus(body.status)}
+                {AdminUtil.getUserStatus(body.state)}
             </td>
             <td>
                 {renderAdminTypes(body.admin_types)}
