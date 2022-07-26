@@ -1,12 +1,12 @@
 import React from 'react'
 import style from '../style.scss'
+import { UserType } from 'Model/Navigation/NavigationModel'
 import {BaseInspector, Resizer} from 'Shared/Inspector'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
-import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
-    selectedUsers: UserType2[];
+    selectedUsers: UserType[];
     onClickDelete?: () => void;
 }
 

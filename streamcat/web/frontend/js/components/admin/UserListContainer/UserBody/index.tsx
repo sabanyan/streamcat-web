@@ -8,15 +8,13 @@ import {ModalUtil} from 'Utils/index';
 import {Flex, Spacer} from 'Shared/Base';
 import {MenuList} from 'Components/admin/UserListContainer/MenuList';
 import {UserListTable} from 'UserListContainer/UserListTable';
-import {ITableBody} from 'UserListContainer/UserListTable/UserListBody';
 import {ModalManager} from 'Shared/Modal';
 import {useStreamCatNotifications} from 'Shared/Notification';
 import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
-import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
-import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 import { ProjectType } from 'Model/Library';
 
 const getUsers = (keyword?: string) => {
@@ -33,8 +31,8 @@ interface Props {
     keyword: string;
     selectedProjects: string[];
     selectedStatuses: string[];
-    selectedUsers: [UserType2[], (value:React.SetStateAction<UserType2[]>)=>void];
-    lastSelectedUser: [UserType2|null, (value:React.SetStateAction<UserType2|null>)=>void];
+    selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
+    lastSelectedUser: [UserType|null, (value:React.SetStateAction<UserType|null>)=>void];
 };
 
 export const UserBody = (props: Props) => {
@@ -56,21 +54,11 @@ export const UserBody = (props: Props) => {
     const {notifyError} = useStreamCatNotifications();
 
     // UserListTableに表示するUserリスト
-    const [users, setUsers] = useState(
-        usersReader().map(user => ({
-            selected: false,
-            ...user
-        }))
-    );
+    const [users, setUsers] = useState(usersReader());
 
     // kewwordが変更されたら、ユーザを再取得する
     useEffect(() => {
-        setUsers(
-            usersReader().map(user => ({
-                selected: false,
-                ...user
-            }))
-        );
+        setUsers(usersReader());
     }, [keyword]);
 
     useEffect(()=>{
@@ -127,10 +115,6 @@ export const UserBody = (props: Props) => {
 
     const clearSelected = () => {
         setSelectedUsers([]);
-        setUsers(users.map((user: UserType2) => {
-            user.selected = false;
-            return user;
-        }));
     };
 
     const reloadUsers = () => {
@@ -168,14 +152,14 @@ export const UserBody = (props: Props) => {
     };
 
     // ユーザを削除する
-    const deleteUser = (user: UserType2)=>{
+    const deleteUser = (user: UserType)=>{
         return user.delete().catch(e => {
             notifyError('ユーザー削除エラー', e.message);
         });
     };
 
     // ユーザのパスワードをリセットする
-    const resetUserPassword = (user: UserType2) =>{
+    const resetUserPassword = (user: UserType) =>{
         return user.resetPassword().then(user => {
             reloadUsers();
         }).catch(e => {
@@ -185,21 +169,24 @@ export const UserBody = (props: Props) => {
 
     // ユーザ一覧を表示する
     const renderUserList = () => {
-        const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => {
+
+        const onClickCell = (cell: UserType, event?: React.MouseEvent<HTMLTableRowElement>) => {
             const selectedUser = filterdUsers.find(user=>(cell.uuid === user.uuid));
+
             if(!selectedUser){
                 return;
             }
-            if (event) event.stopPropagation();
+
+            if(event){
+                event.stopPropagation();
+            }
+
             if (event && (event.metaKey || event.ctrlKey)) {
-                selectedUser.selected = true;
                 // command or ctrl + click
                 if (selectedUsers.includes(selectedUser)) {
-                    selectedUser.selected = !selectedUser.selected;
-                    setSelectedUsers(selectedUsers.filter(d => d.uuid !== selectedUser.uuid));
-                    if(!selectedUser.selected){
-                        setLastSelectedUser(null);
-                    }
+                    setSelectedUsers(
+                        selectedUsers.filter(d => d.uuid !== selectedUser.uuid)
+                    );
                 } else {
                     selectedUsers.push(selectedUser);
                     setLastSelectedUser(selectedUser);
@@ -218,66 +205,20 @@ export const UserBody = (props: Props) => {
                         min = current;
                         max = last;
                     }
-                    const selectedUsers: UserType2[] = filterdUsers.slice(min, max + 1).map((user) => {
-                        user.selected = true;
-                        return user;
-                    });
-                    setSelectedUsers(selectedUsers);
+                    setSelectedUsers(
+                        filterdUsers.slice(min, max + 1)
+                    );
                 }
             } else {
                 // 単一選択
                 clearSelected();
-                selectedUser.selected = true;
                 setSelectedUsers([selectedUser]);
                 setLastSelectedUser(selectedUser);
             }
         };
 
-        const bodies: ITableBody[] = filterdUsers.map((user: UserType2) => {
-            let projects: {uuid: string, label: string}[] = [];
-            if (user && Array.isArray(user.projects) && user.projects ) {
-                projects = user.projects.map(project => {
-                    return {
-                        uuid: project.uuid,
-                        label: project.label
-                    }
-                });
-            }
-
-            let admin_types: {uuid: string, systemRole: string}[] =[];
-            if (user && user.roles && Array.isArray(user.roles)) {
-                admin_types = user.roles.map(role => {
-                    return {
-                        systemRole: role.systemRole,
-                        uuid: role.uuid
-                    }
-                })
-            }
-
-            let selected = false;
-            selectedUsers.forEach((selectedUser:UserType2)=>{
-                if(user.uuid === selectedUser.uuid){
-                    selected = true
-                }
-            })
-
-            const body: ITableBody = {
-                admin_types: admin_types,
-                clickable: true,
-                createdAt: user.createdAt,
-                creator: user.creator,
-                email: user.email,
-                name: user.name,
-                projects: projects,
-                state: user.state,
-                uuid: user.uuid,
-                selected: selected,
-                password: user.password
-            };
-            return body
-        });
-
-        return <UserListTable bodies={bodies}
+        return <UserListTable bodies={filterdUsers}
+                              selectedUsers={selectedUsers}
                               onClickCell={onClickCell}
                               onClickFileName={()=>{}} />
     };

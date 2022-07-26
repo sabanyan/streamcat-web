@@ -5,13 +5,12 @@ import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
 import {ModalUtil} from 'Utils/index';
 import AdminUtil from 'Utils/AdminUtil';
-import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 import { useStreamCatNotifications } from 'Shared/Notification'
-import { UserType2 } from 'Components/admin/UserListContainer/UserList'
 
 interface Props {
-    selectedUser: UserType2;
+    selectedUser: UserType;
     onClickDelete?: Function;
     onBlurTitle?: Function;
     onClickEdit?: Function;
@@ -108,14 +107,14 @@ const UserListInspector = (props: Props) => {
         })
     }, [selectedUser,systemAdminChecked,userAdminChecked])
 
-    const unDeleteUser = async (user: UserType2)=>{
+    const unDeleteUser = async (user: UserType)=>{
         return user.undelete().catch(e=>{
             notifyError('ユーザを論理削除から登録状態に戻せませんでした', e.message);
         });
     }
 
     // システム管理権限を更新する
-    const activateSystemAdminRole = (user: UserType2, active: boolean) => {
+    const activateSystemAdminRole = (user: UserType, active: boolean) => {
         const {onChangedUserSystemAdminRole} = props;
 
         if(active){
@@ -134,7 +133,7 @@ const UserListInspector = (props: Props) => {
     };
 
     // ユーザー管理権限を更新する
-    const activateUserAdminRole = (user: UserType2, active: boolean) => {
+    const activateUserAdminRole = (user: UserType, active: boolean) => {
         const {onChangedUserSystemAdminRole} = props;
 
         if(active){
@@ -152,7 +151,7 @@ const UserListInspector = (props: Props) => {
         }
     }
 
-    const renderButtons = (data?: UserType2) => {
+    const renderButtons = (data?: UserType) => {
         const {onClickDelete, selectedUser} = props
         let del
         const availableDelete = (selectedUser.state !== Constants.admin.userStatus.inactive);
@@ -234,7 +233,7 @@ const UserListInspector = (props: Props) => {
     }
 
 
-    const renderDetail = (data?: UserType2) => {
+    const renderDetail = (data?: UserType) => {
         let result: any = []
 
         if (!data) return result
@@ -348,7 +347,7 @@ const UserListInspector = (props: Props) => {
         </React.Fragment>
     }
 
-    const renderSelect = (data?: UserType2) => {
+    const renderSelect = (data?: UserType) => {
         return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}

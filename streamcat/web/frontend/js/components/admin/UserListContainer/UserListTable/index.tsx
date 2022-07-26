@@ -2,23 +2,25 @@ import React from 'react';
 import {useState} from 'react';
 import * as style from './style.scss';
 import * as lodash from 'lodash';
+import { UserType } from 'Model/Navigation/NavigationModel';
 import {
     ITableHeader,
     TTableHeaderSortType,
     UserListHeader
 } from 'UserListContainer/UserListTable/UserListHeader';
-import {ITableBody, UserListBody} from 'UserListContainer/UserListTable/UserListBody';
+import {UserListBody} from 'UserListContainer/UserListTable/UserListBody';
 
 
 interface Props {
-    bodies: ITableBody[];
-    onClickFileName: (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => void;
-    onClickCell: (body: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => void;
+    bodies: UserType[];
+    selectedUsers: UserType[];
+    onClickFileName: (body: UserType, event?: React.SyntheticEvent<any, Event>) => void;
+    onClickCell: (body: UserType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
     minWidth?: number | string;
 }
 
 const UserListTable = (props: Props) => {
-    const {onClickFileName, onClickCell, bodies, minWidth} = props;
+    const {onClickFileName, onClickCell, bodies, selectedUsers, minWidth} = props;
 
     const initialHeaders = [
         {label: '名前', key: 'name'},
@@ -56,7 +58,7 @@ const UserListTable = (props: Props) => {
     const clickedHeader = headers.find(header => header.sort);
 
     // ユーザリストをソートする
-    const sortBodies = (bodies: ITableBody[], clickedHeader?: ITableHeader) => {
+    const sortBodies = (bodies: UserType[], clickedHeader?: ITableHeader) => {
         // ヘッダが押下状態でない場合はソートしない
         if(!clickedHeader){
             return bodies;
@@ -66,18 +68,18 @@ const UserListTable = (props: Props) => {
             return lodash.orderBy(
                 bodies,
                 // 所属するプロジェクト数でソートする
-                (body: ITableBody) => body.projects.length,
+                (body: UserType) => body.projects?.length || 0,
                 // 昇順/降順
                 clickedHeader.sort || undefined
             );
         }else if(clickedHeader.key==='admin_types'){
             return lodash.orderBy(
                 bodies,
-                (body: ITableBody) => {
+                (body: UserType) => {
                     // システムとユーザ管理権限の有無を抽出する
-                    const adminTypes = body.admin_types.filter(
-                        admin_type => admin_type.systemRole==='SYS_ADMIN' || admin_type.systemRole==='USR_ADMIN'
-                    );
+                    const adminTypes = body.roles?.filter(
+                        role => role.systemRole==='SYS_ADMIN' || role.systemRole==='USR_ADMIN'
+                    ) || [];
                     // 抽出した管理権限からソート順序を決定する
                     if(adminTypes.length===2){
                         return 3;
@@ -101,6 +103,7 @@ const UserListTable = (props: Props) => {
         <UserListHeader headers={headers}
                         onClick={onClickHeader} />
         <UserListBody bodies={sortBodies(bodies, clickedHeader)}
+                      selectedUsers={selectedUsers}
                       onClickFileName={onClickFileName}
                       onClickCell={onClickCell} />
     </table>;

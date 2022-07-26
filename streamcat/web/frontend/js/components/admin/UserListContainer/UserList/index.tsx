@@ -11,10 +11,6 @@ import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelect
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import { UserBody } from '../UserBody';
 
-export type UserType2 = UserType & {
-    selected: boolean;
-};
-
 interface Props {
     navigation: NavigationType | null;
 };
@@ -34,9 +30,9 @@ export const UserList = (props: Props) => {
     // ユーザ状態条件
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     // UserBodyコンポーネントで選択中のUser
-    const [selectedUsers, setSelectedUsers] = useState<UserType2[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
     // UserBodyコンポーネントで最後に選択したUser
-    const [lastSelectedUser, setLastSelectedUser] = useState<UserType2 | null>(null);
+    const [lastSelectedUser, setLastSelectedUser] = useState<UserType | null>(null);
     // UserBodyコンポーネントをクリックした時にtrueにする
     const clickedUserListCell = useRef(false);
 
