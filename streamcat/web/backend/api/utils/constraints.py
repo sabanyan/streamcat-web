@@ -1,5 +1,5 @@
 import functools
-from .response import Status
+from streamcat.store.auth import NotAuthorizedException
 
 class Constraints():
     """
@@ -12,25 +12,18 @@ class Constraints():
         """
         実行可否を更新権限で判定する
         """
-        from flask import jsonify, g
-
-        def error(message:str, status_code:int):
-            return jsonify({'code':-1, 'message': message}), status_code
+        from flask import g
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
 
             # frameのuuidを取得する
             frame_uuid = args[0]
-            try:
-                frame = g.factory.data.find_by_uuid(frame_uuid)
-            except Exception as e:
-                return error(str(e), Status.INERNAL_SERVER_ERROR)
+            frame = g.factory.data.find_by_uuid(frame_uuid)
 
             if frame.writable:
                 return func(*args, **kwargs)
             else:
-                return error(f'{g.user.name}は{frame.label}のダウンロード権限がありません', Status.FORBIDDEN)
+                raise NotAuthorizedException(f'{g.user.name}は{frame.label}のダウンロード権限がありません')
 
         return wrapper
-        
