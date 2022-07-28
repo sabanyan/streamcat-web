@@ -24,8 +24,8 @@ mod = Blueprint('users', __name__)
 
 @mod.route('/users', methods=['GET'])
 @login_required_api
-@update_users_info
 @api_base
+@update_users_info
 def get_users():
     """
     全てのユーザ、または指定したキーワードを含むユーザを取得する
@@ -39,8 +39,8 @@ def get_users():
 
 @mod.route('/users/<user_uuid>', methods=['GET'])
 @login_required_api
-@update_user_info
 @api_base
+@update_user_info
 def get_user(user_uuid):
     """
     指定したユーザを取得する
@@ -50,8 +50,8 @@ def get_user(user_uuid):
 
 @mod.route('/users/self', methods=['GET'])
 @login_required_api
-@update_user_info
 @api_base
+@update_user_info
 def get_self():
     """
     自身のユーザを取得する
@@ -153,8 +153,8 @@ def delete_user(user_uuid):
 
 @mod.route('/roles', methods=['GET'])
 @login_required_api
-@update_roles_info
 @api_base
+@update_roles_info
 def get_roles():
     """
     全てのロールを取得する
@@ -163,8 +163,8 @@ def get_roles():
 
 @mod.route('/roles/<role_uuid>', methods=['GET'])
 @login_required_api
-@update_role_info
 @api_base
+@update_role_info
 def get_role(role_uuid):
     """
     指定したロールを取得する
