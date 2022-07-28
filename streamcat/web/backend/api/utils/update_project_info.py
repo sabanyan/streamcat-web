@@ -1,6 +1,7 @@
 import json
 import functools
 from flask import request, jsonify, g
+from .response import is_ok
 
 def update_project_info(func):
     @functools.wraps(func)
@@ -14,14 +15,14 @@ def update_project_info(func):
         result_json = json.loads(result.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not result_json['success']:
+        if not is_ok(status):
             return result, status
 
         # Project JSONに情報を追加する
-        project_data = result_json['data']
+        project_data = result_json
         _update_project_info_inner(project_data)
         # サブプロジェクトにも情報を追加する
-        for sub_project_data in result_json['data']['children']:
+        for sub_project_data in result_json['children']:
             _update_project_info_inner(sub_project_data)
 
         return jsonify(result_json), status
@@ -39,11 +40,11 @@ def update_projects_info(func):
         results_json = json.loads(results.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not results_json['success']:
+        if not is_ok(status):
             return results, status
 
         # Project JSONに情報を追加する
-        for project_data in results_json['data']['children']:
+        for project_data in results_json['children']:
             _update_project_info_inner(project_data)
 
         return jsonify(results_json), status
@@ -61,11 +62,11 @@ def update_projects_info2(func):
         results_json = json.loads(results.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not results_json['success']:
+        if not is_ok(status):
             return results, status
 
         # Project JSONに情報を追加する
-        for project_data in results_json['data']:
+        for project_data in results_json:
             _update_project_info_inner(project_data)
 
         return jsonify(results_json), status

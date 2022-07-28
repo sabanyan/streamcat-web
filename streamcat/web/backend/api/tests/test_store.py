@@ -60,7 +60,7 @@ class DataStoreTestCase(ApiTestCaseBase):
         ]
 
         # storesテーブルに設定した値をGET /stores apiで取得できることを検証する
-        self.assertEqual(result['data'], expected_result)
+        self.assertEqual(result, expected_result)
 
         # DELETE /stores
         self.delete_uri('/api/v0/stores/%s' % expected_result[0]['id'], self.USER0)
@@ -93,13 +93,13 @@ class DataStoreTestCase(ApiTestCaseBase):
 
         # POST /stores　apiが正常終了することを検証する
         expected_result = data
-        self.assertEqual(result['data'], expected_result)
+        self.assertEqual(result, expected_result)
 
         # GET /stores
         result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER0)
 
         # POST /storesした値をGET /stores apiで取得できることを検証する
-        self.assertEqual(result['data'], data)
+        self.assertEqual(result, data)
 
         # DELETE /stores
         result = self.delete_uri('/api/v0/stores/%s' % expected_result['id'], self.USER0)

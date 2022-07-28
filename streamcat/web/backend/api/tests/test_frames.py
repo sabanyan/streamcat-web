@@ -106,14 +106,14 @@ class FrameTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
 
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.assertEqual(result['data']['fileSize'], 56)
-        self.assertEqual(result['data']['encoding'], 'UTF-8')
-        self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['createdAt'], now)
+        self.assertEqual(result['fileSize'], 56)
+        self.assertEqual(result['encoding'], 'UTF-8')
+        self.assertEqual(result['newline'], 'LF')
+        self.assertEqual(result['createdAt'], now)
 
         # contents引数の指定がないのでargsとcontentsは返されない
-        self.assertIsNone(result['data'].get('args'))
-        self.assertIsNone(result['data'].get('contents'))
+        self.assertIsNone(result.get('args'))
+        self.assertIsNone(result.get('contents'))
 
     # @unittest.skip
     def test_fetch_frame_with_contents(self):
@@ -138,16 +138,16 @@ class FrameTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
 
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.assertEqual(result['data']['encoding'], 'UTF-8')
-        self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['encoding'], 'UTF-8')
+        self.assertEqual(result['newline'], 'LF')
+        self.assertEqual(result['fileSize'], 56)
         # contentsを取得する処理にかかる時間により、createdAtとnowは1秒程度の差が出る場合がある
-        self.assertLessEqual(result['data']['createdAt'], now)
+        self.assertLessEqual(result['createdAt'], now)
 
-        self.assertIsNotNone(result['data'].get('args'))
-        self.assertIsNotNone(result['data'].get('contents'))
-        self.assertEqual(result['data']['args']['column_names'], ['顧客','数量','金額'])
-        self.assertTrue(result['data']['contents'].startswith('<!DOCTYPE html>'))
+        self.assertIsNotNone(result.get('args'))
+        self.assertIsNotNone(result.get('contents'))
+        self.assertEqual(result['args']['column_names'], ['顧客','数量','金額'])
+        self.assertTrue(result['contents'].startswith('<!DOCTYPE html>'))
 
     # @unittest.skip
     def test_fetch_frame_offset_and_limit(self):
@@ -172,11 +172,10 @@ class FrameTestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER1)
 
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data']['fileSize'], 56)
-        self.assertEqual(result['data']['encoding'], 'UTF-8')
-        self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['createdAt'], now)
+        self.assertEqual(result['fileSize'], 56)
+        self.assertEqual(result['encoding'], 'UTF-8')
+        self.assertEqual(result['newline'], 'LF')
+        self.assertEqual(result['createdAt'], now)
 
 
     # @unittest.skip
@@ -202,11 +201,10 @@ class FrameTestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER1)
 
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data']['fileSize'], 56)
-        self.assertEqual(result['data']['encoding'], 'UTF-8')
-        self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['createdAt'], now)
+        self.assertEqual(result['fileSize'], 56)
+        self.assertEqual(result['encoding'], 'UTF-8')
+        self.assertEqual(result['newline'], 'LF')
+        self.assertEqual(result['createdAt'], now)
 
 
     # @unittest.skip
@@ -256,8 +254,6 @@ class FrameTestCase(ApiTestCaseBase):
 
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
 
-        self.assertEqual(result['success'], True)
-
         # ゴミ箱に移動しているかのテスト
         frame = self.factory.data.find_by_uuid(frame_uuid)
         self.assertEqual(frame.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
@@ -303,7 +299,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # フローの実行
         result = self.post_uri('/api/v0/activities', {'uuid':flow.uuid}, self.USER1)
-        data = result['data']
+        data = result
 
         # DBにframeデータが生成されているか
         self.assertIsNotNone(self.factory.data.find_by_uuid(data['outs'][0]['datum']))
@@ -386,7 +382,7 @@ class FrameTestCase(ApiTestCaseBase):
                         }
                     }
         result = self.post_uri(f'/api/v0/activities', vis_args, self.USER1)
-        outs = result['data']['outs']
+        outs = result['outs']
 
         # ラベルとIDチェック
         self.assertEqual(outs[0]['id'], 'd1')
@@ -438,7 +434,7 @@ class FrameTestCase(ApiTestCaseBase):
                     }
         # Visの取得
         result = self.post_uri(f'/api/v0/activities', vis_args, self.USER1)
-        outs = result['data']['outs']
+        outs = result['outs']
 
         # ラベルとIDチェック
         self.assertEqual(outs[0]['id'], 'd1')
@@ -466,10 +462,10 @@ class FrameTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
 
         # ラベルとIDチェック
-        self.assertIsNotNone(result['data'].get('args'))
-        self.assertIsNotNone(result['data'].get('contents'))
-        self.assertEqual(result['data']['args']['column_names'], ['顧客','','顧客'])
-        self.assertTrue(result['data']['contents'].startswith('<!DOCTYPE html>'))
+        self.assertIsNotNone(result.get('args'))
+        self.assertIsNotNone(result.get('contents'))
+        self.assertEqual(result['args']['column_names'], ['顧客','','顧客'])
+        self.assertTrue(result['contents'].startswith('<!DOCTYPE html>'))
 
     def test_get_activity(self):
         """
@@ -480,8 +476,8 @@ class FrameTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'☀️'}, self.USER2)
-        project_uuid = result['data']['uuid']
-        project_modified_at = result['data']['modifiedAt']
+        project_uuid = result['uuid']
+        project_modified_at = result['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         flow_json = {
@@ -593,7 +589,7 @@ class FrameTestCase(ApiTestCaseBase):
             'flow': flow_json
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
-        flow_uuid = result['data']['uuid']
+        flow_uuid = result['uuid']
 
         # USER3をメンバに参加させる
         data = {
@@ -605,23 +601,23 @@ class FrameTestCase(ApiTestCaseBase):
 
         # フローを実行する
         result = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid}, self.USER2)
-        data = result['data']
+        data = result
         activity_uuid = data['uuid']
 
         # プロジェクトのメンバは、Activityを参照できること
         result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER2)
         self.assertIsNotNone(data['uuid'])
-        self.assertEqual(result['data']['label'], '☔️')
+        self.assertEqual(result['label'], '☔️')
         self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
         result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER3)
         self.assertIsNotNone(data['uuid'])
-        self.assertEqual(result['data']['label'], '☔️')
+        self.assertEqual(result['label'], '☔️')
         self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
 
         # ユーザ管理者は、Activityを参照できること
         result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER1)
         self.assertIsNotNone(data['uuid'])
-        self.assertEqual(result['data']['label'], '☔️')
+        self.assertEqual(result['label'], '☔️')
         self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
 
         # プロジェクトのメンバ以外は、Activityを参照できないこと
@@ -696,7 +692,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # POST /activitiesを発行する
         result = self.post_uri(f'/api/v0/activities', {'flow':flow_json,'args':args}, self.USER1)
-        data = result['data']
+        data = result
         outs = data['outs']
 
         # POST /activitiesの結果を検証する
@@ -776,7 +772,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # POST /activitiesを発行する
         result = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args}, self.USER1)
-        data = result['data']
+        data = result
         outs = data['outs']
 
         # POST /activitiesの結果を検証する
@@ -793,7 +789,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # フローを削除する
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
@@ -902,11 +898,11 @@ class FrameTestCase(ApiTestCaseBase):
 
         # フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # フロー実行前のキャッシュファイル数を数えておく
         results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
-        len_caches1 = len(results['data']['children'])
+        len_caches1 = len(results['children'])
 
         # 'vis'を指定してプレビュー実行する
         args = {
@@ -924,7 +920,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # POST /activitiesを発行する
         result = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args,'lock':lock_uuid}, self.USER1)
-        data = result['data']
+        data = result
         outs = data['outs']
 
         # POST /activitiesの結果を検証する
@@ -941,7 +937,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # キャッシュが作成されていること
         results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
-        len_caches2 = len(results['data']['children'])
+        len_caches2 = len(results['children'])
         self.assertGreater(len_caches2, len_caches1, msg='キャッシュファイルが作成されませんでした')
 
         # フローを削除する
@@ -1092,7 +1088,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # POST /activitiesを発行する
         result = self.post_uri(f'/api/v0/activities', {'flow':literal_flow_json}, self.USER1)
-        data = result['data']
+        data = result
         outs = data['outs']
 
         # POST /activitiesの結果を検証する

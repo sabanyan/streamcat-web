@@ -12,7 +12,7 @@ class DocumentTest(ApiTestCaseBase):
         """
         # プロジェクトを作成する(POST /projects)
         result = self.post_uri('/api/v0/projects', {'label' : '新しいプロジェクト', 'parent': self.root.uuid}, self.USER3)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -20,7 +20,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント', project_uuid, f, self.USER3)
-        document_uuid = result['data']['uuid']
+        document_uuid = result['uuid']
 
         # ドキュメントを取得する(GET /documents)
         result = self.get_uri(f'/api/v0/documents/{document_uuid}', self.USER3)
@@ -33,14 +33,14 @@ class DocumentTest(ApiTestCaseBase):
         }
 
         # GET /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
-        self.assertNotEqual(result['data']['uuid'], None)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], expected_result['creator'])
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertNotEqual(result['uuid'], None)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
 
         # ドキュメントの内容を取得する(GET /documents)
-        result = self.get_file(f'/api/v0/documents/{document_uuid}?contents=on', self.USER3)
+        result = self.get_file(f'/api/v0/documents/{document_uuid}?contents=on', charset=None, user=self.USER3)
 
         # ドキュメントの内容が取得できること
         self.assertEqual(result, b'thisIsDocumentFile')
@@ -57,7 +57,7 @@ class DocumentTest(ApiTestCaseBase):
         """
         # プロジェクトを作成する(POST /projects)
         result = self.post_uri('/api/v0/projects', {'label' : '新しいプロジェクト', 'parent': self.root.uuid}, self.USER3)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -65,7 +65,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
-        document_uuid = result['data']['uuid']
+        document_uuid = result['uuid']
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -75,9 +75,9 @@ class DocumentTest(ApiTestCaseBase):
         }
 
         # Post /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
 
         # 中のファイルごとプロジェクトをほかす(DELETE /projects)
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
@@ -88,7 +88,7 @@ class DocumentTest(ApiTestCaseBase):
         """
         # プロジェクトを作成する(POST /projects)
         result = self.post_uri('/api/v0/projects', {'label' : '新しいプロジェクト', 'parent': self.root.uuid}, self.USER3)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -96,7 +96,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
-        document_uuid = result['data']['uuid']
+        document_uuid = result['uuid']
 
         # フレームのラベル名を変更する(PUT /documents)
         result = self.put_uri(f'/api/v0/documents/{document_uuid}', {'label': ' DOCUMENT-F I L E '}, self.USER3)
@@ -109,11 +109,11 @@ class DocumentTest(ApiTestCaseBase):
         }
 
         # PUT /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
-        self.assertNotEqual(result['data']['uuid'], None)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], expected_result['creator'])
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertNotEqual(result['uuid'], None)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
 
         # 中のファイルごとプロジェクトをほかす(DELETE /projects)
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
@@ -124,7 +124,7 @@ class DocumentTest(ApiTestCaseBase):
         """
         # プロジェクトを作成する(POST /projects)
         result = self.post_uri('/api/v0/projects', {'label' : '新しいプロジェクト', 'parent': self.root.uuid}, self.USER3)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # 識別対象のファイル内容
         l = [[11, 12, 13, 14], [21, 22, 23, 24], [31, 32, 33, 34]]
@@ -138,7 +138,7 @@ class DocumentTest(ApiTestCaseBase):
         # ドキュメントを作成する(POST /documents)
         with tmp_file.open(mode='rb') as f:
             result = self.post_documents('IamCSVfile', project_uuid, f, self.USER3)
-            document_uuid = result['data']['uuid']
+            document_uuid = result['uuid']
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -148,11 +148,11 @@ class DocumentTest(ApiTestCaseBase):
         }
 
         # PUT /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
-        self.assertNotEqual(result['data']['uuid'], None)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], expected_result['creator'])
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertNotEqual(result['uuid'], None)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
 
         # 中のファイルごとプロジェクトをほかす(DELETE /projects)
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)

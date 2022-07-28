@@ -499,6 +499,7 @@ def fetch_frame(frame_uuid):
 
 @Constraints.allow_download_only_with_writable
 def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
+    from .utils import InvalidAcceptHeader
 
     def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
         """
@@ -516,23 +517,17 @@ def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
                     line = line.rstrip(source_newline) + target_newline
                     yield line.encode(target_encoding, errors='replace')
 
-    def error(message):
-        from flask import jsonify
-        return jsonify({'success':False, 'code':-1, 'message': message})
-
     if target_encoding.lower() not in ('utf-8', 'cp932'):
-        return error(f'Acceptヘッダに指定された文字コード({target_encoding})には対応していません')
+        raise InvalidAcceptHeader(f'Acceptヘッダに指定された文字コード({target_encoding})には対応していません')
 
-    try:
-        frame = g.factory.data.find_by_uuid(frame_uuid)
-    except Exception as e:
-        return error(str(e))
+    # Frameを取得する
+    frame = g.factory.data.find_by_uuid(frame_uuid)
 
     frame_path = frame.path
     if not frame_path.exists():
-        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
+        raise Exception(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
-    # frameの文字コードと改行コードを識別する
+    # Frameの文字コードと改行コードを識別する
     source_encoding = 'utf-8' if frame.encoding == 'UNKNOWN' else frame.encoding
     source_newline = '\n' if frame.newline == 'UNKNOWN' else frame.newline
 
@@ -571,14 +566,13 @@ def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
         response.headers['Content-Disposition'] = f'attachment; filename={downloadFileName}; filename*={downloadFileName}'
         return response
     except UnicodeDecodeError:
-        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
+        raise Exception(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
     except UnicodeEncodeError:
-        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
+        raise Exception(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return error(str(e))
-
+        raise e
 
 def _get_vis(frame_uuid:str, args={}):
     """

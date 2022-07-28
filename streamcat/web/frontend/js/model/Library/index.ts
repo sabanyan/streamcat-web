@@ -24,16 +24,6 @@ type MemberType =
   ;
 
 /**
- * WebAPI共通のレスポンスの型
- */
-export type CommonResponse<DataType> = {
-    success  : boolean;
-    data     : DataType;
-    message? : string;
-    code?    : number;
-};
-
-/**
  * Datumのallowlist
  */
 type Allowlist = {

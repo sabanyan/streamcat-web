@@ -54,46 +54,41 @@ class LockTestCase(ApiTestCaseBase):
         """
         # ルートフォルダを作成する
         result = self.get_uri('/api/v0/library', self.USER1)
-        root_uuid = result['data']['uuid']
+        root_uuid = result['uuid']
         # フレームを作成する(POST /frames)
         import io
         f = (io.BytesIO(b"abcdef"), 'dummyD.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1D', root_uuid, f, self.USER1)
-        frame_uuid = result['data']['uuid']
+        frame_uuid = result['uuid']
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root_uuid, 'label':'フロー1'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
         # フローを作成する
         result = self.create_flow(source_uuid=frame_uuid, parent_uuid=folder_uuid)
         # POST /flowsでuuidを取得できないので GET /flowsで取得するしかない
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
-        flow_uuid = result['data']['children'][0]['uuid']
+        flow_uuid = result['children'][0]['uuid']
         # フローをロックする
         result = self.post_uri('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
-        self.assertTrue(result['success'], 'POST locks is failed.')
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
         # ロックUUIDなしで更新を試みる
         with self.assertRaises(Exception):
             result = self.update_flow(flow_uuid, source_uuid=frame_uuid)
-            self.assertFalse(result['success'])
             self.assertEqual(result['code'], -2)
         # ロックUUIDなしで削除を試みる
         with self.assertRaises(Exception):
             result = self.delete_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
-            self.assertFalse(result['success'])
             self.assertEqual(result['code'], -2)
         # 適当なロックUUIDで更新を試みる
         with self.assertRaises(Exception):
             result = self.update_flow(flow_uuid, source_uuid=frame_uuid, lock_uuid=str(uuid.uuid4()))
-            self.assertFalse(result['success'])
             self.assertEqual(result['code'], -2)
         # 適当なロックUUIDで削除を試みる
         with self.assertRaises(Exception):
             result = self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}',
                                                 {'lock': str(uuid.uuid4())},
                                                 self.USER1)
-            self.assertFalse(result['success'])
             self.assertEqual(result['code'], -2)
         # 正しいロックUUIDで更新する
         result = self.update_flow(flow_uuid, source_uuid=frame_uuid, lock_uuid=lock_uuid)
@@ -111,31 +106,29 @@ class LockTestCase(ApiTestCaseBase):
         """
         # ルートフォルダを作成する
         result = self.get_uri('/api/v0/library', self.USER1)
-        root_uuid = result['data']['uuid']
+        root_uuid = result['uuid']
         # フレームを作成する(POST /frames)
         import io
         f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root_uuid, f, self.USER1)
-        frame_uuid = result['data']['uuid']
+        frame_uuid = result['uuid']
 
         # フォルダ1を作成する
         result = self.post_uri('/api/v0/folders', {'parent':root_uuid, 'label':'フロー1'}, self.USER1)
-        folder_uuid1 = result['data']['uuid']
+        folder_uuid1 = result['uuid']
         # フロー1を作成する
         result = self.create_flow(source_uuid=frame_uuid, parent_uuid=folder_uuid1)
         # POST /flowsでuuidを取得できないので GET /flowsで取得するしかない
         result = self.get_uri(f'/api/v0/folders/{folder_uuid1}', self.USER1)
-        flow_uuid1 = result['data']['children'][0]['uuid']
+        flow_uuid1 = result['children'][0]['uuid']
         
         # フローをロックする
         result = self.post_locks('/api/v0/locks', {'target' : flow_uuid1}, self.USER1)
-        self.assertTrue(result['success'], 'POST locks is failed.')
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # 再び同じフローのロックを試みる
         result = self.post_locks('/api/v0/locks', {'target' : flow_uuid1}, self.USER1)
-        self.assertFalse(result['success'], 'POST locks is failed.')
         self.assertEqual(result['code'], -2)
 
         # フローのロックを解除する
@@ -143,8 +136,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # ロックの取得を諦めないぞ
         result = self.post_locks('/api/v0/locks', {'target' : flow_uuid1}, self.USER1)
-        self.assertTrue(result['success'], 'POST locks is failed.')
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # フローのロックを解除する
         result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
@@ -155,25 +147,24 @@ class LockTestCase(ApiTestCaseBase):
         """
         # ルートフォルダを作成する
         result = self.get_uri('/api/v0/library', self.USER1)
-        root_uuid = result['data']['uuid']
+        root_uuid = result['uuid']
         # フレームを作成する(POST /frames)
         import io
         f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root_uuid, f, self.USER1)
-        frame_uuid = result['data']['uuid']
+        frame_uuid = result['uuid']
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root_uuid, 'label':'フロー2'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
         # フローを作成する
         result = self.create_flow(source_uuid=frame_uuid, parent_uuid=folder_uuid)
         # POST /flowsでuuidを取得できないので GET /flowsで取得するしかない
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
-        flow_uuid = result['data']['children'][0]['uuid']
+        flow_uuid = result['children'][0]['uuid']
         # フローをロックする
         result = self.post_uri('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
-        self.assertTrue(result['success'], 'POST locks is failed.')
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
         # 正しいロックUUIDで更新する
         result = self.update_flow(flow_uuid, source_uuid=frame_uuid, lock_uuid=lock_uuid)
         # フローのUUIDでロックを解除する
@@ -193,7 +184,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'DHCの健康食品'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
@@ -206,11 +197,11 @@ class LockTestCase(ApiTestCaseBase):
         # フローを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}?roles=on', self.USER1)
-        flow_uuid = result['data']['children'][0]['uuid']
+        flow_uuid = result['children'][0]['uuid']
 
         # USER1は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # ロックの有効期限が切れるまで待つ
         import time
@@ -240,13 +231,13 @@ class LockTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Mojave'}, self.USER2)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # USER2は、プロジェクト内にFrameを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         result = self.post_frames('Yosemite', project_uuid, f, self.USER2)
-        frame_uuid= result['data']['uuid']
+        frame_uuid= result['uuid']
 
         # USER2は、プロジェクト内にFlowを作成する
         data_source = {
@@ -262,19 +253,19 @@ class LockTestCase(ApiTestCaseBase):
             'flow': {'nodes':[data_source]}
         }
         result = self.post_uri('/api/v0/flows', data, self.USER2)
-        flow_uuid = result['data']['uuid']
-        modifiedAt = result['data']['modifiedAt']
+        flow_uuid = result['uuid']
+        modifiedAt = result['modifiedAt']
 
         # USER2は、Flowの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid, 'lastModifiedAt':modifiedAt}, self.USER2)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # USER2は、Flowを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
-        flow_data = result['data']['flow']
+        flow_data = result['flow']
 
         # Frameをダウンロードする
-        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER2)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset=None, user=self.USER2)
 
         # Flowを更新する
         data = {
@@ -310,7 +301,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'(=^ェ^=)'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
@@ -323,11 +314,11 @@ class LockTestCase(ApiTestCaseBase):
         # フローを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}?roles=on', self.USER1)
-        flow_uuid = result['data']['children'][0]['uuid']
+        flow_uuid = result['children'][0]['uuid']
 
         # USER1は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         import time
         for i in range(10):
@@ -335,7 +326,6 @@ class LockTestCase(ApiTestCaseBase):
             time.sleep(0.4)
             # ロックの有効期間を延長する
             self.put_uri(f'/api/v0/locks/{lock_uuid}', {}, self.USER1)
-            self.assertTrue(result['success'], 'PUT locks is failed.')
 
         # ロックの有効期間が延長されたため、フローを更新できること
         self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid) 
@@ -360,7 +350,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'Belkin'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
@@ -373,12 +363,12 @@ class LockTestCase(ApiTestCaseBase):
         # フローを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}?roles=on', self.USER1)
-        modifiedAt = result['data']['children'][0]['modifiedAt']
-        flow_uuid = result['data']['children'][0]['uuid']
+        modifiedAt = result['children'][0]['modifiedAt']
+        flow_uuid = result['children'][0]['uuid']
 
         # USER1は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # ロックの有効期限が切れるまで待つ
         import time
@@ -390,8 +380,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # ロックの有効期限が切れた後、ロックを再取得できること
         result = self.post_locks(f'/api/v0/locks', {'target':flow_uuid, 'lastModifiedAt':modifiedAt}, self.USER1)
-        self.assertTrue(result['success'])
-        relock_uuid = result['data']['uuid']
+        relock_uuid = result['uuid']
 
         # 先に取得したロックと再取得したロックのUUIDは異なる
         self.assertNotEqual(lock_uuid, relock_uuid)
@@ -416,7 +405,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Belkin'}, self.USER1)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # USER2をプロジェクトメンバに追加する
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER1)
@@ -432,12 +421,12 @@ class LockTestCase(ApiTestCaseBase):
         # フローを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER1)
-        modifiedAt = result['data']['children'][0]['modifiedAt']
-        flow_uuid = result['data']['children'][0]['uuid']
+        modifiedAt = result['children'][0]['modifiedAt']
+        flow_uuid = result['children'][0]['uuid']
 
         # USER1は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # ロックの有効期限が切れるまで待つ
         import time
@@ -445,7 +434,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER2は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # USER2は、フローを更新する
         self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid, user=self.USER2)
@@ -455,7 +444,6 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フローの排他ロックを再取得できないこと
         result = self.post_locks(f'/api/v0/locks', {'target':flow_uuid, 'lastModifiedAt':modifiedAt}, self.USER1)
-        self.assertFalse(result['success'])
 
         # ロックの有効期限を戻す
         lock_manager._valid_seconds = backup_valid_seconds
@@ -475,7 +463,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'伊右衛門'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
@@ -488,7 +476,7 @@ class LockTestCase(ApiTestCaseBase):
         # フローを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}?projects=on', self.USER1)
-        flow_uuid = result['data']['children'][0]['uuid']
+        flow_uuid = result['children'][0]['uuid']
 
         # 排他ロックをせずに、フローをゴミ箱にほかせないこと
         with self.assertRaises(AssertionError):
@@ -496,7 +484,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # 誤った排他ロックのUUIDで、フローをゴミ箱にほかせないこと
         with self.assertRaises(AssertionError):
@@ -520,7 +508,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'三ツ矢サイダー'}, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # USER1は、フォルダ内にFlowを作成する
         data = {
@@ -533,39 +521,39 @@ class LockTestCase(ApiTestCaseBase):
         # フローを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}?projects=on', self.USER1)
-        flow_uuid = result['data']['children'][0]['uuid']
+        flow_uuid = result['children'][0]['uuid']
 
         # USER1は、フォルダ内にFrameを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummyD.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('コケかけコケかけコケコーラ', folder_uuid, f, self.USER1)
-        frame_uuid = result['data']['uuid']
+        frame_uuid = result['uuid']
 
         # USER1は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # フォルダをゴミ箱にほかす
         self.delete_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
 
         # ゴミ箱に形代が作成されていること
         result = self.get_uri(f'/api/v0/trashes', self.USER1)
-        self.assertNotEqual(result['data']['children'][0]['uuid'], folder_uuid)
-        self.assertEqual(result['data']['children'][0]['label'], '三ツ矢サイダー')
-        katashiro_folder_uuid = result['data']['children'][0]['uuid']
+        self.assertNotEqual(result['children'][0]['uuid'], folder_uuid)
+        self.assertEqual(result['children'][0]['label'], '三ツ矢サイダー')
+        katashiro_folder_uuid = result['children'][0]['uuid']
 
         # フォルダはゴミ箱にほかされていないこと
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
-        self.assertEqual(result['data']['folderPath'][1]['label'], '三ツ矢サイダー')
+        self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
+        self.assertEqual(result['folderPath'][1]['label'], '三ツ矢サイダー')
         # 排他ロック中のフローはゴミ箱にほかされていないこと
-        self.assertEqual(result['data']['children'][0]['uuid'], flow_uuid)
+        self.assertEqual(result['children'][0]['uuid'], flow_uuid)
 
         # フレームはゴミ箱にほかされていること
         result = self.get_uri(f'/api/v0/folders/{katashiro_folder_uuid}', self.USER1)
-        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid)
-        self.assertEqual(result['data']['children'][0]['label'], 'コケかけコケかけコケコーラ')
+        self.assertEqual(result['children'][0]['uuid'], frame_uuid)
+        self.assertEqual(result['children'][0]['label'], 'コケかけコケかけコケコーラ')
 
         # USER1は、フローの排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
@@ -575,18 +563,18 @@ class LockTestCase(ApiTestCaseBase):
 
         # フォルダはゴミ箱にほかされていること
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
-        self.assertEqual(result['data']['folderPath'][1]['label'], 'ゴミ箱')
-        self.assertEqual(result['data']['folderPath'][2]['label'], '三ツ矢サイダー_2')
+        self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
+        self.assertEqual(result['folderPath'][1]['label'], 'ゴミ箱')
+        self.assertEqual(result['folderPath'][2]['label'], '三ツ矢サイダー_2')
         # 排他ロックが解除されたフローはゴミ箱にほかされていること
-        self.assertEqual(result['data']['children'][0]['uuid'], flow_uuid)
+        self.assertEqual(result['children'][0]['uuid'], flow_uuid)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
 
         # ゴミ箱は空になっていること
         result = self.get_uri(f'/api/v0/trashes', self.USER1)
-        self.assertEqual(len(result['data']['children']), 0)
+        self.assertEqual(len(result['children']), 0)
 
     @unittest.skip
     def test_simulutaneous_lock(self):
@@ -599,8 +587,7 @@ class LockTestCase(ApiTestCaseBase):
 
             def create_lock_in_thread(self, flow_uuid):
                 result = self.base.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.base.USER1)
-                self.base.assertTrue(result['success'], 'POST locks is failed.')
-                lock_uuid = result['data']['uuid']
+                lock_uuid = result['uuid']
                 return lock_uuid
 
             def create_unlock_in_thread(self, lock_uuid):
@@ -610,21 +597,21 @@ class LockTestCase(ApiTestCaseBase):
             def create_flow_in_thread(self, ):
                 # ルートフォルダを作成する
                 result = self.base.get_uri('/api/v0/library', self.base.USER1)
-                root_uuid = result['data']['uuid']
+                root_uuid = result['uuid']
                 # フレームを作成する(POST /frames)
                 import io
                 f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
                 # フレームデータを作成する(POST /frames)
                 result = self.base.post_frames('フレームファイル_1E', root_uuid, f, self.base.USER1)
-                frame_uuid = result['data']['uuid']
+                frame_uuid = result['uuid']
                 # フォルダ1を作成する
                 result = self.base.post_uri('/api/v0/folders', {'parent':root_uuid, 'label':'フロー1'}, self.base.USER1)
-                folder_uuid1 = result['data']['uuid']
+                folder_uuid1 = result['uuid']
                 # フロー1を作成する
                 result = self.base.create_flow(source_uuid=frame_uuid, parent_uuid=folder_uuid1)
                 # POST /flowsでuuidを取得できないので GET /flowsで取得するしかない
                 result = self.base.get_uri(f'/api/v0/folders/{folder_uuid1}', self.base.USER1)
-                flow_uuid1 = result['data']['children'][0]['uuid']
+                flow_uuid1 = result['children'][0]['uuid']
                 return flow_uuid1
             
             def run(self, q):

@@ -204,6 +204,7 @@ def handle_bad_request(error):
     （request bodyのJSONが不正な場合を想定している）
     """
     from flask import jsonify
+    from .utils import BadRequestException
     # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
     message = 'The browser (or proxy) sent a request that this server could not understand.'
-    return jsonify({'success': False, 'message': str(error)})
+    raise BadRequestException(str(error))

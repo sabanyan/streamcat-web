@@ -1,6 +1,7 @@
 import json
 import functools
 from flask import request, jsonify, g
+from .response import is_ok
 
 def update_role_info(func):
     @functools.wraps(func)
@@ -14,11 +15,11 @@ def update_role_info(func):
         result_json = json.loads(result.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not result_json['success']:
+        if not is_ok(status):
             return result, status
 
         # Role JSONに情報を追加する
-        role_data = result_json['data']
+        role_data = result_json
         _update_role_info_inner(role_data)
 
         return jsonify(result_json), status
@@ -36,11 +37,11 @@ def update_roles_info(func):
         results_json = json.loads(results.data.decode())
 
         # APIの異常終了時は情報を追加しない
-        if not results_json['success']:
+        if not is_ok(status):
             return results, status
 
         # Role JSONに情報を追加する
-        for role_data in results_json['data']:
+        for role_data in results_json:
             _update_role_info_inner(role_data)
 
         return jsonify(results_json), status

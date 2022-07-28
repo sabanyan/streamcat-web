@@ -1,5 +1,4 @@
 import {
-    CommonResponse,
     DatumType,
     ParentProjectType,
     ParentFolderType,
@@ -20,7 +19,7 @@ import {
 } from 'Model/Library';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import {
-    unwrapJson,
+    toJsonOrRaise,
     postBase,
     putBase,
     getBase as get,
@@ -97,10 +96,9 @@ const upload = <TDatumType>(url:string, body:{}) => {
                 // Content-Typeを指定するとAPI発行に失敗する
             }
         }
-    ).then<CommonResponse<TDatumType>>(
-        res => res.json()
-    ).then<TDatumType>(json => {
-        const datum = unwrapJson(json)
+    ).then<TDatumType>(
+        json => toJsonOrRaise(json)
+    ).then(datum => {
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift() as any;
     });

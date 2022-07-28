@@ -22,35 +22,35 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
 
         # POST /remote-foldersの戻り値が正しいことを検証する
-        self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['type'], 'rfolder')
-        self.assertEqual(result['data']['label'], 'リモートフォルダ')
-        self.assertEqual(result['data']['protocol'], 'smb')
-        self.assertEqual(result['data']['hostname'], '18.178.64.116')
-        self.assertEqual(result['data']['domain'], 'WORKGROUP')
-        self.assertEqual(result['data']['directory'], 'share')
-        self.assertEqual(result['data']['userId'], 'samba')
-        self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'rfolder')
+        self.assertEqual(result['label'], 'リモートフォルダ')
+        self.assertEqual(result['protocol'], 'smb')
+        self.assertEqual(result['hostname'], '18.178.64.116')
+        self.assertEqual(result['domain'], 'WORKGROUP')
+        self.assertEqual(result['directory'], 'share')
+        self.assertEqual(result['userId'], 'samba')
+        self.assertEqual(result['password'], 'kskanalytics')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # RemoteFolderを取得する(GET /remote-folders)
         result = self.get_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
 
         # GET /remote-foldersの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], folder_uuid)
-        self.assertEqual(result['data']['type'], 'rfolder')
-        self.assertEqual(result['data']['label'], 'リモートフォルダ')
-        self.assertEqual(result['data']['protocol'], 'smb')
-        self.assertEqual(result['data']['hostname'], '18.178.64.116')
-        self.assertEqual(result['data']['domain'], 'WORKGROUP')
-        self.assertEqual(result['data']['directory'], 'share')
-        self.assertEqual(result['data']['userId'], 'samba')
-        self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['type'], 'rfolder')
+        self.assertEqual(result['label'], 'リモートフォルダ')
+        self.assertEqual(result['protocol'], 'smb')
+        self.assertEqual(result['hostname'], '18.178.64.116')
+        self.assertEqual(result['domain'], 'WORKGROUP')
+        self.assertEqual(result['directory'], 'share')
+        self.assertEqual(result['userId'], 'samba')
+        self.assertEqual(result['password'], 'kskanalytics')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
@@ -79,7 +79,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
 
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # RemoteFolderのラベルを更新する(PUT /remote-folders)
         update_data = {
@@ -88,17 +88,17 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         result = self.put_uri('/api/v0/remote-folders/' + folder_uuid, update_data, self.USER1)
 
         # PUT /remote-foldersの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], folder_uuid)
-        self.assertEqual(result['data']['type'], 'rfolder')
-        self.assertEqual(result['data']['label'], 'リモートフォルダ!?')
-        self.assertEqual(result['data']['protocol'], 'smb')
-        self.assertEqual(result['data']['hostname'], '18.178.64.116')
-        self.assertEqual(result['data']['domain'], 'WORKGROUP')
-        self.assertEqual(result['data']['directory'], 'share')
-        self.assertEqual(result['data']['userId'], 'samba')
-        self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['type'], 'rfolder')
+        self.assertEqual(result['label'], 'リモートフォルダ!?')
+        self.assertEqual(result['protocol'], 'smb')
+        self.assertEqual(result['hostname'], '18.178.64.116')
+        self.assertEqual(result['domain'], 'WORKGROUP')
+        self.assertEqual(result['directory'], 'share')
+        self.assertEqual(result['userId'], 'samba')
+        self.assertEqual(result['password'], 'kskanalytics')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
@@ -127,7 +127,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
 
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # RemoteFolderのラベルを更新する(PUT /remote-folders)
         update_data = {
@@ -142,17 +142,17 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         result = self.put_uri('/api/v0/remote-folders/' + folder_uuid, update_data, self.USER1)
 
         # PUT /remote-foldersの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], folder_uuid)
-        self.assertEqual(result['data']['type'], 'rfolder')
-        self.assertEqual(result['data']['label'], 'リモートフォルダ!?')
-        self.assertEqual(result['data']['protocol'], 'smb')
-        self.assertEqual(result['data']['hostname'], '192.168.0.5')
-        self.assertEqual(result['data']['domain'], 'MyDomain2')
-        self.assertEqual(result['data']['directory'], 'share2')
-        self.assertEqual(result['data']['userId'], 'user2')
-        self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['type'], 'rfolder')
+        self.assertEqual(result['label'], 'リモートフォルダ!?')
+        self.assertEqual(result['protocol'], 'smb')
+        self.assertEqual(result['hostname'], '192.168.0.5')
+        self.assertEqual(result['domain'], 'MyDomain2')
+        self.assertEqual(result['directory'], 'share2')
+        self.assertEqual(result['userId'], 'user2')
+        self.assertEqual(result['password'], '')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
@@ -170,7 +170,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER1)
-        folder_dst_uuid = folder_dst['data']['uuid']
+        folder_dst_uuid = folder_dst['uuid']
 
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
@@ -184,7 +184,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # 移動元から移動先へフォルダを移動する
         result = self.put_uri(f'/api/v0/remote-folders/{folder_uuid}', {"parent": folder_dst_uuid}, self.USER1)
@@ -202,17 +202,17 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         }
 
         # PUT /remote-folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
-        self.assertEqual(result['data']['uuid'], folder_uuid)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['protocol'], expected_result['protocol'])
-        self.assertEqual(result['data']['hostname'], expected_result['hostname'])
-        self.assertEqual(result['data']['domain'], expected_result['domain'])
-        self.assertEqual(result['data']['directory'], expected_result['directory'])
-        self.assertEqual(result['data']['userId'], expected_result['userId'])
-        self.assertEqual(result['data']['password'], expected_result['password'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], self.USER1.name)
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['protocol'], expected_result['protocol'])
+        self.assertEqual(result['hostname'], expected_result['hostname'])
+        self.assertEqual(result['domain'], expected_result['domain'])
+        self.assertEqual(result['directory'], expected_result['directory'])
+        self.assertEqual(result['userId'], expected_result['userId'])
+        self.assertEqual(result['password'], expected_result['password'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], self.USER1.name)
+        self.assertNotEqual(result['createdAt'], None)
 
         # RemoteFolderをほかす(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)

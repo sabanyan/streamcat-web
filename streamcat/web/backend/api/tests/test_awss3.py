@@ -21,14 +21,14 @@ class AwsS3TestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
         # POST /awss3sの戻り値が正しいことを検証する
-        self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['type'], 'awss3')
-        self.assertEqual(result['data']['label'], 'Amazonに感謝')
-        self.assertEqual(result['data']['bucket'], 'streamcat-test')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'awss3')
+        self.assertEqual(result['label'], 'Amazonに感謝')
+        self.assertEqual(result['bucket'], 'streamcat-test')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
-        awss3_uuid = result['data']['uuid']
+        awss3_uuid = result['uuid']
         awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # S3マウント用フォルダが作成されていることを検証する
@@ -38,17 +38,17 @@ class AwsS3TestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/awss3s/' + awss3_uuid, self.USER1)
 
         # GET /awss3sの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], awss3_uuid)
-        self.assertEqual(result['data']['type'], 'awss3')
-        self.assertEqual(result['data']['label'], 'Amazonに感謝')
-        self.assertEqual(result['data']['bucket'], 'streamcat-test')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
-        self.assertIsNotNone(result['data']['children'])
-        self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
-        self.assertEqual(result['data']['folderPath'][1]['uuid'], awss3_uuid)
-        self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
+        self.assertEqual(result['uuid'], awss3_uuid)
+        self.assertEqual(result['type'], 'awss3')
+        self.assertEqual(result['label'], 'Amazonに感謝')
+        self.assertEqual(result['bucket'], 'streamcat-test')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
+        self.assertIsNotNone(result['children'])
+        self.assertEqual(result['folderPath'][0]['uuid'], root_uuid)
+        self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
+        self.assertEqual(result['folderPath'][1]['uuid'], awss3_uuid)
+        self.assertEqual(result['folderPath'][1]['label'], 'Amazonに感謝')
 
         # S3フォルダがマウントされていることを検証する
         self.assertTrue(Mountable.is_mount(awss3.path))
@@ -73,7 +73,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
-        awss3_uuid = result['data']['uuid']
+        awss3_uuid = result['uuid']
         awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # S3フォルダのラベルを更新する(PUT /awss3s)
@@ -84,12 +84,12 @@ class AwsS3TestCase(ApiTestCaseBase):
         result = self.put_uri('/api/v0/awss3s/' + awss3_uuid, update_data, self.USER1)
 
         # PUT /awss3sの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], awss3_uuid)
-        self.assertEqual(result['data']['type'], 'awss3')
-        self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
-        self.assertEqual(result['data']['bucket'], 'abc')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], awss3_uuid)
+        self.assertEqual(result['type'], 'awss3')
+        self.assertEqual(result['label'], '大根の卸金が欲しい')
+        self.assertEqual(result['bucket'], 'abc')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
         awss3_path = (awss3.path).as_posix()
@@ -111,7 +111,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
-        awss3_uuid = result['data']['uuid']
+        awss3_uuid = result['uuid']
         awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # StreamCatの外部からUnmountをする
@@ -151,7 +151,7 @@ class AwsS3TestCase(ApiTestCaseBase):
             'bucket': 'streamcat-test'
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
-        awss3_uuid = result['data']['uuid']
+        awss3_uuid = result['uuid']
         awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # AWS S3フォルダの下にAWS S3フォルダを作成しようとする(POST /awss3s)

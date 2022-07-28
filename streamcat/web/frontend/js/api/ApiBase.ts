@@ -1,5 +1,4 @@
-import {CommonResponse} from 'Model/Library';
-
+// 
 // NOTE: JavaScriptではJavaのようにcatch構文で例外オブジェクトに型に応じて処理を振り分ける事はできない
 // その場合はcatch内で例外オブジェクトの型を判定する
 
@@ -15,17 +14,23 @@ export class ErrorResponse {
 };
 
 /**
- * @param json
- * @throws {ErrorResponse}
+ * ResponseオブジェクトからJSONを取り出す
+ * @param res 
  */
-export const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => {
-    if (json.success) {
-        // データ取得が成功した場合
-        return json.data;
-    } else {
+export const toJsonOrRaise = (res: Response) => {
+    if(res.status===200) {
+        // API発行が成功し、データが返された場合
+        return res.json();
+    }else if(res.status===204){
+        // API発行が成功し、データが返されない場合
+        return Promise.resolve();
+    }else{
         // 失敗した場合
-        // TODO: エラー発生時はHTTPのエラーコードを返すようにAPIを修正する予定
-        throw new ErrorResponse(json.code || Number.NaN, json.message || '');
+        return res.json().then(json => {
+            throw new ErrorResponse(json.code || Number.NaN, json.message || '');
+        }).catch(e => {
+            throw new ErrorResponse(Number.NaN, e.message || '');
+        });
     }
 };
 
@@ -46,11 +51,9 @@ export const getBase = <TDatumType>(url: string, params?: {}) => {
                 'Accept': 'application/json'
             }
         }
-    ).then<CommonResponse<TDatumType>>(
+    ).then<TDatumType>(
         // fetch()はHTTPステータスコードがエラーでもrejectしない
-        res => res.json()
-    ).then(
-        json => unwrapJson(json)
+        res => toJsonOrRaise(res)
     );
 };
 
@@ -70,10 +73,8 @@ export const postBase = <TDatumType>(url: string, body: {}) => {
                 'Content-Type': 'application/json'
             }
         }
-    ).then<CommonResponse<TDatumType>>(
-        res => res.json()
-    ).then(
-        json => unwrapJson(json)
+    ).then<TDatumType>(
+        res => toJsonOrRaise(res)
     );
 };
 
@@ -93,10 +94,8 @@ export const putBase = <TDatumType>(url: string, body: {}) => {
                 'Content-Type': 'application/json'
             }
         }
-    ).then<CommonResponse<TDatumType>>(
-        res => res.json()
-    ).then(
-        json => unwrapJson(json)
+    ).then<TDatumType>(
+        res => toJsonOrRaise(res)
     );
 };
 
@@ -116,10 +115,8 @@ export const delBase = (url: string, body={}) => {
                 'Content-Type': 'application/json'
             }
         }
-    ).then<CommonResponse<void>>(
-        res => res.json()
-    ).then(
-        json => unwrapJson(json)
+    ).then<void>(
+        res => toJsonOrRaise(res)
     );
 };
 
