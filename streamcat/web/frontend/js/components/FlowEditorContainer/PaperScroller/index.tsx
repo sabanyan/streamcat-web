@@ -161,7 +161,7 @@ const PaperScroller = (props: Props) => {
 
     const onMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const {drag, dragEnd, addHistory} = props;
-        if (isOnClickPaper(e)) {
+        if (drag.start) {
             if (drag.end) {
                 const target_rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - target_rect.left;
@@ -177,8 +177,8 @@ const PaperScroller = (props: Props) => {
         //e._dispatchListeners.length は step がクリックされた場合は 2　それ以外は 1
         // return (e._dispatchListeners.length == 1);
 
-        // TODO: _dispatchListenersが存在しなくなったので代わりに以下のようにしたが、うまくいってなさそう
-        return (e.target.dispatchEvent.length === 1);
+        // TODO: _dispatchListenersが存在しなくなったので応急的に対応した
+        return 'nodeName' in e.target && (e.target['nodeName']==='svg' || e.target['nodeName']==='DIV');
     };
 
     const {editor, children} = props;
