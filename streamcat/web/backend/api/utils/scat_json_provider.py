@@ -1,10 +1,11 @@
-from flask.json import JSONEncoder
+from flask.json.provider import DefaultJSONProvider
 
-class SCatJSONEncoder(JSONEncoder):
+class SCatJSONProvider(DefaultJSONProvider):
     """
-    ライブラリにおいて定義したクラスのJSONへのデコード処理を定義する
+    ライブラリにおいて定義したクラスのJSONへのエンコード処理を定義する
     """
-    def default(self, obj):
+    @staticmethod
+    def default(obj):
         from streamcat.core import Datum
         from streamcat.store import StoreModel
         from streamcat.store import FlowData
@@ -18,5 +19,4 @@ class SCatJSONEncoder(JSONEncoder):
         elif isinstance(obj, (StoreModel, Lock, Datum, FlowData, User, Role, ProjectFolder.Member, Role.Member)):
             return obj.to_json()
         else:
-            # 上記以外のクラスはデフォルトのデコード処理とする
-            return JSONEncoder.default(self, obj)
+            raise TypeError(f'{type(obj).__name__} is not JSON serializable')
