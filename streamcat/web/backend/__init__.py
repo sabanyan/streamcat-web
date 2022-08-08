@@ -57,6 +57,9 @@ default_handler.setLevel(logging.INFO)
 app.logger.addHandler(default_handler)
 app.logger.addFilter(XHRFilter())
 
+# Flaskがdebug=Falseの場合でもログ出力する
+app.logger.setLevel(logging.INFO)
+
 #
 # JSONエンコードの設定
 #
