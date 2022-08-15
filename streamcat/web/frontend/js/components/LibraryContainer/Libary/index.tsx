@@ -163,19 +163,6 @@ export const Library = () => {
         });
     };
 
-    const fetchFolder = () => {
-        return getParentFolder().then(response => {
-            // 取得したフォルダ等を状態変数に格納する
-            setParentFolder(response);
-            setSortedDatas(response.children);
-            // フォルダの取得が完了したらisLoading=falseにする
-            // setIsLoading(false);
-            return response;
-        }).catch(e => {
-            notifyError('フォルダ取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(e)));
-        });
-    };
-
     const clearSelected = () => {
         parentFolder!.children.map((selectedData) => {
             (selectedData as DatumEntryType).selected = false;
@@ -249,7 +236,7 @@ export const Library = () => {
             let data = cell;
             // ライブラリ画面の単体表示時のみ複数選択を許可
             let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
-            // if (isLoading) return;
+
             if (event) event.stopPropagation();
 
             if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
@@ -313,16 +300,16 @@ export const Library = () => {
             } else if (mode===Constants.library.mode.frame_select || mode===Constants.library.mode.flow_select) {
                 return null;
             } else {
-                if (!inject_is_trash) {
-                    menuList = <MenuList
-                        parent={parentFolder}
-                        allowlist={parentFolder!.allowlist}
-                        fetchFolder={fetchFolder}
-                    />;
-                } else {
+                if (inject_is_trash) {
                     menuList = <TrashMenuList
                         trashFolder={parentFolder as ParentTrashType}
                         onSuccess={fetchFolder}
+                    />;
+                } else {
+                    menuList = <MenuList
+                        parent={parentFolder}
+                        allowlist={parentFolder!.allowlist}
+                        onSuccess={forceFetchFolder}
                     />;
                 }
             }
@@ -407,19 +394,31 @@ export const Library = () => {
         return datum.uuid===cacheFolderUuid || datum.uuid===activityFolderUuid;
     };
 
+    const fetchFolder = () => {
+        return getParentFolder().then(response => {
+            // 取得したフォルダ等を状態変数に格納する
+            setParentFolder(response);
+            setSortedDatas(response.children);
+            return response;
+        }).catch(e => {
+            notifyError('フォルダ取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(e)));
+        });
+    };
+
+    const forceFetchFolder = (datum) => {
+        // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
+        resourceCache(getProjects).clear();
+        // ルートフォルダ直下の全てのプロジェクトを再取得する
+        refreshProjects(true);
+        // フォルダを再取得する
+        fetchFolder();
+    };
+
     const refreshLibrary = (datum:DatumType) => {
         // フォルダを再取得する
         fetchFolder();
         // 状態変数を更新する
         setSelectedDatas([datum]);
-    };
-
-    const refreshLibraryAndProjects = (datum) => {
-        // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
-        resourceCache(getProjects).clear();
-        // ルートフォルダ直下の全てのプロジェクトを再取得する
-        refreshProjects(true);
-        refreshLibrary(datum)
     };
 
     const getProject = (project:DatumType|null) => {
@@ -442,7 +441,7 @@ export const Library = () => {
                         createMode={false} 
                         parent={parentFolder}
                         project={project}
-                        onSuccess={refreshLibraryAndProjects} />;
+                        onSuccess={forceFetchFolder} />;
         }else{
             // プロジェクトが見つからない場合はペインを表示しない
             return <></>;

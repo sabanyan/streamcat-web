@@ -1,6 +1,6 @@
 import React from 'react';
 import * as style from "./style.scss";
-import { FolderAllowlist, FolderType } from 'Model/Library'
+import { DatumType, FolderAllowlist, FolderType } from 'Model/Library'
 import { CreateFolderButton } from 'Shared/Button/CreateFolderButton';
 import { CreateRemoteFolderButton } from 'Shared/Button/CreateRemoteFolderButton';
 import { CreateProjectButton } from 'Shared/Button/CreateProjectButton';
@@ -13,36 +13,38 @@ import { CreateScheduleButton } from 'Shared/Button/CreateScheduleButton';
 interface Props {
     parent: FolderType;
     allowlist: FolderAllowlist;
-    fetchFolder: () => void;
+    onSuccess: (newDatum:DatumType) => void;
 }
 
 const MenuList = (props: Props) => {
-    const { parent, allowlist, fetchFolder } = props;
+    const { parent, allowlist, onSuccess: onSuccess } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
 
     createProject = allowlist.createProject ? <>
-        <CreateProjectButton parent={parent} onSuccess={fetchFolder} />
+        <CreateProjectButton parent={parent} onSuccess={onSuccess} />
     </> : null;
 
     createFolder = allowlist.createFolder ? <>
-        <CreateFolderButton parent={parent} onSuccess={fetchFolder}/>
+        <CreateFolderButton parent={parent} onSuccess={onSuccess}/>
     </> : null;
 
     createFile = allowlist.createFile ? <>
-        <CreateFlowButton parent={parent} onSuccess={fetchFolder} />
-        <CreateDatabaseButton parent={parent} onSuccess={fetchFolder} />
-        <CreateRemoteFolderButton parent={parent} onSuccess={fetchFolder}/>
-        <CreateScheduleButton parent={parent} onSuccess={fetchFolder}/>
+        <CreateFlowButton parent={parent} onSuccess={onSuccess} />
+        <CreateDatabaseButton parent={parent} onSuccess={onSuccess} />
+        <CreateRemoteFolderButton parent={parent} onSuccess={onSuccess}/>
+        <CreateScheduleButton parent={parent} onSuccess={onSuccess}/>
     </> : null;
 
     upload = allowlist.upload ? <>
-        <UploadFileButton parent={parent} onSuccess={fetchFolder} />
+        {/* ダミーとしてonSuccess()にparentを渡す */}
+        <UploadFileButton parent={parent} onSuccess={()=>onSuccess(parent)} />
     </> : null;
 
     // 現状は、プロジェクト単位でインポートされる
     importProject = allowlist.import ? <>
-        <UploadFlowButton parent={parent} onSuccess={fetchFolder} />
+        {/* ダミーとしてonSuccess()にparentを渡す */}
+        <UploadFlowButton parent={parent} onSuccess={()=>onSuccess(parent)} />
     </> : null;
 
     return <div className={style.menuList}>
