@@ -80,10 +80,6 @@ class GraphUtil {
     return JSON.stringify({ v: v, w: w, port_name: port_name })
   }
 
-  edgeName(v: string, w: string, port_name: string) {
-    return JSON.stringify({ v: v, w: w, port_name: port_name })
-  }
-
   /**
    * ノードの削除
    * @param id

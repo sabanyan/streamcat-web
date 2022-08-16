@@ -1164,14 +1164,14 @@ function addToGraph(graph: GraphUtil, node: any) {
     const from = node.srcs[key];
     const to = node.id;
     const portName = key;
-    graph.addEdge(from, to, graph.edgeName(from, to, portName));
+    graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
   })
   // dst edges
   Object.keys(node.dsts).forEach((key) => {
     const to = node.dsts[key];
     const from = node.id;
     const portName = key;
-    graph.addEdge(from, to, graph.edgeName(from, to, portName));
+    graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
     graph.addNode(to);
   })
 }
