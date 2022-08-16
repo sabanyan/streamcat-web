@@ -6,27 +6,6 @@ module.exports = (env) => {
     const mode = (env && env.production) ? 'production' : 'development'
     return [
         {
-            mode: mode,
-            entry: './web/frontend/js/common.js',
-            output: {
-                path: `${__dirname}/web/frontend/static/js`,
-                filename: 'common.js',
-            },
-            devtool: 'source-map',
-            module: {
-                rules: [{
-                        test: /\.js?$/,
-                        use: ['babel-loader'],
-                        exclude: /node_modules/,
-                }],
-            },
-            resolve: {
-                modules: ['node_modules'],
-                extensions: ['.js'],
-            },
-        }
-        ,
-        {
             // モード値を production に設定すると最適化された状態で、
             // development に設定するとソースマップ有効でJSファイルが出力される
             mode: mode,
