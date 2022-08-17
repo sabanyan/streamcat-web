@@ -9,7 +9,7 @@ import Constants from 'Constants/index'
 import {ModalUtil, StateUtil} from 'Utils/index'
 import style from './style.scss'
 import {SortableContainer, SortableElement} from 'react-sortable-hoc'
-import arrayMove from 'array-move'
+import {arrayMoveImmutable} from 'array-move'
 import classnames from 'classnames'
 
 type Props = {
@@ -71,7 +71,7 @@ export class ParamList extends React.Component<Props, State>{
     onSortEnd({oldIndex, newIndex, collection, isKeySorting}, e) {
         try {
             const {param, onChange} = this.props;
-            let newValue = arrayMove(this.state.currentValue, oldIndex, newIndex);
+            let newValue = arrayMoveImmutable(this.state.currentValue, oldIndex, newIndex);
             this.setState({
                 currentValue: newValue
             }, () => {

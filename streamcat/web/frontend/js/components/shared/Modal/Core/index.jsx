@@ -177,7 +177,7 @@ export default class Modal extends React.Component<Props, State> {
             </div>
         }
 
-        const { id, dynamic, notify, dismissNotify } = this.props
+        const { id, dynamic} = this.props
 
         let modal
         const modal_body = (dynamic) ? content : children
@@ -197,9 +197,7 @@ export default class Modal extends React.Component<Props, State> {
                                   footer={modal_footer}
                                   close_button={close_button}
                                   visible={visible}
-                                  contents={(visible) ? contents : null}
-                                  notify={notify}
-                                  dismissNotify={dismissNotify} />
+                                  contents={(visible) ? contents : null} />
         } else {
             modal = <StandardModal id={id}
                                    title={title}

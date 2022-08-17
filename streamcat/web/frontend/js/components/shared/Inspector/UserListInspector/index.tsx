@@ -1,17 +1,16 @@
 import React, {useEffect, useState} from 'react'
 import style from '../style.scss'
+import { useStreamCatNotifications } from 'Shared/Notification'
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import {BaseInspector, Resizer} from 'Shared/Inspector'
-import {UserListUser} from 'Types/index'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
-import {APIUtil, ModalUtil, ReactDomUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import AdminUtil from 'Utils/AdminUtil';
-import ErrorUtil from 'Utils/ErrorUtil';
-import {NavigationType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 
 interface Props {
-    selectedData?: UserListUser;
+    selectedUser: UserType;
     onClickDelete?: Function;
     onBlurTitle?: Function;
     onClickEdit?: Function;
@@ -19,7 +18,6 @@ interface Props {
     onClickShowPassword?: Function;
     onChangedUserSystemAdminRole?: Function;
     onChangedList?: Function;
-    notify: Function;
     navigation: NavigationType | null;
 }
 
@@ -35,22 +33,24 @@ const display = {
 
 
 const UserListInspector = (props: Props) => {
-    const {notify, navigation, onChangedList} = props;
-    const {selectedData, onBlurTitle} = props
+    const {navigation, onChangedList} = props;
+    const {selectedUser, onBlurTitle} = props
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [systemAdminChecked, setSystemAdminChecked] = useState<boolean>(false)
     const [userAdminChecked, setUserAdminChecked] = useState<boolean>(false)
 
+    const {notifyError} = useStreamCatNotifications();
+    
     useEffect(() => {
-        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedData.roles))
-        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedData.roles))
-    }, [selectedData])
+        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedUser?.roles || []))
+        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedUser?.roles || []))
+    }, [selectedUser])
 
     useEffect(()=>{
         // 権限更新確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN, onClickDone: () => {
-                activateSystemAdminRole(selectedData.uuid,systemAdminChecked).catch(_=>{
+                activateSystemAdminRole(selectedUser, systemAdminChecked).catch(_=>{
                     setSystemAdminChecked(!systemAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN)
@@ -64,7 +64,7 @@ const UserListInspector = (props: Props) => {
         })
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData.uuid,userAdminChecked).catch(_=>{
+                activateUserAdminRole(selectedUser, userAdminChecked).catch(_=>{
                     setUserAdminChecked(!userAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN)
@@ -79,7 +79,7 @@ const UserListInspector = (props: Props) => {
         // 自分のユーザー管理権限を剥奪する場合
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData.uuid,false).then((res)=>{
+                activateUserAdminRole(selectedUser, false).then((res)=>{
                     WebUtil.logout();
                 }).catch(_=>{
                     setUserAdminChecked(true);
@@ -96,7 +96,7 @@ const UserListInspector = (props: Props) => {
         // 削除済みのユーザーをもとに戻す
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UNDELETE_USER, onClickDone: async () => {
-                await unDeleteUser(selectedData.uuid);
+                await unDeleteUser(selectedUser);
                 if(onChangedList)onChangedList();
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             },onClickCancel: ()=>{
@@ -105,127 +105,72 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             }
         })
-    }, [selectedData,systemAdminChecked,userAdminChecked])
+    }, [selectedUser,systemAdminChecked,userAdminChecked])
 
-    const unDeleteUser = async (uuid:string)=>{
-        const url = 'users/' + uuid;
-        return APIUtil.put(url, {state:'active'}).then((response)=>{
-            if(response.data.success){
-                return Promise.resolve(response)
-            }else {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(response.data.message),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
-                return Promise.reject()
-            }
-        }).catch((error) => {
-            notify({
-                title: 'ユーザー削除エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
+    const unDeleteUser = async (user: UserType)=>{
+        return user.undelete().catch(e=>{
+            notifyError('ユーザを論理削除から登録状態に戻せませんでした', e.message);
         });
     }
 
-    // システム権限を更新する
-    const _activateAdminRole = async (role:string, uuid: string,active: boolean) =>{
-        let url;
-        switch (role){
-            case Constants.admin.systemRole.USR_ADMIN:
-                url = 'roles/usr_admin/users/' + uuid;
-                break;
-            case Constants.admin.systemRole.SYS_ADMIN:
-                url = 'roles/sys_admin/users/' + uuid;
-                break;
-            default:
-                break;
-        }
-        if (!url)return;
+    // システム管理権限を更新する
+    const activateSystemAdminRole = (user: UserType, active: boolean) => {
         const {onChangedUserSystemAdminRole} = props;
+
         if(active){
-            const response = await APIUtil.put(url).catch((error) => {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
-                return Promise.reject()
+            return user.joinSysAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
             });
-            if(response.data.success){
-                if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
-            }else {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(response.data.message),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
-                return Promise.reject()
-            }
-            return response;
         }else{
-            const response = await APIUtil.delete(url).catch((error) => {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
-                return Promise.reject()
+            return user.leaveSysAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
             });
-
-            if(response.data.success){
-                if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
-            }else {
-                notify({
-                    title: 'システム権限更新エラー',
-                    message: ReactDomUtil.renderToString(response.data.message),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
-                return Promise.reject()
-            }
-            return response;
         }
-    }
+    };
 
-    const activateSystemAdminRole = (uuid: string,active: boolean) =>{
-        return _activateAdminRole(Constants.admin.systemRole.SYS_ADMIN,uuid,active);
-    }
-    const activateUserAdminRole = (uuid: string,active: boolean) =>{
-        return _activateAdminRole(Constants.admin.systemRole.USR_ADMIN,uuid,active);
-    }
+    // ユーザー管理権限を更新する
+    const activateUserAdminRole = (user: UserType, active: boolean) => {
+        const {onChangedUserSystemAdminRole} = props;
 
-    const renderButtons = (data?: UserListUser) => {
-        const {onClickDelete,selectedData} = props
+        if(active){
+            return user.joinUsrAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
+            });
+        }else{
+            return user.leaveUsrAdminRole().then(()=>{
+                onChangedUserSystemAdminRole && onChangedUserSystemAdminRole();
+            }).catch(e => {
+                notifyError('システム権限更新エラー', e.message);
+            });
+        }
+    };
+
+    const renderButtons = (data?: UserType) => {
+        const {onClickDelete, selectedUser} = props
         let del
-        const availableDelete = (selectedData.state !== Constants.admin.userStatus.inactive);
-        if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+        const availableDelete = (selectedUser.state !== Constants.admin.userStatus.inactive);
+        if (onClickDelete && availableDelete)
+            del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>;
         return <React.Fragment>
             {del}
         </React.Fragment>
-    }
+    };
 
     const onChangeSystemAdmin = (e:React.ChangeEvent<HTMLInputElement>)=>{
-        const {selectedData} = props;
+        const {selectedUser} = props;
         if(e.target.value === Constants.admin.systemRole.SYS_ADMIN){
             setSystemAdminChecked(e.target.checked);
             // システム管理者がチェックされていた場合
             ModalUtil.emitModal({
                 id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN,
                 visible: true,
-                done: (e.target.checked)?"付与する":"外す",
+                done: (e.target.checked)?'付与する':'外す',
                 danger: (!e.target.checked),
                 content: <div className={style.modal}>
                     <form>
@@ -244,13 +189,13 @@ const UserListInspector = (props: Props) => {
         }else if(e.target.value === Constants.admin.systemRole.USR_ADMIN){
             // ユーザー管理者がチェックされていた場合
             setUserAdminChecked(e.target.checked);
-            const isMe = (navigation && navigation.user.uuid === selectedData.uuid)
+            const isMe = (navigation && navigation.user.uuid === selectedUser.uuid)
             const needLogout = isMe && !e.target.checked
             if(needLogout){
                 ModalUtil.emitModal({
                     id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN,
                     visible: true,
-                    done: "外す",
+                    done: '外す',
                     danger: true,
                     content: <div className={style.modal}>
                         <form>
@@ -266,7 +211,7 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.emitModal({
                     id: Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN,
                     visible: true,
-                    done: (e.target.checked)?"付与する":"外す",
+                    done: (e.target.checked)?'付与する':'外す',
                     danger: (!e.target.checked),
                     content: <div className={style.modal}>
                         <form>
@@ -285,16 +230,15 @@ const UserListInspector = (props: Props) => {
             }
 
         }
-    }
+    };
 
-
-    const renderDetail = (data?: UserListUser) => {
+    const renderDetail = (data?: UserType) => {
         let result: any = []
 
         if (!data) return result
 
         if (data.email) {
-            let label = <React.Fragment key={"email"}>
+            let label = <React.Fragment key={'email'}>
                 <div><label>{display.email}</label></div>
                 <div className={'mb-8px'}>{data.email}</div>
             </React.Fragment>
@@ -305,7 +249,7 @@ const UserListInspector = (props: Props) => {
             let projects = data.projects.map((project) => {
                 return <div key={project.uuid} className={style.project}>{project.label}</div>
             })
-            const projectElements = <React.Fragment key={"projects"}>
+            const projectElements = <React.Fragment key={'projects'}>
                 <div><label>{display.projects}({data.projects.length})</label></div>
                 <div className={'mb-8px'}>{projects}</div>
             </React.Fragment>
@@ -314,7 +258,7 @@ const UserListInspector = (props: Props) => {
         }
 
         if (data.state) {
-            let state = <React.Fragment key={"state"}>
+            let state = <React.Fragment key={'state'}>
                 <div><label>{display.state}</label></div>
                 <div className={'mb-8px'}>{AdminUtil.getUserStatus(data.state)}</div>
             </React.Fragment>
@@ -322,21 +266,21 @@ const UserListInspector = (props: Props) => {
 
             const {onClickShowPassword} = props;
             if (data.state === Constants.admin.userStatus.tmp && onClickShowPassword) {
-                let tempPasswordLabel = <React.Fragment key={"password"}>
+                let tempPasswordLabel = <React.Fragment key={'password'}>
                     <div><label>{display.password}</label></div>
                     <div
-                        className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password.length)}</div>
+                        className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password?.length || 0)}</div>
                 </React.Fragment>
                 result.push(tempPasswordLabel)
                 const _onClickShowPassword = () => {
                     setShowPassword(true)
                 }
-                let showPasswordElement = (!showPassword)?<div key={"showPassword"} className={'mb-8px'}><Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button></div>:null;
+                let showPasswordElement = (!showPassword)?<div key={'showPassword'} className={'mb-8px'}><Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button></div>:null;
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
             if ((data.state === Constants.admin.userStatus.active || data.state === Constants.admin.userStatus.expired) && onClickPasswordReset) {
-                let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
+                let resetPasswordEelement = <div key={'resetPassword'} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
             if (data.state === Constants.admin.userStatus.inactive){
@@ -344,7 +288,7 @@ const UserListInspector = (props: Props) => {
                     ModalUtil.emitModal({
                         id: Constants.modal.CONFIRM_UNDELETE_USER,
                         visible: true,
-                        done: "利用中に戻す",
+                        done: '利用中に戻す',
                         danger: false,
                         content: <div className={style.modal}>
                             <form>
@@ -355,7 +299,7 @@ const UserListInspector = (props: Props) => {
                         </div>
                     });
                 }
-                let unDeleteElement = <div key={"undelete"} className={'mb-8px'}>
+                let unDeleteElement = <div key={'undelete'} className={'mb-8px'}>
                     <Button danger={false} onClick={()=>{onClickUndelete()}}>利用中に戻す</Button>
                 </div>
                 result.push(unDeleteElement);
@@ -363,12 +307,12 @@ const UserListInspector = (props: Props) => {
         }
 
         if (data.roles){
-            result.push(<div key={"adminTypes"}><label>{display.admin_types}</label></div>)
-            let systemAdminCheckboxElement = <React.Fragment key={"systemAdminCheckbox"}>
+            result.push(<div key={'adminTypes'}><label>{display.admin_types}</label></div>)
+            let systemAdminCheckboxElement = <React.Fragment key={'systemAdminCheckbox'}>
                 <div>
                     <label htmlFor={Constants.admin.systemRole.SYS_ADMIN}>
                         <input id={Constants.admin.systemRole.SYS_ADMIN}
-                               type="checkbox"
+                               type='checkbox'
                                checked={systemAdminChecked}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.SYS_ADMIN}
@@ -379,11 +323,11 @@ const UserListInspector = (props: Props) => {
                 </div>
             </React.Fragment>
             result.push(systemAdminCheckboxElement)
-            let userAdminCheckboxElement = <React.Fragment key={"userAdminCheckbox"}>
+            let userAdminCheckboxElement = <React.Fragment key={'userAdminCheckbox'}>
                 <div className={'mb-8px'}>
                     <label htmlFor={Constants.admin.systemRole.USR_ADMIN}>
                         <input id={Constants.admin.systemRole.USR_ADMIN}
-                               type="checkbox"
+                               type='checkbox'
                                checked={userAdminChecked}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.USR_ADMIN}
@@ -397,13 +341,12 @@ const UserListInspector = (props: Props) => {
 
         }
 
-
         return <React.Fragment>
             {result}
         </React.Fragment>
     }
 
-    const renderSelect = (data?: UserListUser) => {
+    const renderSelect = (data?: UserType) => {
         return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}
@@ -414,11 +357,12 @@ const UserListInspector = (props: Props) => {
             </div>
         </div>
     }
-    let label = selectedData.name
-    let content = renderSelect(selectedData)
+
+    let label = selectedUser.name
+    let content = renderSelect(selectedUser)
 
     return <Resizer>
-        <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={onBlurTitle} disabled={true}>
+        <BaseInspector key={selectedUser.uuid} label={label} onBlurTitle={onBlurTitle} disabled={true}>
             {content}
         </BaseInspector>
     </Resizer>

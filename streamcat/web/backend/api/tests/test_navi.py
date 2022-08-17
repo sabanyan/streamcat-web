@@ -9,7 +9,7 @@ class NavigationTestCase(ApiTestCaseBase):
         システム管理者のnavigationを検証する
         """
         result = self.get_uri('/api/v0/navigation', self.USER0)
-        data = result['data']
+        data = result
         self.assertEqual(data['version'], STREAMCAT_VER)
         self.assertEqual(data['depoName'], 'Unit Test')
         self.assertDictEqual(data['user'], self.USER0.to_json())
@@ -27,7 +27,7 @@ class NavigationTestCase(ApiTestCaseBase):
         ユーザ管理者のnavigationを検証する
         """
         result = self.get_uri('/api/v0/navigation', self.USER1)
-        data = result['data']
+        data = result
         self.assertEqual(data['version'], STREAMCAT_VER)
         self.assertEqual(data['depoName'], 'Unit Test')
         self.assertDictEqual(data['user'], self.USER1.to_json())

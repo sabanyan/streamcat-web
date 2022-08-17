@@ -1,0 +1,84 @@
+import {UserType} from 'Model/Navigation/NavigationModel';
+import {
+    postBase,
+    putBase,
+    getBase as get,
+    delBase as del,
+    makeArrayCtor
+} from './ApiBase';
+
+const post = (url: string, body: {}) => {
+    return postBase<UserType>(url, body).then<UserType>(user => {
+        // UserArrayのshift()を用いてuserに各種関数を付与する
+        // NOTE: shift()は必ずUserオブジェクトを返す
+        return user && (new UserArray([user])).shift() as UserType;
+    });
+};
+
+const put = <TUserType>(url: string, body: {}) => {
+    return putBase<TUserType>(url, body).then<TUserType>(user => {
+        // UserArrayのshift()を用いてuserに各種関数を付与する
+        // NOTE: shift()は必ずUserオブジェクトを返す
+        return user && (new UserArray([user as any])).shift() as any;
+    });
+};
+
+/**
+ * UserArrayのコンストラクタ関数を作成する
+ */
+const UserArray = makeArrayCtor<UserType>(user => {
+    // 
+    // Userオブジェクトに、WebAPIを発行する関数を付与する
+    // 
+    user.rename = (name) => 
+        put(`/api/v0/users/${user.uuid}`, {name:name});
+    user.updateEMail = (email) => 
+        put(`/api/v0/users/${user.uuid}`, {email:email});
+    user.updatePassword = (password) => 
+        put(`/api/v0/users/${user.uuid}`, {password:password});
+    user.resetPassword = () => 
+        put(`/api/v0/users/${user.uuid}`, {password:null});
+    user.joinSysAdminRole = () =>
+        put(`/api/v0/roles/sys_admin/users/${user.uuid}`, {});
+    user.leaveSysAdminRole = () =>
+        del(`/api/v0/roles/sys_admin/users/${user.uuid}`);
+    user.joinUsrAdminRole = () =>
+        put(`/api/v0/roles/usr_admin/users/${user.uuid}`, {});
+    user.leaveUsrAdminRole = () =>
+        del(`/api/v0/roles/usr_admin/users/${user.uuid}`);
+    user.undelete = () =>
+        put(`/api/v0/users/${user.uuid}`, {state:'active'});
+    user.delete = () =>
+        del(`/api/v0/users/${user.uuid}`);
+});
+
+/**
+ * Web APIを発行する関数を纏めるクラス
+ */
+export const UserApi = {
+    /**
+     * GET /usersを発行してUserを取得する
+     * @throws {ErrorResponse}
+     */
+    findUsers: (q?: string, exceptInactive?:boolean, roles?: boolean, projects?: boolean):Promise<UserType[]>  => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        let params: {q?:string, except_inactive?:string, roles?:string, projects?:string} = {};
+        q && (params.q = q);
+        exceptInactive && (params.except_inactive = 'on');
+        roles && (params.roles = 'on');
+        projects && (params.projects = 'on');
+        return get<UserType[]>('/api/v0/users', params).then(users => {
+            return new UserArray(users);
+        });
+    },
+
+    /**
+     * POST /usersを発行してUserを作成する
+     * @throws {ErrorResponse}
+     */
+    createUser: (email: string, name: string, password?: string) => {
+        let body: {email: string, name: string, password?: string} = {email, name};
+        password && (body.password = password);
+        return post('/api/v0/users', body);
+    }
+};

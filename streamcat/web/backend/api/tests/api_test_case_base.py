@@ -3,7 +3,7 @@ import pprint
 
 from streamcat.store.tests.test_case_base import TestCaseBase
 from streamcat.web.backend import app
-from ..utils import make_access_token
+from ..utils import make_access_token, Status, is_ok
 
 class ApiTestCaseBase(TestCaseBase):
     """
@@ -41,6 +41,10 @@ class ApiTestCaseBase(TestCaseBase):
             root = self.factory.data.load_root()
             frame = root.create_frame(file_path_obj.name, f)
             frame.save()
+
+        # 作成を確定する
+        self.factory.end()
+
         # save()によりreadable=Noneになるため再取得する
         return self.factory.data.find_by_uuid(frame.uuid).uuid
 
@@ -60,7 +64,7 @@ class ApiTestCaseBase(TestCaseBase):
             # テストで用いるテスト用フレームをライブラリに登録する
             frame_folder = self.factory.data.load_root()
             class_name = self.__class__.__name__
-            new_frame = frame_folder.create_frame('テスト用フレーム(%s)' % class_name, None)
+            new_frame = frame_folder.create_frame(f'テスト用フレーム({class_name})', None)
             new_frame.uuid = frame_uuid
             new_frame.save(file_path=frame_file_path)
 
@@ -80,11 +84,10 @@ class ApiTestCaseBase(TestCaseBase):
             flow_json = json.loads(flow_path.read_text(encoding='utf-8'))
             flow_data = FlowData(flow_json)
             # フローオブジェクトを作成する
-            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_data)
+            test_flow = flow_folder.create_flow(f'テストフロー！({class_name})', flow_data)
             # フローをライブラリに保存する
             test_flow.uuid = flow_uuid
             test_flow.save()
-
 
     def get_uri(self, uri, user):
         """
@@ -94,26 +97,25 @@ class ApiTestCaseBase(TestCaseBase):
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
             response = client.get(uri)
-            result = json.loads(response.get_data())
+            result = response.get_json()
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'GET %s is failed. %s' % (uri, error_detail))
+        self.assertTrue(is_ok(response.status_code), f'GET {uri} is failed. {error_detail}')
         return result
 
-    def get_file(self, uri, user):
+    def get_file(self, uri, charset, user):
         """
         URIからファイルをダウンロードする
         """
+        accept_charset = f';charset={charset}' if charset else ''
         with app.test_client() as client:
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
             # response = client.get(uri)
-            with client.get(uri, headers={'Accept':'text/csv'}) as response:
-                self.assertLess(response.status_code, 500, msg=f'GET {uri} is failed. response status: {response.status}')
-
+            with client.get(uri, headers={'Accept':'text/csv'+ accept_charset}) as response:
+                result = response.get_json(silent=True) or {}
+                error_detail = result['message'] if 'message' in result else ''
+                self.assertTrue(is_ok(response.status_code), f'GET {uri} is failed. {error_detail}')
                 if response.content_type == 'application/json':
-                    result = json.loads(response.get_data())
-                    error_detail = result['message'] if 'message' in result else ''
-                    self.assertTrue(result['success'], f'GET {uri} is failed. {error_detail}')
                     return result
                 else:
                     return response.get_data()
@@ -128,9 +130,9 @@ class ApiTestCaseBase(TestCaseBase):
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
-            result = json.loads(response.get_data())
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'POST %s is failed. %s' % (uri, error_detail))
+        self.assertTrue(is_ok(response.status_code), f'POST {uri} is failed. {error_detail}')
         return result
 
     def post_locks(self, uri, json_data, user):
@@ -143,7 +145,7 @@ class ApiTestCaseBase(TestCaseBase):
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
-            result = json.loads(response.get_data())
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
         return result
 
@@ -162,9 +164,9 @@ class ApiTestCaseBase(TestCaseBase):
                                         'file'  : frame_stream
                                         }
                                   )
-            result = json.loads(response.get_data())
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], msg=f'POST {uri} is failed. {error_detail}')
+        self.assertTrue(is_ok(response.status_code), msg=f'POST {uri} is failed. {error_detail}')
         return result
 
     def post_frames(self, label, parent_uuid, frame_stream, user):
@@ -198,9 +200,9 @@ class ApiTestCaseBase(TestCaseBase):
                                    content_type='multipart/form-data',
                                    data=data
                                   )
-            result = json.loads(response.get_data())
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/archives/flows', error_detail))
+        self.assertTrue(is_ok(response.status_code), f'POST {"/api/v0/archives/flows"} is failed. {error_detail}')
         return result
 
     def put_uri(self, uri, json_data, user):
@@ -213,9 +215,10 @@ class ApiTestCaseBase(TestCaseBase):
             response = client.put(uri,
                                   content_type='application/json',
                                   data=json.dumps(json_data))
-            result = json.loads(response.get_data())
+            # Silence parsing errors and return None instead.
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'PUT %s is failed. %s' % (uri, error_detail))
+        self.assertTrue(is_ok(response.status_code), f'PUT {uri} is failed. {error_detail}')
         return result
 
     def delete_uri(self, uri, user):
@@ -226,9 +229,10 @@ class ApiTestCaseBase(TestCaseBase):
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
             response = client.delete(uri)
-            result = json.loads(response.get_data())
+            # Silence parsing errors and return None instead.
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
+        self.assertTrue(is_ok(response.status_code), f'DELETE {uri} is failed. {error_detail}')
         return result
 
     def delete_uri_with_json(self, uri, json_data, user):
@@ -241,9 +245,10 @@ class ApiTestCaseBase(TestCaseBase):
             response = client.delete(uri,
                                      content_type='application/json',
                                      data=json.dumps(json_data))
-            result = json.loads(response.get_data())
+            # Silence parsing errors and return None instead.
+            result = response.get_json(silent=True) or {}
         error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
+        self.assertTrue(is_ok(response.status_code), f'DELETE {uri} is failed. {error_detail}')
         return result
 
     def post_login(self, email, password):

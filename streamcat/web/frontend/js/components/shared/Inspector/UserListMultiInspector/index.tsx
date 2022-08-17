@@ -1,30 +1,31 @@
 import React from 'react'
 import style from '../style.scss'
+import { UserType } from 'Model/Navigation/NavigationModel'
 import {BaseInspector, Resizer} from 'Shared/Inspector'
-import {UserListUser} from 'Types/index'
 import Constants from 'Constants/index'
 import {Button} from 'Shared/Input'
 
 interface Props {
-    selectedDatas: UserListUser[];
-    onClickDelete?: Function;
+    selectedUsers: UserType[];
+    onClickDelete?: () => void;
 }
 
 const UserListMultiInspector = (props: Props) => {
-    const {selectedDatas} = props
+    const {selectedUsers: selectedUsers} = props
 
-    const renderButtons = (data?: UserListUser) => {
-        const {selectedDatas, onClickDelete} = props
+    const renderButtons = () => {
+        const {selectedUsers, onClickDelete} = props
 
         let del
 
-        const availableDelete = ([...selectedDatas].findIndex((user)=>{
+        const availableDelete = ([...selectedUsers].findIndex((user)=>{
             return (user.state !== Constants.admin.userStatus.inactive)
         }) !== -1);
 
         // 複数選択の場合
-        if (selectedDatas.length >= 1) {
-            if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+        if (selectedUsers.length >= 1) {
+            if (onClickDelete && availableDelete)
+                del = <Button danger={true} onClick={() => onClickDelete()} icon={'delete'}>削除する</Button>
         }
         return <React.Fragment>
             {del}
@@ -32,18 +33,17 @@ const UserListMultiInspector = (props: Props) => {
     }
 
     return <Resizer>
-        <BaseInspector key={JSON.stringify(selectedDatas)} label={""} disabled={true}>
+        <BaseInspector key={JSON.stringify(selectedUsers)} label={""} disabled={true}>
             <div className={style.inspector}>
                 <div className={style.actions}>
-                    {renderButtons(selectedDatas)}
+                    {renderButtons()}
                 </div>
                 <div className={style.detail}>
 
                 </div>
             </div>
         </BaseInspector>
-    </Resizer>
-
-}
+    </Resizer>;
+};
 
 export default UserListMultiInspector

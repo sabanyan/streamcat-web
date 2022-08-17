@@ -59,46 +59,6 @@ export type LibraryListDataType = {
   selected: boolean;
 }
 
-export type ServersDataType = {
-  id: string;//Directory,SMB,PostgreSQL
-  version: string;
-  label: string;
-  description: string;
-  url: string;
-  params: DirectoryExtendsDataType | SMBExtendsDataType | PostgreSQLExtendsDataType
-}
-
-export type DirectoryExtendsDataType = {
-  directoryPath: string
-}
-
-export type SMBExtendsDataType = {
-  user: string;
-  password: string;
-  server: string;
-  port: string;
-  domain: string;
-  directoryPath: string
-}
-
-export type PostgreSQLExtendsDataType = {
-  user: string;
-  password: string;
-  server: string;
-  port: string;
-  database: string;
-}
-
-export type RunResponseNameType = {
-  id: string,
-  uuid: string
-}
-
-export type RunResponseType = {
-  name: [RunResponseNameType];
-  success: boolean;
-}
-
 export type UploadedFileType = {
   file: File | null,
   uuid?: string,
@@ -154,19 +114,6 @@ export type DownloadButtonType = {
   download: string;
 }
 
-export type DataFrameDetailType = {
-  contents: {};
-  numberOfLines: string;
-  lastModifiedAt: string;
-}
-
-export type BreadCrumbHistoryType = {
-  id: string,
-  label: string,
-  url: string,
-  current: boolean,
-}
-
 export type RunArgsType = {
   flowUuid: string;
   flows: [];
@@ -184,50 +131,4 @@ export type dropDownListItem = {
   label: string,
   value: string,
   object?: {}
-}
-
-export interface UserListUser extends TableCell{
-  uuid:      string;
-  email:     string;
-  name:      string;
-  state:     string;
-  creator:   string;
-  createdAt: Date;
-  roles:     UserRole[];
-  password?: string;
-  projects?: UserProject[];
-}
-
-export interface TableCell {
-  selected?: boolean;
-}
-
-export interface UserRole {
-  uuid:       string;
-  name:       string;
-  systemRole: string;
-  creator:    string;
-  createdAt:  Date;
-}
-
-export interface UserProject {
-  uuid:      string;
-  type:      string;
-  label:     string;
-  creator:   string;
-  createdAt: Date;
-}
-
-export interface IFilterCategoryItem {
-  id: string;
-  label: string;
-  multiple: boolean;
-  data: IFilterListItem[];
-  disabled?: boolean;
-}
-
-export interface IFilterListItem {
-  id: string;
-  label: string;
-  selected: boolean;
 }

@@ -197,6 +197,7 @@ const Constants = {
     mode: {
       frame_select: 'frame_select',
       folder_select: 'folder_select',
+      flow_select: 'flow_select',
       dialog: 'dialog', //選択モード
       list: 'list' //通常モード
     }

@@ -8,14 +8,8 @@ export default class ErrorUtil {
     throw new Error(message)
   }
 
-  static notifyError(notify,title,error){
-    notify({
-      title: title,
-      message: (error instanceof Error)?ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)):error,
-      status: 'error',
-      dismissAfter: 0,
-      closeButton: true
-    })
+  static notifyError(notify:(title:string, message:string) => string, title:string, error){
+    notify(title, (error instanceof Error)?ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)):error);
   }
 
   static getErrorBody (error) {

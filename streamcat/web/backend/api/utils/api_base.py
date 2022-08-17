@@ -1,5 +1,6 @@
-from flask import Response, jsonify
 import functools
+from flask import Response, jsonify
+from .response import Status
 
 def api_base(func):
     """
@@ -9,63 +10,43 @@ def api_base(func):
 
     def error_json(e:Exception, error_code:int):
         return jsonify({
-            'success': False,
             'code'   : error_code,
             'message': str(e)
         })
-
-    # OK
-    # リクエストは成功し、レスポンスとともに要求に応じた情報が返される
-    OK = 200
-
-    # 内容なし
-    # リクエストを受理したが、返すべきレスポンスエンティティが存在しない場合に返される
-    # NOTE: 204を返すとレスポンスボディは空になる
-    NO_CONTENT = 204
-
-    # 禁止されている
-    # リソースにアクセスすることを拒否された/リクエストはしたが処理できないという意味で返される
-    FORBIDDEN = 403
-
-    # 前提条件で失敗した
-    # 前提条件が偽だった場合に返される
-    PRECONDITION_FAILED = 412
-
-    # ロックされている
-    LOCKED = 423
-
-    # サーバ内部エラー
-    # サーバ内部にエラーが発生した場合に返される
-    INERNAL_SERVER_ERROR = 500
 
     @functools.wraps(func)
     def wrapper(**kwargs):
         from streamcat.store import NothingToPutbackException, NoResultsException
         from streamcat.store.auth import NotAuthorizedException
         from streamcat.store.lock import LockedDatumException
+        from . import BadRequestException, InvalidAcceptHeader
 
         try:
             # デコレート対象関数の呼び出し
             result = func(**kwargs)
             if result is None:
-                return jsonify({'success': True}), OK
+                return {}, Status.NO_CONTENT
             elif isinstance(result, Response):
-                return result
+                return result, Status.OK
             else:
-                return jsonify({'success': True, 'data': result}), OK
+                return jsonify(result), Status.OK
         except LockedDatumException as e:
-            return error_json(e, -2), LOCKED
+            return error_json(e, -2), Status.LOCKED
         except NothingToPutbackException as e:
-            return error_json(e, -3), PRECONDITION_FAILED
+            return error_json(e, -3), Status.PRECONDITION_FAILED
         except NoResultsException as e:
-            return error_json(e, -4), OK
+            return error_json(e, -4), Status.OK
         except NotAuthorizedException as e:
             import traceback
             traceback.print_exc()
-            return error_json(e, -1), FORBIDDEN
+            return error_json(e, -1), Status.FORBIDDEN
+        except InvalidAcceptHeader as e:
+            return error_json(e, -1), Status.NOT_ACCEPTABLE
+        except BadRequestException as e:
+            return error_json(e, -1), Status.BAD_REQUEST
         except Exception as e:
             import traceback
             traceback.print_exc()
-            return error_json(e, -1), INERNAL_SERVER_ERROR
+            return error_json(e, -1), Status.INERNAL_SERVER_ERROR
     
     return wrapper

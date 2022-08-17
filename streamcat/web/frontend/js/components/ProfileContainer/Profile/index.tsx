@@ -1,14 +1,12 @@
 import React, {useEffect, useState} from 'react'
+import { useAsyncResource } from 'use-async-resource'
+import {useForm, UseFormRegisterReturn} from 'react-hook-form';
 import style from './style.scss'
-import {APIUtil, ReactDomUtil, ErrorUtil} from 'Utils/index'
 import {ModalManager} from 'Shared/Modal'
-import {Loader} from 'Shared/Base'
 import {Button, LinkButton, TextField} from 'Shared/Input'
-import {useDispatch} from 'react-redux';
-import {addNotification, removeNotification} from 'reapop';
-import {NotificationManager} from 'Shared/Notification';
-import {useForm} from 'react-hook-form';
-import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
+import {NavigationType, SelfUserType} from 'Model/Navigation/NavigationModel';
+import { Api, ErrorResponse } from 'Api';
 
 /**
  * ======================================================
@@ -34,126 +32,98 @@ interface FormInputs {
 
 type EditingMode = ('name' | 'email' | 'password' | null);
 
-const Profile = (props: Props) => {
+/**
+ * React-Hook-Form v7でMaterial-UI v4のTextFieldがバインドできない問題の対処をする
+ * https://dev.classmethod.jp/articles/mui-with-rhf-v7/
+ */
+const registerMui = (res: UseFormRegisterReturn) => ({
+    inputRef: res.ref,
+    onChange: res.onChange,
+    onBlur: res.onBlur,
+    name: res.name,
+});
+
+export const Profile = (props: Props) => {
+    const {navigation} = props;
+
+    // ここでログインUserの取得を開始する
+    const [selfUserReader] = useAsyncResource(Api.findSelfUser, []);
 
     // 通知機能メソッドの取得
-    const dispatch = useDispatch();
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
+    const {notifySuccess, notifyError} = useStreamCatNotifications();
 
-    const {navigation} = props;
-    const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
-
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isFinished, setIsFinished] = useState<boolean>(false);
-    const [profile, setProfile] = useState<Profile | null>({
-        name: '',
-        email: ''
-    });
-    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs | any>({
-        shouldUnregister: false
-    });
+    // ログインユーザ
+    const [selfUser, setSelfUser] = useState<SelfUserType>(selfUserReader());
+    // 編集モード
     const [editing, setEditing] = useState<EditingMode>(null);
 
-    useEffect(() => {
-        getProfile()
-    }, []);
+    // Formの初期値
+    const initFormValue = {
+        name: selfUser.name,
+        email: selfUser.email,
+        currentPassword: '',
+        password1: '',
+        password2: ''
+    };
 
+    // Form
+    const {handleSubmit, register, formState:{errors}, watch, clearErrors, reset} = useForm<FormInputs, SelfUserType>({
+        // Formの初期表示値
+        defaultValues: initFormValue,
+        // 
+        shouldUnregister: false
+    });
+
+    //編集モードが切り替わる都度、validation エラーをクリアする
     useEffect(() => {
-        //編集モードが切り替わる都度、validation エラーをクリアする
         clearErrors()
     }, [editing]);
 
-    useEffect(() => {
-        if (profile) {
-            // プロフィールを取得した際にデフォルト値のプロフィールを設定する
-            // reset の引数を設定することで、テキストフィールドの defaultValue を設定できる
-            const resetValue = {
-                'name': profile.name,
-                'email': profile.email
-            };
-            reset(resetValue)
-        }
-    }, [profile]);
-
-    // プロフィールの取得
-    const getProfile = () => {
-        setIsLoading(true)
-        // user_idはナビゲーションモデルから取得できない
-        // APIをたたかないと取得できないため、injectされたuser_idを使う
-        APIUtil.get('users/self').then((response) => {
-            const json = response.data
-            setIsLoading(true);
-            setIsFinished(true);
-            setProfile(json.data);
-        }).catch((error) => {
-            notify({
-                title: 'プロフィールの取得エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
-            setIsLoading(false);
-            setIsFinished(true);
-        })
-    }
-
     const onSubmit = (data) => {
         const formState = data;
-        setIsLoading(true);
-        let body;
+        let updatePromise: Promise<SelfUserType>;
         switch (editing) {
             case 'name':
-                body = {
-                    name: formState['name']
-                }
+                updatePromise = selfUser?.rename(formState['name']);
                 break;
             case 'email':
-                body = {
-                    email: formState['email'],
-                    currentPassword: formState['currentPassword'],
-                }
+                updatePromise = selfUser?.updateEMail(formState['email'], formState['currentPassword']);
                 break;
             case 'password':
-                body = {
-                    currentPassword: formState['currentPassword'],
-                    password: formState['password1'],
-                }
+                updatePromise = selfUser?.updatePassword(formState['password1'], formState['currentPassword']);
+                break;
+            default:
+                throw new Error('invalid editing mode');
         }
-        APIUtil.put('users/self', body).then((response) => {
-            const json = response.data
-            setIsLoading(false)
-            if (!json.success) {
-                ErrorUtil.notifyError(notify, 'ユーザー情報更新エラー', json.message);
-                return
-            }
-            notify({
-                title: 'ユーザー情報を更新しました',
-                message: 'ユーザー情報を更新しました',
-                status: 'success'
-            });
-            getProfile();
-            setEditing(null);
-        }).catch((error) => {
-            ErrorUtil.notifyError(notify, 'ユーザー情報更新エラー', error);
-            setIsLoading(false)
-        });
-    }
 
-    // 編集モードの切り替え
-    const switchEditing = (mode: EditingMode) => {
-        reset();// 値を初期値に戻して編集モードを設定する
+        updatePromise.then(user => {
+            notifySuccess('ユーザー情報を更新しました');
+            setSelfUser(user);
+            setEditing(null);
+        }).catch((e:ErrorResponse) => {
+            notifyError('ユーザー情報更新エラー', e.message);
+        });
+
+    };
+
+    const onClickUpdate = (mode: EditingMode) => {
+        // 他の入力項目の編集中に変更ボタンを押下した場合は、先に編集モードを解除する
+        if(mode && mode!==editing){
+            reset(initFormValue);
+        }
+        // 編集モードを変更する
         setEditing(mode);
     };
 
-    if (!isFinished || !profile) return <div className={'container mt-40px'}>
-        <Loader center={true} absolute={true} visible={isLoading}/>
-    </div>
+    const onClickCancel = () => {
+        // 値を初期値に戻して編集モードを設定する
+        reset(initFormValue);
+        // 編集モードを解除する
+        setEditing(null);
+    };
+
+    // ログインUserの更新可否を判定する
+    const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser);
 
     return <div className={'container mt-40px'}>
         <div className={style.page_title}>
@@ -167,14 +137,14 @@ const Profile = (props: Props) => {
                             (availableUpdateSelf) ?
                                 (editing === 'name') ?
                                     <label>ユーザー名 <LinkButton
-                                        onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
+                                        onClick={() => onClickCancel()}>キャンセル</LinkButton></label>
                                     :
                                     <label>ユーザー名 <LinkButton
-                                        onClick={() => switchEditing('name')}>変更する</LinkButton></label>
+                                        onClick={() => onClickUpdate('name')}>変更する</LinkButton></label>
                                 :  <label>ユーザー名</label>
                         }
-                        <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'} name={'name'}
-                                   inputRef={register({required: 'ユーザー名を入力してください。'})}/>
+                        <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'}
+                                   {...registerMui(register('name', {required:'ユーザー名を入力してください'}))}/>
                         {errors.name && <label className={'text-danger'}>{errors.name.message}</label>}
                     </div>
                     {
@@ -192,14 +162,14 @@ const Profile = (props: Props) => {
                             (availableUpdateSelf) ?
                                 (editing === 'email') ?
                                     <label>メールアドレス <LinkButton
-                                        onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
+                                        onClick={() => onClickCancel()}>キャンセル</LinkButton></label>
                                     :
                                     <label>メールアドレス <LinkButton
-                                        onClick={() => switchEditing('email')}>変更する</LinkButton></label>
+                                        onClick={() => onClickUpdate('email')}>変更する</LinkButton></label>
                                 : <label>メールアドレス</label>
                         }
                         <TextField readOnly={(editing !== 'email')} placeholder={'メールアドレス'} type={'email'}
-                                   name={'email'} inputRef={register({required: 'E-mail を入力してください。'})}/>
+                                   {...registerMui(register('email', {required: 'E-mail を入力してください'}))}/>
                         {errors.email && <label className={'text-danger'}>{errors.email.message}</label>}
                     </div>
                     {
@@ -207,8 +177,8 @@ const Profile = (props: Props) => {
                             <>
                                 <div className={'mb-8px'}>
                                     <label>現在のパスワード</label>
-                                    <TextField placeholder={'現在のパスワード'} type={'password'} name={'currentPassword'}
-                                               inputRef={register}/>
+                                    <TextField placeholder={'現在のパスワード'} type={'password'}
+                                               {...registerMui(register('currentPassword'))}/>
                                 </div>
                                 <div className={'text-right'}>
                                     <Button disabled={!availableUpdateSelf} submit={true} className={'mr-0'}>保存する</Button>
@@ -222,10 +192,10 @@ const Profile = (props: Props) => {
                         <form onSubmit={handleSubmit(onSubmit)} className={'mt-32px'}>
                             {
                                 (editing === 'password') ?
-                                    <label><LinkButton onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
+                                    <label><LinkButton onClick={() => onClickCancel()}>キャンセル</LinkButton></label>
                                     :
                                     <label><LinkButton
-                                        onClick={() => switchEditing('password')}>現在のパスワードを変更する</LinkButton></label>
+                                        onClick={() => onClickUpdate('password')}>現在のパスワードを変更する</LinkButton></label>
                             }
 
                             {
@@ -234,8 +204,8 @@ const Profile = (props: Props) => {
                                         <div className={'mb-8px'}>
                                             <label>現在のパスワード</label>
                                             <TextField readOnly={(editing !== 'password')} placeholder={'現在のパスワード'}
-                                                       type={'password'} name={'currentPassword'}
-                                                       inputRef={register({required: '現在のパスワードを入力してください。'})}/>
+                                                       type={'password'}
+                                                       {...registerMui(register('currentPassword', {required: '現在のパスワードを入力してください'}))}/>
                                             {errors.currentPassword &&
                                             <label className={'text-danger'}>{errors.currentPassword.message}</label>}
                                         </div>
@@ -243,35 +213,34 @@ const Profile = (props: Props) => {
                                             <label>新しいパスワード <span
                                                 className={style.helpText}>10桁以上のパスワードが必要</span></label>
 
-                                            <TextField placeholder={'新しいパスワード'} type={'password'} name={'password1'}
-                                                       inputRef={register({
+                                            <TextField placeholder={'新しいパスワード'} type={'password'}
+                                                       {...registerMui(register('password1', {
                                                            required: '新しいパスワードを入力してください',
                                                            minLength: {
                                                                value: 10,
-                                                               message: '10桁以上のパスワードが必要です。'
+                                                               message: '10桁以上のパスワードが必要です'
                                                            },
                                                            maxLength: {
                                                                value: 64,
-                                                               message: '64桁以下のパスワードが必要です。'
+                                                               message: '64桁以下のパスワードが必要です'
                                                            },
                                                            pattern: {
                                                                value: /[!-~]/,
-                                                               message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。'
+                                                               message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです'
                                                            }
-                                                       })}/>
+                                                       }))}/>
                                             {errors.password1 &&
                                             <label className={'text-danger'}>{errors.password1.message}</label>}
                                         </div>
                                         <div className={'mb-8px'}>
                                             <label>新しいパスワード（確認用）</label>
                                             <TextField placeholder={'新しいパスワード（確認用）'} type={'password'}
-                                                       name={'password2'}
-                                                       inputRef={register({
+                                                       {...registerMui(register('password2', {
                                                            required: '新しいパスワード（確認用）を入力してください',
                                                            validate: (value) => {
                                                                return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
                                                            }
-                                                       })}/>
+                                                       }))}/>
                                             {errors.password2 &&
                                             <label className={'text-danger'}>{errors.password2.message}</label>}
                                         </div>
@@ -290,5 +259,4 @@ const Profile = (props: Props) => {
         <ModalManager/>
         <NotificationManager/>
     </div>
-}
-export {Profile}
+};

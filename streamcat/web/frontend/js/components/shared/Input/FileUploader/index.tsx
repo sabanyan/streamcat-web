@@ -1,19 +1,18 @@
 import React from 'react'
-import axios from 'axios'
-import Queue from 'promise-queue-plus'
 import classnames from 'classnames'
 
 import style from './style.scss'
 
 import { Button, TextField } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
+import { FolderType } from 'Model/Library'
 
 type Props = {
-  url: string
   accept?: string[];
-
-  parentUUID: string
-  notify: Function
+  parent: FolderType;
+  uploadType: 'document'|'flow';
+  notify: (title:string, message:string) => string;
+  onSuccess?: () => void;
 }
 
 enum Status {
@@ -99,59 +98,37 @@ export default class FileUploader extends React.Component<Props, State> {
   }
 
   uploadSync() {
-    const { notify, parentUUID, url } = this.props
-    const options = {
-      headers: { 'enctype': 'multipart/form-data' }
-    }
-
-    let queue = Queue(
-      1, // concurrency
-      {
-        "retry": 0               //Number of retries
-        , "retryIsJump": false     //retry now?
-        , "timeout": 0            //The timeout period
-      }
-    )
+    const { notify, parent } = this.props
 
     const uploadTargets = this.state.uploadFiles.filter((uploadFile) => {
       if (uploadFile.status !== Status.Success) return true
       return false
-    })
-    uploadTargets.forEach((uploadFile, index) => {
-      queue.push(this.promisedUpload, [uploadFile, parentUUID, url, this])
-    })
-    queue.push(this.notifyUpload, [uploadTargets, notify, this])
-    queue.start()
+    });
+
+    Promise.all(
+      uploadTargets.map((uploadFile, index) => {
+        return this.promisedUpload(uploadFile, parent, this);
+      })
+    ).finally(() => {
+      this.notifyUpload(uploadTargets, notify, this);
+    });
   }
 
-  promisedUpload(uploadFile: UploadFile, parentUUID: string, url: string, self = this) {
-    const options = {
-      headers: { 'enctype': 'multipart/form-data' }
-    }
-    let formData: FormData = new FormData()
-    formData.append('file', uploadFile.file)
-    formData.append('label', uploadFile.uploadName)
-    formData.append('parent', parentUUID)
+  promisedUpload(uploadFile:UploadFile, parent:FolderType, self=this) {
+      // 引数の指定に応じてDocumentまたはFlowのアップロードのAPIを選択す
+      const upload = self.props.uploadType==='document'?
+          parent.createDocument(uploadFile.uploadName, uploadFile.file):
+          parent.uploadFlow(uploadFile.uploadName, uploadFile.file);
 
-    return new Promise<void>((resolve, reject) => {
-      axios.post(url, formData, options)
-        .then((response) => {
-          if (!response.data.success) throw response
-          uploadFile.status = Status.Success
-        })
-        .catch((error) => {
-          uploadFile.status = Status.Fail
-          console.log(error)
-        })
-        .then(() => {
-          self.forceUpdate(() => {
-            resolve()
-          })
-        })
-    })
-  }
+      return upload.then(() => {
+          uploadFile.status = Status.Success;
+      }).catch((error) => {
+          uploadFile.status = Status.Fail;
+          console.log(error);
+      });
+  };
 
-  notifyUpload(uploadTargets, notify, self = this) {
+  notifyUpload(uploadTargets:UploadFile[], notify, self = this) {
     return new Promise((resolve, reject) => {
       let successCount = 0
       let failCount = 0
@@ -165,17 +142,14 @@ export default class FileUploader extends React.Component<Props, State> {
       })
 
       let content = "アップロードが完了しました。<br> (成功:" + successCount + "、失敗:" + failCount + ")"
-      notify({
-        title: 'アップロードしました',
-        message: content,
-        status: 'success',
-        dismissAfter: 2000,
-        allowHTML: true
-      })
+      notify('アップロードしました', content);
 
       self.setState({
         isLoading: false
       })
+
+      // イベントハンドラを呼び出す
+      self.props.onSuccess && self.props.onSuccess();
 
     })
   }

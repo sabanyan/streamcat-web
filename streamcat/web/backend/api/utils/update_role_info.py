@@ -1,52 +1,36 @@
-import json
 import functools
-from flask import request, jsonify, g
+from flask import request
 
 def update_role_info(func):
     @functools.wraps(func)
     def deco(**kwargs):
-        # 参加ユーザの情報を含めるか否か
-        if request.args.get('members') != 'on':
-            return func(**kwargs)
+        # 所属Memberの情報を含めるか否か
+        update_members = request.args.get('members') == 'on'
 
         # デコレート対象関数の呼び出し
-        result, status = func(**kwargs)
-        result_json = json.loads(result.data.decode())
+        role = func(**kwargs)
 
-        # APIの異常終了時は情報を追加しない
-        if not result_json['success']:
-            return result, status
-
-        # Role JSONに情報を追加する
-        role_data = result_json['data']
-        _update_role_info_inner(role_data)
-
-        return jsonify(result_json), status
+        # 所属Memberの情報をRole JSONに追加する
+        return _jsonify_role(role, update_members)
     return deco
 
 def update_roles_info(func):
     @functools.wraps(func)
     def deco(**kwargs):
-        # 参加ユーザの情報を含めるか否か
-        if request.args.get('members') != 'on':
-            return func(**kwargs)
+        # 所属Memberの情報を含めるか否か
+        update_members = request.args.get('members') == 'on'
 
         # デコレート対象関数の呼び出し
-        results, status = func(**kwargs)
-        results_json = json.loads(results.data.decode())
+        roles = func(**kwargs)
 
-        # APIの異常終了時は情報を追加しない
-        if not results_json['success']:
-            return results, status
-
-        # Role JSONに情報を追加する
-        for role_data in results_json['data']:
-            _update_role_info_inner(role_data)
-
-        return jsonify(results_json), status
+        # 所属Memberの情報をRole JSONに追加する
+        return [_jsonify_role(role, update_members) for role in roles]
     return deco
 
-def _update_role_info_inner(role_data):
-    role = g.factory.role.find_by_uuid(role_data['uuid'])
-    role_data.update({'members' : role.get_joined_members()})
-    return role_data
+def _jsonify_role(role, update_members:bool):
+    role_json = role.to_json()
+    if update_members:
+        role_json.update({'members': role.get_joined_members()})
+        return role_json
+    else:
+        return role_json

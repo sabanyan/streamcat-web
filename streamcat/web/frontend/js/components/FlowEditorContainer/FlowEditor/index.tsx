@@ -6,14 +6,14 @@ import { Edge, Selector, Step } from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
-import { APIUtil2, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
+import { Api } from 'Api';
+import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DataFrameDetailType, StepModelType } from 'Types/index';
+import { StepModelType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
-import { NotificationManager } from 'Shared/Notification';
-import { addNotification, removeNotification } from 'reapop';
+import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
     addHistoryAction,
     addMasterAction,
@@ -57,30 +57,18 @@ import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
-import { ErrorResponse } from 'Utils/APIUtil2';
-import { FlowType } from 'Model/Library';
+import { ErrorResponse } from 'Api';
+import { FlowType, FrameType } from 'Model/Library';
 
-const getLock = (targetUUID:string, notify:(context)=>any) => {
-    return APIUtil2.createLock(targetUUID).catch(e => {
+const getLock = (targetUUID:string, notifyWarning:Function) => {
+    return Api.createLock(targetUUID).catch(e => {
         if(e instanceof Promise){
             // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
             throw e;
         }else if(e instanceof ErrorResponse) {
-            notify({
-                title: "警告：読取専用フロー",
-                message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                status: "warning",
-                dismissAfter: -1,
-                closeButton: true
-            });
+            notifyWarning('警告：読取専用フロー', 'このフローはすでに編集中のため、 編集権限が取得できませんでした');
         }else{
-            notify({
-                title: e.title,
-                message: e.message,
-                status: e.messageStatus,
-                dismissAfter: -1,
-                closeButton: true
-            });
+            notifyWarning(e.title, e.message);
         }
     });
 }
@@ -116,7 +104,7 @@ const FlowEditor = () => {
     const networkStatus = useSelector((state: any) => state.FlowEditorReducer.networkStatus);
     const lastSavedFlow = useSelector<any, FlowType>((state: any) => state.FlowEditorReducer.lastSavedFlow);
 
-    const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
+    const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
     const loadFlowJSON = useCallback((context: {}) => {
@@ -195,7 +183,7 @@ const FlowEditor = () => {
     const setZoom = useCallback(({ offset, value }) => {
         dispatch(setZoomAction({ offset, value }));
     }, []);
-    const updateDataFrameDetail = useCallback((detail: DataFrameDetailType) => {
+    const updateDataFrameDetail = useCallback((detail: FrameType) => {
         dispatch(updateDataFrameDetailAction(detail));
     }, []);
     // const addNote = useCallback((x: number, y: number) => {
@@ -227,19 +215,15 @@ const FlowEditor = () => {
         dispatch(updateLastSavedFlowAction());
     }, []);
 
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string, delay?: number) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, (delay) ? delay : 1000);
-    };
+    const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
+    const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [readOnly, setReadOnly] = useState<boolean>(false);
     const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(false);
     // const hasLockedUUID = useMemo(() => !!(lockUUID), [lockUUID]); // lockUUIDを保持している際は、編集可能な状態
 
-    const [readLock] = useAsyncResource(getLock, inject_flow_uuid, notify);
+    const [readLock] = useAsyncResource(getLock, inject_flow_uuid, notifyWarning);
     const [lock, setLock] = useState(readLock());
 
     const [saveAsFlowName, setSaveAsFlowName] = useState<string>();
@@ -253,14 +237,14 @@ const FlowEditor = () => {
                     alert("フロー名を指定してください")
                 } else {
                     // フローを別名保存する
-                    APIUtil2.findFolder(folderUuid).then(folder => {
+                    Api.findFolder(folderUuid).then(folder => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
                             const targetFlow = flow;
                             targetFlow.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
-                            APIUtil2.createLock(anotherFlow.uuid).then(lock => {
+                            Api.createLock(anotherFlow.uuid).then(lock => {
                                 // 新規に作成した newFlow の uuid を設定して保存する
                                 saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
                                     // 転移する前にnewFlowのロックは一度解除する
@@ -321,38 +305,23 @@ const FlowEditor = () => {
 
     useEffect(() => {
         if (networkStatus === NetworkStatusValue.Online) {
-            if (offLineNotify) {
-                dismissNotify(offLineNotify.id, 1);
-                notify({
-                    title: "ネットワークに再接続しています",
-                    status: "success",
-                    dismissAfter: 2000
-                });
-                setOffLineNotify(null);
+            if (offLineNotificationId) {
+                dismissNotify(offLineNotificationId);
+                notifySuccess('ネットワークに再接続しています');
+                setOffLineNotificationId(null);
                 // ロックを延長する
                 extendLock(lock);
             }
         } else if (networkStatus === NetworkStatusValue.Offline) {
-            const _offLineNotify = notify({
-                title: "現在ネットワークがオフラインです",
-                message: "ネットワークの状態を確認してください",
-                status: "warning",
-                dismissAfter: -1,
-                closeButton: true
-            });
-            setOffLineNotify(_offLineNotify);
+            const offLineNotificationId = notifyWarning('現在ネットワークがオフラインです', 'ネットワークの状態を確認してください');
+            setOffLineNotificationId(offLineNotificationId);
         }
     }, [networkStatus, lock]);
 
     // 現在表示中のフローの保存処理
     const saveFlowPromise = (targetFlow: FlowType) => {
         // newLockUUIDがあれば、別名保存として判断する
-        let saveNotify = notify({
-            title: "フロー保存中",
-            message: "フローの設定を保存しています",
-            status: "loading",
-            dismissAfter: 0
-        });
+        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
         targetFlow.flow.nodes = nodes;
         
         return new Promise<FlowType>(async (reslove, reject) => {
@@ -377,28 +346,17 @@ const FlowEditor = () => {
                         messageStatus: "error"
                     }));
                 }).finally(() => {
-                    dismissNotify(saveNotify.id);
+                    dismissNotify(notificationId);
                 });
             }
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
-            notify({
-                title: e.title,
-                message: e.message,
-                status: e.messageStatus,
-                dismissAfter: -1,
-                closeButton: true
-            });
+            notifyError(e.title, e.message);
         });
     };
 
     const saveAnotherFlowPromise = (targetFlow:FlowType, anotherFlow:FlowType, newLockUUID:string) => {
-        let saveNotify = notify({
-            title: "フロー保存中",
-            message: "フローの設定を保存しています",
-            status: "loading",
-            dismissAfter: 0
-        });
+        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
         targetFlow.flow.nodes = nodes;
 
         return new Promise(async (reslove, reject) => {
@@ -415,17 +373,11 @@ const FlowEditor = () => {
                     messageStatus: "error"
                 }));
             }).finally(() => {
-                dismissNotify(saveNotify.id);
+                dismissNotify(notificationId);
             });
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
-            notify({
-                title: e.title,
-                message: e.message,
-                status: e.messageStatus,
-                dismissAfter: -1,
-                closeButton: true
-            });
+            notifyError(e.title, e.message);
         });
     };
 
@@ -445,36 +397,20 @@ const FlowEditor = () => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        APIUtil2.createLock(inject_flow_uuid, modifiedAt).then(lock => {
+        Api.createLock(inject_flow_uuid, modifiedAt).then(lock => {
                 setLock(lock);
                 // モードは変更せずに ReadOnly だけオフにする
                 setReadOnly(false);
         }).catch(e => {
-            const onClickReload = () => {
-                setHasShowConfirmReloadFlowModal(true);
-                return false;
-            };
             const onClickSaveAs = () => {
                 setHasShowSaveAsFlowModal(true);
                 return false;
             };
-            notify({
-                title: "フローが編集できません",
-                message: e.message,
-                status: "warning",
-                dismissAfter: 0,
-                closeButton: false,
-                dismissible: false,
-                buttons: [{
-                    name: "別名保存",
-                    primary: true,
-                    onClick: onClickSaveAs
-                }, {
-                    name: "再読込",
-                    primary: true,
-                    onClick: onClickReload
-                }]
-            });
+            const onClickReload = () => {
+                setHasShowConfirmReloadFlowModal(true);
+                return false;
+            };
+            notifySaveAs('フローが編集できません', e.message, onClickSaveAs, onClickReload);
             // モードは変更せずに ReadOnly だけオンにする
             setReadOnly(true);
             setHasEnableAutoLockExtended(false);
@@ -570,7 +506,7 @@ const FlowEditor = () => {
 
         // サブフローの一覧を取得する
         preRequest.push(
-            APIUtil2.findSubflows().then(subflows => {
+            Api.findSubflows().then(subflows => {
                 const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
                 window.subflows = subflowModels;
                 addMaster({ subflows: subflowModels });
@@ -579,21 +515,21 @@ const FlowEditor = () => {
 
         // データソースの一覧を取得する
         preRequest.push(
-            APIUtil2.findDataSrcs().then(datasrcs => {
+            Api.findDataSrcs().then(datasrcs => {
                 addMaster({ datasrcs: datasrcs });
             })
         );
 
         // データデストの一覧を取得する
         preRequest.push(
-            APIUtil2.findDataDsts().then(datadsts => {
+            Api.findDataDsts().then(datadsts => {
                 addMaster({ datadsts: datadsts });
             })
         );
 
         // Commandの一覧を取得する
         preRequest.push(
-            APIUtil2.findCommands().then(commands => {
+            Api.findCommands().then(commands => {
                 const commandModels = commands.map(command => new CommandModel(command as any));
                 window.commands = commandModels;
                 addMaster({ commands: commandModels });
@@ -602,7 +538,7 @@ const FlowEditor = () => {
 
         // VCommandの一覧を取得する
         preRequest.push(
-            APIUtil2.findVCommands().then(visualizers => {
+            Api.findVCommands().then(visualizers => {
                 const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
                 window.visualizers = visualizerModels;
                 addMaster({ visualizers: visualizerModels });
@@ -612,7 +548,7 @@ const FlowEditor = () => {
         Promise.all(preRequest).then(() => {
             // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
             // これらを取得した後に、findFlowを実行する
-            return APIUtil2.findFlow(inject_flow_uuid).then(flow => {
+            return Api.findFlow(inject_flow_uuid).then(flow => {
                 // HTML headのtitleにフロー名を設定する
                 // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
                 document.title = "📐" + flow.label;
@@ -620,13 +556,7 @@ const FlowEditor = () => {
                 loadFlowJSON(flow);
                 // 編集ロックされたフローの場合は通知する
                 if (flow.editLock) {
-                    notify({
-                        title: "警告：読取専用フロー",
-                        message: "このフローは編集ロック中のため、 編集権限が取得できませんでした。",
-                        status: "warning",
-                        dismissAfter: -1,
-                        closeButton: true
-                    });
+                    notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
                 }
                 return flow.allowlist;
             });
@@ -791,7 +721,10 @@ const FlowEditor = () => {
                 lockUUID={lock? lock.uuid: undefined}
                 nodes={nodes}
                 history={history}
-                notify={notify}
+                notifyLoading={notifyLoading}
+                notifiWarning={notifyWarning}
+                notifyError={notifyError}
+                notifyComplete={notifyComplete}
                 dismissNotify={dismissNotify}
                 addStep={addStep}
                 addHistory={addHistory}
@@ -844,8 +777,6 @@ const FlowEditor = () => {
                 lockUUID={lock? lock.uuid: undefined}
                 inspector={inspector}
                 updateFlow={updateFlow}
-                notify={notify}
-                dismissNotify={dismissNotify}
                 selected_data_source_detail={selected_data_source_detail}
                 updateDataFrameDetail={updateDataFrameDetail}
                 deleteSteps={deleteSteps}

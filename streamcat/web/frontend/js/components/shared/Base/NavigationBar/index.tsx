@@ -1,93 +1,31 @@
-import React, {useEffect, useState} from "react";
+import React from 'react';
+import { AppBar, Box, Toolbar } from '@mui/material';
+import { AccountMenu } from './AccountMenu';
 import {NavigationType} from "Model/Navigation/NavigationModel";
-import {HttpUtil, WebUtil} from "Utils/index";
-import {NavigationBarItem} from "Shared/Base/NavigationBar/NavigationBarItem";
-import {NavigationBarItemGroup} from "Shared/Base/NavigationBar/NavigationBarItemGroup";
-import {NavigationBarMenuGroup} from "Shared/Base/NavigationBar/NavigationBarMenuGroup";
-import {NavigationBarBrand} from "Shared/Base/NavigationBar/NavigationBarBrand";
-import {NavigationBarGroup} from "Shared/Base/NavigationBar/NavigationBarGroup";
-import {NavigationBarUserMenuItem} from "Shared/Base/NavigationBar/NavigationBarUserMenuItem";
 
 interface Props {
     navigation: NavigationType | null;
-}
-
-const baseUrl = "/front_static/";
-const NavigationBar = (props: Props) => {
-    const [isLogin, setIsLogin] = useState(false);
-
-    const renderGlobalNavigationItem = () => {
-        const {navigation} = props;
-        if (navigation){
-            return <NavigationBarItem href={"/library"} iconUrl={baseUrl + "images/icon/library.svg"}>ライブラリ</NavigationBarItem>
-        }
-        return null
-    }
-
-    const renderUserNavigationItem = () => {
-        const {navigation} = props;
-        let depoName;
-        if (navigation) {
-            depoName = <div className="depo-name">
-                <div className="dropdown-item">
-                    {/* master Depoの場合はVersionを、それ以外の場合はDepo名を表示する */}
-                    {navigation.depoName==='master' ? navigation.version : navigation.depoName}
-                </div>
-                <div className="dropdown-divider"/>
-            </div>;
-        }
-
-        const renderUserAdminMenu = () => {
-            const {navigation} = props;
-            const availableUserAdmin = (navigation && navigation.allowlist && navigation.allowlist.findUsers)
-            if (availableUserAdmin) {
-                return <a href="/admin/users" className="dropdown-item">ユーザー管理</a>
-            }
-            return null
-        }
-
-        const onClickLogout = (e) => {
-            WebUtil.logout();
-            e.preventDefault();
-        };
-
-        const renderUserSettingsMenu = ()=>{
-            return <a href="/settings/profile" className="dropdown-item">ユーザー情報変更</a>
-        }
-
-        return <NavigationBarUserMenuItem navigation={navigation} visible={isLogin}>
-            {depoName}
-            {renderUserSettingsMenu()}
-            {renderUserAdminMenu()}
-            <a href="#" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
-        </NavigationBarUserMenuItem>
-
-    };
-
-    const isDialog = () => {
-        return (HttpUtil.getURLParam("dialog"));
-    };
-
-    if (isDialog()) return null;
-
-    useEffect(()=>{
-        if (props.navigation) {
-            if (props.navigation.user.uuid) {
-                setIsLogin(true);
-            }
-        }
-    },[props]);
-
-    return <NavigationBarGroup>
-        <NavigationBarBrand/>
-        <NavigationBarItemGroup>
-            {renderGlobalNavigationItem()}
-        </NavigationBarItemGroup>
-        <NavigationBarMenuGroup>
-            {renderUserNavigationItem()}
-        </NavigationBarMenuGroup>
-    </NavigationBarGroup>;
-
 };
 
-export {NavigationBar}
+export const NavigationBar = (props: Props) => {
+    const {navigation} = props;
+
+    const baseUrl = '/front_static/';
+
+    const isLogin = !!navigation?.user.uuid;
+
+    // StreamCatのロゴ
+    // 押下するとライブラリのプロジェクト一覧画面に遷移する
+    const logo = <a href='/library' className='navbar.navbar-brand'>
+        {/* CSSからの画像サイズの設定が反映できないのでstyle属性で直接指定した */}
+        <img src={baseUrl + 'images/logo.png'} alt='🐈' style={{height:'25px'}} />
+    </a>;
+
+    return <Box sx={{ flexGrow:1 }}>
+        <AppBar><Toolbar>
+            {logo}
+            <Box sx={{ flexGrow:1 }} />
+            <AccountMenu navigation={navigation} visible={isLogin}/>
+        </Toolbar></AppBar>
+    </Box>;
+};

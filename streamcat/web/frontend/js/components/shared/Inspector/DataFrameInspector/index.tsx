@@ -1,19 +1,19 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import Constants from "Constants/index";
-import {APIUtil, APIUtil2, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
+import { Api } from 'Api';
+import {GraphUtil, ModalUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
 import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {DataFrameDetailType, MastType} from "Types/index";
+import {MastType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { FlowType, Port } from "Model/Library";
+import { FlowType, FrameType, Port } from "Model/Library";
+import { useStreamCatNotifications } from "Shared/Notification";
 
 type Props = {
-    notify: Function;
-    dismissNotify: Function;
-    selected_data_source_detail: DataFrameDetailType;
+    selected_data_source_detail: FrameType;
     mast: MastType;
     deleteSteps: Function;
     selectSteps: Function;
@@ -53,6 +53,8 @@ type Contents = {
 
 const DataFrameInspector = (props: Props) => {
 
+    const {notifyLoading, notifyError, dismissNotify} = useStreamCatNotifications();
+
     const flowIn = useRef<HTMLInputElement>(null);
     const flowOut = useRef<HTMLInputElement>(null);
     const cache = useRef<HTMLInputElement>(null);
@@ -71,26 +73,15 @@ const DataFrameInspector = (props: Props) => {
     }, []);
 
     const saveFlow = () => {
-        const {flow, lockUUID, notify, dismissNotify, updateLastSavedFlow} = props;
-        let saveNotify = notify({
-            title: "フロー保存中",
-            message: "フローの設定を保存しています",
-            status: "loading",
-            dismissAfter: 0
-        });
+        const {flow, lockUUID, updateLastSavedFlow} = props;
+        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
 
         return flow.update(flow.flow, lockUUID).then(flow => {
-            dismissNotify(saveNotify.id);
+            dismissNotify(notificationId);
             updateLastSavedFlow();
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
-            notify({
-                title: "フロー保存エラー",
-                message: e.message,
-                status: "error",
-                dismissAfter: -1,
-                closeButton: true
-            });
+            notifyError('フロー保存エラー', e.message);
         });
     };
 
@@ -234,34 +225,14 @@ const DataFrameInspector = (props: Props) => {
         });
     };
 
-
     const deleteCache = () => {
-        const {selected_step_ids, notify, deleteCache, updateDataFrameDetail} = props;
+        const {flow, selected_step_ids, deleteCache, updateDataFrameDetail} = props;
         const id = (selected_step_ids as any)[0];
-        const url = "caches?of=" + inject_flow_uuid + "." + id;
 
-        APIUtil.delete(url).then((response) => {
-            if (!response.data.success) {
-                notify({
-                    title: "実行エラー",
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
-            }
-            if (response.data.success) {
-                deleteCache(id);
-                const selected_step = getSelectedStep();
-                if (selected_step.hasData() && selected_step.uuid) {
-                    //TODO 将来的にはページングなどの対応が必要
-                    APIUtil2.findFrame(selected_step.uuid).then(frame => {
-                        updateDataFrameDetail(frame);
-                    });
-                } else {
-                    updateDataFrameDetail({});
-                }
-            }
+        // キャッシュを削除する
+        flow.deleteCache(id).then(() => {
+            deleteCache(id);
+            updateDataFrameDetail({});
         });
     };
 
@@ -308,7 +279,7 @@ const DataFrameInspector = (props: Props) => {
         preview = <Button onClick={() => onClickPreview()}
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {
-            const onClick = () => APIUtil2.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
+            const onClick = () => Api.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
             download = <DownloadButton onClick={onClick} download disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }

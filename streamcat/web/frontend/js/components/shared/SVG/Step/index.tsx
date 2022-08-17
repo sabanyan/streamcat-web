@@ -3,7 +3,8 @@ import Constants from "Constants/index";
 import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from "Model/index";
 import style from "./style.scss";
-import { APIUtil, APIUtil2, ZoomUtil } from "Utils/index";
+import { Api } from 'Api';
+import { ZoomUtil } from "Utils/index";
 import { DragType, MastType, StepModelType } from "Types/index";
 import { FlowType } from "Model/Library";
 
@@ -101,7 +102,7 @@ const Step = (props: Props) => {
             if (selected_step instanceof DataFrameStepModel) {
                 if (selected_step.hasData() && selected_step.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
-                    APIUtil2.findFrame(selected_step.uuid).then(frame => {
+                    Api.findFrame(selected_step.uuid).then(frame => {
                         updateDataFrameDetail(frame);
                     });
                 } else {

@@ -7,7 +7,7 @@ import {Button} from "Shared/Input";
 import {SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
-import {APIUtil2} from 'Utils/index';
+import { Api } from 'Api';
 import {CommandParamType, MastType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
 
@@ -26,10 +26,10 @@ type Props = {
 
 const getFlow = (uuid: string) => {
     if(uuid){
-        return APIUtil2.findFlow(uuid);
+        return Api.findFlow(uuid);
     }else{
         // uuidが指定されない場合はAPIを発行しない
-        return APIUtil2.findNull();
+        return Api.findNull();
     }
 }
 

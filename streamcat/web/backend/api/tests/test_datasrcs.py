@@ -11,7 +11,7 @@ class DatasrcsTest(ApiTestCaseBase):
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # Databaseを作成する(POST /databases)
         data = {
@@ -25,7 +25,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER2)
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
@@ -39,7 +39,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
-        rfolder_uuid = result['data']['uuid']
+        rfolder_uuid = result['uuid']
 
         # データソースの一覧を取得する
         results = self.get_uri('/api/v0/datasrcs', self.USER2)
@@ -59,7 +59,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "o",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd']
                 }
             ]
         ]
@@ -92,13 +92,13 @@ class DatasrcsTest(ApiTestCaseBase):
                 "dataSource": "csv"
             }
         ]
-        self.assertEqual(results['data'][0]['label'], 'ライブラリ')
-        self.assertListEqual(results['data'][0]['params'], expected_params)
-        self.assertListEqual(results['data'][0]['ports'], expected_ports)
-        self.assertEqual(results['data'][0]['flow']['label'], 'ライブラリ')
-        self.assertListEqual(results['data'][0]['flow']['params'], expected_params)
-        self.assertListEqual(results['data'][0]['flow']['ports'], expected_ports)
-        self.assertListEqual(results['data'][0]['flow']['nodes'], expected_nodes)
+        self.assertEqual(results[0]['label'], 'ライブラリ')
+        self.assertListEqual(results[0]['params'], expected_params)
+        self.assertListEqual(results[0]['ports'], expected_ports)
+        self.assertEqual(results[0]['flow']['label'], 'ライブラリ')
+        self.assertListEqual(results[0]['flow']['params'], expected_params)
+        self.assertListEqual(results[0]['flow']['ports'], expected_ports)
+        self.assertListEqual(results[0]['flow']['nodes'], expected_nodes)
 
         # DBデータソースを検証する
         expected_params = [
@@ -121,7 +121,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "o",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd']
                 }
             ]
         ]
@@ -155,13 +155,13 @@ class DatasrcsTest(ApiTestCaseBase):
                 "dataSource": "csv"
             }
         ]
-        self.assertEqual(results['data'][1]['label'], 'データベース')
-        self.assertListEqual(results['data'][1]['params'], expected_params)
-        self.assertListEqual(results['data'][1]['ports'], expected_ports)
-        self.assertEqual(results['data'][1]['flow']['label'], 'データベース')
-        self.assertListEqual(results['data'][1]['flow']['params'], expected_params)
-        self.assertListEqual(results['data'][1]['flow']['ports'], expected_ports)
-        self.assertListEqual(results['data'][1]['flow']['nodes'], expected_nodes)
+        self.assertEqual(results[1]['label'], 'データベース')
+        self.assertListEqual(results[1]['params'], expected_params)
+        self.assertListEqual(results[1]['ports'], expected_ports)
+        self.assertEqual(results[1]['flow']['label'], 'データベース')
+        self.assertListEqual(results[1]['flow']['params'], expected_params)
+        self.assertListEqual(results[1]['flow']['ports'], expected_ports)
+        self.assertListEqual(results[1]['flow']['nodes'], expected_nodes)
 
         # リモートフォルダデータソースを検証する
         expected_params = [
@@ -178,7 +178,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "o",
                     "nodeId": "d",
-                    "type": "frame"
+                    "types": ["mcmd"]
                 }
             ]
         ]
@@ -211,13 +211,13 @@ class DatasrcsTest(ApiTestCaseBase):
                 "dataSource": "csv"
             }
         ]
-        self.assertEqual(results['data'][2]['label'], 'リモートフォルダ')
-        self.assertListEqual(results['data'][2]['params'], expected_params)
-        self.assertListEqual(results['data'][2]['ports'], expected_ports)
-        self.assertEqual(results['data'][2]['flow']['label'], 'リモートフォルダ')
-        self.assertListEqual(results['data'][2]['flow']['params'], expected_params)
-        self.assertListEqual(results['data'][2]['flow']['ports'], expected_ports)
-        self.assertListEqual(results['data'][2]['flow']['nodes'], expected_nodes)
+        self.assertEqual(results[2]['label'], 'リモートフォルダ')
+        self.assertListEqual(results[2]['params'], expected_params)
+        self.assertListEqual(results[2]['ports'], expected_ports)
+        self.assertEqual(results[2]['flow']['label'], 'リモートフォルダ')
+        self.assertListEqual(results[2]['flow']['params'], expected_params)
+        self.assertListEqual(results[2]['flow']['ports'], expected_ports)
+        self.assertListEqual(results[2]['flow']['nodes'], expected_nodes)
 
         # プロジェクトをほかす(DELETE /projects)
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -235,7 +235,7 @@ class DatasrcsTest(ApiTestCaseBase):
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # Databaseを作成する(POST /databases)
         data = {
@@ -249,7 +249,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER2)
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
@@ -263,7 +263,7 @@ class DatasrcsTest(ApiTestCaseBase):
             "password" : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
-        rfolder_uuid = result['data']['uuid']
+        rfolder_uuid = result['uuid']
 
         # データデストの一覧を取得する
         results = self.get_uri('/api/v0/datadsts', self.USER2)
@@ -275,7 +275,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd']
                 }
             ],
             []
@@ -314,13 +314,13 @@ class DatasrcsTest(ApiTestCaseBase):
                 "dataSource": "csv"
             }
         ]
-        self.assertEqual(results['data'][0]['label'], 'ライブラリ')
-        self.assertListEqual(results['data'][0]['params'], expected_params)
-        self.assertListEqual(results['data'][0]['ports'], expected_ports)
-        self.assertEqual(results['data'][0]['flow']['label'], 'ライブラリ')
-        self.assertListEqual(results['data'][0]['flow']['params'], expected_params)
-        self.assertListEqual(results['data'][0]['flow']['ports'], expected_ports)
-        self.assertListEqual(results['data'][0]['flow']['nodes'], expected_nodes)
+        self.assertEqual(results[0]['label'], 'ライブラリ')
+        self.assertListEqual(results[0]['params'], expected_params)
+        self.assertListEqual(results[0]['ports'], expected_ports)
+        self.assertEqual(results[0]['flow']['label'], 'ライブラリ')
+        self.assertListEqual(results[0]['flow']['params'], expected_params)
+        self.assertListEqual(results[0]['flow']['ports'], expected_ports)
+        self.assertListEqual(results[0]['flow']['nodes'], expected_nodes)
 
         # DBデータデストを検証する
         expected_params = [
@@ -342,7 +342,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "type": "frame"
+                    'types': ['mcmd','matrix']
                 }
             ],
             []
@@ -384,13 +384,13 @@ class DatasrcsTest(ApiTestCaseBase):
                 "dataSource": "csv"
             }
         ]
-        self.assertEqual(results['data'][1]['label'], 'データベース')
-        self.assertListEqual(results['data'][1]['params'], expected_params)
-        self.assertListEqual(results['data'][1]['ports'], expected_ports)
-        self.assertEqual(results['data'][1]['flow']['label'], 'データベース')
-        self.assertListEqual(results['data'][1]['flow']['params'], expected_params)
-        self.assertListEqual(results['data'][1]['flow']['ports'], expected_ports)
-        self.assertListEqual(results['data'][1]['flow']['nodes'], expected_nodes)
+        self.assertEqual(results[1]['label'], 'データベース')
+        self.assertListEqual(results[1]['params'], expected_params)
+        self.assertListEqual(results[1]['ports'], expected_ports)
+        self.assertEqual(results[1]['flow']['label'], 'データベース')
+        self.assertListEqual(results[1]['flow']['params'], expected_params)
+        self.assertListEqual(results[1]['flow']['ports'], expected_ports)
+        self.assertListEqual(results[1]['flow']['nodes'], expected_nodes)
 
         # リモートフォルダデータデストを検証する
         expected_params = [
@@ -406,7 +406,7 @@ class DatasrcsTest(ApiTestCaseBase):
                 {
                     "label": "i",
                     "nodeId": "d",
-                    "type": "frame"
+                    "types": ["mcmd"]
                 }
             ],
             []
@@ -447,13 +447,13 @@ class DatasrcsTest(ApiTestCaseBase):
                 "dataSource": "csv"
             }
         ]
-        self.assertEqual(results['data'][2]['label'], 'リモートフォルダ')
-        self.assertListEqual(results['data'][2]['params'], expected_params)
-        self.assertListEqual(results['data'][2]['ports'], expected_ports)
-        self.assertEqual(results['data'][2]['flow']['label'], 'リモートフォルダ')
-        self.assertListEqual(results['data'][2]['flow']['params'], expected_params)
-        self.assertListEqual(results['data'][2]['flow']['ports'], expected_ports)
-        self.assertListEqual(results['data'][2]['flow']['nodes'], expected_nodes)
+        self.assertEqual(results[2]['label'], 'リモートフォルダ')
+        self.assertListEqual(results[2]['params'], expected_params)
+        self.assertListEqual(results[2]['ports'], expected_ports)
+        self.assertEqual(results[2]['flow']['label'], 'リモートフォルダ')
+        self.assertListEqual(results[2]['flow']['params'], expected_params)
+        self.assertListEqual(results[2]['flow']['ports'], expected_ports)
+        self.assertListEqual(results[2]['flow']['nodes'], expected_nodes)
 
         # プロジェクトをほかす(DELETE /projects)
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)

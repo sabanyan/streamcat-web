@@ -35,5 +35,6 @@ module.name_mapper='^Modules/\(.*\)$' -> '<PROJECT_ROOT>/src/js/modules/\1'
 module.name_mapper='^Schema/\(.*\)$' -> '<PROJECT_ROOT>/src/js/schema/\1'
 module.name_mapper='^Types/\(.*\)$' -> '<PROJECT_ROOT>/src/js/types/\1'
 module.name_mapper='^Utils/\(.*\)$' -> '<PROJECT_ROOT>/src/js/utils/\1'
+module.name_mapper='^Api/\(.*\)$' -> '<PROJECT_ROOT>/src/js/api/\1'
 
 [strict]

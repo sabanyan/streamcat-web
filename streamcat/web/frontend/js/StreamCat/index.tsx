@@ -1,20 +1,23 @@
 import React from 'react';
 import {useEffect} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
+import { createTheme, ThemeProvider } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {useDispatch} from 'react-redux';
+import {NotificationsProvider} from 'reapop';
 import style from './style.scss';
 import {ModalManager} from 'Shared/Modal';
-import {addNotification, removeNotification} from 'reapop';
 import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
-import {UserList} from 'UserListContainer/UserList';
+import {UserList} from 'Components/admin/UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
 import {setNetworkStatusAction} from 'Modules/flowEditor';
 import {NetworkStatusValue} from 'Model/Flow/FlowModel';
-import { APIUtil2 } from 'Utils/APIUtil2';
+import {Api} from 'Api';
+import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
     viewId: ViewId
@@ -34,10 +37,10 @@ export enum ViewId {
 
 const getNavigation = (viewId: ViewId) => {
     if(viewId !== ViewId.Undefined){
-        return APIUtil2.findNavigation();
+        return Api.findNavigation();
     }else{
         // Login画面の場合はAPIを発行しない
-        return APIUtil2.findNull();
+        return Api.findNull();
     }
 }
 
@@ -45,13 +48,6 @@ const StreamCat = (props: Props) => {
 
     const dispatch = useDispatch();
     const {viewId} = props;
-
-    const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
-        setTimeout(() => {
-            dispatch(removeNotification(id));
-        }, 1000);
-    };
 
     // Navigationの取得を開始する
     const [readNavigation] = useAsyncResource(getNavigation, viewId);
@@ -77,14 +73,25 @@ const StreamCat = (props: Props) => {
         if(viewId === ViewId.Flow_Editor)addNetworkStatusHandler();
     }, []);
 
+    // Webブラウザの設定に従って、ライト/ダークテーマを設定する
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const theme = React.useMemo(
+        () => createTheme({palette: {mode:prefersDarkMode? 'dark': 'light'}}),
+        [prefersDarkMode],
+    );
 
     // Navigationを取得する
     const nav = readNavigation();
 
     const renderNavigationBar = () => {
-        return <div className={style.nav}>
-            <NavigationBar navigation={nav} />
-        </div>;
+        const isDialog = HttpUtil.getURLParam("dialog");
+        if(isDialog){
+            return <></>;
+        }else{
+            return <div className={style.nav}>
+                <NavigationBar navigation={nav} />
+            </div>;
+        }
     };
 
     const renderView = (viewId: ViewId) => {
@@ -122,12 +129,15 @@ const StreamCat = (props: Props) => {
 
     try {
         return <div className={style.streamcat}>
-            {renderNavigationBar()}
-            {renderView(viewId)}
-            <ModalManager
-                notify={notify}
-                dismissNotify={dismissNotify}
-            />
+            {/* 通知ダイアログ */}
+            <NotificationsProvider>
+            {/* MUIのテーマ */}
+            <ThemeProvider theme={theme}>
+                {renderNavigationBar()}
+                {renderView(viewId)}
+                <ModalManager />
+            </ThemeProvider>
+            </NotificationsProvider>
         </div>;
     } catch (e) {
         console.log(e);

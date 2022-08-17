@@ -91,15 +91,19 @@ def delete_cache():
     """
     指定したフローのキャッシュを削除する
     """
+    if 'of' not in request.args:
+        raise Exception('URI引数"of"が指定されていません')
+
     # 引数から削除対象のノードidを取得する
     ofs = request.args['of'].split('.')
     flow_uuid = ofs[0]
     node_id = ofs[1]
 
     # 対象のフローの排他ロックのUUIDを取得する
-    if request.json is None:
+    if request.headers.get('Content-Type') != 'application/json':
         lock_uuid = None
     else:
+        # NOTE: Content-Typeがapplication/jsonでない場合は、request.json()で例外が発生する
         req = RequestJson(request.json)
         lock_uuid = req.get('lock')
 
@@ -495,6 +499,7 @@ def fetch_frame(frame_uuid):
 
 @Constraints.allow_download_only_with_writable
 def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
+    from .utils import InvalidAcceptHeader
 
     def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
         """
@@ -512,23 +517,17 @@ def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
                     line = line.rstrip(source_newline) + target_newline
                     yield line.encode(target_encoding, errors='replace')
 
-    def error(message):
-        from flask import jsonify
-        return jsonify({'success':False, 'code':-1, 'message': message})
-
     if target_encoding.lower() not in ('utf-8', 'cp932'):
-        return error(f'Acceptヘッダに指定された文字コード({target_encoding})には対応していません')
+        raise InvalidAcceptHeader(f'Acceptヘッダに指定された文字コード({target_encoding})には対応していません')
 
-    try:
-        frame = g.factory.data.find_by_uuid(frame_uuid)
-    except Exception as e:
-        return error(str(e))
+    # Frameを取得する
+    frame = g.factory.data.find_by_uuid(frame_uuid)
 
     frame_path = frame.path
     if not frame_path.exists():
-        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
+        raise Exception(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
-    # frameの文字コードと改行コードを識別する
+    # Frameの文字コードと改行コードを識別する
     source_encoding = 'utf-8' if frame.encoding == 'UNKNOWN' else frame.encoding
     source_newline = '\n' if frame.newline == 'UNKNOWN' else frame.newline
 
@@ -567,14 +566,13 @@ def _convert_file(frame_uuid:str, target_encoding:str='UTF-8'):
         response.headers['Content-Disposition'] = f'attachment; filename={downloadFileName}; filename*={downloadFileName}'
         return response
     except UnicodeDecodeError:
-        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
+        raise Exception(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
     except UnicodeEncodeError:
-        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
+        raise Exception(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return error(str(e))
-
+        raise e
 
 def _get_vis(frame_uuid:str, args={}):
     """
@@ -690,12 +688,12 @@ def _make_new_acitivity(flow:object, lock_uuid:str=None, args:dict={}) -> dict:
             'label': activity.label,
             'outs' :  [{'id'    : point.id, 
                         'label' : point.label,
-                        'uuid'  : out.uuid,
-                        'parent': None if is_vis(out) else out.find_parent().uuid,
-                        'args': {'column_names':out.column_names} if is_vis(out) else {},
-                        'contents': VisConverter(out) if is_vis(out) else None
+                        'datum' : datum.uuid,
+                        'parent': None if is_vis(datum) else datum.find_parent().uuid,
+                        'args': {'column_names':datum.column_names} if is_vis(datum) else {},
+                        'contents': VisConverter(datum) if is_vis(datum) else None
                         }
-                        for point, out in activity.outs
+                        for point, datum in activity.outs
                       ]
     }
 
@@ -726,6 +724,15 @@ def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     raise NoResultsException('実行結果は出力されませんでした.')
 
 
+@mod.route('/schedules/<schedule_uuid>', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_schedule(schedule_uuid):
+    """
+    指定したスケジュールを取得する
+    """
+    return g.factory.data.find_by_uuid(schedule_uuid)
+
 @mod.route('/schedules', methods=['POST'])
 @login_required_api
 @api_base
@@ -736,9 +743,45 @@ def make_new_schedule():
     req = RequestJson(request.json)
     parent = g.factory.data.find_by_uuid(req['parent'])
     args = req.get('args') or {}
-    schedule = parent.create_schedule(req['label'], req['flow'], args=args, trigger=req['trigger'])
+    inputs = req.get('inputs') or {}
+    schedule = parent.create_schedule(req['label'],
+                                      req['runnable'],
+                                      args=args,
+                                      inputs=inputs,
+                                      trigger=req['trigger'])
     schedule.save()
     return schedule.reload()
+
+@mod.route('/schedules/<schedule_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_schedule(schedule_uuid):
+    """
+    スケジュールのラベルを変更する、またはスケジュールを移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has('parent'):
+        if req.has('label'):
+            raise Exception('labelとはparent属性は同時に指定できません')
+        # scheduleを移動する
+        schedule = g.factory.data.find_by_uuid(schedule_uuid)
+        return schedule.move(req['parent'])
+    elif req.has_all('runnable', 'trigger'):
+        label = req.get('label') or schedule.label
+        args = req.get('args') or {}
+        inputs = req.get('inputs') or {}
+        schedule = g.factory.data.find_by_uuid(schedule_uuid)
+        return schedule.update_data(label,
+                                    req['runnable'],
+                                    args=args,
+                                    inputs=inputs,
+                                    trigger=req['trigger'])
+    elif req.has('label'):
+        schedule = g.factory.data.find_by_uuid(schedule_uuid)
+        return schedule.update_label(req['label'])
+    else:
+        raise Exception('parent,labelのいずれか一つ、またはflowとtriggerを指定してください')
 
 @mod.route('/schedules/<schedule_uuid>', methods=['DELETE'])
 @login_required_api

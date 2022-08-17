@@ -1,6 +1,5 @@
-import json
 import functools
-from flask import request, jsonify, g
+from flask import request
 
 def update_user_info(func):
     @functools.wraps(func)
@@ -11,27 +10,11 @@ def update_user_info(func):
         # 所属プロジェクトの情報を含めるか否か
         update_projects = request.args.get('projects') == 'on'
 
-        # 所属ロールも所属プロジェクトの情報も含めない場合は処理を終える
-        if not update_roles and not update_projects:
-            return func(**kwargs)
-
         # デコレート対象関数の呼び出し
-        result, status = func(**kwargs)
-        result_json = json.loads(result.data.decode())
+        user = func(**kwargs)
 
-        # APIの異常終了時は情報を追加しない
-        if not result_json['success']:
-            return result, status
-
-        # 所属ロールの情報をUser JSONに追加する
-        if update_roles:
-            _update_user_roles_info(result_json['data'])
-
-        # 所属プロジェクトの情報をUser JSONに追加する
-        if update_projects:
-            _update_user_projects_info(result_json['data'])
-
-        return jsonify(result_json), status
+        # 所属ロールの情報と所属プロジェクトの情報をUser JSONに追加する
+        return _jsonify_user(user, update_roles, update_projects)
     return deco
 
 def update_users_info(func):
@@ -43,37 +26,24 @@ def update_users_info(func):
         # 所属プロジェクトの情報を含めるか否か
         update_projects = request.args.get('projects') == 'on'
 
-        # 所属ロールも所属プロジェクトの情報も含めない場合は処理を終える
-        if not update_roles and not update_projects:
-            return func(**kwargs)
-
         # デコレート対象関数の呼び出し
-        results, status = func(**kwargs)
-        results_json = json.loads(results.data.decode())
+        users = func(**kwargs)
 
-        # APIの異常終了時は情報を追加しない
-        if not results_json['success']:
-            return results, status
-
-        for user_data in results_json['data']:
-            # 所属ロールの情報をUser JSONに追加する
-            if update_roles:
-                _update_user_roles_info(user_data)
-
-            # 所属プロジェクトの情報をUser JSONに追加する
-            if update_projects:
-                _update_user_projects_info(user_data)   
-
-        return jsonify(results_json), status
+        # 所属ロールの情報と所属プロジェクトの情報をUser JSONに追加する
+        return [_jsonify_user(user, update_roles, update_projects) for user in users]
     return deco
 
-def _update_user_roles_info(user_data):
-    user = g.factory.user.find_by_uuid(user_data['uuid'])
-    user_data.update({'roles' : user.get_joined_roles()})
-    return user_data
-
-def _update_user_projects_info(user_data):
-    # 少なくとも1つの権限を有するプロジェクトを所属プロジェクトとする
-    user = g.factory.user.find_by_uuid(user_data['uuid'])
-    user_data.update({'projects' : user.get_joined_projects()})
-    return user_data
+def _jsonify_user(user, update_roles:bool, update_projects:bool):
+    user_json = user.to_json()
+    if update_roles and update_projects:
+        # 少なくとも1つの権限を有するプロジェクトを所属プロジェクトとする
+        user_json.update({'roles': user.get_joined_roles(), 'projects': user.get_joined_projects()})
+        return user_json
+    elif update_roles:
+        user_json.update({'roles': user.get_joined_roles()})
+        return user_json
+    elif update_projects:
+        user_json.update({'projects': user.get_joined_projects()})
+        return user_json
+    else:
+        return user_json

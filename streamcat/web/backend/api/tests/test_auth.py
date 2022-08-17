@@ -12,6 +12,7 @@ class AuthTestCase(ApiTestCaseBase):
         )
 
     def setUp(self):
+        super().setUp()
         self.client = app.test_client()
         app.testing = True
 

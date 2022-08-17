@@ -7,6 +7,7 @@ from ...api.tests.api_test_case_base import ApiTestCaseBase
 
 class HtmlTestCase(ApiTestCaseBase):
     def setUp(self):
+        super().setUp()
         app.testing = True
         self.client = app.test_client()
         # ログインするとCookieにトークンが格納される
@@ -51,7 +52,7 @@ class HtmlTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃお〜ん😽'}, self.USER0)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
         # 画面が表示できること
         self.assertRenderTemplate(f'/projects/{project_uuid}', 'library.html')
 

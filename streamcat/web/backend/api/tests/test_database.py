@@ -21,35 +21,35 @@ class DatabaseTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/databases', data, self.USER1)
 
         # POST /databasesの戻り値が正しいことを検証する
-        self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['type'], 'database')
-        self.assertEqual(result['data']['label'], 'リモートフォルダ')
-        self.assertEqual(result['data']['dbms'], 'postgresql')
-        self.assertEqual(result['data']['hostname'], 'db')
-        self.assertEqual(result['data']['port'], 5432)
-        self.assertEqual(result['data']['database'], 'streamcat')
-        self.assertEqual(result['data']['userId'], 'postgres')
-        self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'database')
+        self.assertEqual(result['label'], 'リモートフォルダ')
+        self.assertEqual(result['dbms'], 'postgresql')
+        self.assertEqual(result['hostname'], 'db')
+        self.assertEqual(result['port'], 5432)
+        self.assertEqual(result['database'], 'streamcat')
+        self.assertEqual(result['userId'], 'postgres')
+        self.assertEqual(result['password'], '')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # Databaseを取得する(GET /databases)
         result = self.get_uri('/api/v0/databases/' + database_uuid, self.USER1)
 
         # GET /databasesの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], database_uuid)
-        self.assertEqual(result['data']['type'], 'database')
-        self.assertEqual(result['data']['label'], 'リモートフォルダ')
-        self.assertEqual(result['data']['dbms'], 'postgresql')
-        self.assertEqual(result['data']['hostname'], 'db')
-        self.assertEqual(result['data']['port'], 5432)
-        self.assertEqual(result['data']['database'], 'streamcat')
-        self.assertEqual(result['data']['userId'], 'postgres')
-        self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], database_uuid)
+        self.assertEqual(result['type'], 'database')
+        self.assertEqual(result['label'], 'リモートフォルダ')
+        self.assertEqual(result['dbms'], 'postgresql')
+        self.assertEqual(result['hostname'], 'db')
+        self.assertEqual(result['port'], 5432)
+        self.assertEqual(result['database'], 'streamcat')
+        self.assertEqual(result['userId'], 'postgres')
+        self.assertEqual(result['password'], '')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER1)
@@ -75,7 +75,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
 
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # Databaseのラベルを更新する(PUT /databases)
         update_data = {
@@ -84,17 +84,17 @@ class DatabaseTestCase(ApiTestCaseBase):
         result = self.put_uri('/api/v0/databases/' + database_uuid, update_data, self.USER1)
 
         # PUT /databasesの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], database_uuid)
-        self.assertEqual(result['data']['type'], 'database')
-        self.assertEqual(result['data']['label'], 'データベースストア?')
-        self.assertEqual(result['data']['dbms'], 'postgresql')
-        self.assertEqual(result['data']['hostname'], 'db')
-        self.assertEqual(result['data']['port'], 5432)
-        self.assertEqual(result['data']['database'], 'streamcat')
-        self.assertEqual(result['data']['userId'], 'postgres')
-        self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], database_uuid)
+        self.assertEqual(result['type'], 'database')
+        self.assertEqual(result['label'], 'データベースストア?')
+        self.assertEqual(result['dbms'], 'postgresql')
+        self.assertEqual(result['hostname'], 'db')
+        self.assertEqual(result['port'], 5432)
+        self.assertEqual(result['database'], 'streamcat')
+        self.assertEqual(result['userId'], 'postgres')
+        self.assertEqual(result['password'], '')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER1)
@@ -116,7 +116,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
 
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # Databaseのラベルを更新する(PUT /databases)
         update_data = {
@@ -131,17 +131,17 @@ class DatabaseTestCase(ApiTestCaseBase):
         result = self.put_uri('/api/v0/databases/' + database_uuid, update_data, self.USER1)
 
         # PUT /databasesの戻り値が正しいことを検証する
-        self.assertEqual(result['data']['uuid'], database_uuid)
-        self.assertEqual(result['data']['type'], 'database')
-        self.assertEqual(result['data']['label'], 'データベースストア?')
-        self.assertEqual(result['data']['dbms'], 'oracle')
-        self.assertEqual(result['data']['hostname'], 'localhost')
-        self.assertEqual(result['data']['port'], 1192)
-        self.assertEqual(result['data']['database'], 'kskp!')
-        self.assertEqual(result['data']['userId'], 'tiger')
-        self.assertEqual(result['data']['password'], 'scott')
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['uuid'], database_uuid)
+        self.assertEqual(result['type'], 'database')
+        self.assertEqual(result['label'], 'データベースストア?')
+        self.assertEqual(result['dbms'], 'oracle')
+        self.assertEqual(result['hostname'], 'localhost')
+        self.assertEqual(result['port'], 1192)
+        self.assertEqual(result['database'], 'kskp!')
+        self.assertEqual(result['userId'], 'tiger')
+        self.assertEqual(result['password'], 'scott')
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER1)
@@ -152,7 +152,7 @@ class DatabaseTestCase(ApiTestCaseBase):
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER1)
-        folder_dst_uuid = folder_dst['data']['uuid']
+        folder_dst_uuid = folder_dst['uuid']
 
         # Databaseを作成する(POST /databases)
         data = {
@@ -166,7 +166,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # 移動元から移動先へフォルダを移動する
         result = self.put_uri('/api/v0/databases/%s' % database_uuid, {"parent": folder_dst_uuid}, self.USER1)
@@ -185,14 +185,14 @@ class DatabaseTestCase(ApiTestCaseBase):
         }
 
         # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
-        self.assertEqual(result['data']['uuid'], database_uuid)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['dbms'], expected_result['dbms'])
-        self.assertEqual(result['data']['hostname'], expected_result['hostname'])
-        self.assertEqual(result['data']['port'], expected_result['port'])
-        self.assertEqual(result['data']['database'], expected_result['database'])
-        self.assertEqual(result['data']['userId'], expected_result['userId'])
-        self.assertEqual(result['data']['password'], expected_result['password'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], expected_result['creator'])
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertEqual(result['uuid'], database_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['dbms'], expected_result['dbms'])
+        self.assertEqual(result['hostname'], expected_result['hostname'])
+        self.assertEqual(result['port'], expected_result['port'])
+        self.assertEqual(result['database'], expected_result['database'])
+        self.assertEqual(result['userId'], expected_result['userId'])
+        self.assertEqual(result['password'], expected_result['password'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)

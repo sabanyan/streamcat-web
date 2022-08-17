@@ -1,7 +1,8 @@
 import React from 'react';
 
 import {CommandParamType} from 'Types/index';
-import {APIUtil2, StateUtil} from 'Utils/index';
+import { Api } from 'Api';
+import {StateUtil} from 'Utils/index';
 import style from './style.scss';
 
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
@@ -25,8 +26,8 @@ type Props = {
     headers: string[];
     afterViz: Function;
     onSaveResult: Function;
-    notify: Function;
-    dismissNotify: Function;
+    notify: (title:string, message:string) => string;
+    dismissNotify: (id:string) => void;
 }
 
 type State = {
@@ -163,7 +164,7 @@ export default class Visualizer extends React.Component<Props, State> {
         const limit: number = this.state.args['limit'] || 100;
 
         // GET /frames?contents=on を発行する
-        return APIUtil2.findFrame(frameUuid, true, offset, limit).then(frame => {
+        return Api.findFrame(frameUuid, true, offset, limit).then(frame => {
             const headers = frame.args!.column_names;
             const contents = frame.contents;
             const result = {
@@ -174,13 +175,7 @@ export default class Visualizer extends React.Component<Props, State> {
             this.setState(result);
         }).catch((e) => {
             if (e.message !== "VisualizeInitException") {
-                notify({
-                    title: e.title,
-                    message: e.message,
-                    status: (e.messageStatus) ? e.messageStatus : "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notify(e.title, e.message);
             }
             const result = {
                 html: null,
@@ -218,7 +213,7 @@ export default class Visualizer extends React.Component<Props, State> {
         let promise: Promise<ActivityType>;
         if(frameUuid){
             // POST /vizsを発行する
-            promise = APIUtil2.createFrameVis(
+            promise = Api.createFrameVis(
                 frameUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
@@ -227,7 +222,7 @@ export default class Visualizer extends React.Component<Props, State> {
             )
         }else{
             // POST /vizsを発行する
-            promise = APIUtil2.createFlowVis(
+            promise = Api.createFlowVis(
                 flowUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
@@ -250,13 +245,7 @@ export default class Visualizer extends React.Component<Props, State> {
             this.setState({args: args, html: contents});
         }).catch(e => {
             if (e.message !== "VisualizeInitException") {
-                notify({
-                    title: e.title,
-                    message: e.message,
-                    status: (e.messageStatus) ? e.messageStatus : "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+                notify(e.title, e.message);
             }
             const result = {
                 html: null,
@@ -293,10 +282,13 @@ export default class Visualizer extends React.Component<Props, State> {
 
     componentDidUpdate() {
         //visualizeRequestで取得したhtml内のscriptがrenderされた後にscriptを再取得
-        const scripts = $('.visualize-component').find('script');
-        if (scripts[0]) {
-            //再度appendし直してjsを実行させる
-            this.innerHTMLScriptReLaunch(scripts[0]);
+        const element = document.getElementById('visualize-component');
+        if (element) {
+            const scripts = element.getElementsByTagName('script');
+            if(scripts.length > 0){
+                //再度appendし直してjsを実行させる
+                this.innerHTMLScriptReLaunch(scripts[0]);
+            }
         }
     }
 
@@ -323,12 +315,16 @@ export default class Visualizer extends React.Component<Props, State> {
 
     renderContents() {
         let result;
-        if (!this.state.html) {
-            result = <EmptyState title={'表示することができません'} description={'条件を変更して表示ボタンを押してください'} icon={'cloud_off'} />;
-        } else {
+        if(this.state.html){
             result = <div className={style.visualizeContainer}>
                 <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
             </div>;
+            // <table>を<div>で囲むと、テーブルヘッダを固定できない
+            if(this.props.visualize.id!=='csvtohtmltable'){
+                result = <div className="modal-body">{result}</div>
+            }
+        }else{
+            result = <EmptyState title={'表示することができません'} description={'条件を変更して表示ボタンを押してください'} icon={'cloud_off'} />;
         }
 
         return result;
@@ -339,7 +335,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
         if (this.state.isLoading) return <Loader center={true} visible={this.state.isLoading} />;
 
-        return <div>
+        return <>
             {this.renderContents()}
             <PreviewInspector headers={this.state.headers}
                               onApply={(args: {}) => this.apply(args)}
@@ -347,6 +343,6 @@ export default class Visualizer extends React.Component<Props, State> {
                               args={this.state.args}
                               groups={visualize.groups}
                               label={visualize.label} />
-        </div>;
+        </>;
     }
 }

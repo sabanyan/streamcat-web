@@ -13,8 +13,8 @@ import {
 } from 'Shared/Inspector'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import { DataFrameDetailType, MastType } from "Types/index";
-import { FlowType } from 'Model/Library';
+import { MastType } from "Types/index";
+import { FlowType, FrameType } from 'Model/Library';
 
 type InspectorProps = {
   inspector: { width: number };
@@ -23,7 +23,7 @@ type InspectorProps = {
   nodes: [];
   mast: MastType;
   selected_tab_id: string;
-  selected_data_source_detail: DataFrameDetailType;
+  selected_data_source_detail: FrameType;
   lockUUID: string | undefined;
   updateDataFrameDetail: Function
   addStep: Function;
@@ -31,8 +31,6 @@ type InspectorProps = {
   addDataDstStep: Function;
   selectSteps: Function;
   updateFlow: Function;
-  notify: Function;
-  dismissNotify: Function;
   refreshFlow: Function;
   deleteSteps: Function;
   addHistory: Function;
@@ -51,7 +49,7 @@ class Inspector extends React.Component<InspectorProps> {
 
   render() {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, flow,
-      updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
+      updateFlow, selected_data_source_detail, updateDataFrameDetail,
       deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
       resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       updateLastSavedFlow, previewDisabled } = this.props
@@ -82,8 +80,6 @@ class Inspector extends React.Component<InspectorProps> {
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataFrameInspector
             nodes={flow.flow.nodes}
-            notify={notify}
-            dismissNotify={dismissNotify}
             selected_data_source_detail={selected_data_source_detail}
             updateDataFrameDetail={updateDataFrameDetail}
             mast={mast}

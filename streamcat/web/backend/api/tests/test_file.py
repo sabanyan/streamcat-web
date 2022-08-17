@@ -10,6 +10,7 @@ from .api_test_case_base import ApiTestCaseBase
 class FileTestCase(ApiTestCaseBase):
 
     def setUp(self):
+        super().setUp()
         app.testing = True
         self.TESTDATA_DIR = self.factory.data.load_root().path
 
@@ -42,7 +43,7 @@ class FileTestCase(ApiTestCaseBase):
         frame_uuid = self.create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
         # テストデータをダウンロードする
-        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset=None, user=self.USER1)
 
         # 作成したテストデータとダウンロードしたデータが一致すること
         self.assertEqual(result,
@@ -69,7 +70,7 @@ class FileTestCase(ApiTestCaseBase):
         os.environ['STREAMCAT_FRAME_CHARACTER_CODE'] = 'cp932'
         
         # テストデータをダウンロードする
-        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
+        result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset=None, user=self.USER1)
 
         # 作成したテストデータがS_JISに変換されていること
         self.assertEqual(result,
@@ -79,6 +80,25 @@ class FileTestCase(ApiTestCaseBase):
         # 後片付け
         frame = self.factory.data.find_by_uuid(frame_uuid)
         frame.delete()
+
+    def test_download_file_error_encoding(self):
+        """
+        誤った文字コードを指定してFrameのダウンロードをするとエラーになるこt
+        """
+         # テストデータ作成
+        data = [
+            ['顧客', '数量', '金額'],
+            ['A', 1, 10],
+            ['A', 2, 20],
+            ['B', 1, 30],
+            ['B', 3, 40],
+            ['B', 1, 50]
+        ]
+        frame_uuid = self.create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
+
+        # 不正な文字コードを指定してダウンロードを試みるとエラーになること
+        with self.assertRaises(AssertionError):
+            self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset='UNKOWN', user=self.USER1)
 
     def _save_file(self, path, stream):
         # 1MB
@@ -106,15 +126,18 @@ class FileTestCase(ApiTestCaseBase):
         flow = root.create_simple_flow('Export用フロー', frame)
         flow.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/archives/flows/{flow.uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{flow.uuid}', charset=None, user=self.USER1)
         self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
 
         # インポート先のフォルダを作成する
         data = {'parent': root.uuid,
                 'label' : '午後正午'}
         result = self.post_uri(f'/api/v0/projects', data, self.USER1)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # フローをインポートする
         with open(root.path/'フローファイル.tgz', mode='rb') as f:
@@ -126,22 +149,22 @@ class FileTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
 
         # フォルダが作成されていること
-        self.assertEqual(result['data']['label'], '宇宙ヤバイ')
-        self.assertEqual(result['data']['type'], 'folder')
-        self.assertEqual(result['data']['creator'], self.USER1.name)
+        self.assertEqual(result['label'], '宇宙ヤバイ')
+        self.assertEqual(result['type'], 'folder')
+        self.assertEqual(result['creator'], self.USER1.name)
         # プロジェクトフォルダ以下にフローとフレームが作成されていること
-        self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー')
-        self.assertEqual(result['data']['children'][0]['type'], 'flow')
-        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
-        self.assertEqual(result['data']['children'][1]['label'], 'データソース')
-        self.assertEqual(result['data']['children'][1]['type'], 'frame')
-        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+        self.assertEqual(result['children'][0]['label'], 'Export用フロー')
+        self.assertEqual(result['children'][0]['type'], 'flow')
+        self.assertEqual(result['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['children'][1]['label'], 'データソース')
+        self.assertEqual(result['children'][1]['type'], 'frame')
+        self.assertEqual(result['children'][1]['creator'], self.USER1.name)
 
         # インポートしたプロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
         # 作成したフローを削除する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
 
         # 編集者は、フローの排他ロックを解除する
@@ -192,12 +215,18 @@ class FileTestCase(ApiTestCaseBase):
         flow2 = folder2.create_simple_flow('Export用フロー2', frame2)
         flow2.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/archives/flows/{project1.uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{project1.uuid}', charset=None, user=self.USER1)
         self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
 
         # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
         project1.update_label('うごげ〜')
+
+        # 作成と変更を確定する
+        self.factory.end()
 
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
@@ -208,35 +237,35 @@ class FileTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
 
         # プロジェクトフォルダが作成されていること
-        self.assertEqual(result['data']['label'], 'プロジェクト')
-        self.assertEqual(result['data']['type'], 'project')
-        self.assertEqual(result['data']['creator'], self.USER1.name)
+        self.assertEqual(result['label'], 'プロジェクト')
+        self.assertEqual(result['type'], 'project')
+        self.assertEqual(result['creator'], self.USER1.name)
         # プロジェクトフォルダ以下にフローとフレームが作成されていること
-        folder2_uuid = result['data']['children'][0]['uuid']
-        self.assertEqual(result['data']['children'][0]['label'], 'フォルダ！！')
-        self.assertEqual(result['data']['children'][0]['type'], 'folder')
-        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
-        self.assertEqual(result['data']['children'][1]['label'], 'Export用フロー1')
-        self.assertEqual(result['data']['children'][1]['type'], 'flow')
-        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
-        self.assertEqual(result['data']['children'][2]['label'], 'データソース1')
-        self.assertEqual(result['data']['children'][2]['type'], 'frame')
-        self.assertEqual(result['data']['children'][2]['creator'], self.USER1.name)
+        folder2_uuid = result['children'][0]['uuid']
+        self.assertEqual(result['children'][0]['label'], 'フォルダ！！')
+        self.assertEqual(result['children'][0]['type'], 'folder')
+        self.assertEqual(result['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['children'][1]['label'], 'Export用フロー1')
+        self.assertEqual(result['children'][1]['type'], 'flow')
+        self.assertEqual(result['children'][1]['creator'], self.USER1.name)
+        self.assertEqual(result['children'][2]['label'], 'データソース1')
+        self.assertEqual(result['children'][2]['type'], 'frame')
+        self.assertEqual(result['children'][2]['creator'], self.USER1.name)
 
         # フォルダ2もインポートされていること
         result = self.get_uri(f'/api/v0/projects/{folder2_uuid}', self.USER1)
 
         # フォルダ2が作成されていること
-        self.assertEqual(result['data']['label'], 'フォルダ！！')
-        self.assertEqual(result['data']['type'], 'folder')
-        self.assertEqual(result['data']['creator'], self.USER1.name)
+        self.assertEqual(result['label'], 'フォルダ！！')
+        self.assertEqual(result['type'], 'folder')
+        self.assertEqual(result['creator'], self.USER1.name)
         # フォルダ2以下にフローとフレームが作成されていること
-        self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー2')
-        self.assertEqual(result['data']['children'][0]['type'], 'flow')
-        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
-        self.assertEqual(result['data']['children'][1]['label'], 'データソース2')
-        self.assertEqual(result['data']['children'][1]['type'], 'frame')
-        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+        self.assertEqual(result['children'][0]['label'], 'Export用フロー2')
+        self.assertEqual(result['children'][0]['type'], 'flow')
+        self.assertEqual(result['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['children'][1]['label'], 'データソース2')
+        self.assertEqual(result['children'][1]['type'], 'frame')
+        self.assertEqual(result['children'][1]['creator'], self.USER1.name)
 
         # 作成したプロジェクト等を削除する
         self.delete_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
@@ -277,8 +306,8 @@ class FileTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'お京阪'}, self.USER1)
-        project_uuid0 = result['data']['uuid']
-        project_modified_at = result['data']['modifiedAt']
+        project_uuid0 = result['uuid']
+        project_modified_at = result['modifiedAt']
 
         # CSVデータを作成する
         l = [['会社名','デザイン','線形','速度'],
@@ -291,7 +320,7 @@ class FileTestCase(ApiTestCaseBase):
 
         # 入力フレームを作成する
         result = self.post_frames('電車🚆', project_uuid0, (f, 'train.csv'), self.USER1)
-        frame_uuid = result['data']['uuid']
+        frame_uuid = result['uuid']
 
         # リモートフォルダを作成する
         data = {
@@ -315,7 +344,7 @@ class FileTestCase(ApiTestCaseBase):
         library_data_src['type'] = 'flow'
         library_data_src['args'] = {'uuid':frame_uuid}
         library_data_src['dsts'] = {'o':'d'}
-        library_data_src['flow'] = results['data'][0]['flow']
+        library_data_src['flow'] = results[0]['flow']
 
         # データデストの一覧を取得する
         results = self.get_uri('/api/v0/datadsts', self.USER1)
@@ -326,7 +355,7 @@ class FileTestCase(ApiTestCaseBase):
         rfolder_data_dst['type'] = 'flow'
         rfolder_data_dst['args'] = {'file_path':'電車🚃'}
         rfolder_data_dst['srcs'] = {'i':'d'}
-        rfolder_data_dst['flow'] = results['data'][1]['flow']
+        rfolder_data_dst['flow'] = results[1]['flow']
 
         # フローJSONを作成する
         flow_json['nodes'].append(library_data_src)
@@ -339,17 +368,17 @@ class FileTestCase(ApiTestCaseBase):
             'flow': flow_json
         }
         result = self.post_uri('/api/v0/flows', data, self.USER1)
-        flow_uuid = result['data']['uuid']
+        flow_uuid = result['uuid']
 
         # フローをエクスポートする
-        result = self.get_file(f'/api/v0/archives/flows/{flow_uuid}', self.USER1)
+        result = self.get_file(f'/api/v0/archives/flows/{flow_uuid}', charset=None, user=self.USER1)
         self._save_file(root.path/'電車🚃.tgz', io.BytesIO(result))
 
         # インポート先のプロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : '半休'}
         result = self.post_uri(f'/api/v0/projects', data, self.USER1)
-        project_uuid1 = result['data']['uuid']
+        project_uuid1 = result['uuid']
 
         # フローをインポートする
         with open(root.path/'電車🚃.tgz', mode='rb') as f:
@@ -368,7 +397,7 @@ class FileTestCase(ApiTestCaseBase):
 
         # インポートしたフローを実行できること
         result = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid1}, self.USER1)
-        data = result['data']
+        data = result
         outs = data['outs']
 
         # POST /activitiesの結果を検証する
@@ -378,13 +407,13 @@ class FileTestCase(ApiTestCaseBase):
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'f1_d1')
         self.assertEqual(outs[0]['label'], 'f1_d1')
-        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNotNone(outs[0]['parent'])
 
         # フローの実行結果が出力されていること
-        result = self.get_uri(f"/api/v0/flows/{outs[0]['uuid']}", self.USER1)
-        self.assertEqual(result['data']['type'], 'flow')
-        self.assertTrue(result['data']['label'].startswith('京阪乗る人おけいはん'))
+        result = self.get_uri(f"/api/v0/flows/{outs[0]['datum']}", self.USER1)
+        self.assertEqual(result['type'], 'flow')
+        self.assertTrue(result['label'].startswith('京阪乗る人おけいはん'))
 
         # インポート先のプロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER1)

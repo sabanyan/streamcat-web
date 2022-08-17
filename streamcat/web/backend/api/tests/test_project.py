@@ -6,12 +6,6 @@ from .api_test_case_base import ApiTestCaseBase
 
 class ProjectTestCase(ApiTestCaseBase):
 
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def get_row_by_sql(self, sql):
         """
         指定したSQL文を発行し、一つの結果行を取得する
@@ -39,7 +33,7 @@ class ProjectTestCase(ApiTestCaseBase):
 
         # POST /projects
         result = self.post_uri('/api/v0/projects', data, self.USER1)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # 保存されたプロジェクトを取得する
         sql = f"""
@@ -78,22 +72,44 @@ class ProjectTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
-                'label' : '新しいプロジェクト'}
+                'label' : '私の新しいプロジェクト'}
         result = self.post_uri('/api/v0/projects', data, self.USER2)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # プロジェクトを取得する
         results = self.get_uri('/api/v0/projects', self.USER2)
 
         # 結果の件数は1件以上である
-        self.assertGreater(len(results['data']), 0)
+        self.assertGreater(len(results), 0)
+
+        # 作成したプロジェクトを抽出する
+        result0 = [result for result in results if result['label'] == '私の新しいプロジェクト'][0]
 
         # 作成したプロジェクトが取得できることを検証する
-        result0 = results['data'][0]
         self.assertIsNotNone(result0['uuid'])
         self.assertEqual(result0['type'], 'project')
+        self.assertEqual(result0['label'], '私の新しいプロジェクト')
         self.assertIsNotNone(result0['creator'])
         self.assertIsNotNone(result0['createdAt'])
+
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result0['allowlist']['read'])
+        self.assertFalse(result0['allowlist']['createProject'])
+        self.assertTrue(result0['allowlist']['createFolder'])
+        self.assertTrue(result0['allowlist']['createFile'])
+        self.assertTrue(result0['allowlist']['update'])
+        self.assertTrue(result0['allowlist']['delete'])
+        self.assertFalse(result0['allowlist']['execute'])
+        self.assertFalse(result0['allowlist']['move'])
+        self.assertTrue(result0['allowlist']['copy'])
+        self.assertTrue(result0['allowlist']['upload'])
+        self.assertTrue(result0['allowlist']['download'])
+        # 一般ユーザはプロジェクトのインポートとエクスポートの権限を持たない
+        self.assertFalse(result0['allowlist']['import'])
+        self.assertFalse(result0['allowlist']['export'])
+        self.assertTrue(result0['allowlist']['findMember'])
+        self.assertTrue(result0['allowlist']['updateMember'])
+        self.assertFalse(result0['allowlist']['lock'])
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -109,32 +125,32 @@ class ProjectTestCase(ApiTestCaseBase):
         data = {'parent': root.uuid,
                 'label' : 'MyProject'}
         result = self.post_uri('/api/v0/projects', data, self.USER2)
-        project1_uuid = result['data']['uuid']
+        project1_uuid = result['uuid']
 
         data = {'parent': root.uuid,
                 'label' : 'myproject'}
         result = self.post_uri('/api/v0/projects', data, self.USER2)
-        project2_uuid = result['data']['uuid']
+        project2_uuid = result['uuid']
 
         data = {'parent': root.uuid,
                 'label' : 'MyProject '}
         result = self.post_uri('/api/v0/projects', data, self.USER2)
-        project3_uuid = result['data']['uuid']
+        project3_uuid = result['uuid']
 
         # 作成したプロジェクトが取得できること
         results = self.get_uri('/api/v0/projects?except_myproject=off', self.USER1)
-        self.assertEqual(len(results['data']), 4)
+        self.assertEqual(len(results), 4)
         # GET /projectsの結果はソートされない
-        result_labels = [result_data['label'] for result_data in results['data']]
+        result_labels = [result_data['label'] for result_data in results]
         result_labels.sort()
         expect_labels = ['MyProject', 'MyProject ', 'myproject', 'データデスト📂']
         self.assertListEqual(result_labels, expect_labels)
 
         # MyProjectを除外して取得できること
         results = self.get_uri('/api/v0/projects?except_myproject=on', self.USER1)
-        self.assertEqual(len(results['data']), 3)
+        self.assertEqual(len(results), 3)
         # GET /projectsの結果はソートされない
-        result_labels = [result_data['label'] for result_data in results['data']]
+        result_labels = [result_data['label'] for result_data in results]
         result_labels.sort()
         expect_labels = ['MyProject ', 'myproject', 'データデスト📂']
         self.assertListEqual(result_labels, expect_labels)
@@ -146,22 +162,91 @@ class ProjectTestCase(ApiTestCaseBase):
 
     def test_get_project(self):
         """
-        GET /projects APIをテストする
+        一般ユーザがGET /projects APIを発行する
+        """
+        # プロジェクトを作成する
+        root = self.factory2.data.load_root()
+        project = root.create_project_folder('フロー格納プロジェクトA')
+        project.save()
+
+        # 作成を確定する
+        self.factory2.end()
+
+        # プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['uuid'], project.uuid)
+        self.assertEqual(result['type'], 'project')
+        self.assertEqual(result['label'], 'フロー格納プロジェクトA')
+        self.assertEqual(result['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
+
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result['allowlist']['read'])
+        self.assertFalse(result['allowlist']['createProject'])
+        self.assertTrue(result['allowlist']['createFolder'])
+        self.assertTrue(result['allowlist']['createFile'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertFalse(result['allowlist']['move'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['upload'])
+        self.assertTrue(result['allowlist']['download'])
+        # 一般ユーザはプロジェクトのインポートとエクスポートの権限を持たない
+        self.assertFalse(result['allowlist']['import'])
+        self.assertFalse(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['findMember'])
+        self.assertTrue(result['allowlist']['updateMember'])
+        self.assertFalse(result['allowlist']['lock'])
+
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project.uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_get_project_usr_admin(self):
+        """
+        ユーザ管理者がGET /projects APIを発行する
         """
         # プロジェクトを作成する
         root = self.factory.data.load_root()
-        project = root.create_project_folder('フロー格納フォルダA')
+        project = root.create_project_folder('フロー格納プロジェクトB')
         project.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
 
         # 期待するJSONが返ることを確認する
-        self.assertEqual(result['data']['uuid'], project.uuid)
-        self.assertEqual(result['data']['type'], 'project')
-        self.assertEqual(result['data']['label'], 'フロー格納フォルダA')
-        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        self.assertEqual(result['uuid'], project.uuid)
+        self.assertEqual(result['type'], 'project')
+        self.assertEqual(result['label'], 'フロー格納プロジェクトB')
+        self.assertEqual(result['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
+
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result['allowlist']['read'])
+        self.assertFalse(result['allowlist']['createProject'])
+        self.assertTrue(result['allowlist']['createFolder'])
+        self.assertTrue(result['allowlist']['createFile'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertFalse(result['allowlist']['move'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['upload'])
+        self.assertTrue(result['allowlist']['download'])
+        # ユーザ管理者はプロジェクトのインポートとエクスポートの権限を持つ
+        self.assertTrue(result['allowlist']['import'])
+        self.assertTrue(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['findMember'])
+        self.assertTrue(result['allowlist']['updateMember'])
+        self.assertFalse(result['allowlist']['lock'])
 
         # プロジェクトをほかす
         self.delete_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
@@ -178,6 +263,9 @@ class ProjectTestCase(ApiTestCaseBase):
         project = root.create_project_folder('フロー格納フォルダ')
         project.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # PUT /projects
         new_label = '変更後のフォルダ名'
         json_data = {'label': new_label, "description": ""}
@@ -186,7 +274,7 @@ class ProjectTestCase(ApiTestCaseBase):
         # ラベル名が修正されていることを確認する
         # GET /projects/[uuid] が無いので GET /folders/[uuid] で確認する
         result = self.get_uri(f'/api/v0/folders/{project.uuid}', self.USER1)
-        self.assertEqual(result['data']['label'], new_label)
+        self.assertEqual(result['label'], new_label)
 
         # フォルダを削除する
         project = self.factory.data.find_by_uuid(project.uuid)
@@ -199,11 +287,11 @@ class ProjectTestCase(ApiTestCaseBase):
 
         # 移動元フォルダを作成する(POST /projects)
         folder_src = self.post_uri('/api/v0/projects', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
-        folder_src_uuid = folder_src['data']['uuid']
+        folder_src_uuid = folder_src['uuid']
 
         # 移動先フォルダを作成する(POST /projects)
         folder_dst = self.post_uri('/api/v0/projects', {"label" : "新しいフォルダ2", "parent": root.uuid}, self.USER1)
-        folder_dst_uuid = folder_dst['data']['uuid']
+        folder_dst_uuid = folder_dst['uuid']
 
         # 移動元から移動先へフォルダを移動する
         result = self.put_uri('/api/v0/projects/%s' % folder_src_uuid, {"parent": folder_dst_uuid}, self.USER1)
@@ -215,14 +303,12 @@ class ProjectTestCase(ApiTestCaseBase):
             ,'creator'  : 'ユーザー管理者'
         }
 
-        # PUT /projects apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
         # PUT /projects apiの戻り値が正しいことを検証する(createdAtは検証できない)
-        self.assertEqual(result['data']['uuid'], folder_src_uuid)
-        self.assertEqual(result['data']['label'], expected_result['label'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['creator'], expected_result['creator'])
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertEqual(result['uuid'], folder_src_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
         self.assertTrue(os.path.isdir((root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
@@ -233,13 +319,13 @@ class ProjectTestCase(ApiTestCaseBase):
         """
         # ルートフォルダを取得する(GET /library)
         result = self.get_uri('/api/v0/library', self.USER1)
-        root_uuid = result['data']['uuid']
+        root_uuid = result['uuid']
 
         # プロジェクトを作成する(POST /project)
         data = {'parent': root_uuid,
                 'label' : 'フロー格納フォルダ'}
         result = self.post_uri('/api/v0/projects', data, self.USER1)
-        project_uuid = result['data']['uuid']
+        project_uuid = result['uuid']
 
         # DELETE /projects
         self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)

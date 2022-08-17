@@ -118,18 +118,18 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": root.uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', root.uuid, f, self.USER1)
-        frame_uuid_1= result['data']['uuid'] 
+        frame_uuid_1= result['uuid'] 
 
         # フォルダ1、フォルダ2、フレームをほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -170,40 +170,40 @@ class TrashTestCase(ApiTestCaseBase):
         }
 
         # PUT /trashes apiの戻り値が正しいことを検証する(createdAtは検証できない)
-        self.assertIsNotNone(result['data']['uuid'])
-        self.assertEqual(result['data']['type'], expected_result['type'])
-        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['label'], expected_result['label'])
         # テストではLibrary._init_library_folders()でゴミ箱を作成しているのでcreator=None
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertNotEqual(result['data']['createdAt'], None)
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertNotEqual(result['createdAt'], None)
         # フォルダ2
         # (ゴミ箱内のフォルダは新規作成するのでUUIDは新規取得される)
-        self.assertIsNotNone(result['data']['children'][0]['uuid'])
-        self.assertEqual(result['data']['children'][0]['type'], expected_child2['type'])
-        self.assertEqual(result['data']['children'][0]['label'], expected_child2['label'])
-        self.assertEqual(result['data']['children'][0]['creator'], expected_child2['creator'])
-        self.assertNotEqual(result['data']['children'][0]['createdAt'], None)
+        self.assertIsNotNone(result['children'][0]['uuid'])
+        self.assertEqual(result['children'][0]['type'], expected_child2['type'])
+        self.assertEqual(result['children'][0]['label'], expected_child2['label'])
+        self.assertEqual(result['children'][0]['creator'], expected_child2['creator'])
+        self.assertNotEqual(result['children'][0]['createdAt'], None)
         # フォルダ1
         # (ゴミ箱内のフォルダは新規作成するのでUUIDは新規取得される)
-        self.assertIsNotNone(result['data']['children'][1]['uuid'])
-        self.assertEqual(result['data']['children'][1]['type'], expected_child1['type'])
-        self.assertEqual(result['data']['children'][1]['label'], expected_child1['label'])
-        self.assertEqual(result['data']['children'][1]['creator'], expected_child1['creator'])
-        self.assertNotEqual(result['data']['children'][1]['createdAt'], None)
+        self.assertIsNotNone(result['children'][1]['uuid'])
+        self.assertEqual(result['children'][1]['type'], expected_child1['type'])
+        self.assertEqual(result['children'][1]['label'], expected_child1['label'])
+        self.assertEqual(result['children'][1]['creator'], expected_child1['creator'])
+        self.assertNotEqual(result['children'][1]['createdAt'], None)
         # フレーム1
-        self.assertEqual(result['data']['children'][2]['uuid'], frame_uuid_1)
-        self.assertEqual(result['data']['children'][2]['type'], expected_child3['type'])
-        self.assertEqual(result['data']['children'][2]['label'], expected_child3['label'])
-        self.assertEqual(result['data']['children'][2]['creator'], expected_child3['creator'])
-        self.assertNotEqual(result['data']['children'][2]['createdAt'], None)
+        self.assertEqual(result['children'][2]['uuid'], frame_uuid_1)
+        self.assertEqual(result['children'][2]['type'], expected_child3['type'])
+        self.assertEqual(result['children'][2]['label'], expected_child3['label'])
+        self.assertEqual(result['children'][2]['creator'], expected_child3['creator'])
+        self.assertNotEqual(result['children'][2]['createdAt'], None)
         # ROOT (folderPath)
-        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
-        self.assertEqual(result['data']['folderPath'][0]['type'], folder_path1['type'])
-        self.assertEqual(result['data']['folderPath'][0]['label'], folder_path1['label'])
+        self.assertEqual(result['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['folderPath'][0]['type'], folder_path1['type'])
+        self.assertEqual(result['folderPath'][0]['label'], folder_path1['label'])
         # ゴミ箱 (folderPath)
-        self.assertIsNotNone(result['data']['folderPath'][1]['uuid'])
-        self.assertEqual(result['data']['folderPath'][1]['type'], folder_path2['type'])
-        self.assertEqual(result['data']['folderPath'][1]['label'], folder_path2['label'])
+        self.assertIsNotNone(result['folderPath'][1]['uuid'])
+        self.assertEqual(result['folderPath'][1]['type'], folder_path2['type'])
+        self.assertEqual(result['folderPath'][1]['label'], folder_path2['label'])
 
     def test_maintain_folder_hierarchy(self):
         """
@@ -214,18 +214,18 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1= result['data']['uuid']
+        frame_uuid_1= result['uuid']
 
         # フォルダ1をほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -260,22 +260,25 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ!1", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ!2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1= result['data']['uuid']
+        frame_uuid_1= result['uuid']
 
         # フローを作成する
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         flow.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # フォルダ1をほかすが、中のフレームはフローで使用中なのでエラーになる
         with self.assertRaises(AssertionError) as e:
@@ -286,7 +289,7 @@ class TrashTestCase(ApiTestCaseBase):
         f = (io.BytesIO(b"abcdef"), 'dummy2.csv')
         # フレーム2データを作成する(POST /frames)
         result = self.post_frames('フレームファイル_2', folder2_uuid, f, self.USER1)
-        frame_uuid_2= result['data']['uuid']
+        frame_uuid_2= result['uuid']
 
         # フォルダ1をほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -324,21 +327,21 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!1", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフォルダ3を作成する
         folder3 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!3", "parent": folder2_uuid}, self.USER1)
-        folder3_uuid = folder3['data']['uuid']
+        folder3_uuid = folder3['uuid']
 
         # フォルダ3内にフレームを作成する
         import io
         f = (io.BytesIO(b'abcABC'), 'frame')
         result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
-        frame_uuid= result['data']['uuid']
+        frame_uuid= result['uuid']
 
         # フォルダ1内にフローを作成する
         data_source = {
@@ -358,10 +361,10 @@ class TrashTestCase(ApiTestCaseBase):
         # フローのUUIDを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
-        if result['data']['children'][0]['uuid'] == folder2_uuid:
-            flow_uuid = result['data']['children'][1]['uuid']
+        if result['children'][0]['uuid'] == folder2_uuid:
+            flow_uuid = result['children'][1]['uuid']
         else:
-            flow_uuid = result['data']['children'][0]['uuid']
+            flow_uuid = result['children'][0]['uuid']
 
         # 参照するフレームはほかせないこと
         with self.assertRaises(AssertionError):
@@ -373,7 +376,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フローをロックする
         result = self.post_uri('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # フローはほかせること
         result = self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER1)
@@ -398,21 +401,21 @@ class TrashTestCase(ApiTestCaseBase):
 
         # プロジェクト1を作成する(POST /folders)
         project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトどす!1", "parent": root.uuid}, self.USER1)
-        project1_uuid = project1['data']['uuid']
+        project1_uuid = project1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダどす!2", "parent": project1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフォルダ3を作成する
         folder3 = self.post_uri('/api/v0/folders', {"label" : "フォルダどす!3", "parent": folder2_uuid}, self.USER1)
-        folder3_uuid = folder3['data']['uuid']
+        folder3_uuid = folder3['uuid']
 
         # フォルダ3内にフレームを作成する
         import io
         f = (io.BytesIO(b'abcABC'), 'frame')
         result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
-        frame_uuid= result['data']['uuid']
+        frame_uuid= result['uuid']
 
         # フォルダ3内にフローを作成する
         data_source = {
@@ -432,10 +435,10 @@ class TrashTestCase(ApiTestCaseBase):
         # フローのUUIDを取得する
         # (POST /flowsは作成したフローのUUIDを返さないので)
         result = self.get_uri(f'/api/v0/folders/{folder3_uuid}', self.USER1)
-        if result['data']['children'][0]['uuid'] == folder2_uuid:
-            flow_uuid = result['data']['children'][1]['uuid']
+        if result['children'][0]['uuid'] == folder2_uuid:
+            flow_uuid = result['children'][1]['uuid']
         else:
-            flow_uuid = result['data']['children'][0]['uuid']
+            flow_uuid = result['children'][0]['uuid']
 
         # 参照するフレームはほかせないこと
         with self.assertRaises(AssertionError):
@@ -459,7 +462,7 @@ class TrashTestCase(ApiTestCaseBase):
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_AA', root.uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # ルートフォルダをほかせない
         with self.assertRaises(Exception):
@@ -478,18 +481,18 @@ class TrashTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトですよ1!!", "parent": root.uuid}, self.USER1)
-        project1_uuid = project1['data']['uuid']
+        project1_uuid = project1['uuid']
 
         # プロジェクト1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": project1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1= result['data']['uuid']
+        frame_uuid_1= result['uuid']
 
         # 移動したことのないフォルダは戻せない
         with self.assertRaises(AssertionError):
@@ -535,18 +538,18 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フォルダ2をほかす
         self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
@@ -577,18 +580,18 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フレーム1をほかす
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
@@ -596,14 +599,14 @@ class TrashTestCase(ApiTestCaseBase):
         # フォルダ2内に同じラベル名でフレームを作成する
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_2 = result['data']['uuid']
-        self.assertEqual(result['data']['label'], 'フレームファイル_1')
+        frame_uuid_2 = result['uuid']
+        self.assertEqual(result['label'], 'フレームファイル_1')
 
         # フレーム1を戻す
         result = self.put_uri(f'/api/v0/trashes/{frame_uuid_1}', {}, self.USER1)
 
         # フレーム2と同じ場所に戻るのでラベルがリネームされる
-        self.assertEqual(result['data'][0]['label'], 'フレームファイル_2')
+        self.assertEqual(result[0]['label'], 'フレームファイル_2')
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -620,28 +623,31 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレーム1を作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フォルダ2内にフレーム2を作成する
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_2 = result['data']['uuid']
-        self.assertEqual(result['data']['label'], 'フレームファイル_1')
+        frame_uuid_2 = result['uuid']
+        self.assertEqual(result['label'], 'フレームファイル_1')
 
         # フレーム1を参照するフローを作成する
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         flow.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # フォルダ1をほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -692,24 +698,24 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!!!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレーム1を作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フォルダ2内にフレーム2を作成する
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_2 = result['data']['uuid']
-        self.assertEqual(result['data']['label'], 'フレームファイル_1')
+        frame_uuid_2 = result['uuid']
+        self.assertEqual(result['label'], 'フレームファイル_1')
 
         # フレーム1を参照するフローを作成する
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
@@ -718,6 +724,9 @@ class TrashTestCase(ApiTestCaseBase):
         # フレーム2を参照するフローを作成する
         flow2 = root.create_flow('フロー2', self.get_flow_with_source(frame_uuid_2))
         flow2.save()
+
+        # 作成を確定する
+        self.factory.end()
 
         # フォルダ1をほかすが、中のフレームは全てフローで使用中なのでエラーになる
         with self.assertRaises(AssertionError) as e:
@@ -753,28 +762,31 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!!?", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ1内にフレーム1を作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder1_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フレーム1を参照するフローを作成する
         flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         flow.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # フォルダ2内にフレーム2を作成する
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         result = self.post_frames('フレームファイル_2', folder2_uuid, f, self.USER1)
-        frame_uuid_2 = result['data']['uuid']
-        self.assertEqual(result['data']['label'], 'フレームファイル_2')
+        frame_uuid_2 = result['uuid']
+        self.assertEqual(result['label'], 'フレームファイル_2')
 
         # フォルダ1をほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
@@ -806,14 +818,14 @@ class TrashTestCase(ApiTestCaseBase):
         # フォルダ2は元の場所に戻っていること
         # (factoryには上でキャッシュされてるのでGET /foldersを使う)
         result = self.get_uri(f'/api/v0/folders/{folder1.uuid}', self.USER1)
-        self.assertEqual(len(result['data']['children']), 2)
-        self.assertEqual(result['data']['children'][0]['uuid'], folder2_uuid)
+        self.assertEqual(len(result['children']), 2)
+        self.assertEqual(result['children'][0]['uuid'], folder2_uuid)
 
         # フレーム2は元の場所に戻っていること
         # (factoryには上でキャッシュされてるのでGET /foldersを使う)
         result = self.get_uri(f'/api/v0/folders/{folder2.uuid}', self.USER1)
-        self.assertEqual(len(result['data']['children']), 1)
-        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid_2)
+        self.assertEqual(len(result['children']), 1)
+        self.assertEqual(result['children'][0]['uuid'], frame_uuid_2)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -832,10 +844,13 @@ class TrashTestCase(ApiTestCaseBase):
         FLOW_FOLDER_UUID = self.factory.data.load_flow_folder().uuid
         FLOW_FOLDER_LABEL = self.factory.data.load_flow_folder().label
 
+        # 作成を確定する
+        self.factory.end()
+
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', FLOW_FOLDER_UUID, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フローフォルダをほかす
         self.delete_uri(f'/api/v0/folders/{FLOW_FOLDER_UUID}', self.USER1)
@@ -860,8 +875,8 @@ class TrashTestCase(ApiTestCaseBase):
         # フレーム1は元の場所に戻っていること
         # (factoryには上でキャッシュされてるのでGET /foldersを使う)
         result = self.get_uri(f'/api/v0/folders/{FLOW_FOLDER_UUID}', self.USER1)
-        self.assertEqual(len(result['data']['children']), 1)
-        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid_1)
+        self.assertEqual(len(result['children']), 1)
+        self.assertEqual(result['children'][0]['uuid'], frame_uuid_1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -877,18 +892,18 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!Q", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        folder1_uuid = folder1['uuid']
 
         # フォルダ1内にフォルダ2を作成する
         folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
-        folder2_uuid = folder2['data']['uuid']
+        folder2_uuid = folder2['uuid']
 
         # フォルダ2内にフレームを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フレームをほかす
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
@@ -916,7 +931,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "I am project", "parent": root.uuid}, self.USER1)
-        project1_uuid = project1['data']['uuid']
+        project1_uuid = project1['uuid']
 
         # Databaseを作成する(POST /databases)
         data = {
@@ -930,7 +945,7 @@ class TrashTestCase(ApiTestCaseBase):
             "password" : ""
         }
         result = self.post_uri('/api/v0/databases', data, self.USER1)
-        database_uuid = result['data']['uuid']
+        database_uuid = result['uuid']
 
         # ゴミ箱へほかす
         self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER1)
@@ -966,7 +981,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!", "parent": root.uuid}, self.USER1)
-        project1_uuid = project1['data']['uuid']
+        project1_uuid = project1['uuid']
         project1 = self.factory.data.find_by_uuid(project1_uuid)
 
         # 参照先フレームを作成する
@@ -979,9 +994,12 @@ class TrashTestCase(ApiTestCaseBase):
         flow.save()
         flow = self.factory.data.find_by_uuid(flow.uuid)
 
+        # 作成を確定する
+        self.factory.end()
+
         # 削除前にフローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # フローをゴミ箱へほかす
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
@@ -1016,14 +1034,14 @@ class TrashTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!!", "parent": root.uuid}, self.USER1)
-        project1_uuid = project1['data']['uuid']
+        project1_uuid = project1['uuid']
 
         # フレーム1を作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_AA', project1_uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # ゴミ箱へほかす
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
@@ -1051,7 +1069,7 @@ class TrashTestCase(ApiTestCaseBase):
         # プロジェクトを作成する(POST /projects)
         # ファイルパスに空白が含まれていてもエラーにならないこと
         project1 = self.post_uri('/api/v0/projects', {"label" : "iPhone12 mini", "parent": root.uuid}, self.USER1)
-        project1_uuid = project1['data']['uuid']
+        project1_uuid = project1['uuid']
 
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
@@ -1065,7 +1083,7 @@ class TrashTestCase(ApiTestCaseBase):
             'password' : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
-        folder_uuid = result['data']['uuid']
+        folder_uuid = result['uuid']
 
         # ゴミ箱へほかす
         self.delete_uri(f'/api/v0/remote-folders/{folder_uuid}', self.USER1)
@@ -1103,7 +1121,7 @@ class TrashTestCase(ApiTestCaseBase):
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root.uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # フレーム1をほかす
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
@@ -1131,15 +1149,18 @@ class TrashTestCase(ApiTestCaseBase):
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root.uuid, f, self.USER1)
-        frame_uuid_1 = result['data']['uuid']
+        frame_uuid_1 = result['uuid']
 
         # サブフローを作成する
         subflow = root.create_flow('サブフロー', self.get_flow_with_source(frame_uuid_1))
         subflow.save()
 
+        # 作成を確定する
+        self.factory.end()
+
         # 削除前にフローのロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':subflow.uuid}, self.USER1)
-        lock_uuid = result['data']['uuid']
+        lock_uuid = result['uuid']
 
         # サブフローをほかす
         self.delete_uri_with_json(f'/api/v0/flows/{subflow.uuid}', {'lock':lock_uuid}, self.USER1)

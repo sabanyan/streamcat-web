@@ -196,7 +196,8 @@ def _make_response_with_last_url(response:Response, last_url):
 def _make_login_response(last_url=None, email='', login_failed=False, alert_message='', original_url='', args=''):
     """
     ログイン画面に遷移する
-    """        
+    """
+    from ...api.utils import Status
     response = make_response('login.html',
                             email=email,
                             login_failed=login_failed,
@@ -204,12 +205,7 @@ def _make_login_response(last_url=None, email='', login_failed=False, alert_mess
                             google_login=GOOGLE_LOGIN,
                             original_url=original_url,
                             args=args)
-    # OK
-    OK = 200
-    # 認証が必要である
-    UNAUTHORIZED = 401
-
     # ログインに失敗した場合は、UNAUTHORIZED(401)を返す
-    status_code = UNAUTHORIZED if login_failed else OK
+    status_code = Status.UNAUTHORIZED if login_failed else Status.OK
     # ログアウト時のURLの指定があれば、Set-Cookieヘッダにログアウト時のURLを設定し、Webブラウザに渡す
     return _make_response_with_last_url(response, last_url), status_code

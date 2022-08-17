@@ -16,13 +16,6 @@ GOOGLE_LOGIN=bool(os.getenv('STREAMCAT_GOOGLE_LOGIN', 0))
 # 2: HTTPS通信を前提としたセキュリティ設定をする
 SECURITY_LEVEL=int(os.getenv('STREAMCAT_SECURITY_LEVEL', 1))
 
-# コマンド一覧で表示させるコマンドのリスト
-app.config['VISIBLE_COMMANDS_JSON'] = ['mcmd', 'kcmd', 'pcmd']
-# jsonify関数を使うときにUTF-8として返却できるようにするための設定
-app.config['JSON_AS_ASCII'] = False
-# jsonify関数を使ってJSON形式で返すと勝手に並び順がソートされてしまうので、それを無効にする
-app.config['JSON_SORT_KEYS'] = False
-
 @app.after_request
 def after_request(response:Response):
     if SECURITY_LEVEL >= 1:
@@ -64,9 +57,19 @@ default_handler.setLevel(logging.INFO)
 app.logger.addHandler(default_handler)
 app.logger.addFilter(XHRFilter())
 
-# FlaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
-from .api.utils import SCatJSONEncoder
-app.json_encoder = SCatJSONEncoder
+# Flaskがdebug=Falseの場合でもログ出力する
+app.logger.setLevel(logging.INFO)
+
+#
+# JSONエンコードの設定
+#
+from .api.utils import SCatJSONProvider
+# FlaskのjsonifyによるJSONへのエンコード処理を、独自に定義したデコード処理に置き換える
+app.json = SCatJSONProvider(app)
+# jsonify関数を使うときにUTF-8として返却できるようにするための設定
+app.json.ensure_ascii = False
+# jsonify関数を使ってJSON形式で返すと勝手に並び順がソートされてしまうので、それを無効にする
+app.json.sort_keys = False
 
 #
 # End points of API

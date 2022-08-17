@@ -4,7 +4,8 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { DataFrameStepModel, NoteStepModel, NoteStepModelProps } from 'Model/index';
-import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil, APIUtil2 } from 'Utils/index';
+import { Api } from 'Api';
+import { FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
 import { Loader } from 'Shared/Base';
 import { HistoryType, LibraryListDataType, UploadedFileType } from 'Types/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
@@ -15,7 +16,10 @@ type ToolBarProps = {
     history: HistoryType;
     zoom: number;
     lockUUID?: string;
-    notify: Function;
+    notifyLoading: (title: string, message: string) => string;
+    notifiWarning: (title: string, message: string) => string;
+    notifyError: (title: string, message: string) => string;
+    notifyComplete: Function;
     dismissNotify: Function;
     addStep: Function;
     addHistory: Function;
@@ -70,39 +74,19 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     run() {
-        let { notify, dismissNotify, lockUUID } = this.props;
+        let { notifyLoading, notifiWarning, notifyError, notifyComplete, dismissNotify, lockUUID } = this.props;
         const runArgs = {
             "flowUuid": inject_flow_uuid,
             "lockUuid": lockUUID,
             "flows": [],
             "variables": []
         };
-        return FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then(activity => {
+        return FlowUtil.runWithArgs(runArgs, notifyLoading, notifiWarning, notifyError, dismissNotify).then(activity => {
                 const content = this.renderRunResult(activity);
                 // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
                 const parentFolderUUID = activity.outs[0].parent; //　今はlasts[0]
                 // 結果出力
-                let notifyId = notify({
-                    title: "フロー実行完了",
-                    message: ReactDomUtil.renderToString(content),
-                    status: "success",
-                    dismissAfter: 0,
-                    buttons: [
-                        {
-                            name: "閉じる",
-                            primary: true,
-                            onClick: () => {
-                                this.props.dismissNotify(notifyId);
-                            }
-                        },
-                        {
-                            name: "開く",
-                            primary: true,
-                            onClick: () => {
-                                window.open("/folders/" + parentFolderUUID, "_blank");
-                            }
-                        }]
-                });
+                notifyComplete('フロー実行完了', ReactDomUtil.renderToString(content), parentFolderUUID);
                 // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
                 this.flowUpdate();
             }).catch(e => {
@@ -149,7 +133,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     flowUpdate() {
-        APIUtil2.findFlow(inject_flow_uuid).then(flow => {
+        Api.findFlow(inject_flow_uuid).then(flow => {
             this.props.refreshFlow(flow);
         }).then(() => {
             this.setState({
@@ -165,7 +149,6 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
 
         HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
             const selected_data: LibraryListDataType = args;
-            let parameters = {};
             //データソースを追加
             const props: any = {
                 type: selected_data.type,
@@ -183,24 +166,24 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
         });
     }
 
-    onChangeFile(e: any) {
-        const selectedFiles: FileList = e.target.files;
-        if (selectedFiles) {
-            const uploadFile: File = selectedFiles[0];
-            APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
-                const { success } = response.data;
-                const json = response.data;
-                if (success) {
-                    this.uploadedFile = {
-                        label: json.data.label,
-                        uuid: json.data.uuid,
-                        file: uploadFile
-                    };
-                    this.forceUpdate();
-                }
-            });
-        }
-    }
+    // onChangeFile(e: any) {
+    //     const selectedFiles: FileList = e.target.files;
+    //     if (selectedFiles) {
+    //         const uploadFile: File = selectedFiles[0];
+    //         APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
+    //             const { success } = response.data;
+    //             const json = response.data;
+    //             if (success) {
+    //                 this.uploadedFile = {
+    //                     label: json.data.label,
+    //                     uuid: json.data.uuid,
+    //                     file: uploadFile
+    //                 };
+    //                 this.forceUpdate();
+    //             }
+    //         });
+    //     }
+    // }
 
     onClickZoomIn(e: Event) {
         this.props.setZoom({ offset: 10 });

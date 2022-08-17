@@ -1,4 +1,3 @@
-export {default as BreadCrumb} from './BreadCrumb'
 export {default as EmptyState} from './EmptyState'
 export {default as Form} from './Form'
 export {default as Loader} from './Loader'

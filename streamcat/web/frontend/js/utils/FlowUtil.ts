@@ -2,7 +2,7 @@
 import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel} from 'Model/index'
-import { APIUtil2, ErrorUtil, ReactDomUtil } from '.'
+import { Api } from 'Api';
 
 export default class FlowUtil {
 
@@ -114,16 +114,9 @@ export default class FlowUtil {
     return nodes
   }
 
-  static runWithArgs (runArgs: any, notify: Function, dismissNotify: Function) {
-    let runNotify
-    if (notify) {
-      runNotify = notify({
-        title: 'フロー実行中',
-        message: 'フローを実行しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
+  static runWithArgs (runArgs:any, notifyLoading:Function, notifyWarning:Function, notifyError:Function, dismissNotify:Function) {
+    let notoficationId = '';
+    notifyLoading && (notoficationId = notifyLoading('フローを実行しています'));
 
     // フロー実行ではキャッシュ作成を許可する
     let args = {use_cache: true}
@@ -133,18 +126,18 @@ export default class FlowUtil {
     })
 
     // フローを実行する
-    return APIUtil2.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch(error => {
+    return Api.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch(error => {
       let message = new MessageModel(error);
-      notify({
-        title: message.title,
-        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-        status: message.messageStatus,
-        dismissAfter: 0,
-        closeButton: true
-      });
+      console.log(error);
+      if(error.code===-4){
+        // code=-4は警告を示す
+        notifyWarning(message.title, error.message);
+      }else{
+        notifyError(message.title, error.message);
+      }
       throw error;
     }).finally(() => {
-      dismissNotify && dismissNotify(runNotify.id);
+      dismissNotify && dismissNotify(notoficationId);
     });
   }
 

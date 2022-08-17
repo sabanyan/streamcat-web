@@ -1,5 +1,5 @@
 import React from 'react';
-import { Popper } from '@material-ui/core';
+import { Popper } from '@mui/material';
 
 import { CommandParamType } from 'Types/index'
 import { Helper } from 'Shared/Inspector';
@@ -60,7 +60,7 @@ export class ParamString extends React.Component<Props, State> {
     }
 
     onClickShortcut(e, value, delimiter) {
-        const { helperTargetedInput, setHelperTargetedInput, param, onChange } = this.props;
+        const { helperTargetedInput, param, onChange } = this.props;
 
         let currentValue = helperTargetedInput.value;
         let newValue;
@@ -75,7 +75,7 @@ export class ParamString extends React.Component<Props, State> {
     }
 
     onClickCloseHelper(e) {
-        const { helperTargetedInput, setHelperTargetedInput } = this.props;
+        const { setHelperTargetedInput } = this.props;
 
         if (setHelperTargetedInput) setHelperTargetedInput(null);
     }
@@ -98,8 +98,7 @@ export class ParamString extends React.Component<Props, State> {
 
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
     render() {
-        const { label, param, helper, disabled, value, helperTargetedInput } = this.props;
-        const { onChange } = this.props;
+        const { param, helper, disabled, value, helperTargetedInput } = this.props;
 
         let isDisabled = (disabled) ? true : false;
         let currentValue = (value) ? value : "";
@@ -136,7 +135,7 @@ export class ParamString extends React.Component<Props, State> {
 
             {
                 helper && helper[param.name] && this.inputRef.current === helperTargetedInput ?
-                    <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} transition placement="right-start">
+                    <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} placement='left-end'>
                         <Helper
                             helper={helper[param.name]}
                             onClickShortcut={this.onClickShortcut.bind(this)}

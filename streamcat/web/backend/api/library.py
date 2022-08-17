@@ -21,42 +21,45 @@ from .utils import (
 
 mod = Blueprint('library', __name__)
 
-def _jsonify_folder(folder, prev_folder_path=False):
-    """
-    NOTE: この関数を呼び出す前にfolderがNoneで無いかチェックすること
-    """
-    if folder is None:
-        raise Exception('The folder argument must not be None.')
-
+def _add_children_info(folder, prev_folder_path=False):
     # フォルダ直下のフォルダとデータベースとドキュメントを取得する
     children = folder.find_children(prev_folder_path=prev_folder_path)
 
-    # children属性を作成する
-    data = folder.to_json()
-    data['children'] = children
-    
     # folderPath属性を作成する
     folder_list = folder.get_folder_path()
-    data['folderPath'] = [folder for folder in folder_list]
-    return data
+
+    # Folderのto_json()を退避する
+    folder_to_json = folder.to_json
+
+    # Folderのto_json()が'children'と'folderPath'も返すように変更する
+    def to_json():
+        folder_json = folder_to_json()
+        folder_json['children'] = children
+        folder_json['folderPath'] = folder_list
+        return folder_json
+
+    # Folderのto_json()を変更後のto_json()に置き換える
+    folder.to_json = to_json
+
+    return folder
 
 
 @mod.route('/library', methods=['GET'])
 @login_required_api
-@update_projects_info
 @api_base
+@update_projects_info
 def fecth_library():
     """
     ルートフォルダを取得する
     """
     root = g.factory.data.load_root()
-    return _jsonify_folder(root)
+    return _add_children_info(root)
 
 
 @mod.route('/projects')
 @login_required_api
-@update_projects_info2
 @api_base
+@update_projects_info2
 def get_projects():
     """
     全てのプロジェクトを取得する
@@ -70,14 +73,14 @@ def get_projects():
 
 @mod.route('/projects/<project_uuid>', methods=['GET'])
 @login_required_api
-@update_project_info
 @api_base
+@update_project_info
 def fetch_project(project_uuid):
     """
     指定したプロジェクトを取得する
     """
     project = g.factory.data.find_by_uuid(project_uuid)
-    return _jsonify_folder(project)
+    return _add_children_info(project)
 
 @mod.route('/projects', methods=['POST'])
 @login_required_api
@@ -155,14 +158,14 @@ def throw_away_project(project_uuid):
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
-@update_projects_info
 @api_base
+@update_projects_info
 def fetch_folder(folder_uuid):
     """
     指定したフォルダを取得する
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    return _jsonify_folder(folder)
+    return _add_children_info(folder)
 
 @mod.route('/folders', methods=['POST'])
 @login_required_api
@@ -220,7 +223,7 @@ def fetch_trashes():
     ゴミ箱を取得する
     """
     trash_folder = g.factory.data.find_trashcan()
-    return _jsonify_folder(trash_folder, prev_folder_path=True)
+    return _add_children_info(trash_folder, prev_folder_path=True)
 
 @mod.route('/trashes/<datum_uuid>', methods=['PUT'])
 @login_required_api
@@ -245,8 +248,8 @@ def empty_all():
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 @login_required_api
-@update_projects_info
 @api_base
+@update_projects_info
 def fetch_remote_folder(folder_uuid):
     """
     指定したリモートフォルダを取得する
@@ -556,14 +559,14 @@ def throw_away_document(document_uuid):
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
-@update_projects_info
 @api_base
+@update_projects_info
 def fetch_awss3_folder(awss3_uuid):
     """
     指定したAWS S3フォルダを取得する
     """
     folder = g.factory.data.find_by_uuid(awss3_uuid)
-    return _jsonify_folder(folder)
+    return _add_children_info(folder)
 
 @mod.route('/awss3s', methods=['POST'])
 @login_required_api

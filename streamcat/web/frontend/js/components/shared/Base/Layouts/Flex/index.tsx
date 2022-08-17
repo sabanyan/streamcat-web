@@ -1,9 +1,11 @@
 import React from "react";
 import * as style from "./style.scss";
-import {Property} from "csstype";
+// TODO: Visual Studio Codeではエラーになるが、num run buildは通る
+// エラーになる原因は不明
+import {Property} from 'csstype';
 
 type Props = {
-    children?: React.ReactNode
+    children?: React.ReactNode;
     justifyContent?: Property.AlignContent;
     alignItems?: Property.AlignItems;
     flexDirection?: Property.FlexDirection;

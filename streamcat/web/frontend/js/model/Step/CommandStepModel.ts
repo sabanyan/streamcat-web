@@ -2,7 +2,7 @@ import {BaseStepModel} from "Model/index";
 import {CommandParamType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
 import validateJS from "validate.js";
-import arrayMove from "array-move";
+import {arrayMoveImmutable} from "array-move";
 import {BaseModelProps} from "Model/Step/BaseStepModel";
 
 export interface CommandStepModelProps extends BaseModelProps {
@@ -180,7 +180,7 @@ export default class CommandStepModel extends BaseStepModel {
     }
 
     onSortEnd(oldIndex, newIndex) {
-        this.srcsOrder = arrayMove(this.srcsOrder, oldIndex, newIndex);
+        this.srcsOrder = arrayMoveImmutable(this.srcsOrder, oldIndex, newIndex);
         // ソート後,連番をリーネムする。
         let renamedSrcsOrder: string[] = [];
         let renaemdSrcs = {};

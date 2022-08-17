@@ -1,21 +1,20 @@
 import React from 'react';
-import style from './style.scss';
-import classnames from 'classnames';
-import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 import {useState} from 'react';
+import style from './style.scss';
+import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterCategoryItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterCategoryItem';
 import {FilterListItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterListItem';
 
 interface Props {
     list: IFilterCategoryItem[];
-    onClickFilterListItem: (item: IFilterListItem) => void;
     onClickFilterCategoryItem: (item: IFilterCategoryItem) => void;
+    onClickFilterListItem: (categoryId: string, items: IFilterListItem[]) => void;
 }
 
 const FilterCategoryItemList = (props: Props) => {
     const {list, onClickFilterCategoryItem, onClickFilterListItem} = props;
     const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null);
-    const [selectedList, setSelectedList] = useState<IFilterListItem | null>(null);
+    // const [selectedList, setSelectedList] = useState<IFilterListItem | null>(null);
 
     const getInitialCheckedArray = ():string[] => {
         // list から 初期値でチェックが入っている ID を抽出する
@@ -44,11 +43,11 @@ const FilterCategoryItemList = (props: Props) => {
     }
 
     // リスト（二階層目）が単一選択の場合の処理
-    const _onClickListItem = (listItem: IFilterListItem) => {
+    const _onClickListItem = (categoryId: string, listItem: IFilterListItem) => {
         // 単一選択の場合
-        setSelectedList(listItem)
+        // setSelectedList(listItem)
         // 上位コンポーネントに通知
-        onClickFilterListItem([listItem])
+        onClickFilterListItem(categoryId, [listItem])
     }
 
     // リスト（二階層目）が複数選択可能な場合の処理
@@ -80,7 +79,7 @@ const FilterCategoryItemList = (props: Props) => {
         listElement = selectedCategory.data.map((filterItem: IFilterListItem,index) => {
             return <FilterListItem
                 key={index}
-                onClick={() => _onClickListItem(filterItem)}
+                onClick={() => _onClickListItem(selectedCategory.id, filterItem)}
                 onChecked={(checked) => _onCheckedListItem(filterItem, checked)}
                 multiple={selectedCategory.multiple}
                 selected={filterItem.selected}
@@ -101,7 +100,7 @@ const FilterCategoryItemList = (props: Props) => {
             checkedListItems = checkedListItems.map(checkedListItem => {
                 return {...checkedListItem,selected: true}
             })
-            onClickFilterListItem(checkedListItems)
+            onClickFilterListItem(selectedCategory.id, checkedListItems)
         }
         applyElement = <div className={style.apply}>
             <a href="#" className={style.applyLink} onClick={onClickApply}>適用</a>
