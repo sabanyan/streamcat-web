@@ -88,7 +88,10 @@ export const ActivityDrawer = (props:Props) => {
                      value={formatDateTime(activity.startAt)} />
         <FixedField2 key='interval'
                      label='処理時間'
-                     value={interval(new Date(activity.endAt), new Date(activity.startAt))} />
+                     // 終了日時が設定せれてない場合は'実行中'を表示する  
+                     value={activity.endAt ?
+                            interval(new Date(activity.endAt), new Date(activity.startAt)) :
+                            '実行中⏳'} />
         <List2       key='results'
                      label='実行結果'
                      items={[...resultLinks, ...errors]} />
