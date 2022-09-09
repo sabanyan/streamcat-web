@@ -589,10 +589,9 @@ def _get_vis(frame_uuid:str, args={}):
                }
     # Visを取得する
     datasource = _make_flow(frame_uuid=frame_uuid)
-    activity = _execute_flow(datasource, vis_args=vis_args)
-    if activity is None or len(activity.outs)==0:
-        raise Exception('No out exists in activity')
-    return activity.outs[0][1]
+    job = _execute_flow(datasource, vis_args=vis_args)
+    outs = _get_outs(job)
+    return outs.outs[0].datum
 
 
 @mod.route('/vizs', methods=['POST'])
@@ -680,47 +679,52 @@ def _make_new_acitivity(flow:object, lock_uuid:str=None, args:dict={}) -> dict:
         from streamcat.store import Vis
         return isinstance(out, Vis)
 
-    # フローを実行してActivityを作成する
-    activity = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
+    # フローを実行してApparentOutsを取得する
+    job = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
+    outs = _get_outs(job)
 
-    return {'uuid' : activity.uuid,
-            'type' : activity.type,
-            'label': activity.label,
-            'outs' :  [{'id'    : point.id, 
-                        'label' : point.label,
-                        'datum' : datum.uuid,
-                        'parent': None if is_vis(datum) else datum.find_parent().uuid,
-                        'args': {'column_names':datum.column_names} if is_vis(datum) else {},
-                        'contents': VisConverter(datum) if is_vis(datum) else None
+    return {
+            'uuid' : job.activity_uuid,
+            # 'type' : activity.type,
+            # 'label': activity.label,
+            'outs' :  [{'id'    : out.out_point.id, 
+                        'label' : out.out_point.label,
+                        'datum' : out.datum.uuid,
+                        'parent': None if is_vis(out.datum) else out.datum.find_parent().uuid,
+                        'args': {'column_names':out.datum.column_names} if is_vis(out.datum) else {},
+                        'contents': VisConverter(out.datum) if is_vis(out.datum) else None
                         }
-                        for point, datum in activity.outs
+                        for out in outs
                       ]
     }
 
 def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
-    指定されたフローを実行し実行結果を取得する
+    指定されたフローを実行しJobを取得する
     """
-    from streamcat.store import Activity, NoResultsException
     from streamcat.engine import execute, FlowCommand
-
     args = args.copy()
     args.update(vis_args)
-    outs = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
+    return execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
-    # Activityを取得して返り値とする
-    for datum in outs.values():
-        if isinstance(datum, Activity):
-            activity = datum
+def _get_outs(job):
+    """
+    Jobから実行結果を取得する
+    """
+    from streamcat.store import ApparentOuts, NoResultsException
+    # ApparentOutsを取得して返り値とする
+    for datum in job.join().values():
+        if isinstance(datum, ApparentOuts):
+            outs = datum
             # 実行に失敗した場合、例外を送出する
-            activity.is_success or activity.raise_one()
+            outs.is_success or outs.raise_one()
             # 実行結果が出力されなかった場合、例外を送出する
-            if activity.count_outs() == 0:
+            if len(outs) == 0:
                 break
-            # 実行に成功した場合、Activityを返す
-            return activity
+            # 実行に成功した場合、ApparentOutsを返す
+            return outs
 
-    # Activityを取得できなかった場合
+    # ApparentOutsを取得できなかった場合
     raise NoResultsException('実行結果は出力されませんでした.')
 
 

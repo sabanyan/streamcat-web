@@ -134,7 +134,7 @@ def get_dump():
 
     try:
         # Dumpコマンドを実行する
-        outs = execute(DumpCommand(), args={'datum_factory': g.factory.data})
+        outs = execute(DumpCommand(), args={'datum_factory': g.factory.data}).join()
         if 'o' not in outs or isinstance(outs['o'], Exception):
             raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
 
@@ -164,7 +164,7 @@ def upload_dump():
     stream = request.files.get('file').stream
 
     # Restoreコマンドを実行する
-    outs = execute(RestoreCommand(), args={'factory': g.factory}, inputs={'i':stream})
+    outs = execute(RestoreCommand(), args={'factory': g.factory}, inputs={'i':stream}).join()
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
 
