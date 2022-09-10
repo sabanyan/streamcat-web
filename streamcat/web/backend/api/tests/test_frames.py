@@ -308,6 +308,29 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(data['outs'][0]['id'], 'd1')
         self.assertEqual(data['outs'][0]['label'], '出力結果')
 
+    def test_empty_flow_execute(self):
+        """
+        結果を出力しないフローを実行しても例外は送出されないこと
+        """
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':self.root.uuid, 'label':'すっからかん'}, self.USER2)
+        project_uuid = result['uuid']
+
+        # プロジェクト下に空のフローを作成する
+        result = self.post_uri('/api/v0/flows', {'parent':project_uuid, 'label':'空のフロー', 'flow':{}}, self.USER2)
+        flow_uuid = result['uuid']
+
+        # 空のフローを実行する
+        result = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid}, self.USER2)
+        outs = result['outs']
+
+        # POST /activitiesの結果を検証する
+        self.assertIsNotNone(result['uuid'])
+        self.assertEqual(len(outs), 0)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
     # @unittest.skip
     def test_flow_vis(self):
         """

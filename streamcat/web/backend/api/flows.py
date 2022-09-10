@@ -578,6 +578,8 @@ def _get_vis(frame_uuid:str, args={}):
     """
     指定したframeのVisデータを取得する
     """
+    from streamcat.store import NoResultsException
+
     VIZ_POINT_ID = 'd'
     vis_args = {'vis': 
                     {VIZ_POINT_ID: 
@@ -591,6 +593,8 @@ def _get_vis(frame_uuid:str, args={}):
     datasource = _make_flow(frame_uuid=frame_uuid)
     job = _execute_flow(datasource, vis_args=vis_args)
     outs = _get_outs(job)
+    if len(outs.outs) == 0:
+        raise NoResultsException('プレビュー結果は出力されませんでした.')
     return outs.outs[0].datum
 
 
@@ -711,7 +715,7 @@ def _get_outs(job):
     """
     Jobから実行結果を取得する
     """
-    from streamcat.store import ApparentOuts, NoResultsException
+    from streamcat.store import ApparentOuts
     # ApparentOutsを取得して返り値とする
     for datum in job.join().values():
         if isinstance(datum, ApparentOuts):
@@ -724,8 +728,8 @@ def _get_outs(job):
             # 実行に成功した場合、ApparentOutsを返す
             return outs
 
-    # ApparentOutsを取得できなかった場合
-    raise NoResultsException('実行結果は出力されませんでした.')
+    # ApparentOutsを取得できなかった場合は空のApparentOutsを返す
+    return ApparentOuts()
 
 
 @mod.route('/schedules/<schedule_uuid>', methods=['GET'])

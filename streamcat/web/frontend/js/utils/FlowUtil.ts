@@ -136,6 +136,15 @@ export default class FlowUtil {
         notifyError(message.title, error.message);
       }
       throw error;
+    }).then(activity => {
+      // NOTE: then句の中で送出した例外がその後のcatch句で捕捉されてしまう
+      // そのため、catch句の後にthen句を記述する
+      if(activity.outs.length === 0){
+        const errorMessage = '実行結果は出力されませんでした'
+        notifyWarning('警告', errorMessage);
+        throw new Error(errorMessage);
+      }
+      return activity;
     }).finally(() => {
       dismissNotify && dismissNotify(notoficationId);
     });

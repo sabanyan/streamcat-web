@@ -35,7 +35,7 @@ def api_base(func):
         except NothingToPutbackException as e:
             return error_json(e, -3), Status.PRECONDITION_FAILED
         except NoResultsException as e:
-            return error_json(e, -4), Status.OK
+            return error_json(e, -4), Status.INERNAL_SERVER_ERROR
         except NotAuthorizedException as e:
             import traceback
             traceback.print_exc()
