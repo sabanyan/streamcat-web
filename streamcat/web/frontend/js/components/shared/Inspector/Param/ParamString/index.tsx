@@ -135,7 +135,14 @@ export class ParamString extends React.Component<Props, State> {
 
             {
                 helper && helper[param.name] && this.inputRef.current === helperTargetedInput ?
-                    <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} placement='left-end'>
+                    <Popper className={style.popper}
+                            open={openHelper}
+                            anchorEl={helperTargetedInput}
+                            placement='left-end'
+                            // TODO: React.js 17ではonResizeとOnResizeCapture属性を記述しないとビルドエラーになる
+                            // https://github.com/mui/material-ui/issues/35287
+                            onResize={undefined}
+                            onResizeCapture={undefined}>
                         <Helper
                             helper={helper[param.name]}
                             onClickShortcut={this.onClickShortcut.bind(this)}
