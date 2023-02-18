@@ -3,7 +3,7 @@ from flask import (
     request,
     g
 )
-from streamcat.core import Datum
+from streamcat.core import SavableDatum
 from streamcat.store.lock import lock_manager
 from .utils import (
     RequestHeaders,
@@ -165,7 +165,7 @@ def fetch_datasrcs():
         if g.factory.data.trashed(store.uuid):
             continue
 
-        if store.type == Datum.DATABASE_TYPE:
+        if store.type == SavableDatum.DATABASE_TYPE:
             # DBデータソースを作成する
             label = store.label
             description = 'データベースからデータを取得する'
@@ -186,7 +186,7 @@ def fetch_datasrcs():
                 }
             ]
             
-        elif store.type == Datum.RFOLDER_TYPE:
+        elif store.type == SavableDatum.RFOLDER_TYPE:
             # リモートフォルダデータソースを作成する
             label = store.label
             description = 'リモートフォルダに在るファイルからデータを取得する'
@@ -254,7 +254,7 @@ def fetch_datadsts():
         if g.factory.data.trashed(store.uuid):
             continue
 
-        if store.type == Datum.DATABASE_TYPE:
+        if store.type == SavableDatum.DATABASE_TYPE:
             # DBデータデストを作成する
             label = store.label
             description = 'データベースにテーブルを新規作成しこれにデータを出力する'
@@ -275,7 +275,7 @@ def fetch_datadsts():
                 }
             ]
 
-        elif store.type == Datum.RFOLDER_TYPE:
+        elif store.type == SavableDatum.RFOLDER_TYPE:
             # リモートフォルダデータデストを作成する
             label = store.label
             description = 'リモートフォルダにファイルを新規作成しこれにデータを出力する'

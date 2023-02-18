@@ -2,7 +2,7 @@ import io
 import copy
 import unittest
 import pprint
-from streamcat.core.datum import Datum
+from streamcat.core import SavableDatum
 from streamcat.store.auth import User, Role
 from .api_test_case_base import ApiTestCaseBase
 
@@ -166,7 +166,7 @@ class SystemTestCase(ApiTestCaseBase):
         # MyProjectが作成されること
         self.assertEqual(len(result['projects']), 1)
         self.assertIsNotNone(result['projects'][0]['uuid'])
-        self.assertEqual(result['projects'][0]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['projects'][0]['type'], SavableDatum.PROJECT_TYPE)
         self.assertEqual(result['projects'][0]['label'], 'MyProject')
         self.assertIsNone(result['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['projects'][0]['creator'])
@@ -657,21 +657,21 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(len(result['projects']), 3, msg=result['projects'])
         # データデスト📂
         self.assertIsNotNone(result['projects'][0]['uuid'])
-        self.assertEqual(result['projects'][0]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['projects'][0]['type'], SavableDatum.PROJECT_TYPE)
         self.assertEqual(result['projects'][0]['label'], 'データデスト📂')
         self.assertIsNone(result['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['projects'][0]['creator'])
         self.assertIsNotNone(result['projects'][0]['createdAt'])
         # プロジェクトX
         self.assertIsNotNone(result['projects'][1]['uuid'])
-        self.assertEqual(result['projects'][1]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['projects'][1]['type'], SavableDatum.PROJECT_TYPE)
         self.assertEqual(result['projects'][1]['label'], 'プロジェクトX')
         self.assertIsNone(result['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['projects'][1]['creator'])
         self.assertIsNotNone(result['projects'][1]['createdAt'])
         # プロジェクトY
         self.assertIsNotNone(result['projects'][2]['uuid'])
-        self.assertEqual(result['projects'][2]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['projects'][2]['type'], SavableDatum.PROJECT_TYPE)
         self.assertEqual(result['projects'][2]['label'], 'プロジェクトY')
         self.assertIsNone(result['projects'][2]['prevFolderPath'])
         self.assertIsNotNone(result['projects'][2]['creator'])

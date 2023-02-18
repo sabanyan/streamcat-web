@@ -1,6 +1,6 @@
 import copy
 import unittest
-from streamcat.core import Datum
+from streamcat.core import SavableDatum
 from streamcat.store import DatabaseConn
 from .api_test_case_base import ApiTestCaseBase
 
@@ -630,17 +630,17 @@ class FrameTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER2)
         self.assertIsNotNone(result['uuid'])
         self.assertEqual(result['label'], '☔️')
-        self.assertEqual(result['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(result['type'], SavableDatum.ACTIVITY_TYPE)
         result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER3)
         self.assertIsNotNone(result['uuid'])
         self.assertEqual(result['label'], '☔️')
-        self.assertEqual(result['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(result['type'], SavableDatum.ACTIVITY_TYPE)
 
         # ユーザ管理者は、Activityを参照できること
         result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER1)
         self.assertIsNotNone(result['uuid'])
         self.assertEqual(result['label'], '☔️')
-        self.assertEqual(result['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(result['type'], SavableDatum.ACTIVITY_TYPE)
 
         # プロジェクトのメンバ以外は、Activityを参照できないこと
         with self.assertRaises(AssertionError):
@@ -921,7 +921,7 @@ class FrameTestCase(ApiTestCaseBase):
         lock_uuid = result['uuid']
 
         # フロー実行前のキャッシュファイル数を数えておく
-        results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
+        results = self.get_uri(f'/api/v0/folders/{SavableDatum.CACHE_FOLDER_UUID}', self.USER1)
         len_caches1 = len(results['children'])
 
         # 'vis'を指定してプレビュー実行する
@@ -955,7 +955,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertIsNotNone(outs[0].get('contents'))
 
         # キャッシュが作成されていること
-        results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
+        results = self.get_uri(f'/api/v0/folders/{SavableDatum.CACHE_FOLDER_UUID}', self.USER1)
         len_caches2 = len(results['children'])
         self.assertGreater(len_caches2, len_caches1, msg='キャッシュファイルが作成されませんでした')
 

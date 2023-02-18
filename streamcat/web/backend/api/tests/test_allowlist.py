@@ -1,7 +1,7 @@
 import io
 import unittest
 import pprint
-from streamcat.core.datum import Datum
+from streamcat.core import SavableDatum
 from .api_test_case_base import ApiTestCaseBase
 
 class AllowlistTest(ApiTestCaseBase):
@@ -15,7 +15,7 @@ class AllowlistTest(ApiTestCaseBase):
 
         # キャッシュフォルダの下にフレームを作成する
         f = (io.BytesIO(b'teihenda'), 'cache1')
-        result = self.post_frames('一心太助', Datum.CACHE_FOLDER_UUID, f, self.USER2)
+        result = self.post_frames('一心太助', SavableDatum.CACHE_FOLDER_UUID, f, self.USER2)
         cache_uuid = result['uuid']
 
         # プロジェクトを作成する
@@ -201,7 +201,7 @@ class AllowlistTest(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # 編集者メンバは、キャッシュフォルダを取得する
-        result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
+        result = self.get_uri(f'/api/v0/folders/{SavableDatum.CACHE_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['allowlist']['read'])
         self.assertFalse(result['allowlist']['createProject'])
         self.assertFalse(result['allowlist']['createFolder'])
@@ -237,7 +237,7 @@ class AllowlistTest(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # 編集者メンバは、アクティビティフォルダを取得する
-        result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
+        result = self.get_uri(f'/api/v0/folders/{SavableDatum.ACTIVITY_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['allowlist']['read'])
         self.assertFalse(result['allowlist']['createProject'])
         self.assertFalse(result['allowlist']['createFolder'])
@@ -460,7 +460,7 @@ class AllowlistTest(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # 閲覧者メンバは、キャッシュフォルダを取得する
-        result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
+        result = self.get_uri(f'/api/v0/folders/{SavableDatum.CACHE_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['allowlist']['read'])
         self.assertFalse(result['allowlist']['createProject'])
         self.assertFalse(result['allowlist']['createFolder'])
@@ -479,7 +479,7 @@ class AllowlistTest(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # 閲覧者メンバは、アクティビティフォルダを取得する
-        result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
+        result = self.get_uri(f'/api/v0/folders/{SavableDatum.ACTIVITY_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['allowlist']['read'])
         self.assertFalse(result['allowlist']['createProject'])
         self.assertFalse(result['allowlist']['createFolder'])
@@ -703,7 +703,7 @@ class AllowlistTest(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # プロジェクト管理者は、キャッシュフォルダを取得する
-        result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
+        result = self.get_uri(f'/api/v0/folders/{SavableDatum.CACHE_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['allowlist']['read'])
         self.assertFalse(result['allowlist']['createProject'])
         self.assertFalse(result['allowlist']['createFolder'])
@@ -722,7 +722,7 @@ class AllowlistTest(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # プロジェクト管理者は、アクティビティフォルダを取得する
-        result = self.get_uri(f'/api/v0/folders/{Datum.ACTIVITY_FOLDER_UUID}', self.USER2)
+        result = self.get_uri(f'/api/v0/folders/{SavableDatum.ACTIVITY_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['allowlist']['read'])
         self.assertFalse(result['allowlist']['createProject'])
         self.assertFalse(result['allowlist']['createFolder'])

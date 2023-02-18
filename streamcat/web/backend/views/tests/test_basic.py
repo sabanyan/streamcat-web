@@ -1,7 +1,7 @@
 import unittest
 from flask import template_rendered
 from streamcat.web.backend import app
-from streamcat.core import Datum
+from streamcat.core import SavableDatum
 from ...api.utils import make_access_token
 from ...api.tests.api_test_case_base import ApiTestCaseBase
 
@@ -60,13 +60,13 @@ class HtmlTestCase(ApiTestCaseBase):
         """
         キャッシュフォルダを表示できること
         """
-        self.assertRenderTemplate(f'/folders/{Datum.CACHE_FOLDER_UUID}', 'library.html')
+        self.assertRenderTemplate(f'/folders/{SavableDatum.CACHE_FOLDER_UUID}', 'library.html')
 
     def test_activity_folders(self):
         """
         アクティビティフォルダを表示できること
         """
-        self.assertRenderTemplate(f'/folders/{Datum.ACTIVITY_FOLDER_UUID}', 'library.html')
+        self.assertRenderTemplate(f'/folders/{SavableDatum.ACTIVITY_FOLDER_UUID}', 'library.html')
 
     def test_trashcans(self):
         """

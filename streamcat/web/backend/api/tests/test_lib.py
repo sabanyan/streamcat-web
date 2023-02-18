@@ -20,8 +20,8 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        from streamcat.core import Datum
-        self.assertTrue(os.path.isdir(Datum.STORE_DIR))
+        from streamcat.core import SavableDatum
+        self.assertTrue(os.path.isdir(SavableDatum.STORE_DIR))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER1)
@@ -41,8 +41,8 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        from streamcat.core import Datum
-        self.assertTrue(os.path.isdir(Datum.STORE_DIR))
+        from streamcat.core import SavableDatum
+        self.assertTrue(os.path.isdir(SavableDatum.STORE_DIR))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER1)

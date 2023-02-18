@@ -50,12 +50,12 @@ def update_projects_info2(func):
     return deco
 
 def _jsonify_project(folder, jsonify_children:bool, update_members:bool):
-    from streamcat.core import Datum
+    from streamcat.core import SavableDatum
     from streamcat.store.auth import Role
 
     # Projectの場合は、所属Memberの情報をProjectのJSONに追加する
     folder_json = folder.to_json()
-    if update_members and folder.type==Datum.PROJECT_TYPE:
+    if update_members and folder.type==SavableDatum.PROJECT_TYPE:
         folder_json.update({'members': folder.get_joined_members(except_role_uuid=Role.USR_ADMIN_ROLE_UUID)})
 
     # 所属Memberの情報を子ProjectのJSONに追加する
