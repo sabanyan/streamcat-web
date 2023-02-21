@@ -33,6 +33,10 @@ def make_response(template_name, is_preview:bool=False, **context):
                                 **context)
     response = make_response(contents)
 
+    # ログアウト後に戻る押下で前画面が表示されないようにするため
+    # HTMLレスポンスがWebブラウザのbfcacheにキャッシュされるのを防ぐ
+    response.headers['Cache-Control'] = 'no-store'
+
     if FRONTEND_BUILD == 'development':
         # フロントエンドをdevelopmentモードでビルドする場合はevalの使用を許可する
         unsafe_eval = "'unsafe-eval'"

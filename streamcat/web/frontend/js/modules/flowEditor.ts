@@ -317,7 +317,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
             const from: string = id;
             const to: string = add_step.id;
             let inputPortName = Constants.default.command.inputPortName;
-            if (add_step.srcs !== undefined || add_step.srcs !== {}) {
+            if (add_step.srcs !== undefined || !_.isEmpty(add_step.srcs)) {
               let object = add_step.srcs;
               inputPortName = Object.keys(object).find(key => object[key] === id) || "";
             }
@@ -337,7 +337,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
             const from: string = add_step.id;
             const to: string = id;
             let outputPortName = Constants.default.command.outputPortName;
-            if (add_step.dsts !== undefined || add_step.dsts !== {}) {
+            if (add_step.dsts !== undefined || !_.isEmpty(add_step.dsts)) {
               let object = add_step.dsts;
               outputPortName = Object.keys(object).find(key => object[key] === id) || "";
             }

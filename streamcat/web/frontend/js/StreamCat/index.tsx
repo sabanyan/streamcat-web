@@ -52,7 +52,7 @@ const StreamCat = (props: Props) => {
     // Navigationの取得を開始する
     const [readNavigation] = useAsyncResource(getNavigation, viewId);
 
-    const addNetworkStatusHandler = ()=>{
+    const addNetworkStatusHandler = () => {
         const getNavigatorNetworkStatus = () => {
             if(navigator.onLine){
                 return NetworkStatusValue.Online;
@@ -68,6 +68,7 @@ const StreamCat = (props: Props) => {
         window.addEventListener("offline",dispatchNetworkStatus);
     }
 
+    // 初回レンダリング時のみ実行する
     useEffect(() => {
         // if(viewId !== ViewId.Undefined)getNavigation();
         if(viewId === ViewId.Flow_Editor)addNetworkStatusHandler();

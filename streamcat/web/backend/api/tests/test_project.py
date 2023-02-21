@@ -22,7 +22,7 @@ class ProjectTestCase(ApiTestCaseBase):
         """
         POST /projects APIをテストする
         """
-        from streamcat.core import Datum
+        from streamcat.core import SavableDatum
 
         # ROOTを取得する
         root = self.factory.data.load_root()
@@ -52,7 +52,7 @@ class ProjectTestCase(ApiTestCaseBase):
         self.assertIsNotNone(row.id)
         self.assertEqual(row.parent_id, root.id)
         self.assertIsNotNone(row.uuid)
-        self.assertEqual(row.path, (Datum._to_rel_path(root.path) / 'プロジェクトです').as_posix())
+        self.assertEqual(row.path, (SavableDatum._to_rel_path(root.path) / 'プロジェクトです').as_posix())
         self.assertEqual(row.type, 'project')
         self.assertEqual(row.label, project_name)
         self.assertEqual(row.creator, self.USER1.id)

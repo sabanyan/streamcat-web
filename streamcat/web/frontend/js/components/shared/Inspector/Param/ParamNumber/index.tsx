@@ -117,7 +117,10 @@ export class ParamNumber extends React.Component<Props, State> {
             />
             {
                 helper && helper[param.name] && this.inputRef.current === helperTargetedInput ?
-                    <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} placement='left-end'>
+                    <Popper className={style.popper}
+                            open={openHelper}
+                            anchorEl={helperTargetedInput}
+                            placement='left-end'>
                         <Helper
                             helper={helper[param.name]}
                             onClickShortcut={this.onClickShortcut.bind(this)}

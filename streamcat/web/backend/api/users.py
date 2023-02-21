@@ -341,14 +341,14 @@ def join_user_to_project(project_uuid, user_uuid):
     """
     プロジェクトにユーザを追加する
     """
-    from streamcat.core import Datum
+    from streamcat.core import SavableDatum
     from streamcat.store import ProjectFolder
 
     req = RequestJson(request.json)
     if not req.has_all('memberType'):
         raise Exception('memberTyp属性を指定してください')
 
-    project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
+    project = g.factory.data.find_by_uuid(project_uuid, type=SavableDatum.PROJECT_TYPE)
     user = g.factory.user.find_by_uuid(user_uuid)
     member = ProjectFolder.Member(user, req['memberType'])
 
@@ -365,8 +365,8 @@ def leave_user_outof_project(project_uuid, user_uuid):
     """
     プロジェクトからユーザを削除する
     """
-    from streamcat.core import Datum
-    project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
+    from streamcat.core import SavableDatum
+    project = g.factory.data.find_by_uuid(project_uuid, type=SavableDatum.PROJECT_TYPE)
     user = g.factory.user.find_by_uuid(user_uuid)
 
     # この脱退によって、プロジェクトに管理者が居なくなる場合(ユーザ管理者は除外)はエラーとする

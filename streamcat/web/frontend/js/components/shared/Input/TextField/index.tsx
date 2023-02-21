@@ -1,6 +1,7 @@
 import React from "react";
 import classnames from "classnames";
 import style from "./style.scss";
+import _ from 'lodash';
 import Constants from "Constants/index";
 
 type Props = {
@@ -58,7 +59,7 @@ export default class TextField extends React.Component<Props, State> {
      * @returns {boolean}
      */
     hasRules(rules?: {}) {
-        return !(rules === {} || rules === null);
+        return !(_.isEmpty(rules) || rules === null);
     }
 
     /**
