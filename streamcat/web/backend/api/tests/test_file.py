@@ -1,5 +1,4 @@
 import os
-import json
 import tempfile
 import pprint
 from pathlib import Path
@@ -47,8 +46,8 @@ class FileTestCase(ApiTestCaseBase):
 
         # ダウンロード文字コードの設定がcp932の場合は改行コードがCR＋LFになる
         if os.environ['STREAMCAT_FRAME_CHARACTER_CODE'] == 'cp932':
-            expected_frame = b'\xe9\xa1\xa7\xe5\xae\xa2,\xe6\x95\xb0\xe9\x87\x8f,' \
-                             b'\xe9\x87\x91\xe9\xa1\x8d\nA,1,10\nA,2,20\nB,1,30\nB,3,40\nB,1,50\r\n'
+            expected_frame = b'\x8c\xda\x8bq,\x90\x94\x97\xca,\x8b\xe0\x8az\r\n' \
+                             b'A,1,10\r\nA,2,20\r\nB,1,30\r\nB,3,40\r\nB,1,50\r\n'
         else:
             expected_frame = b'\xe9\xa1\xa7\xe5\xae\xa2,\xe6\x95\xb0\xe9\x87\x8f,' \
                              b'\xe9\x87\x91\xe9\xa1\x8d\nA,1,10\nA,2,20\nB,1,30\nB,3,40\nB,1,50\n'
