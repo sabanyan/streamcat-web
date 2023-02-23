@@ -3766,7 +3766,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
         # ダウンロード文字コードの設定がcp932の場合は改行コードがCR＋LFになる
-        if os.environ['STREAMCAT_FRAME_CHARACTER_CODE'] == 'cp932':
+        if os.environ.get('STREAMCAT_FRAME_CHARACTER_CODE') == 'cp932':
             expected_frame = b'Every cup has a story\r\n'
         else:
             expected_frame = b'Every cup has a story\n'

@@ -45,7 +45,7 @@ class FileTestCase(ApiTestCaseBase):
         result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset=None, user=self.USER1)
 
         # ダウンロード文字コードの設定がcp932の場合は改行コードがCR＋LFになる
-        if os.environ['STREAMCAT_FRAME_CHARACTER_CODE'] == 'cp932':
+        if os.environ.get('STREAMCAT_FRAME_CHARACTER_CODE') == 'cp932':
             expected_frame = b'\x8c\xda\x8bq,\x90\x94\x97\xca,\x8b\xe0\x8az\r\n' \
                              b'A,1,10\r\nA,2,20\r\nB,1,30\r\nB,3,40\r\nB,1,50\r\n'
         else:
