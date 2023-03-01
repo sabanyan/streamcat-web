@@ -39,4 +39,11 @@ export default class DataDstStepModel extends BaseStepModel {
     validate() {
 
     }
+
+    /**
+     * データデストには入力ポートを追加できない
+     */
+    addableInPort () {
+        return 0
+    }
 }

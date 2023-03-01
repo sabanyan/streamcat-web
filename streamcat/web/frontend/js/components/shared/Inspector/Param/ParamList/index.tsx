@@ -8,7 +8,6 @@ import {ParamSelect} from '../ParamSelect/index'
 import Constants from 'Constants/index'
 import {ModalUtil, StateUtil} from 'Utils/index'
 import style from './style.scss'
-import {SortableContainer, SortableElement} from 'react-sortable-hoc'
 import {arrayMoveImmutable} from 'array-move'
 import classnames from 'classnames'
 
@@ -33,19 +32,12 @@ type State = {
     helperTargetedInput: any;
 }
 
-const SortableItem = SortableElement(({value}) => <li>{value}</li>);
-const SortableList = SortableContainer(
-    ({items}) => {
-        return (
-            <ul>
-                {items.map((value, index) => (
-                    <SortableItem
-                        key={`item-${index}`}
-                        index={index} value={value} />
-                ))}
-            </ul>
-        );
-    });
+const SortableItem = ({value}) => <li>{value}</li>;
+const SortableList = ({items}) => <ul>
+    {items.map((value, index) => 
+        <SortableItem key={`item-${index}`} value={value} />
+    )}
+</ul>;
 
 export class ParamList extends React.Component<Props, State>{
 
@@ -230,7 +222,7 @@ export class ParamList extends React.Component<Props, State>{
             </div>);
         })
 
-        let contents = (this.state.draggable) ? <SortableList distance={1} items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)} /> : paramElements;
+        let contents = (this.state.draggable) ? <SortableList items={paramElements} /> : paramElements;
         return <React.Fragment>
             {contents}
         </React.Fragment>;

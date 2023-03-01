@@ -64,7 +64,6 @@
 		"react-app-polyfill": "^3.0.0",
 		"react-hook-form": "^7.43.1",
 		"react-i18next": "^12.1.5",
-		"react-sortable-hoc": "^2.0.0",
 		"react-test-renderer": "^17.0.2",
 		"reapop": "^4.2.1",
 		"sass": "^1.58.3",

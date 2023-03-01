@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
-import {SortEndHandler} from "react-sortable-hoc";
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
 import { Edge, Selector, Step } from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
@@ -189,10 +188,6 @@ const FlowEditor = () => {
     // const addNote = useCallback((x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // },[]);
-    const sortStepSrcEnd = useCallback<SortEndHandler>((detail: {}, mouseEvent: {}) => {
-        // mouseEventは未使用
-        dispatch(sortStepSrcEndAction(detail, mouseEvent));
-    }, []);
     const moveSteps = useCallback((x: number, y: number, step) => {
         dispatch(moveStepsAction(x, y, step));
     }, []);
@@ -783,7 +778,6 @@ const FlowEditor = () => {
                 addHistory={addHistory}
                 deleteCache={deleteCache}
                 updateStep={updateStep}
-                sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
                 refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}

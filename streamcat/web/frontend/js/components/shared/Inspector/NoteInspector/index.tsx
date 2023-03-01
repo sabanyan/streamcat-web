@@ -152,7 +152,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
-                defaultValue={fontSize}
+                defaultValue={fontSize.toString()}
                 disabled={baseInspectorDisabled}
                 list={getFontSizeList()}
                 label={'文字'}

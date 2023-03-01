@@ -1,6 +1,5 @@
 import React from 'react';
 import {useAsyncResource} from 'use-async-resource';
-import {SortEndHandler} from "react-sortable-hoc";
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
@@ -20,7 +19,6 @@ type Props = {
     selectSteps: Function;
     deleteSteps: Function;
     children?: React.ReactNode;
-    sortStepSrcEnd: SortEndHandler;
     baseInspectorDisabled: boolean;
 }
 
@@ -117,7 +115,7 @@ const CommandInspector = (props: Props) => {
     };
 
 
-    const {updateStep, sortStepSrcEnd, baseInspectorDisabled, nodes} = props;
+    const {updateStep, baseInspectorDisabled, nodes} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
@@ -181,9 +179,7 @@ const CommandInspector = (props: Props) => {
         <InOutConnector
             updateStep={updateStep}
             nodes={nodes}
-            sortStepSrcEnd={sortStepSrcEnd}
-            onChangeInEdge={(e, data) => onChangeInEdge(e, data)}
-            onChangeOutEdge={(e, data) => onChangeOutEdge(e, data)} selectedStep={selected_step}
+            selectedStep={selected_step}
             disabled={baseInspectorDisabled}
         />
         {form}
