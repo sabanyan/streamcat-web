@@ -24,7 +24,7 @@ const ParamBoolean = (props: Props) => {
     };
 
     const renderDescription = () => {
-        let result = undefined;
+        let result = '';
         try {
             const {param} = props;
             if (param.description) {

@@ -301,8 +301,8 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
             command = add_step.getCommand();
             isAddable = command.isInPortsAddable();
           }
-          const inPorts: [CommandPortType] = command.getInPorts();
-          const outPorts: [CommandPortType] = command.getOutPorts();
+          const inPorts: CommandPortType[] = command.getInPorts();
+          const outPorts: CommandPortType[] = command.getOutPorts();
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index];
             let portName = isAddable ? "*" + index : newPort.name;

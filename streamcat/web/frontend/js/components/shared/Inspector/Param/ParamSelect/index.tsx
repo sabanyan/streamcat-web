@@ -62,7 +62,7 @@ export class ParamSelect extends React.Component<Props> {
     }
 
     renderDescription() {
-        let result = undefined;
+        let result = '';
         try {
             const {param} = this.props;
             if (param.description) {

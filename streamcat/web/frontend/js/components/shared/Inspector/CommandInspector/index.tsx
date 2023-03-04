@@ -125,7 +125,7 @@ const CommandInspector = (props: Props) => {
         label = selected_step.getLabel();
         //コマンドのラベルを取得
         subLabel = command.label;
-        const params: [CommandParamType] = command.params;
+        const params: CommandParamType[] = command.params;
         const args: {} = selected_step.args;
         const invalids: {} = selected_step.invalid;
 
@@ -137,7 +137,7 @@ const CommandInspector = (props: Props) => {
         label = selected_step.getLabel();
         if (subflowCommand) {
             subLabel = subflowCommand.label;
-            const params: [CommandParamType] = subflowCommand.params;
+            const params: CommandParamType[] = subflowCommand.params;
             const args: {} = selected_step.args;
             const invalids: {} = selected_step.invalid;
 
