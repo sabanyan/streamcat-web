@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
 import { Edge, Selector, Step } from 'Shared/SVG';
-import ToolBar from 'FlowEditorContainer/ToolBar/Core';
+import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
 import { Api } from 'Api';
@@ -724,7 +724,6 @@ const FlowEditor = () => {
                 addStep={addStep}
                 addHistory={addHistory}
                 sortFlow={sortFlow}
-                selectSteps={selectSteps}
                 setZoom={setZoom}
                 undo={undo}
                 redo={redo}

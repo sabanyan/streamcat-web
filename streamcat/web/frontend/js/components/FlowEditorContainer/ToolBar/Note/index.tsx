@@ -1,11 +1,49 @@
 import React from 'react';
-import {ToolBarButton} from "FlowEditorContainer/ToolBar";
-import {ToolBarButtonType} from "Types/index";
+import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
+import Constants from 'Constants/index';
+import { NoteStepModel } from 'Model/index';
+import { FlowUtil, PositionUtil, ZoomUtil } from 'Utils/index';
+import { defaultGraphProps } from 'Utils/GraphUtil';
 
-const Note = (props: ToolBarButtonType) => {
-    const {onClick, children, disabled, icon} = props;
-    return <ToolBarButton onClick={onClick} disabled={disabled}
-                          icon={icon}>{children}</ToolBarButton>;
+type Props = {
+    zoom: number;
+    nodes: any[];
+    addStep: Function;
+    addHistory: Function;
+    children: React.ReactNode;
+    disabled: boolean;
 };
 
-export {Note};
+export const Note = (props: Props) => {
+    const {zoom, nodes, addStep, addHistory, children, disabled} = props;
+
+    const onClick = () => {
+        let position = PositionUtil.getCenterPosition('#flow_editor>div');
+        position = {
+            x: ZoomUtil.zoomReverse(position.x, zoom),
+            y: ZoomUtil.zoomReverse(position.y, zoom)
+                + Constants.default.step.height
+                + defaultGraphProps.rankSeparator
+        };
+
+        const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition(
+            { ...position },
+            nodes
+        );
+
+        const note = new NoteStepModel({
+            id: '',
+            type: Constants.step.type.note,
+            position: notOverlapNodePosition,
+            title: '新しいメモ',
+            content: ''
+        });
+
+        addStep(note);
+        addHistory();
+    };
+
+    return <ToolBarButton onClick={onClick}
+                          disabled={disabled}
+                          icon='comment'>{children}</ToolBarButton>;
+};

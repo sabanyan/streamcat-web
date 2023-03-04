@@ -1,11 +1,15 @@
 import React from 'react';
-import {ToolBarButton} from "FlowEditorContainer/ToolBar";
-import {ToolBarButtonType} from "Types/index";
+import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 
-const Undo = (props: ToolBarButtonType) => {
-    const {onClick, children, disabled, icon} = props;
-    return <ToolBarButton onClick={onClick} disabled={disabled}
-                          icon={icon}>{children}</ToolBarButton>;
+type Props = {
+    undo: Function;
+    children: React.ReactNode;
+    disabled: boolean;
 };
 
-export {Undo};
+export const Undo = (props: Props) => {
+    const {undo, children, disabled} = props;
+    return <ToolBarButton icon='undo'
+                          onClick={() => undo()}
+                          disabled={disabled}>{children}</ToolBarButton>;
+};

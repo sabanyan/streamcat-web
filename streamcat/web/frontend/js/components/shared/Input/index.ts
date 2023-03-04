@@ -1,6 +1,6 @@
 export {default as AddButton} from './AddButton'
 export {default as Button} from './Button'
-export {default as DownloadButton} from './DownloadButton'
+export {DownloadButton} from './DownloadButton'
 export {default as TextField} from './TextField'
 export {default as FileUploader} from './FileUploader'
 export {DropDownList} from './DropDownList'

@@ -2,14 +2,26 @@ import React from 'react';
 import {AddButton} from 'Shared/Input';
 import {HttpUtil} from 'Utils/index';
 import style from './style.scss';
-import {RunArgsType, LibraryListDataType} from "Types/index";
 import { FlowType } from 'Model/Library';
 
+type LibraryListDataType = {
+    createdAt: string;
+    creator: string;
+    label: string;
+    type: string;
+    uuid: string;
+    selected: boolean;
+};
+
 type Props = {
-    runArgs: RunArgsType;
+    runArgs: {
+        flowUuid: string;
+        flows: any[];
+        variables: any[];
+    };
     updateRunArgs: Function;
     flow: FlowType;
-}
+};
 
 const InputFlowForm = (props: Props) => {
     const [, updateState] = React.useState();
@@ -52,7 +64,7 @@ const InputFlowForm = (props: Props) => {
     const renderInputFlowForm = () => {
         const {runArgs} = props;
 
-        if (runArgs.length === 0) {
+        if (runArgs.flows.length === 0) {
             return null;
         }
 

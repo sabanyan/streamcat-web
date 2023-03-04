@@ -1,16 +1,37 @@
-import React from "react";
-import {ToolBarButton} from "FlowEditorContainer/ToolBar";
-import style from "./style.scss";
-import {ZoomToolBarButtonType} from "Types/index";
+import React from 'react';
+import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
+import style from './style.scss';
 
-const Zoom = (props: ZoomToolBarButtonType) => {
-    const {onClickZoomIn, onClickZoomOut, onClickDefaultZoom, disabled, zoom} = props;
-    return <div className={style.zoom}>
-        <ToolBarButton onClick={onClickZoomIn} disabled={disabled} is_paper_toolbar_button={true}>+</ToolBarButton>
-        <ToolBarButton onClick={onClickDefaultZoom} disabled={disabled}
-                       is_paper_toolbar_button={true}>{zoom}%</ToolBarButton>
-        <ToolBarButton onClick={onClickZoomOut} disabled={disabled} is_paper_toolbar_button={true}>-</ToolBarButton>
-    </div>;
+type Props = {
+    zoom: number;
+    setZoom: Function;
+    disabled: boolean;
 };
 
-export {Zoom};
+export const Zoom = (props: Props) => {
+    const {zoom, setZoom, disabled} = props;
+
+    const onClickZoomIn = (e: React.MouseEvent) => {
+        setZoom({ offset: 10 });
+    };
+
+    const onClickZoomOut = (e: React.MouseEvent) => {
+        setZoom({ offset: -10 });
+    };
+
+    const onClickDefaultZoom = (e: React.MouseEvent) => {
+        setZoom({ value: 100 });
+    };
+
+    return <div className={style.zoom}>
+        <ToolBarButton  onClick={onClickZoomIn}
+                        disabled={disabled}
+                        is_paper_toolbar_button={true}>+</ToolBarButton>
+        <ToolBarButton  onClick={onClickDefaultZoom}
+                        disabled={disabled}
+                        is_paper_toolbar_button={true}>{zoom}%</ToolBarButton>
+        <ToolBarButton  onClick={onClickZoomOut}
+                        disabled={disabled}
+                        is_paper_toolbar_button={true}>-</ToolBarButton>
+    </div>;
+};

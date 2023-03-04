@@ -280,7 +280,7 @@ const DataFrameInspector = (props: Props) => {
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {
             const onClick = () => Api.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
-            download = <DownloadButton onClick={onClick} download disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
+            download = <DownloadButton onClick={onClick} download={true} disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }
 

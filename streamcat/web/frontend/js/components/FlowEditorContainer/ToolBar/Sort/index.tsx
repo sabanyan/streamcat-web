@@ -1,11 +1,21 @@
-import React from "react";
-import {ToolBarButton} from "FlowEditorContainer/ToolBar";
-import {ToolBarButtonType} from "Types/index";
+import React from 'react';
+import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 
-const Sort = (props: ToolBarButtonType) => {
-    const {onClick, children, disabled, icon} = props;
-    return <ToolBarButton onClick={onClick} disabled={disabled} icon={icon}
-                          is_paper_toolbar_button={true}>{children}</ToolBarButton>;
+type Props = {
+    addHistory: Function;
+    sortFlow: Function;
+    children: React.ReactNode;
+    disabled: boolean;
 };
 
-export {Sort};
+export const Sort = (props: Props) => {
+    const {addHistory, sortFlow, children, disabled} = props;
+
+    return <ToolBarButton icon='&#xE42A'
+                          is_paper_toolbar_button={true}
+                          onClick={() => {
+                              sortFlow();
+                              addHistory();
+                          }}
+                          disabled={disabled}>{children}</ToolBarButton>;
+};
