@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import {Provider} from 'react-redux';
 import {AsyncResourceContent} from 'use-async-resource';
 import EventEmitter from 'eventemitter3';
@@ -46,12 +46,14 @@ if (document.getElementById('admin_users')) {
 }
 
 if (elementId) {
-    ReactDOM.render(
+    const root = createRoot(
+        document.getElementById(elementId)!
+    );
+    root.render(
         <Provider store={store}>
         <AsyncResourceContent fallback={<p>Loading...</p>}>
             <StreamCat viewId={viewId} />
         </AsyncResourceContent>
-        </Provider>,
-        document.getElementById(elementId)
+        </Provider>
     );
 }

@@ -198,7 +198,7 @@ export default class Modal extends React.Component<Props, State> {
                                   footer={modal_footer}
                                   close_button={close_button}
                                   visible={visible}
-                                  contents={(visible) ? (contents as any) : []} />
+                                  contents={(visible) ? (contents as any) : null} />
         } else {
             modal = <StandardModal id={id}
                                    title={title}
