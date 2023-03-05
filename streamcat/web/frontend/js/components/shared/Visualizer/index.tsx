@@ -297,7 +297,7 @@ export default class Visualizer extends React.Component<Props, State> {
      * @param script
      */
     innerHTMLScriptReLaunch(script) {
-        var s = document.createElement('script');
+        const s = document.createElement('script');
         script.src ? (s.src = script.src) : (s.innerHTML = script.innerHTML);
         s.async = false;
         document.head.append(s);

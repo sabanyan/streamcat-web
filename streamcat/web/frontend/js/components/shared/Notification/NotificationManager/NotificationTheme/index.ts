@@ -1,15 +1,15 @@
 'use strict'
 
-var css = require('./lib/styles.css')
+const css = require('./lib/styles.css')
 
 // media breakpoint - small screen min width
-var smallScreenMin = 768
+const smallScreenMin = 768
 
 // default className for NotificationsSystem component
-var notificationsSystemClassName = css['notifications-system']
+const notificationsSystemClassName = css['notifications-system']
 
 // default className for NotificationsContainer component
-var notificationsContainerClassName = {
+const notificationsContainerClassName = {
   main: css['notifications-container'],
   position: function position (_position) {
     return css['notifications-container--' + _position]
@@ -17,7 +17,7 @@ var notificationsContainerClassName = {
 }
 
 // default transition for Notification component
-var notificationsContainerTransition = {
+const notificationsContainerTransition = {
   enterTimeout: 500,
   leaveTimeout: 900,
   name: {
@@ -27,7 +27,7 @@ var notificationsContainerTransition = {
 }
 
 // default className for Notification component
-var notificationClassName = {
+const notificationClassName = {
   main: css['notification'],
   wrapper: css['notification-wrapper'],
   meta: css['notification-meta'],

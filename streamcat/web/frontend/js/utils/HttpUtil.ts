@@ -22,8 +22,8 @@ class HttpUtil {
   }
 
   getURLParam (paramName: string) {
-    var url_string = window.location.href;
-    var url = new URL(url_string);
+    const url_string = window.location.href;
+    const url = new URL(url_string);
     return url.searchParams.get(paramName) || '';
   }
 }

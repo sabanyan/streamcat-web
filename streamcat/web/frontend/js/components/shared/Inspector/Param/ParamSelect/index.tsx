@@ -19,7 +19,7 @@ export class ParamSelect extends React.Component<Props> {
     getMultipleValue(e) {
         let options: any = e.target.options;
         let value: string[] = [];
-        for (var i = 0, l = options.length; i < l; i++) {
+        for (let i = 0, l = options.length; i < l; i++) {
             if (options[i].selected) {
                 value.push(options[i].value);
             }
