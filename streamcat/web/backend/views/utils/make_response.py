@@ -4,7 +4,7 @@ def make_response(template_name, is_preview:bool=False, **context):
     """
     import uuid
     from flask import render_template, make_response
-    from ... import FRONTEND_BUILD, SECURITY_LEVEL
+    from ... import DEBUG_BUILD, SECURITY_LEVEL
 
     def make_bokeh_script(nonce):
         """
@@ -37,7 +37,7 @@ def make_response(template_name, is_preview:bool=False, **context):
     # HTMLレスポンスがWebブラウザのbfcacheにキャッシュされるのを防ぐ
     response.headers['Cache-Control'] = 'no-store'
 
-    if FRONTEND_BUILD == 'development':
+    if DEBUG_BUILD:
         # フロントエンドをdevelopmentモードでビルドする場合はevalの使用を許可する
         unsafe_eval = "'unsafe-eval'"
     else:

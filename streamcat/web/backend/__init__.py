@@ -4,9 +4,9 @@ from flask import Flask, Response
 # Flask
 app = Flask('streamcat.web.backend')
 
-# production : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
-# development: evalを使用する
-FRONTEND_BUILD=os.getenv('STREAMCAT_FRONTEND_BUILD', 'production')
+# 0 : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
+# 1 : evalを使用する
+DEBUG_BUILD=bool(os.getenv('STREAMCAT_DEBUG_BUILD', 0))
 
 # 1 : Googleログインボタンを表示してGoogleログイン機能を有効にする
 GOOGLE_LOGIN=bool(os.getenv('STREAMCAT_GOOGLE_LOGIN', 0))
