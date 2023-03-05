@@ -98,7 +98,7 @@ const NoteInspector = (props: Props) => {
         const list: dropDownListItem[] = [];
         for (let i = minFontSize; i < maxFontSize; i = i + increase) {
             list.push({
-                value: i,
+                value: i.toString(),
                 label: i + 'px'
             });
         }

@@ -9,7 +9,7 @@ export type CommandModelProps = {
   id: string;
   label: string;
   params: CommandParamType[];
-  ports: CommandPortType[];
+  ports: [CommandPortType[], CommandPortType[]];
   version: string;
   rules: {};
 }
@@ -65,7 +65,7 @@ export default class CommandModel extends Model {
   isInPortsAddable():boolean {
     let result = false
     const ports = this.getInPorts()
-    if (ports[0] && ports[0].name === '*') result = true
+    if (ports[0] && ports[0].label === '*') result = true
 
     return result
   }
@@ -73,7 +73,7 @@ export default class CommandModel extends Model {
   isOutPortsAddable():boolean {
     let result = false
     const ports = this.getOutPorts()
-    if (ports[0] && ports[0].name === '*') result = true
+    if (ports[0] && ports[0].label === '*') result = true
 
     return result
   }

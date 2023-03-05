@@ -6,13 +6,13 @@ import {CommandSelector} from 'FlowEditorContainer/Command';
 import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from 'Model/index';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
-import {flowEditorReducerInitialState} from 'Modules/flowEditor';
+import { MastType } from 'Types/index';
 
 type Props = {
     deleteSteps: Function;
     selectSteps: Function;
     nodes: any[];
-    mast: typeof flowEditorReducerInitialState.mast;
+    mast: MastType;
     selected_step_ids: string[];
     addStep: Function;
     addDataSrcStep: Function;

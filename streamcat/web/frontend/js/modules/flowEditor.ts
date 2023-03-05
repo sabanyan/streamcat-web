@@ -305,7 +305,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
           const outPorts: CommandPortType[] = command.getOutPorts();
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index];
-            let portName = isAddable ? "*" + index : newPort.name;
+            let portName = isAddable ? "*" + index : newPort.label;
             if (add_step instanceof SubFlowStepModel) {
               portName = newPort.label;
             }
@@ -326,7 +326,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
           });
           dst_step_ids.forEach((id, index) => {
             const newPort = outPorts[index];
-            let portName = newPort.name;
+            let portName = newPort.label;
             if (add_step instanceof SubFlowStepModel) {
               portName = newPort.label;
             }
