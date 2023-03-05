@@ -1,8 +1,13 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
+import { Tab } from 'Shared/Base';
 
-export default class TabList extends React.Component {
+type Props = {
+  children: JSX.Element[];
+};
+
+export default class TabList extends React.Component<Props> {
   render () {
     /**
      * 自動的に子要素に対して tab_id や key を追加する処理

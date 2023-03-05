@@ -30,7 +30,7 @@ const PreviewModal = (props: Props) => {
     const [results, set_results] = React.useState<Result[]>([]);
     const [headers, set_headers] = React.useState<any[]>([]);
 
-    const onClickTab = (e: Event, tab_id: number) => {
+    const onClickTab = (tab_id: number) => {
         if (tab_id !== selected_tab_id) {
             set_selected_tab_id(tab_id);
         }
@@ -91,7 +91,7 @@ const PreviewModal = (props: Props) => {
 
     if (!Array.isArray(contents)) contents = [contents];
 
-    let tabs: Tab[] = [];
+    let tabs: JSX.Element[] = [];
     
     //順番を維持するためForEachでLoop
     contents.forEach((content,index)=>{
@@ -99,7 +99,7 @@ const PreviewModal = (props: Props) => {
                         width={"auto"} 
                         tab_id={index} 
                         selected_tab_id={selected_tab_id} 
-                        onClickTab={(e,tab_id)=>onClickTab(e,tab_id)}>
+                        onClickTab={(e,tab_id)=>onClickTab(tab_id)}>
             {content.title}
         </Tab>
         tabs.push(tab)

@@ -4,8 +4,6 @@ export {DownloadButton} from './DownloadButton'
 export {default as TextField} from './TextField'
 export {default as FileUploader} from './FileUploader'
 export {DropDownList} from './DropDownList'
-export {default as SettingsButton} from './SettingsButton'
-export {default as TextFieldWithButton} from './TextFieldWithButton'
 
 export {UploadFile} from './FileUploader'
 export {DialogButton} from './DialogButton'

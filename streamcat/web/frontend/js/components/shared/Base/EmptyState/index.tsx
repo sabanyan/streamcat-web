@@ -4,7 +4,7 @@ import classnames from 'classnames'
 import style from './style.scss'
 
 type Props = {
-  children?: React.Node;
+  children?: string;
   title: string;
   description: string;
   icon: string

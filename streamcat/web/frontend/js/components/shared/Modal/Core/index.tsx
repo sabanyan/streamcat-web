@@ -7,7 +7,7 @@ type Props = {
     id: string,
     title: string,
     content?: React.ReactNode,
-    contents?: [React.ReactNode],
+    contents?: React.ReactNode[],
     dynamic?: boolean,
     preview?: boolean,
     footer?: boolean,
@@ -24,7 +24,7 @@ type Props = {
 type State = {
     visible: boolean,
     content?: any,
-    contents?: [React.ReactNode],
+    contents?: React.ReactNode[],
     title: string,
     done?: string,
     danger?: boolean
@@ -43,7 +43,7 @@ export default class Modal extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props)
-        this.state = { visible: false, content: null, contents: null, title: this.props.title }
+        this.state = { visible: false, content: null, contents: [], title: this.props.title }
     }
 
     UNSAFE_componentWillMount() {
@@ -116,7 +116,8 @@ export default class Modal extends React.Component<Props, State> {
 
         const done = (this.state.done) ? this.state.done : this.props.done
         const { visible, title, content, contents, danger } = this.state
-        const { preview, ok, close, footer, cancel, children, primary, overflow } = this.props
+        const { preview, ok, close, footer, cancel, children, primary } = this.props
+        const overflow = this.props.overflow? this.props.overflow: false;
 
         /**
          * 背景
@@ -190,14 +191,14 @@ export default class Modal extends React.Component<Props, State> {
                 {(visible) ? modal_body : null}
             </EmptyModal>
         } else if (preview) {
-            let key = (contents) ? contents[0].id : null
+            let key = (contents && contents.length > 0)? (contents[0] as any).id: null;
             modal = <PreviewModal key={key}
                                   id={id}
                                   title={title}
                                   footer={modal_footer}
                                   close_button={close_button}
                                   visible={visible}
-                                  contents={(visible) ? contents : null} />
+                                  contents={(visible) ? (contents as any) : []} />
         } else {
             modal = <StandardModal id={id}
                                    title={title}

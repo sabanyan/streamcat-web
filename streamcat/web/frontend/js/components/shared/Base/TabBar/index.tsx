@@ -19,13 +19,16 @@ import classnames from 'classnames'
 
  */
 
-export default class TabBar extends React.Component {
-  onChangeBefore () {
+type Props = {
+  children: any;
+  className?: any;
+};
 
+export default class TabBar extends React.Component<Props> {
+  onChangeBefore () {
   }
 
   onChange () {
-
   }
 
   render () {

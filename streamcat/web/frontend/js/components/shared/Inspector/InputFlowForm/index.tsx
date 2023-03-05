@@ -54,9 +54,7 @@ const InputFlowForm = (props: Props) => {
             :
             key + ' : 入力ファイルを選択してください';
         return <AddButton
-            name={key}
-            onClick={(e) => onClickInput(e)}
-            type={'text'} style={style}>
+            onClick={(e) => onClickInput(e)} style={style}>
             {content}
         </AddButton>;
     };

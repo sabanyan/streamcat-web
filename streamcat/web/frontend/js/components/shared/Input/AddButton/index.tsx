@@ -5,8 +5,8 @@ import classnames from 'classnames'
 
 type Props = {
   onClick: Function;
-  children: React.Children;
-  className?: string;
+  children?: string;
+  style?: any;
   disabled?: boolean;
 }
 
@@ -19,10 +19,10 @@ export default class AddButton extends React.Component<Props> {
   }
 
   render () {
-    const {onClick, children, name, disabled} = this.props
+    const {onClick, children, disabled} = this.props
     const style = (this.props.style) ? this.props.style : defaultStyle
     const iconClass = classnames('material-icons', [defaultStyle.icon])
-    return <div className={classnames(style.addButton,{[style.disabled]:disabled})} onClick={(e)=>{(!disabled)?onClick(e):null}} name={name}>
+    return <div className={classnames(style.addButton,{[style.disabled]:disabled})} onClick={(e)=>{(!disabled)?onClick(e):null}}>
       <i className={iconClass}>add_circle_outline</i>
       {children}
     </div>
