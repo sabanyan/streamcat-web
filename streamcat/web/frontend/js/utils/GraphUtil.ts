@@ -121,8 +121,8 @@ class GraphUtil {
     edges.forEach((edge) => {
       const from = edge.v
       const to = edge.w
-      const portName = edge.name
-      this.removeEdge(from, to, portName)
+      const portLabel = edge.name
+      this.removeEdge(from, to, portLabel)
     })
   }
 
@@ -317,20 +317,20 @@ class GraphUtil {
           const hasDsts = (Object.keys(step.dsts).length)
 
           if (hasSrcs) {
-            Object.keys(step.srcs).forEach((portName) => {
-              const src = step.srcs[portName]
+            Object.keys(step.srcs).forEach((portLabel) => {
+              const src = step.srcs[portLabel]
               const from = src
               const to = node.id
-              const label = GraphUtil.edgeName(from, to, portName)//src
+              const label = GraphUtil.edgeName(from, to, portLabel)//src
               self.addEdge(from, to, label)
             })
           }
           if (hasDsts) {
-            Object.keys(step.dsts).forEach((portName) => {
-              const dst = step.dsts[portName]
+            Object.keys(step.dsts).forEach((portLabel) => {
+              const dst = step.dsts[portLabel]
               const from = node.id
               const to = dst
-              const label = GraphUtil.edgeName(from, to, portName)//dst
+              const label = GraphUtil.edgeName(from, to, portLabel)//dst
               self.addEdge(from, to, label)
             })
           }

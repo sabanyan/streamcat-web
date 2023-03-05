@@ -33,8 +33,8 @@ const Constants = {
       },
     },
     command: {
-      inputPortName: 'i',
-      outputPortName: 'i',
+      inputPortLabel: 'i',
+      outputPortLabel: 'i',
     },
     note: {
       width: 88,

@@ -23,27 +23,27 @@ export const InOutConnector = (props: Props) => {
     // 
     // 入力コネクタリストを作成する
     // 
-    let portNames: string[] = [];
+    let portlabels: string[] = [];
     if (selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
         // サブフローまたはコマンドの場合
-        portNames = selectedStep.srcsOrder;
+        portlabels = selectedStep.srcsOrder;
     } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
         // データデストの場合は何故かsrcsOrderに値が格納されていないので
         // srcsプロパティから入力ポートを取得する
-        portNames = Object.entries(selectedStep.srcs).map(src => {
-            const portName = src[0]
+        portlabels = Object.entries(selectedStep.srcs).map(src => {
+            const portLabel = src[0]
             // NOTE: サブフローの変更によってポートが減った場合に備えている?
-            if(selectedStep.flow.ports[0].find(port => port.label===portName)){
-                return portName;
+            if(selectedStep.flow.ports[0].find(port => port.label===portLabel)){
+                return portLabel;
             }else{
                 return '';
             }
         });
     }
 
-    const inConnectors = portNames.map((portName, index) =>
+    const inConnectors = portlabels.map((portLabel, index) =>
         <InConnector
-            portName={portName}
+            portLabel={portLabel}
             index={index}
             nodes={nodes}
             selectedStep={selectedStep}

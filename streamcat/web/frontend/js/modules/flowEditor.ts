@@ -305,43 +305,43 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
           const outPorts: CommandPortType[] = command.getOutPorts();
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index];
-            let portName = isAddable ? "*" + index : newPort.label;
+            let portLabel = isAddable ? "*" + index : newPort.label;
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.label;
+              portLabel = newPort.label;
             }
 
-            add_step.addInPort(portName, id);
+            add_step.addInPort(portLabel, id);
 
             //srcsがあった場合は１つ目のポート名につなぐ
             //srcsがない場合は、デフォルト値（i）のポートにつなぐ
             const from: string = id;
             const to: string = add_step.id;
-            let inputPortName = Constants.default.command.inputPortName;
+            let inputPortLabel = Constants.default.command.inputPortLabel;
             if (add_step.srcs !== undefined || !_.isEmpty(add_step.srcs)) {
               let object = add_step.srcs;
-              inputPortName = Object.keys(object).find(key => object[key] === id) || "";
+              inputPortLabel = Object.keys(object).find(key => object[key] === id) || "";
             }
-            graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+            graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
 
           });
           dst_step_ids.forEach((id, index) => {
             const newPort = outPorts[index];
-            let portName = newPort.label;
+            let portLabel = newPort.label;
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.label;
+              portLabel = newPort.label;
             }
-            add_step.dsts[portName] = id;
+            add_step.dsts[portLabel] = id;
 
             //dstsがあった場合は１つ目のポート名につなぐ
             //dstsがない場合は、デフォルト値（i）のポートにつなぐ
             const from: string = add_step.id;
             const to: string = id;
-            let outputPortName = Constants.default.command.outputPortName;
+            let outputPortLabel = Constants.default.command.outputPortLabel;
             if (add_step.dsts !== undefined || !_.isEmpty(add_step.dsts)) {
               let object = add_step.dsts;
-              outputPortName = Object.keys(object).find(key => object[key] === id) || "";
+              outputPortLabel = Object.keys(object).find(key => object[key] === id) || "";
             }
-            graph.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortName));
+            graph.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortLabel));
           });
         } else {
           add_step.srcs = {};
@@ -933,41 +933,41 @@ const rebuildNodesEdges = (newState, action) => {
         node.classification === "data_dest") {
         if (!_.isEqual(node.srcs, action.step.srcs)) {
           //ノードのつながりを削除
-          Object.keys(node.srcs).forEach(portName => {
-            const id = node.srcs[portName];
+          Object.keys(node.srcs).forEach(portLabel => {
+            const id = node.srcs[portLabel];
             const from = id;
             const to = node.id;
             if (GraphUtil.getNode(newState.nodes, id)) {
-              graph.removeEdge(from, to, GraphUtil.edgeName(from, to, portName));
+              graph.removeEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
             }
           });
           //ノードのつながりを再構築
-          Object.keys(action.step.srcs).forEach(portName => {
-            const id = action.step.srcs[portName];
+          Object.keys(action.step.srcs).forEach(portLabel => {
+            const id = action.step.srcs[portLabel];
             const from = id;
             const to = action.step.id;
             if (GraphUtil.getNode(newState.nodes, id)) {
-              graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+              graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
             }
           });
         }
         if (!_.isEqual(node.dsts, action.step.dsts)) {
           //ノードのつながりを削除
-          Object.keys(node.dsts).forEach(portName => {
-            const id = node.dsts[portName];
+          Object.keys(node.dsts).forEach(portLabel => {
+            const id = node.dsts[portLabel];
             const from = node.id;
             const to = id;
             if (GraphUtil.getNode(newState.nodes, id)) {
-              graph.removeEdge(from, to, GraphUtil.edgeName(from, to, portName));
+              graph.removeEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
             }
           });
           //ノードのつながりを再構築
-          Object.keys(action.step.dsts).forEach(portName => {
-            const id = action.step.dsts[portName];
+          Object.keys(action.step.dsts).forEach(portLabel => {
+            const id = action.step.dsts[portLabel];
             const from = action.step.id;
             const to = id;
             if (GraphUtil.getNode(newState.nodes, id)) {
-              graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+              graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
             }
           });
         }
@@ -993,21 +993,21 @@ const allRebuildNodesEdges = (newState) => {
         node instanceof DataSrcStepModel ||
         node instanceof DataDstStepModel) {
       // 入力Edgeを再生成する
-      Object.keys(node.srcs).forEach(portName => {
-        const id = node.srcs[portName];
+      Object.keys(node.srcs).forEach(portLabel => {
+        const id = node.srcs[portLabel];
         const from = id;
         const to = node.id;
         if (GraphUtil.getNode(newState.nodes, id)) {
-          graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+          graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
         }
       });
       // 出力Edgeを再生成する
-      Object.keys(node.dsts).forEach(portName => {
-        const id = node.dsts[portName];
+      Object.keys(node.dsts).forEach(portLabel => {
+        const id = node.dsts[portLabel];
         const from = node.id;
         const to = id;
         if (GraphUtil.getNode(newState.nodes, id)) {
-          graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+          graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
         }
       });
     }
@@ -1163,15 +1163,15 @@ function addToGraph(graph: GraphUtil, node: any) {
   Object.keys(node.srcs).forEach((key) => {
     const from = node.srcs[key];
     const to = node.id;
-    const portName = key;
-    graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+    const portLabel = key;
+    graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
   })
   // dst edges
   Object.keys(node.dsts).forEach((key) => {
     const to = node.dsts[key];
     const from = node.id;
-    const portName = key;
-    graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
+    const portLabel = key;
+    graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
     graph.addNode(to);
   })
 }

@@ -149,7 +149,7 @@ export default class CommandStepModel extends BaseStepModel {
             const stepId = this.srcs[key];
             steps[stepId] = {
                 id: stepId,
-                portName: key,
+                portLabel: key,
                 node: this.getStep(nodes, stepId)
             };
         });

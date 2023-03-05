@@ -7,7 +7,7 @@ import {DropDownList} from 'Shared/Input';
 import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
 
 type Props = {
-    portName: string;
+    portLabel: string;
     index: number;
     nodes: [];
     selectedStep: any;
@@ -21,9 +21,9 @@ type Props = {
  * @returns 
  */
 export const InConnector = (props: Props) => {
-    const {portName, index, nodes, selectedStep, updateStep, disabled} = props;
+    const {portLabel, index, nodes, selectedStep, updateStep, disabled} = props;
 
-    const nodeId = selectedStep.srcs[portName];
+    const nodeId = selectedStep.srcs[portLabel];
 
     const dataSourceOptions = FlowUtil.getAllDataFrame(nodes).map(dataFrame => ({
         value: dataFrame.id,
@@ -47,11 +47,11 @@ export const InConnector = (props: Props) => {
         }
     };
 
-    const deletePort = (step: StepModelType, portName: string) => {
+    const deletePort = (step: StepModelType, portLabel: string) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 const newStep = StateUtil.deepCopy(step);
-                newStep.deleteInPort(portName);
+                newStep.deleteInPort(portLabel);
                 updateStep(newStep);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -62,21 +62,21 @@ export const InConnector = (props: Props) => {
             done: '削除する',
             danger: true,
             content: <div>
-                {portName} の入力を削除しますか？
+                {portLabel} の入力を削除しますか？
             </div>
         });
     };
 
     const actionProps = selectedStep.addableInPort() ? {
         actionLabel: '削除',
-        onClickAction: () => deletePort(selectedStep, portName)
+        onClickAction: () => deletePort(selectedStep, portLabel)
     }: null;
 
     return <li>
         <div key={index} className={style.param}>
             <DropDownList
                 key={'in_edge'}
-                label={portName}
+                label={portLabel}
                 list={dataSourceOptions}
                 defaultValue={nodeId}
                 hiddenNoSelect={false}
