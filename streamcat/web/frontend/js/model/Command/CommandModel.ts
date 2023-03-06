@@ -1,8 +1,6 @@
 import {CommandParamType, CommandPortType} from "Types/index";
 import Model from "Model/Core";
 
-type stepType = 'command' | 'frame'
-
 export type CommandModelProps = {
   classification: string;
   description: string;

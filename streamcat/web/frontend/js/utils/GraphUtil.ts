@@ -18,11 +18,6 @@ export const defaultGraphProps = {
   rankSeparator: Constants.default.graph.rankSeparator,
 }
 
-type GraphType = {
-  nodes: {};
-  zoom: number;
-}
-
 class GraphUtil {
   g: any
 
