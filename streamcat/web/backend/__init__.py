@@ -1,5 +1,5 @@
 import os
-from flask import Flask, Response
+from flask import Flask, Response, Blueprint
 
 # Flask
 app = Flask('streamcat.web.backend')
@@ -95,7 +95,7 @@ app.register_blueprint(auth.mod, url_prefix='/signup')
 app.register_blueprint(basic.mod)
 
 # static用
-from ..frontend import mod
+mod = Blueprint('front_static', __name__, static_url_path='/front_static', static_folder='../frontend/static')
 app.register_blueprint(mod)
 
 def run(port=5000):
