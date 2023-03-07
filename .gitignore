@@ -109,3 +109,14 @@ venv.bak/
 .idea
 vendor.js.LICENSE.txt
 package-lock.json
+
+# frontend
+node_modules
+web/frontend/static/js/app.js
+web/frontend/static/js/vendor.js
+web/frontend/static/js/common.js
+web/frontend/static/js/dist/vendor-manifest.json
+web/frontend/static/css/app.css
+.idea
+flow-coverage
+/.exclude/
