@@ -83,9 +83,6 @@ const Constants = {
       csv: 'csv'
     }
   },
-  api: {
-    host: window.location.host,
-  },
   color: {
     datasource: '#6AD0FB',
     operator: '#F99D39',
