@@ -62,9 +62,8 @@
     },
     "exclude": [
         "node_modules",
-        "build",
-        "scripts",
-        "webpack",
-        "jest"
+        "backend",
+        "**/*.test.ts",
+        "**/*.test.tsx"
     ]
 }
