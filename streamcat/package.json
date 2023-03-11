@@ -14,9 +14,9 @@
 	},
 	"main": "index.js",
 	"scripts": {
+		"reinstall": "rm -rf package-lock.json node_modules && npm install",
 		"start": "npx webpack --config webpack.dll.config.js --env=development && npx webpack --env=development --watch",
 		"build": "npx webpack --config webpack.dll.config.js --env=production  && npx webpack --env=production",
-		"dll": "npx webpack --config webpack.dll.config.js",
 		"lint": "npx eslint .",
 		"test": "jest --config ./web/frontend/config/jest.config.js",
 		"testwatch": "jest --config ./web/frontend/config/jest.config.js --watchAll",
