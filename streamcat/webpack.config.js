@@ -19,21 +19,13 @@ module.exports = (env) => {
             module: {
                 rules: [
                     {
-                        test: /\.jsx?$/,
-                        exclude: /node_modules/,
-                        use: [{
-                            loader: 'babel-loader',
-                            options: {configFile: `${__dirname}/web/frontend/config/babel.config.json`},
-                        }],
-                    },
-                    {
                         test: /\.tsx?$/,
                         exclude: /node_modules/,
                         use: [{
-                            loader: 'babel-loader',
-                            options: {configFile: `${__dirname}/web/frontend/config/babel.config.json`},
-                        },{
-                            loader: 'ts-loader'
+                            loader: 'ts-loader',
+                            options: {
+                                logLevel: 'info'
+                            }
                         }],
 
                     },
