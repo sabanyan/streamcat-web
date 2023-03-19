@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@mui/material"
+import { red } from "@mui/material/colors";
 
 type Props = {
     icon?: 'add'|'upload'|'trash';
@@ -34,7 +35,7 @@ export const Button2 = (props:Props) => {
                     // ラベルを左に寄せる
                     style={align}
                     // Marginとサイズ設定
-                    sx={{mr:1, mb:1, ...size}}
+                    sx={{mr:1, mb:1, ...size, backgroundColor:'red'}}
                     disabled={disabled}
                     onClick={onClick}>{children}</Button>;
 };
