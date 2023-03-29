@@ -1066,7 +1066,7 @@ class FrameTestCase(ApiTestCaseBase):
         literal_flow_json = {
             "nodes": [
                 {
-                    "id": "f", 
+                    "id": "f0", 
                     "type": "flow",
                     "flow": postgre_src, 
                     "dsts": {
@@ -1079,7 +1079,7 @@ class FrameTestCase(ApiTestCaseBase):
                     "type": "frame"
                 }, 
                 {
-                    "id": "f", 
+                    "id": "f1", 
                     "type": "flow",
                     "uuid": flow.uuid,  
                     "srcs": {
@@ -1095,7 +1095,7 @@ class FrameTestCase(ApiTestCaseBase):
                     "type": "frame"
                 },
                 {
-                    "id": "f", 
+                    "id": "f3", 
                     "type": "flow",
                     "flow": postgre_dst, 
                     "srcs": {
@@ -1114,8 +1114,8 @@ class FrameTestCase(ApiTestCaseBase):
         # self.assertEqual(result['type'], Datum.ACTIVITY_TYPE)
         # self.assertEqual(result['label'], 'FLOW_LITERAL')
         self.assertEqual(len(outs), 1)
-        self.assertEqual(outs[0]['id'], 'f_d2')
-        self.assertEqual(outs[0]['label'], 'f_d2')
+        self.assertEqual(outs[0]['id'], 'f3_d2')
+        self.assertEqual(outs[0]['label'], 'f3_d2')
         self.assertIsNotNone(outs[0]['datum'])
         self.assertIsNotNone(outs[0]['parent'])
         self.assertEqual(outs[0]['args'], {})
