@@ -411,21 +411,24 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
           Object.keys(step.srcs).forEach((key) => {
             let srcId = step.srcs[key];
             // newState.flow.deleteOutPortWithId(srcId);
-            newState.flow!.flow.ports[1].removePort(srcId);
+            newState.flow!.flow.ports[1].removeByNodeId(srcId);
           })
         } else if (step.flow && step.classification === "data_source") {// データソース削除時、InPortを解除する
           Object.keys(step.dsts).forEach((key) => {
-            let srcId = step.dsts[key];
+            let dstId = step.dsts[key];
             // newState.flow.deleteInPortWithId(srcId);
-            newState.flow!.flow.ports[0].removePort(srcId);
+            newState.flow!.flow.ports[0].removeByNodeId(dstId);
           })
         }
 
         //削除対象のノードがIn・OutPortの場合、Portから削除する
         // newState.flow.deleteInPortWithId(id);
         // newState.flow.deleteOutPortWithId(id);
-        newState.flow!.flow.ports[1].removePort(id);
-        newState.flow!.flow.ports[1].removePort(id);
+        if(step.type === Constants.step.type.frame){
+          newState.flow!.flow.ports[0].removeByNodeId(id);
+          newState.flow!.flow.ports[1].removeByNodeId(id);
+        }
+
         //選択されたノードを削除
         newState.nodes = graph.removeNode(newState.nodes, id);
         newState.flow!.flow.nodes = newState.nodes;

@@ -174,7 +174,7 @@ const DataFrameInspector = (props: Props) => {
             }
             flow.flow.ports[0].upsertPort(port as Port);
         } else {
-            selected_step.id && flow.flow.ports[0].removePort(selected_step.id);
+            selected_step.id && flow.flow.ports[0].removeByNodeId(selected_step.id);
         }
 
         if (flowOutChecked) {
@@ -183,7 +183,7 @@ const DataFrameInspector = (props: Props) => {
             }
             flow.flow.ports[1].upsertPort(port as Port);
         } else {
-            selected_step.id && flow.flow.ports[1].removePort(selected_step.id);
+            selected_step.id && flow.flow.ports[1].removeByNodeId(selected_step.id);
         }
 
         updateFlow(flow);

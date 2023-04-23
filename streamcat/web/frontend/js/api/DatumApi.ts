@@ -312,8 +312,8 @@ PortArray.prototype.upsertPort = function(port: Port){
     }
 }
 
-PortArray.prototype.removePort = function(portId: string){
-    const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === portId]);
+PortArray.prototype.removeByNodeId = function(nodeId: string){
+    const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === nodeId]);
     if(index === -1){
         // 存在しない場合は何もしない
         return;

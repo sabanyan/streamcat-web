@@ -239,7 +239,7 @@ export type Port = {
 type PortArray = [] & {
     hasPort: (portId: string) => boolean,
     upsertPort: (port: Port) => void,
-    removePort: (portId: string) => void,
+    removeByNodeId: (nodeId: string) => void,
     toJSON: () => string
 };
 
