@@ -172,7 +172,7 @@ const DataFrameInspector = (props: Props) => {
             if(!port.label || !port.nodeId || !port.type) {
                 throw new Error("port is not set");
             }
-            flow.flow.ports[0].upsertPort(port as Port);
+            flow.flow.ports[0].upsert(port as Port);
         } else {
             selected_step.id && flow.flow.ports[0].removeByNodeId(selected_step.id);
         }
@@ -181,7 +181,7 @@ const DataFrameInspector = (props: Props) => {
             if(!port.label || !port.nodeId || !port.type) {
                 throw new Error("port is not set");
             }
-            flow.flow.ports[1].upsertPort(port as Port);
+            flow.flow.ports[1].upsert(port as Port);
         } else {
             selected_step.id && flow.flow.ports[1].removeByNodeId(selected_step.id);
         }
@@ -287,13 +287,13 @@ const DataFrameInspector = (props: Props) => {
     const {flow} = props;
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[0].hasPort(selected_step.id)} ref={flowIn}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[0].exists(selected_step.id)} ref={flowIn}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;入力
             </label>
         </div>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[1].hasPort(selected_step.id)}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[1].exists(selected_step.id)}
                 ref={flowOut}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;出力

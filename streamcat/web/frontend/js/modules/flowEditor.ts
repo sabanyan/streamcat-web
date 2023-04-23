@@ -841,7 +841,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
           nodeId: dstNode.id,
           type: dstNode.type
         };
-        newState.flow!.flow.ports[0].upsertPort(port);
+        newState.flow!.flow.ports[0].upsert(port);
       });
 
       let nodes: any[] = newState.flow!.flow.nodes;
@@ -876,7 +876,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
           nodeId: srcNode.id,
           type: srcNode.type
         };
-        newState.flow!.flow.ports[1].upsertPort(port);
+        newState.flow!.flow.ports[1].upsert(port);
       });
 
       let args = {};

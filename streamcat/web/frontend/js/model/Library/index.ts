@@ -237,8 +237,8 @@ export type Port = {
 };
 
 type PortArray = [] & {
-    hasPort: (portId: string) => boolean,
-    upsertPort: (port: Port) => void,
+    exists: (portId: string) => boolean,
+    upsert: (port: Port) => void,
     removeByNodeId: (nodeId: string) => void,
     toJSON: () => string
 };
