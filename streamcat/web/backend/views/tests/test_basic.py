@@ -12,7 +12,7 @@ class HtmlTestCase(ApiTestCaseBase):
         self.client = app.test_client()
         # ログインするとCookieにトークンが格納される
         token = make_access_token(self.USER0.uuid)
-        self.client.set_cookie(None, 'S', token)
+        self.client.set_cookie('S', token)
 
     def assertRenderTemplate(self, path, file_name):
         templates = []
