@@ -9,10 +9,10 @@ setup(
     include_package_data=True,
     install_requires=[
         # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
-        'blinker',
-        'Flask',
+        'blinker==1.6.2',
+        'Flask==2.3.1',
         # 'flask_mail',
-        'oauthlib',
-        'PyJWT',
+        'oauthlib==3.2.2',
+        'PyJWT==2.6.0',
     ],
 )
