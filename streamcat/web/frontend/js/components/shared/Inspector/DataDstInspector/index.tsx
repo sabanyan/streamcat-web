@@ -1,5 +1,4 @@
 import React from 'react';
-import {SortEndHandler} from "react-sortable-hoc";
 import { GraphUtil, StateUtil, ModalUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
@@ -19,7 +18,6 @@ type Props = {
   selected_step_ids: string[];
   baseInspectorDisabled: boolean;
 
-  sortStepSrcEnd: SortEndHandler;
   parentUUID?: string;
 
   updateStep: Function;
@@ -77,7 +75,7 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateStep, nodes, sortStepSrcEnd, baseInspectorDisabled, parentUUID } = this.props;
+    const { updateStep, nodes, baseInspectorDisabled, parentUUID } = this.props;
     const selected_step = this.getSelectedStep();
 
     let libraryPlace: any = null;
@@ -89,11 +87,8 @@ export class DataDstInspector extends React.Component<Props, State> {
         selectedStep={selected_step}
         updateStep={updateStep}
         nodes={nodes}
-        sortStepSrcEnd={sortStepSrcEnd}
-        onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
-        onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)}
         disabled={baseInspectorDisabled}
-      />
+      />;
     }
 
     if (selected_step.flow.params) {

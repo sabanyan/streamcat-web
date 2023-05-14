@@ -1,6 +1,7 @@
 export * from './BaseInspector'
 export * from './CommandInspector'
 export * from './InOutConnector'
+export * from './inConnector'
 export * from './Core'
 export * from './DataFrameInspector'
 export * from './DataSrcInspector'

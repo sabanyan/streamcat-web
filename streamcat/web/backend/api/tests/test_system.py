@@ -1,4 +1,5 @@
 import io
+import os
 import copy
 import unittest
 import pprint
@@ -3764,13 +3765,19 @@ class SystemTestCase(ApiTestCaseBase):
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
+        # ダウンロード文字コードの設定がcp932の場合は改行コードがCR＋LFになる
+        if os.environ.get('STREAMCAT_FRAME_CHARACTER_CODE') == 'cp932':
+            expected_frame = b'Every cup has a story\r\n'
+        else:
+            expected_frame = b'Every cup has a story\n'
+
         # 編集者メンバはフレームをダウンロードできること
         result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset=None, user=self.USER3)
-        self.assertEqual(result, b'Every cup has a story\n')
+        self.assertEqual(result, expected_frame)
 
         # プロジェクト管理者はフレームーをダウンロードできること
         result = self.get_file(f'/api/v0/frames/{frame_uuid}?contents=on', charset=None, user=self.USER2)
-        self.assertEqual(result, b'Every cup has a story\n')
+        self.assertEqual(result, expected_frame)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)

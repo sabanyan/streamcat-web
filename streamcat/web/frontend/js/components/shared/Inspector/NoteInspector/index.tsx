@@ -98,7 +98,7 @@ const NoteInspector = (props: Props) => {
         const list: dropDownListItem[] = [];
         for (let i = minFontSize; i < maxFontSize; i = i + increase) {
             list.push({
-                value: i,
+                value: i.toString(),
                 label: i + 'px'
             });
         }
@@ -152,7 +152,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
-                defaultValue={fontSize}
+                defaultValue={fontSize.toString()}
                 disabled={baseInspectorDisabled}
                 list={getFontSizeList()}
                 label={'文字'}

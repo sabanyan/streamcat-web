@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import style from "./style.scss";
 import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { CommandModelType } from "Types/index";
+import { CommandModelType, MastType } from "Types/index";
 import { TextField } from "Shared/Input";
-import { flowEditorReducerInitialState } from "Modules/flowEditor";
-
 
 type Props = {
-    mast: typeof flowEditorReducerInitialState.mast;
+    mast: MastType;
     nodes:any[];
     numberOfInput: number;
     selected_step_ids: string[];
@@ -18,10 +16,9 @@ type Props = {
     disabled?: boolean;
     addDataDstStep: Function
     addDataSrcStep: Function
-}
+};
 
 const CommandSelector = (props: Props) => {
-
 
     const [keyword, setKeyword] = useState<string>("");
 
@@ -51,11 +48,11 @@ const CommandSelector = (props: Props) => {
     const isMultiInPorts = (command: any) => {
         if (!command.ports[0]) return false;
         if (!command.ports[0].length) return false;
-        return (command.ports[0][0].name === "*");
+        return (command.ports[0][0].label === "*");
     };
 
     const { numberOfInput, selected_step_ids, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, disabled, mast, nodes } = props;
+        selectSteps, addHistory, mast, nodes } = props;
     const { commands, subflows, datasrcs, datadsts } = mast;
 
     const isNoKeyword = (keyword.length == 0);

@@ -172,18 +172,18 @@ const DataFrameInspector = (props: Props) => {
             if(!port.label || !port.nodeId || !port.type) {
                 throw new Error("port is not set");
             }
-            flow.flow.ports[0].upsertPort(port as Port);
+            flow.flow.ports[0].upsert(port as Port);
         } else {
-            selected_step.id && flow.flow.ports[0].removePort(selected_step.id);
+            selected_step.id && flow.flow.ports[0].removeByNodeId(selected_step.id);
         }
 
         if (flowOutChecked) {
             if(!port.label || !port.nodeId || !port.type) {
                 throw new Error("port is not set");
             }
-            flow.flow.ports[1].upsertPort(port as Port);
+            flow.flow.ports[1].upsert(port as Port);
         } else {
-            selected_step.id && flow.flow.ports[1].removePort(selected_step.id);
+            selected_step.id && flow.flow.ports[1].removeByNodeId(selected_step.id);
         }
 
         updateFlow(flow);
@@ -280,20 +280,20 @@ const DataFrameInspector = (props: Props) => {
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {
             const onClick = () => Api.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
-            download = <DownloadButton onClick={onClick} download disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
+            download = <DownloadButton onClick={onClick} download={true} disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }
 
     const {flow} = props;
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[0].hasPort(selected_step.id)} ref={flowIn}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[0].exists(selected_step.id)} ref={flowIn}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;入力
             </label>
         </div>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[1].hasPort(selected_step.id)}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[1].exists(selected_step.id)}
                 ref={flowOut}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;出力

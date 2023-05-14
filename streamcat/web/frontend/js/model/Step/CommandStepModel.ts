@@ -138,7 +138,7 @@ export default class CommandStepModel extends BaseStepModel {
     addableInPort() {
         // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
         const filterKeys = this.getCommand().getInPorts().filter((inPort) => {
-            return (inPort.name.indexOf("*") != -1);
+            return (inPort.label.indexOf("*") != -1);
         });
         return (filterKeys.length);
     }
@@ -149,7 +149,7 @@ export default class CommandStepModel extends BaseStepModel {
             const stepId = this.srcs[key];
             steps[stepId] = {
                 id: stepId,
-                portName: key,
+                portLabel: key,
                 node: this.getStep(nodes, stepId)
             };
         });

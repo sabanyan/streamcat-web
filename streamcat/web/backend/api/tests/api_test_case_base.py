@@ -95,7 +95,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.get(uri)
             result = response.get_json()
         error_detail = result['message'] if 'message' in result else ''
@@ -109,7 +109,7 @@ class ApiTestCaseBase(TestCaseBase):
         accept_charset = f';charset={charset}' if charset else ''
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             # response = client.get(uri)
             with client.get(uri, headers={'Accept':'text/csv'+ accept_charset}) as response:
                 result = response.get_json(silent=True) or {}
@@ -126,7 +126,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
@@ -141,7 +141,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
@@ -155,7 +155,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.post(uri,
                                    content_type='multipart/form-data',
                                    data={
@@ -195,7 +195,7 @@ class ApiTestCaseBase(TestCaseBase):
         
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.post('/api/v0/archives/flows',
                                    content_type='multipart/form-data',
                                    data=data
@@ -211,7 +211,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.put(uri,
                                   content_type='application/json',
                                   data=json.dumps(json_data))
@@ -227,7 +227,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.delete(uri)
             # Silence parsing errors and return None instead.
             result = response.get_json(silent=True) or {}
@@ -241,7 +241,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             token = make_access_token(user.uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.delete(uri,
                                      content_type='application/json',
                                      data=json.dumps(json_data))
@@ -272,7 +272,7 @@ class ApiTestCaseBase(TestCaseBase):
         uri = '/signup/complete'
         with app.test_client() as client:
             token = make_access_token(user_uuid)
-            client.set_cookie(None, 'S', token)
+            client.set_cookie('S', token)
             response = client.post(uri,
                                    content_type='multipart/form-data',
                                    data={'password': new_password})

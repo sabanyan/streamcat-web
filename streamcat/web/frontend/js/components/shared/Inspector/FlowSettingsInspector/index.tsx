@@ -5,11 +5,11 @@ import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {flowEditorReducerInitialState} from "Modules/flowEditor";
 import { FlowType } from "Model/Library";
+import { MastType } from 'Types/index';
 
 type Props = {
-    mast: typeof flowEditorReducerInitialState.mast;
+    mast: MastType;
     selected_step_ids: string[];
     nodes: any[];
     addStep: Function;

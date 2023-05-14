@@ -19,29 +19,31 @@ module.exports = (env) => {
             module: {
                 rules: [
                     {
-                        test: /\.jsx?$/,
-                        use: ['babel-loader'],
-                        exclude: /node_modules/,
-                    },
-                    {
                         test: /\.tsx?$/,
-                        use: ['babel-loader', 'ts-loader'],
-                        exclude: /node_modules/,
+                        exclude: [
+                            /node_modules/,
+                            /\.test\.tsx?$/
+                        ],
+                        use: [{
+                            loader: 'ts-loader',
+                            options: {
+                                logLevel: 'info'
+                            }
+                        }],
+
                     },
                     {
                         test: /\.s?css$/,
-                        use: [
-                            {
-                                loader: 'style-loader',
-                                options: {esModule: false},
-                            },
-                            {
-                                loader: 'css-loader',
-                                options: {modules: true},
-                            },
-                            'sass-loader'
-                        ],
                         exclude: /node_modules/,
+                        use: [{
+                            loader: 'style-loader',
+                            options: {esModule: false},
+                        },{
+                            loader: 'css-loader',
+                            options: {modules: true},
+                        },{
+                            loader: 'sass-loader',
+                        }],
                     }
                 ],
             },
@@ -92,12 +94,12 @@ module.exports = (env) => {
             module: {
                 rules: [{
                     test: /\.scss$/,
+                    exclude: /node_modules/,
                     use: [
                         MiniCssExtractPlugin.loader,
                         'css-loader',
                         'sass-loader'
                     ],
-                    exclude: /node_modules/,
                 }]
             }
         }

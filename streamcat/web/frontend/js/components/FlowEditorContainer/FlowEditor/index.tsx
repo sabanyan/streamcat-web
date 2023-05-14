@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
-import {SortEndHandler} from "react-sortable-hoc";
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
 import { Edge, Selector, Step } from 'Shared/SVG';
-import ToolBar from 'FlowEditorContainer/ToolBar/Core';
+import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
 import { Api } from 'Api';
@@ -71,7 +70,7 @@ const getLock = (targetUUID:string, notifyWarning:Function) => {
             notifyWarning(e.title, e.message);
         }
     });
-}
+};
 
 const FlowEditor = () => {
 
@@ -189,10 +188,6 @@ const FlowEditor = () => {
     // const addNote = useCallback((x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // },[]);
-    const sortStepSrcEnd = useCallback<SortEndHandler>((detail: {}, mouseEvent: {}) => {
-        // mouseEventは未使用
-        dispatch(sortStepSrcEndAction(detail, mouseEvent));
-    }, []);
     const moveSteps = useCallback((x: number, y: number, step) => {
         dispatch(moveStepsAction(x, y, step));
     }, []);
@@ -318,152 +313,6 @@ const FlowEditor = () => {
         }
     }, [networkStatus, lock]);
 
-    // 現在表示中のフローの保存処理
-    const saveFlowPromise = (targetFlow: FlowType) => {
-        // newLockUUIDがあれば、別名保存として判断する
-        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.flow.nodes = nodes;
-        
-        return new Promise<FlowType>(async (reslove, reject) => {
-            // 編集権限がないと、保存不可
-            if (!lock) {
-                reject(new MessageModel({
-                    title: "警告：読取専用フロー",
-                    message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                    messageStatus: "warning"
-                }));
-            } else {
-                //　フロー保存
-                return await targetFlow.update(flow.flow, lock.uuid).then(flow => {
-                    updateLastSavedFlow();
-                    // resolve()を呼ばないと以降のPromiseチェーンが起動しない
-                    reslove(flow);
-                    return flow;
-                }).catch(e => {
-                    reject(new MessageModel({
-                        title: "フロー保存エラー",
-                        message: e.message,
-                        messageStatus: "error"
-                    }));
-                }).finally(() => {
-                    dismissNotify(notificationId);
-                });
-            }
-        }).catch(e => {
-            // 保存失敗した場合、エラーメッセージ出力
-            notifyError(e.title, e.message);
-        });
-    };
-
-    const saveAnotherFlowPromise = (targetFlow:FlowType, anotherFlow:FlowType, newLockUUID:string) => {
-        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.flow.nodes = nodes;
-
-        return new Promise(async (reslove, reject) => {
-            //　フロー保存
-            anotherFlow.update(flow.flow, newLockUUID).then(flow => {
-                updateLastSavedFlow();
-                // resolve()を呼ばないと以降のPromiseチェーンが起動しない
-                reslove(flow);
-                return flow;
-            }).catch(e => {
-                reject(new MessageModel({
-                    title: "フロー保存エラー",
-                    message: e.message,
-                    messageStatus: "error"
-                }));
-            }).finally(() => {
-                dismissNotify(notificationId);
-            });
-        }).catch(e => {
-            // 保存失敗した場合、エラーメッセージ出力
-            notifyError(e.title, e.message);
-        });
-    };
-
-    const onClickSaveFlow = () => {
-        const targetFlow = flow;
-        return saveFlowPromise(targetFlow).then(flow => {
-            if(!flow){
-                return flow;
-            }
-            setModifiedAt(flow.modifiedAt);
-            return flow;
-        });
-    }
-
-    /**
-     * lock の再取得処理
-     */
-    const regenerateNewLockUUID = () => {
-        // 取得処理
-        Api.createLock(inject_flow_uuid, modifiedAt).then(lock => {
-                setLock(lock);
-                // モードは変更せずに ReadOnly だけオフにする
-                setReadOnly(false);
-        }).catch(e => {
-            const onClickSaveAs = () => {
-                setHasShowSaveAsFlowModal(true);
-                return false;
-            };
-            const onClickReload = () => {
-                setHasShowConfirmReloadFlowModal(true);
-                return false;
-            };
-            notifySaveAs('フローが編集できません', e.message, onClickSaveAs, onClickReload);
-            // モードは変更せずに ReadOnly だけオンにする
-            setReadOnly(true);
-            setHasEnableAutoLockExtended(false);
-            // 通知したら自動排他ロックは解除する
-        }).finally(() => {
-            setIsLoading(false);
-        });
-    }
-
-    /**
-     * lock の新規取得
-     */
-    const getNewLockUUID = () => {
-        if(lock){
-            setEditMode(FlowEditModeValue.Editable)
-            // ロックの自動更新を有効にする
-            setHasEnableAutoLockExtended(true);
-        }else{
-            setReadOnly(true);
-            // ロック失敗 => [読み取り専用モード2]
-            setEditMode(FlowEditModeValue.ReadOnlyLocked);
-            setHasEnableAutoLockExtended(false);
-        }
-        setIsLoading(false);
-    }    
-
-    /**
-     * lock の延長処理
-     * @param lockUUID
-     */
-    const extendLock = (lock: LockType|void) => {
-        if (!lock) return;
-
-        // 延長処理
-        lock.extend().then( () => {
-            // 取得した lockUUID を設定
-            setLock(lock);
-        }).catch(e => {
-            // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
-            regenerateNewLockUUID();
-            setReadOnly(true);
-        }).finally(() => {
-            setIsLoading(false);
-        });
-    }
-
-    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
-    useInterval(() => {
-        if (lock && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline) {
-            extendLock(lock)
-        }
-    }, extendLockInterval);
-
     useEffect(() => {
         window.onresize = () => {
             refreshCanvasSize();
@@ -585,6 +434,152 @@ const FlowEditor = () => {
 
     }, []);
 
+    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
+    useInterval(() => {
+        if (lock && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline) {
+            extendLock(lock)
+        }
+    }, extendLockInterval);
+
+    // 現在表示中のフローの保存処理
+    const saveFlowPromise = (targetFlow: FlowType) => {
+        // newLockUUIDがあれば、別名保存として判断する
+        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
+        targetFlow.flow.nodes = nodes;
+        
+        return new Promise<FlowType>(async (reslove, reject) => {
+            // 編集権限がないと、保存不可
+            if (!lock) {
+                reject(new MessageModel({
+                    title: "警告：読取専用フロー",
+                    message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                    messageStatus: "warning"
+                }));
+            } else {
+                //　フロー保存
+                return await targetFlow.update(flow.flow, lock.uuid).then(flow => {
+                    updateLastSavedFlow();
+                    // resolve()を呼ばないと以降のPromiseチェーンが起動しない
+                    reslove(flow);
+                    return flow;
+                }).catch(e => {
+                    reject(new MessageModel({
+                        title: "フロー保存エラー",
+                        message: e.message,
+                        messageStatus: "error"
+                    }));
+                }).finally(() => {
+                    dismissNotify(notificationId);
+                });
+            }
+        }).catch(e => {
+            // 保存失敗した場合、エラーメッセージ出力
+            notifyError(e.title, e.message);
+        });
+    };
+
+    const saveAnotherFlowPromise = (targetFlow:FlowType, anotherFlow:FlowType, newLockUUID:string) => {
+        const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
+        targetFlow.flow.nodes = nodes;
+
+        return new Promise(async (reslove, reject) => {
+            //　フロー保存
+            anotherFlow.update(flow.flow, newLockUUID).then(flow => {
+                updateLastSavedFlow();
+                // resolve()を呼ばないと以降のPromiseチェーンが起動しない
+                reslove(flow);
+                return flow;
+            }).catch(e => {
+                reject(new MessageModel({
+                    title: "フロー保存エラー",
+                    message: e.message,
+                    messageStatus: "error"
+                }));
+            }).finally(() => {
+                dismissNotify(notificationId);
+            });
+        }).catch(e => {
+            // 保存失敗した場合、エラーメッセージ出力
+            notifyError(e.title, e.message);
+        });
+    };
+
+    const onClickSaveFlow = () => {
+        const targetFlow = flow;
+        return saveFlowPromise(targetFlow).then(flow => {
+            if(!flow){
+                return flow;
+            }
+            setModifiedAt(flow.modifiedAt);
+            return flow;
+        });
+    }
+
+    /**
+     * lock の延長処理
+     * @param lockUUID
+     */
+    const extendLock = (lock: LockType|void) => {
+        if (!lock) return;
+
+        // 延長処理
+        lock.extend().then( () => {
+            // 取得した lockUUID を設定
+            setLock(lock);
+        }).catch(e => {
+            // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
+            regenerateNewLockUUID();
+            setReadOnly(true);
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
+    /**
+     * lock の再取得処理
+     */
+    const regenerateNewLockUUID = () => {
+        // 取得処理
+        Api.createLock(inject_flow_uuid, modifiedAt).then(lock => {
+                setLock(lock);
+                // モードは変更せずに ReadOnly だけオフにする
+                setReadOnly(false);
+        }).catch(e => {
+            const onClickSaveAs = () => {
+                setHasShowSaveAsFlowModal(true);
+                return false;
+            };
+            const onClickReload = () => {
+                setHasShowConfirmReloadFlowModal(true);
+                return false;
+            };
+            notifySaveAs('フローが編集できません', e.message, onClickSaveAs, onClickReload);
+            // モードは変更せずに ReadOnly だけオンにする
+            setReadOnly(true);
+            setHasEnableAutoLockExtended(false);
+            // 通知したら自動排他ロックは解除する
+        }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
+    /**
+     * lock の新規取得
+     */
+    const getNewLockUUID = () => {
+        if(lock){
+            setEditMode(FlowEditModeValue.Editable)
+            // ロックの自動更新を有効にする
+            setHasEnableAutoLockExtended(true);
+        }else{
+            setReadOnly(true);
+            // ロック失敗 => [読み取り専用モード2]
+            setEditMode(FlowEditModeValue.ReadOnlyLocked);
+            setHasEnableAutoLockExtended(false);
+        }
+        setIsLoading(false);
+    }    
+
     const renderSteps = useCallback(() => {
         let steps: any = [];
         if (Array.isArray(nodes)) {
@@ -677,8 +672,6 @@ const FlowEditor = () => {
         return selector;
     }, [drag, zoom]);
 
-
-
     if (editMode === undefined || executeMode === undefined) {
         // モードが設定前はローディング中にする
         return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true} />
@@ -729,7 +722,6 @@ const FlowEditor = () => {
                 addStep={addStep}
                 addHistory={addHistory}
                 sortFlow={sortFlow}
-                selectSteps={selectSteps}
                 setZoom={setZoom}
                 undo={undo}
                 redo={redo}
@@ -783,7 +775,6 @@ const FlowEditor = () => {
                 addHistory={addHistory}
                 deleteCache={deleteCache}
                 updateStep={updateStep}
-                sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
                 refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}

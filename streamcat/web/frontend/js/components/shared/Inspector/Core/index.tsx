@@ -1,5 +1,4 @@
 import React from 'react'
-import {SortEndHandler} from "react-sortable-hoc";
 import {AsyncResourceContent} from 'use-async-resource';
 import {
   CommandInspector,
@@ -36,7 +35,6 @@ type InspectorProps = {
   addHistory: Function;
   deleteCache: Function;
   updateStep: Function;
-  sortStepSrcEnd: SortEndHandler;
   resizeInspector: Function;
   updateLastSavedFlow: Function;
   addFlowVariableHidden: boolean;
@@ -50,7 +48,7 @@ class Inspector extends React.Component<InspectorProps> {
   render() {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, flow,
       updateFlow, selected_data_source_detail, updateDataFrameDetail,
-      deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
+      deleteSteps, addHistory, deleteCache, updateStep, refreshFlow,
       resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       updateLastSavedFlow, previewDisabled } = this.props
 
@@ -107,7 +105,6 @@ class Inspector extends React.Component<InspectorProps> {
             selected_step_ids={selected_step_ids}
             baseInspectorDisabled={baseInspectorDisabled}
 
-            sortStepSrcEnd={sortStepSrcEnd}
             updateStep={updateStep}
             addHistory={addHistory}
             selectSteps={selectSteps}
@@ -120,7 +117,6 @@ class Inspector extends React.Component<InspectorProps> {
             selected_step_ids={selected_step_ids}
             baseInspectorDisabled={baseInspectorDisabled}
 
-            sortStepSrcEnd={sortStepSrcEnd}
             updateStep={updateStep}
             addHistory={addHistory}
             selectSteps={selectSteps}
@@ -136,7 +132,6 @@ class Inspector extends React.Component<InspectorProps> {
             addHistory={addHistory}
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
-            sortStepSrcEnd={sortStepSrcEnd}
             baseInspectorDisabled={baseInspectorDisabled}
           />
         } else if (selected_step instanceof NoteStepModel) {

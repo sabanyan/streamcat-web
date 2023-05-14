@@ -1,5 +1,4 @@
 export {default as EmptyState} from './EmptyState'
-export {default as Form} from './Form'
 export {default as Loader} from './Loader'
 export * from './NavigationBar'
 export {default as TabBar} from './TabBar'

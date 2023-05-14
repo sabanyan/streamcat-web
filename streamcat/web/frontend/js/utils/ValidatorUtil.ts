@@ -71,8 +71,8 @@ class ValidatorUtil {
 
     ValidateJS.validators.presencesIfTargetIsInput =  (value, options, key, attributes):any => {
       //対象のパラメータの入力がある場合は必須項目になる
-      var isValueExist = false
-      var errorMessage : any[] = []
+      let isValueExist = false
+      const errorMessage : any[] = []
 
       if (options && !value) {
         const command = CommandUtil.getCommand(attributes['_command_id'])
@@ -113,11 +113,11 @@ class ValidatorUtil {
     //---------------------------------------------
     ValidateJS.validators.presencesIfTargetIsNotInput =  (value, options, key, attributes) : any => {
       //対象のパラメータの入力がない場合は必須項目になる
-      var isValueExist = false
-      var errorMessage: any[] = []
+      let isValueExist = false
+      const errorMessage: any[] = []
       if (options && !value) {
         const command = CommandUtil.getCommand(attributes['_command_id'])
-        var arrayOptions = Array.isArray(options) ? options : [options]
+        const arrayOptions = Array.isArray(options) ? options : [options]
 
         arrayOptions.forEach((option) => {
           if (!attributes[option]) {
@@ -172,8 +172,8 @@ class ValidatorUtil {
       //対象のパラメータの入力がある場合は必須項目になる
       if (options && value) {
         const command = CommandUtil.getCommand(attributes['_command_id'])
-        var isError = false
-        var errorMessage: any[] = []
+        let isError = false
+        const errorMessage: any[] = []
         let arrayOptions = Array.isArray(options.target) ? options.target : [options.target]
 
         arrayOptions.forEach((option) => {
@@ -215,7 +215,7 @@ class ValidatorUtil {
     // }
     //---------------------------------------------
     ValidateJS.validators.specifiedFormatIfTargetInput =  (value, options, key, attributes):any =>  {
-      var isError = false
+      let isError = false
       if (value && options) {
         let arrayOptions = Array.isArray(options.target) ? options.target : [options.target]
 
@@ -291,10 +291,10 @@ class ValidatorUtil {
     // }
     //---------------------------------------------
     ValidateJS.validators.raiseWarningTargetsSelected = (value, options, key, attributes): any => {
-      var isError = false
-      var errorMessage:any[] = []
+      let isError = false
+      const errorMessage:any[] = []
       if (options && value) {
-        var isAllOptionsSelected = true
+        let isAllOptionsSelected = true
         const command = CommandUtil.getCommand(attributes['_command_id'])
         let arrayOptions = Array.isArray(options) ? options : [options]
         arrayOptions.forEach((option) => {
@@ -389,7 +389,7 @@ class ValidatorUtil {
             const command = CommandUtil.getCommand(attributes['_command_id'])
             const label = CommandUtil.getCommandParamLabel(command, key)
             const targetLabel = CommandUtil.getCommandParamLabel(command, options.target)
-            var errorMessage: any[] = []
+            const errorMessage: any[] = []
 
             if (options.difference == 0) {
               errorMessage.push('[' + label + '] ' + 'と、[' + targetLabel + ']の項目数が同じになるよう入力してください。')
@@ -443,16 +443,16 @@ class ValidatorUtil {
     //---------------------------------------------
 
     ValidateJS.validators.checkSeveralSpecifiedFormats =  (value, options, key, attributes): any => {
-      var errorMessage: any[]= []
+      const errorMessage: any[]= []
       if (options && value) {
         // defaultRuleのみの入力を許容する、formatにも代えられるようにする
         if (options.specialRules) {
-          var useSpecialFlg = false
-          var isLooserUnused = false
-          for (var spRule in options.specialRules) {
-            var targetInput = false
-            var specialRules = options.specialRules[spRule]
-            var useLooserPatternFlg = false
+          let useSpecialFlg = false
+          let isLooserUnused = false
+          for (const spRule in options.specialRules) {
+            let targetInput = false
+            const specialRules = options.specialRules[spRule]
+            let useLooserPatternFlg = false
             if (Array.isArray(specialRules.target)) {
 
               (specialRules.target).forEach((target) => {
@@ -485,7 +485,7 @@ class ValidatorUtil {
       }
 
       function removeBadValue (errorMessage) {
-        for (var i = 0; i < errorMessage.length; i++) {
+        for (let i = 0; i < errorMessage.length; i++) {
           if (errorMessage[i] == null || errorMessage[i] == undefined) {
             errorMessage.splice(i, 1)
             if (i > 0) i--
@@ -513,21 +513,21 @@ class ValidatorUtil {
     // }
     //---------------------------------------------
     ValidateJS.validators.checkArrangementSequences = function (value, options, key, attributes) {
-      var isError = false
+      let isError = false
       // if(options && value){
       if (value) {
-        var onlyNumber: number[] = []
-        var listedValue = value.split(',')
+        const onlyNumber: number[] = []
+        const listedValue = value.split(',')
         // 文字列の抜き取りと、数値のリスト化
         listedValue.forEach((numOKstrNG) => {
-          var changeNum = Number(numOKstrNG)
+          const changeNum = Number(numOKstrNG)
           if (!isNaN(changeNum)) {
             onlyNumber.push(changeNum)
           }
         })
 
         // 数値の大小の順序比較
-        var referenceVal = -Infinity
+        let referenceVal = -Infinity
         onlyNumber.forEach((checkNum) => {
           if (referenceVal <= checkNum) {
             referenceVal = checkNum

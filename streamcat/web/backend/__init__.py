@@ -1,12 +1,12 @@
 import os
-from flask import Flask, Response
+from flask import Flask, Response, Blueprint
 
 # Flask
 app = Flask('streamcat.web.backend')
 
-# production : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
-# development: evalを使用する
-FRONTEND_BUILD=os.getenv('STREAMCAT_FRONTEND_BUILD', 'production')
+# 0 : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
+# 1 : evalを使用する
+DEBUG_BUILD=bool(os.getenv('STREAMCAT_DEBUG_BUILD', 0))
 
 # 1 : Googleログインボタンを表示してGoogleログイン機能を有効にする
 GOOGLE_LOGIN=bool(os.getenv('STREAMCAT_GOOGLE_LOGIN', 0))
@@ -95,7 +95,7 @@ app.register_blueprint(auth.mod, url_prefix='/signup')
 app.register_blueprint(basic.mod)
 
 # static用
-from ..frontend import mod
+mod = Blueprint('front_static', __name__, static_url_path='/front_static', static_folder='../frontend/static')
 app.register_blueprint(mod)
 
 def run(port=5000):

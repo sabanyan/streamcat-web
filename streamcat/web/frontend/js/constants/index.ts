@@ -33,8 +33,8 @@ const Constants = {
       },
     },
     command: {
-      inputPortName: 'i',
-      outputPortName: 'i',
+      inputPortLabel: 'i',
+      outputPortLabel: 'i',
     },
     note: {
       width: 88,
@@ -82,9 +82,6 @@ const Constants = {
     dataSource: {
       csv: 'csv'
     }
-  },
-  api: {
-    host: window.location.host,
   },
   color: {
     datasource: '#6AD0FB',

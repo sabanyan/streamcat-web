@@ -1,7 +1,6 @@
 import React from 'react';
 import style from './style.scss';
-import classnames from 'classnames';
-import {IFilterCategoryItem, IFilterFilterItem} from 'Types/index'
+import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import ImageUtil from "Utils/ImageUtil";
 
 interface Props {
@@ -20,8 +19,8 @@ const FilterSelectedList = (props: Props) => {
     let listItemElements:React.ReactNode[] = [];
     list.forEach((categoryItem,index) => {
         let labelText = '';
-        const selectedListItem: IFilterFilterItem[] = []
-        categoryItem.data.forEach((filterItem: IFilterFilterItem) => {
+        const selectedListItem: IFilterListItem[] = []
+        categoryItem.data.forEach((filterItem: IFilterListItem) => {
             if (filterItem.selected) {
                 selectedListItem.push(filterItem)
             }

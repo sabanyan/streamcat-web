@@ -294,8 +294,8 @@ const Step = (props: Props) => {
 
     const selected = selectorIntersect();
 
-    const flowIn = flow.flow.ports[0].hasPort(step.id);
-    const flowOut = flow.flow.ports[1].hasPort(step.id);
+    const flowIn = flow.flow.ports[0].exists(step.id);
+    const flowOut = flow.flow.ports[1].exists(step.id);
 
     let stepLabel = step.label;
 

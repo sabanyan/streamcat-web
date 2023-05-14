@@ -1,24 +1,39 @@
-import {CommandParamType, CommandPortType, SubFlowCommandParamType} from "Types/index";
+import {CommandParamType, CommandPortType} from "Types/index";
 import Model from "Model/Core";
 
+type SubFlowCommandParamType = {
+    // id: string;
+    classification?: string;
+    createdAt?: string;
+    creator?: string;
+    description?: string;
+    label?: string;
+    nodes: any[];
+    params: CommandParamType[];
+    ports: [any, any];
+    // projectId: number;
+    // projectName: string;
+    uuid?: string;
+};
+
 export default class SubflowCommandModel extends Model {
-    id: string | undefined | null = undefined;
+    // id: string | undefined | null = undefined;
     createdAt: string | undefined = undefined;
     creator: string | undefined = undefined;
     description: string | undefined = undefined;
     label: string | undefined = undefined;
     nodes: [] = [];
-    params: any[CommandParamType] = [];
-    ports: any[CommandPortType] = [[], []];
-    projectId: string | undefined = undefined;
-    projectName: string | undefined = undefined;
+    params: CommandParamType[] = [];
+    ports: [CommandPortType[], CommandPortType[]] = [[], []];
+    // projectId: string | undefined = undefined;
+    // projectName: string | undefined = undefined;
     uuid: string | undefined = undefined;
     classification: string = "subflow";
     rules: {} = {};
 
     constructor(props: SubFlowCommandParamType) {
         super();
-        this.id = props.uuid; //共有フローのIDはUUIDとする
+        // this.id = props.uuid; //共有フローのIDはUUIDとする
         this.initialize(props, "createdAt");
         this.initialize(props, "creator");
         this.initialize(props, "description");
@@ -26,8 +41,8 @@ export default class SubflowCommandModel extends Model {
         this.initialize(props, "nodes");
         this.initialize(props, "params");
         this.initialize(props, "ports");
-        this.initialize(props, "projectId");
-        this.initialize(props, "projectName");
+        // this.initialize(props, "projectId");
+        // this.initialize(props, "projectName");
         this.initialize(props, "uuid");
         this.init();
     }
@@ -43,15 +58,15 @@ export default class SubflowCommandModel extends Model {
         }
     }
 
-    getInPorts(): [CommandPortType] {
+    getInPorts(): CommandPortType[] {
         return this.ports[0];
     }
 
-    getOutPorts(): [CommandPortType] {
+    getOutPorts(): CommandPortType[] {
         return this.ports[1];
     }
 
-    getParams(): [CommandParamType] {
+    getParams(): CommandParamType[] {
         return this.params;
     }
 

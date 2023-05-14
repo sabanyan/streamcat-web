@@ -1,15 +1,13 @@
 import {CommandParamType, CommandPortType} from "Types/index";
 import Model from "Model/Core";
 
-type stepType = 'command' | 'frame'
-
 export type CommandModelProps = {
   classification: string;
   description: string;
   id: string;
   label: string;
-  params: [CommandParamType];
-  ports: [CommandPortType];
+  params: CommandParamType[];
+  ports: [CommandPortType[], CommandPortType[]];
   version: string;
   rules: {};
 }
@@ -19,9 +17,9 @@ export default class CommandModel extends Model {
   description: string | undefined = undefined
   id: string | undefined | null = undefined
   label: string | null = null
-  params: any[CommandParamType] = []
+  params: CommandParamType[] = []
   groups: string[] | undefined = undefined
-  ports: any[CommandPortType] = [[], []]
+  ports: [CommandPortType[], CommandPortType[]] = [[], []]
   rules: {} = {}
   version: string | undefined = undefined
 
@@ -38,15 +36,15 @@ export default class CommandModel extends Model {
     this.initialize(props, 'rules')
   }
 
-  getInPorts (): [CommandPortType] {
+  getInPorts (): CommandPortType[] {
     return this.ports[0]
   }
 
-  getOutPorts (): [CommandPortType] {
+  getOutPorts (): CommandPortType[] {
     return this.ports[1]
   }
 
-  getParams (): [CommandParamType] {
+  getParams (): CommandParamType[] {
     return this.params
   }
 
@@ -65,7 +63,7 @@ export default class CommandModel extends Model {
   isInPortsAddable():boolean {
     let result = false
     const ports = this.getInPorts()
-    if (ports[0] && ports[0].name === '*') result = true
+    if (ports[0] && ports[0].label === '*') result = true
 
     return result
   }
@@ -73,7 +71,7 @@ export default class CommandModel extends Model {
   isOutPortsAddable():boolean {
     let result = false
     const ports = this.getOutPorts()
-    if (ports[0] && ports[0].name === '*') result = true
+    if (ports[0] && ports[0].label === '*') result = true
 
     return result
   }

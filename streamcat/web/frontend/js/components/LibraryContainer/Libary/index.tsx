@@ -188,8 +188,7 @@ export const Library = () => {
         return <EmptyState
             icon={'inbox'}
             title={'ライブラリが空です'}
-            description={'表示できるファイルがありません'}>
-        </EmptyState>;
+            description={'表示できるファイルがありません'} />;
     };
 
     const renderAll = () => {
