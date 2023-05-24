@@ -25,6 +25,6 @@ export default class AdminUtil {
 
     static replaceAsterisk = (length: number): string => {
         const asteriskStr = [...Array(length)].map((index) => {return "*"});
-        return asteriskStr.toString().replace(/,/g, '')
+        return asteriskStr.toString().replace(/,/g, '');
     }
 }

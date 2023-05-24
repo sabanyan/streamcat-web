@@ -3,7 +3,7 @@ export default class StringUtil {
 
   static separate (num: number): string {
     if (!num && num !== 0) return ''
-    return String(num).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')
+    return String(num).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
   }
 
   static convertToFileSize (size:number, withUnit=true): string {
