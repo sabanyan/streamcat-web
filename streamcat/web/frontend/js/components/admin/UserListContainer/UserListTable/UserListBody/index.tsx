@@ -11,12 +11,11 @@ import ImageUtil from 'Utils/ImageUtil';
 interface Props {
     bodies: UserType[];
     selectedUsers: UserType[];
-    onClickFileName: (body: UserType, event?: React.SyntheticEvent<any, Event>) => void;
     onClickCell: (body: UserType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
 }
 
 const UserListBody = (props: Props) => {
-    const {bodies, selectedUsers, onClickCell, onClickFileName} = props;
+    const {bodies, selectedUsers, onClickCell} = props;
 
     const onClick = (event, body) => {
         event.stopPropagation();

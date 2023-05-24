@@ -1,6 +1,5 @@
 import React from 'react';
 import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
-import * as lodash from 'lodash';
 import { EmptyState, Spacer } from 'Shared/Base';
 import { Flex } from 'Shared/Base/Layouts/Flex';
 import { NotificationManager, useStreamCatNotifications } from 'Shared/Notification';
@@ -29,7 +28,6 @@ import { BreadCrumb, IBreadCrumbsLink } from 'LibraryContainer/BreadCrumb';
 import { TrashMenuList } from 'LibraryContainer/TrashMenuList';
 import { ApplyMenuList } from 'Components/LibraryContainer/ApplyMenuList';
 import { MenuList } from 'LibraryContainer/MenuList';
-import { ITableHeader } from 'LibraryContainer/FileListTable/FileListHeader';
 import { VisualizeModel, VisualizeModelProps } from 'Model/index';
 import { ProjectDrawer } from 'Shared/Drawer/ProjectDrawer';
 import { FolderDrawer } from 'Shared/Drawer/FolderDrawer';
@@ -164,9 +162,6 @@ export const Library = () => {
     };
 
     const clearSelected = () => {
-        parentFolder!.children.map((selectedData) => {
-            (selectedData as DatumEntryType).selected = false;
-        });
         setSelectedDatas([]);
     };
 
@@ -231,54 +226,8 @@ export const Library = () => {
             }
         };
 
-        const onClickCell = (cell: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-            let data = cell;
-            // ライブラリ画面の単体表示時のみ複数選択を許可
-            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
-
-            if (event) event.stopPropagation();
-
-            if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
-                data.selected = true;
-                // command or ctrl + click
-                if (selectedDatas.includes(data)) {
-                    data.selected = !data.selected;
-                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
-                    if (!data.selected) {
-                        setLastSelectedDatum(null);
-                    }
-                } else {
-                    selectedDatas.push(data);
-                    setLastSelectedDatum(data);
-                }
-            } else if (event && event.shiftKey && enableMultiSelect) {
-                // shift + click
-                clearSelected();// 選択状態を一旦解除
-                const children = parentFolder!.children;
-                let current = children.findIndex(libraryChild => data.uuid === libraryChild.uuid);
-                if (lastSelectedDatum) {
-                    let last = children.findIndex(libraryChild => lastSelectedDatum.uuid === libraryChild.uuid);
-                    let min, max;
-                    if (current >= last) {
-                        min = last;
-                        max = current;
-                    } else {
-                        min = current;
-                        max = last;
-                    }
-                    const selectedEntries = children.slice(min, max + 1).map((selectedData) => {
-                        (selectedData as DatumEntryType).selected = true;
-                        return selectedData;
-                    });
-                    setSelectedDatas(selectedEntries);
-                }
-            } else {
-                // 単一選択
-                clearSelected();
-                data.selected = true;
-                setSelectedDatas([data]);
-                setLastSelectedDatum(data);
-            }
+        const onClickBody = () => {
+            // FileListBodyをクリックしたら押下フラグをtrueにする
             clickedLibraryCell.current = true;
         };
 
@@ -326,22 +275,26 @@ export const Library = () => {
             <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
                 onMouseDown={onMouseDownLibrary}>
                 <Spacer width={40} />
-                <Flex flexDirection={'column'} fluid={true}>
+                <Flex flexDirection={'column'} fluid={true} onClick={onClickBody}>
                     <Spacer height={40} />
                     <BreadCrumb links={links} />
                     <Spacer height={8} />
                     <FileListTable
                         minWidth={800}
-                        onClickCell={onClickCell}
+                        mode={mode}
+                        selectedDatas={[selectedDatas, setSelectedDatas]}
+                        lastSelectedDatum={[lastSelectedDatum, setLastSelectedDatum]}
+                        // onClickCell={onClickCell}
                         onClickFileName={onClickFileName}
-                        onClickHeader={(header: ITableHeader, event) => {
-                            if (event) event.stopPropagation();
-                            if (header.sort) {
-                                setSortedDatas(lodash.orderBy(parentFolder!.children, header.key, header.sort));
-                            } else {
-                                setSortedDatas(parentFolder!.children);
-                            }
-                        }}
+                        // onClickHeader={(header: ITableHeader, event) => {
+                        //     if (event) event.stopPropagation();
+                        //     if (header.sort) {
+                        //         setSortedDatas(lodash.orderBy(parentFolder!.children, header.key, header.sort));
+                        //     } else {
+                        //         setSortedDatas(parentFolder!.children);
+                        //     }
+                        // }}
+                        // bodies={parentFolder!.children as DatumEntryType[]}
                         bodies={
                             sortedDatas.map((datum) => {
                                 const body = datum as DatumEntryType;

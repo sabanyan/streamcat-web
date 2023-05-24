@@ -3,16 +3,18 @@ import dayjs from 'dayjs';
 import { Link2 } from 'Shared/Input';
 import classnames from 'classnames';
 import style from './style.scss';
+import { DatumType } from 'Model/Library';
 import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
 
 interface Props {
+    bodies: DatumEntryType[];
+    selectedDatas: DatumType[];
     onClickFileName: (body: DatumEntryType, event?: React.SyntheticEvent<any, Event>) => void;
     onClickCell: (body: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
-    bodies: DatumEntryType[];
 }
 
 const FileListBody = (props: Props) => {
-    const { bodies, onClickCell, onClickFileName } = props;
+    const { bodies, selectedDatas, onClickCell, onClickFileName } = props;
 
     const getIconElement = (icon: string | null) => {
         const baseUrl = '/front_static/';
@@ -49,7 +51,8 @@ const FileListBody = (props: Props) => {
     };
 
     const bodiesElement = bodies.map((body, index) => {
-        return <tr className={classnames(style.row,{[style.selected]: body.selected})}
+        const selected = selectedDatas.some(datum => datum.uuid === body.uuid);
+        return <tr className={classnames(style.row,{[style.selected]: selected})}
                    onClick={(event)=>onClick(event,body)}
                    onMouseDown={(event)=>event.stopPropagation()}
                    key={index}>

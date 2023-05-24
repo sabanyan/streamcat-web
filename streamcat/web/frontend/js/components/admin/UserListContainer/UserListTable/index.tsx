@@ -16,11 +16,10 @@ interface Props {
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
     lastSelectedUser: [UserType|null, (value:React.SetStateAction<UserType|null>)=>void];
     minWidth?: number | string;
-    onClickFileName: (body: UserType, event?: React.SyntheticEvent<any, Event>) => void;
 }
 
 const UserListTable = (props: Props) => {
-    const {bodies, minWidth, onClickFileName} = props;
+    const {bodies, minWidth} = props;
 
     const [selectedUsers, setSelectedUsers] = props.selectedUsers;
     const [lastSelectedUser, setLastSelectedUser] = props.lastSelectedUser;
@@ -157,7 +156,6 @@ const UserListTable = (props: Props) => {
                         onClick={onClickHeader} />
         <UserListBody bodies={sortBodies(bodies, clickedHeader)}
                       selectedUsers={selectedUsers}
-                      onClickFileName={onClickFileName}
                       onClickCell={onClickCell} />
     </table>;
 };

@@ -221,8 +221,7 @@ export const UserBody = (props: Props) => {
         {/* ユーザリスト */}
         <UserListTable  bodies={filterdUsers}
                         selectedUsers={[selectedUsers, setSelectedUsers]}
-                        lastSelectedUser={[lastSelectedUser, setLastSelectedUser]}
-                        onClickFileName={()=>{}} />
+                        lastSelectedUser={[lastSelectedUser, setLastSelectedUser]} />
 
         {/* メニューボタン */}
         <Spacer minWidth={40}/>
