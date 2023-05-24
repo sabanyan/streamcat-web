@@ -1,35 +1,33 @@
 import React from 'react';
-import {Link, Typography} from '@mui/material';
+import {Link, SxProps, Theme} from '@mui/material';
 
 type Props = {
-    // ラベル
-    label:string;
     // 表示値
     value: string;
-    onClick: () => void;
+    sx? : SxProps<Theme>;
+    onClick: (e: React.SyntheticEvent<HTMLElement,Event>) => void;
 };
 
 /**
- * テキストボックス
+ * リンク
  * @param props
  */
 export const Link2 = (props:Props) => {
-    const {label, value, onClick} = props;
+    const {value, onClick} = props;
 
-    return  <>
-        <Typography variant='caption'
-                    color='textSecondary'
-                    sx={{lineHeight:'0'}}>{label}</Typography>
-        <div>
-        <Link // 下線を表示しない
-            underline='none'
-            // リンクをポイントしたときにカーソル形状をボタンと同じにする
-            component='button'
-            sx={{lineHeight:'1',
-                 paddingLeft:1,
-                 paddingBottom:1}}
-            // リンクをクリックしたときにonClickを呼び出す
-            onClick={onClick} >{value}</Link>
-        </div>
-    </>;
+    return <Link
+        // 下線を表示しない
+        underline='none'
+        // リンクをポイントしたときにカーソル形状をボタンと同じにする
+        component='button'
+        // 縦位置を合わせる
+        sx={props.sx}
+        onClick={(e:React.SyntheticEvent<HTMLElement,Event>) => {
+            // リンク押下時のデフォルトの動作を取り消す
+            e.preventDefault();
+            // onClickを呼び出す
+            onClick(e);
+        }} >
+        {value}
+    </Link>;
 };

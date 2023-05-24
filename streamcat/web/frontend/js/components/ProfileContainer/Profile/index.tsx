@@ -3,7 +3,7 @@ import { useAsyncResource } from 'use-async-resource'
 import {useForm, UseFormRegisterReturn} from 'react-hook-form';
 import style from './style.scss'
 import {ModalManager} from 'Shared/Modal'
-import {Button, LinkButton, TextField} from 'Shared/Input'
+import {Button, Link2, TextField} from 'Shared/Input'
 import {NotificationManager, useStreamCatNotifications} from 'Shared/Notification';
 import {NavigationType, SelfUserType} from 'Model/Navigation/NavigationModel';
 import { Api, ErrorResponse } from 'Api';
@@ -125,6 +125,9 @@ export const Profile = (props: Props) => {
     // ログインUserの更新可否を判定する
     const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser);
 
+    // Linkの縦位置をラベルに合わせる
+    const valign = {verticalAlign:'baseline'};
+
     return <div className={'container mt-40px'}>
         <div className={style.page_title}>
             ユーザー情報変更
@@ -136,11 +139,9 @@ export const Profile = (props: Props) => {
                         {
                             (availableUpdateSelf) ?
                                 (editing === 'name') ?
-                                    <label>ユーザー名 <LinkButton
-                                        onClick={() => onClickCancel()}>キャンセル</LinkButton></label>
+                                    <label>ユーザー名 <Link2 value='キャンセル' sx={valign} onClick={()=>onClickCancel()} /></label>
                                     :
-                                    <label>ユーザー名 <LinkButton
-                                        onClick={() => onClickUpdate('name')}>変更する</LinkButton></label>
+                                    <label>ユーザー名 <Link2 value='変更する' sx={valign} onClick={()=>onClickUpdate('name')} /></label>
                                 :  <label>ユーザー名</label>
                         }
                         <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'}
@@ -161,11 +162,9 @@ export const Profile = (props: Props) => {
                         {
                             (availableUpdateSelf) ?
                                 (editing === 'email') ?
-                                    <label>メールアドレス <LinkButton
-                                        onClick={() => onClickCancel()}>キャンセル</LinkButton></label>
+                                    <label>メールアドレス <Link2 value='キャンセル' sx={valign} onClick={()=>onClickCancel()} /></label>
                                     :
-                                    <label>メールアドレス <LinkButton
-                                        onClick={() => onClickUpdate('email')}>変更する</LinkButton></label>
+                                    <label>メールアドレス <Link2 value='変更する' sx={valign} onClick={()=>onClickUpdate('email')} /></label>
                                 : <label>メールアドレス</label>
                         }
                         <TextField readOnly={(editing !== 'email')} placeholder={'メールアドレス'} type={'email'}
@@ -192,10 +191,9 @@ export const Profile = (props: Props) => {
                         <form onSubmit={handleSubmit(onSubmit)} className={'mt-32px'}>
                             {
                                 (editing === 'password') ?
-                                    <label><LinkButton onClick={() => onClickCancel()}>キャンセル</LinkButton></label>
+                                    <label><Link2 value='キャンセル' sx={valign} onClick={()=>onClickCancel()} /></label>
                                     :
-                                    <label><LinkButton
-                                        onClick={() => onClickUpdate('password')}>現在のパスワードを変更する</LinkButton></label>
+                                    <label><Link2 value='現在のパスワードを変更する' sx={valign} onClick={()=>onClickUpdate('password')} /></label>
                             }
 
                             {

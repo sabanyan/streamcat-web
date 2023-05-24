@@ -1,6 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
-import { LinkButton } from "Shared/Input";
+import { Link2 } from "Shared/Input";
 import classnames from "classnames";
 import style from "./style.scss";
 import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
@@ -56,12 +56,7 @@ const FileListBody = (props: Props) => {
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
                 {(body.clickable) ?
-                    <LinkButton onClick={(event: React.SyntheticEvent<any, Event>) => {
-                        event.stopPropagation();
-                        onClickFileName(body, event);
-                    }}>
-                        {body.label}
-                    </LinkButton>
+                    <Link2 value={body.label} onClick={e => onClickFileName(body, e)} />
                     :
                     <span className={style.filename}>{body.label}</span>
                 }
