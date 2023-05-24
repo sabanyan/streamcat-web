@@ -1,8 +1,8 @@
 import React from 'react';
 import dayjs from 'dayjs';
-import { Link2 } from "Shared/Input";
-import classnames from "classnames";
-import style from "./style.scss";
+import { Link2 } from 'Shared/Input';
+import classnames from 'classnames';
+import style from './style.scss';
 import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
 
 interface Props {
@@ -15,30 +15,30 @@ const FileListBody = (props: Props) => {
     const { bodies, onClickCell, onClickFileName } = props;
 
     const getIconElement = (icon: string | null) => {
-        const baseUrl = "/front_static/";
+        const baseUrl = '/front_static/';
         const iconElement = (icon)
-            ? <img className={style.icon} src={baseUrl + "images/icon/" + icon + ".svg"} />
+            ? <img className={style.icon} src={baseUrl + 'images/icon/' + icon + '.svg'} />
             : null;
         return iconElement;
     };
     const getIconFromBodyType = (type: string): string | null => {
         switch (type) {
-            case "project":
-                return "icon-project";
-            case "folder":
-                return "icon-folder";
-            case "trash":
-                return "icon-trash";
-            case "frame":
-                return "icon-file-csv";
-            case "flow":
-                return "icon-flow";
-            case "database":
-                return "icon-database";
-            case "rfolder":
-                return "icon-remote-folder";
-            case "document":
-                return "icon-file-csv";
+            case 'project':
+                return 'icon-project';
+            case 'folder':
+                return 'icon-folder';
+            case 'trash':
+                return 'icon-trash';
+            case 'frame':
+                return 'icon-file-csv';
+            case 'flow':
+                return 'icon-flow';
+            case 'database':
+                return 'icon-database';
+            case 'rfolder':
+                return 'icon-remote-folder';
+            case 'document':
+                return 'icon-file-csv';
             default:
                 console.log(type);
                 return null;
@@ -69,7 +69,6 @@ const FileListBody = (props: Props) => {
             </td>
         </tr>;
     });
-
 
     return <tbody>
         {bodiesElement}

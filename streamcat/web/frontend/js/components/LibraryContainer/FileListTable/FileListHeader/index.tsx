@@ -1,5 +1,5 @@
 import React from 'react';
-import iconStyle from "Shared/Input/FlatButton/style.scss";
+import iconStyle from 'Shared/Input/FlatButton/style.scss';
 
 export interface ITableHeader {
     label: string;
@@ -8,7 +8,7 @@ export interface ITableHeader {
     sort?: TTableHeaderSortType;
 }
 
-export type TTableHeaderSortType = "asc" | "desc" | null | undefined
+export type TTableHeaderSortType = 'asc' | 'desc' | null | undefined
 
 interface Props {
     headers: ITableHeader[];
@@ -21,19 +21,19 @@ const FileListHeader = (props: Props) => {
 
     const getIconFromSort = (sort?: TTableHeaderSortType): string | null => {
         switch (sort) {
-            case  "asc":
-                return "icon-arrow-up";
-            case "desc":
-                return "icon-arrow-down";
+            case  'asc':
+                return 'icon-arrow-up';
+            case 'desc':
+                return 'icon-arrow-down';
             default:
                 return null;
         }
     };
 
     const getIconElement = (icon: string | null) => {
-        const baseUrl = "/front_static/";
+        const baseUrl = '/front_static/';
         const iconElement = (icon)
-            ? <img className={iconStyle.icon} src={baseUrl + "images/icon/" + icon + ".svg"} />
+            ? <img className={iconStyle.icon} src={baseUrl + 'images/icon/' + icon + '.svg'} />
             : null;
         return iconElement;
     };

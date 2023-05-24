@@ -95,7 +95,7 @@ export const Library = () => {
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
     const [sortedDatas, setSortedDatas] = React.useState<DatumType[]>(folderReader().children);
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
-    const [lastSelectedCell, setLastSelectedCell] = React.useState<DatumType | null>(null);
+    const [lastSelectedDatum, setLastSelectedDatum] = React.useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const [links, setLinks] = React.useState<IBreadCrumbsLink[]>([]);
     const clickedLibraryCell = React.useRef(false);
@@ -245,19 +245,19 @@ export const Library = () => {
                     data.selected = !data.selected;
                     setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
                     if (!data.selected) {
-                        setLastSelectedCell(null);
+                        setLastSelectedDatum(null);
                     }
                 } else {
                     selectedDatas.push(data);
-                    setLastSelectedCell(data);
+                    setLastSelectedDatum(data);
                 }
             } else if (event && event.shiftKey && enableMultiSelect) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
                 const children = parentFolder!.children;
                 let current = children.findIndex(libraryChild => data.uuid === libraryChild.uuid);
-                if (lastSelectedCell) {
-                    let last = children.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
+                if (lastSelectedDatum) {
+                    let last = children.findIndex(libraryChild => lastSelectedDatum.uuid === libraryChild.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -277,7 +277,7 @@ export const Library = () => {
                 clearSelected();
                 data.selected = true;
                 setSelectedDatas([data]);
-                setLastSelectedCell(data);
+                setLastSelectedDatum(data);
             }
             clickedLibraryCell.current = true;
         };
@@ -285,7 +285,7 @@ export const Library = () => {
         const onMouseDownLibrary = () => {
             if (clickedLibraryCell.current) {
                 clearSelected();// 選択状態を一旦解除
-                setLastSelectedCell(null);
+                setLastSelectedDatum(null);
                 clickedLibraryCell.current = false;
             }
         };

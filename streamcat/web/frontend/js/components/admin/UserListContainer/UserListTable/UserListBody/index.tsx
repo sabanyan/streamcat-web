@@ -71,8 +71,9 @@ const UserListBody = (props: Props) => {
             </td>
         </tr>;
     });
+
     return <tbody>
-    {bodiesElement}
+        {bodiesElement}
     </tbody>;
 };
 

@@ -15,8 +15,8 @@ interface Props {
     bodies: UserType[];
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
     lastSelectedUser: [UserType|null, (value:React.SetStateAction<UserType|null>)=>void];
-    onClickFileName: (body: UserType, event?: React.SyntheticEvent<any, Event>) => void;
     minWidth?: number | string;
+    onClickFileName: (body: UserType, event?: React.SyntheticEvent<any, Event>) => void;
 }
 
 const UserListTable = (props: Props) => {
@@ -48,11 +48,10 @@ const UserListTable = (props: Props) => {
     const onClickHeader = (clickHeader: ITableHeader) => {
         setHeaders(
             headers.map(header => ({
-
-                    label: header.label,
-                    key: header.key,
-                    width: header.width,
-                    sort: header===clickHeader? shiftSortOrder(header.sort): null
+                label: header.label,
+                key: header.key,
+                width: header.width,
+                sort: header===clickHeader? shiftSortOrder(header.sort): null
             }))
         );
     };

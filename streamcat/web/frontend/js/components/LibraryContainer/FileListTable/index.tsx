@@ -1,29 +1,29 @@
 import React from 'react';
-import {useState} from "react";
-import * as style from "./style.scss";
-import {
-    FileListHeader,
-    ITableHeader,
-    TTableHeaderSortType
-} from "LibraryContainer/FileListTable/FileListHeader";
+import {useState} from 'react';
+import * as style from './style.scss';
 import {DatumEntryType} from 'Components/LibraryContainer/Libary/index';
-import {FileListBody} from "LibraryContainer/FileListTable/FileListBody";
+import {
+    ITableHeader,
+    TTableHeaderSortType,
+    FileListHeader
+} from 'LibraryContainer/FileListTable/FileListHeader';
+import {FileListBody} from 'LibraryContainer/FileListTable/FileListBody';
 
 interface Props {
+    bodies: DatumEntryType[];
+    minWidth?: number | string;
     onClickHeader: (header: ITableHeader, event?: React.MouseEvent<HTMLSpanElement>) => void;
     onClickFileName: (body: DatumEntryType, event?: React.SyntheticEvent<any, Event>) => void;
     onClickCell: (body: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>) => void;
-    bodies: DatumEntryType[];
-    minWidth?: number | string;
 }
 
 const FileListTable = (props: Props) => {
-    const {onClickHeader, onClickFileName, onClickCell, bodies, minWidth} = props;
+    const {bodies, minWidth, onClickHeader, onClickFileName, onClickCell} = props;
 
     const initialHeaders = [
-        {label: "名前", key: "label"},
-        {label: "作成者", key: "creator", width: 200},
-        {label: "作成日時", key: "createdAt", width: 184}
+        {label: '名前', key: 'label'},
+        {label: '作成者', key: 'creator', width: 200},
+        {label: '作成日時', key: 'createdAt', width: 184}
     ];
     const [headers, setHeaders] = useState<ITableHeader[]>(initialHeaders);
 
@@ -48,12 +48,12 @@ const FileListTable = (props: Props) => {
 
     const onChangeSort = (sort: TTableHeaderSortType) => {
         switch (sort) {
-            case "asc":
-                return "desc";
-            case "desc":
+            case 'asc':
+                return 'desc';
+            case 'desc':
                 return null;
             default:
-                return "asc";
+                return 'asc';
         }
     };
 
