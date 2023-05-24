@@ -7,7 +7,7 @@
 }
 .selected{
   td{
-    background: #f6faff;
+    @include list-select-color();
   }
 }
 

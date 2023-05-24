@@ -25,7 +25,7 @@
 
   td {
     height: 56px;
-    @include list-background-color();
+    @include list-color();
     vertical-align: middle;
     padding: 0 24px;
     box-sizing: border-box;
@@ -36,7 +36,6 @@
     font-style: normal;
     line-height: normal;
     letter-spacing: normal;
-    color: #606c7a;
   }
 
   tr:first-of-type {
