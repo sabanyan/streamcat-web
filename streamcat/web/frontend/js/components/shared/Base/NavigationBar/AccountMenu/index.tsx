@@ -3,6 +3,7 @@ import {Menu, MenuItem, Button, Link, Avatar, Divider, Typography} from '@mui/ma
 import {WebUtil} from 'Utils/index';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import { Spacer } from "Shared/Base";
+import {DiskUsage} from 'Shared/Input'
 
 interface Props {
     navigation: NavigationType | null;
@@ -61,6 +62,7 @@ const AccountMenu = (props: Props) => {
             <MenuItem>
                 {depoName}
             </MenuItem>
+            <DiskUsage diskUsage={navigation?.diskUsage} />
             <Divider sx={{my:0.5}} />
             <MenuItem>
                 <Link href='/settings/profile' underline='none'>ユーザー情報変更</Link>

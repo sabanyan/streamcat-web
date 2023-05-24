@@ -22,11 +22,20 @@ def get_navigation():
     """
     ナビゲーションバーに表示する情報などを取得する
     """
-    from streamcat.core import STREAMCAT_VER
+    import shutil
+    from streamcat.core import SavableDatum, STREAMCAT_VER
+
+    # 指定したディレクトリパスにおけるディスクの使用量と空容量を取得する
+    total, used, free = shutil.disk_usage(SavableDatum.STORE_DIR)
 
     navigation = {
         'version': STREAMCAT_VER,
         'depoName': os.environ.get('STREAMCAT_DEPO') or 'Unit Test',
+        'diskUsage': {
+            'total': used + free,
+            'used' : used,
+            'free' : free
+        },
         'user': {},
         'allowlist': {}
     }

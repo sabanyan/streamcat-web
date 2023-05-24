@@ -12,6 +12,9 @@ class NavigationTestCase(ApiTestCaseBase):
         data = result
         self.assertEqual(data['version'], STREAMCAT_VER)
         self.assertEqual(data['depoName'], 'Unit Test')
+        self.assertGreater(data['diskUsage']['total'], 0)
+        self.assertGreater(data['diskUsage']['used'], 0)
+        self.assertGreater(data['diskUsage']['free'], 0)
         self.assertDictEqual(data['user'], self.USER0.to_json())
         self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
         # ユーザ操作のallowlistを検証する
@@ -30,6 +33,9 @@ class NavigationTestCase(ApiTestCaseBase):
         data = result
         self.assertEqual(data['version'], STREAMCAT_VER)
         self.assertEqual(data['depoName'], 'Unit Test')
+        self.assertGreater(data['diskUsage']['total'], 0)
+        self.assertGreater(data['diskUsage']['used'], 0)
+        self.assertGreater(data['diskUsage']['free'], 0)
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
         # ユーザ操作のallowlistを検証する
