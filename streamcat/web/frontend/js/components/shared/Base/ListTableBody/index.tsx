@@ -10,10 +10,12 @@ type Props<TDatumType> = {
     enableMultiSelect: boolean;
 }
 
-const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TDatumType>) => {
+export const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TDatumType>) => {
     const { bodies, listTableRow, enableMultiSelect } = props;
 
+    // 選択中の行を保持する
     const [selectedDatas, setSelectedDatas] = props.selectedDatas;
+    // 範囲選択の開始行を保持する
     const [lastSelectedDatum, setLastSelectedDatum] = props.lastSelectedDatum;
 
     const onClickCell = (selectedDatum: TDatumType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
@@ -37,7 +39,8 @@ const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TDatumTyp
             }
         } else if (event && event.shiftKey && enableMultiSelect) {
             // shift + click
-            clearSelected();// 選択状態を一旦解除
+            // 選択状態を一旦解除
+            setSelectedDatas([]);
             let current = bodies.findIndex(body => selectedDatum.uuid === body.uuid);
             if (lastSelectedDatum) {
                 let last = bodies.findIndex(body => lastSelectedDatum.uuid === body.uuid);
@@ -55,34 +58,21 @@ const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TDatumTyp
             }
         } else {
             // 単一選択
-            clearSelected();
             setSelectedDatas([selectedDatum]);
             setLastSelectedDatum(selectedDatum);
         }
     };
 
-    const clearSelected = () => {
-        setSelectedDatas([]);
-    };
-    
-    const onClick = (event, body) => {
-        onClickCell(body, event)
-    };
-
-    const bodiesElement = bodies.map((body, index) => {
-        const selected = selectedDatas.some(datum => datum.uuid === body.uuid);
-        return <tr className={classnames({[style.selected]: selected})}
-                   onClick={(event)=>onClick(event,body)}
-                   onMouseDown={(event)=>event.stopPropagation()}
-                   key={index}>
-            {/* 1行出力する */}
-            {listTableRow(body)}
-        </tr>;
-    });
-
-    return <tbody className={style.listTableBody}>
-        {bodiesElement}
-    </tbody>;
+    return <tbody className={style.listTableBody}>{
+        // 1行出力する
+        bodies.map((body, index) => {
+            const selected = selectedDatas.some(datum => datum.uuid === body.uuid);
+            return <tr key={index}
+                       className={classnames({[style.selected]: selected})}
+                       onClick={e => onClickCell(body,e)}
+                       onMouseDown={(event)=>event.stopPropagation()} >
+                {listTableRow(body)}
+            </tr>;
+        })
+    }</tbody>;
 };
-
-export { ListTableBody };

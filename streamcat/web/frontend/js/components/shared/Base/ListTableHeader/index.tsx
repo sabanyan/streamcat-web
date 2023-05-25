@@ -21,8 +21,7 @@ interface Props {
     sortedHeaders: [SortedHeader[], (value:React.SetStateAction<SortedHeader[]>)=>void];
 }
 
-const ListTableHeader = (props: Props) => {
-
+export const ListTableHeader = (props: Props) => {
     const {headers} = props;
 
     const [sortedHeaders, setSortedHeaders] = props.sortedHeaders;
@@ -78,27 +77,21 @@ const ListTableHeader = (props: Props) => {
         setSortedHeaders(nextSortedHeaders);
     };
 
-    const headerElement = headers.map((header,index) => {
-        // ソートアイコンを取得する
-        const sortIcon = getIconElement(
-            getIconFromSort(
-                sortedHeaders.find(sortedHeader =>
-                    sortedHeader.key===header.key
-                )?.sortType
-            )
-        );
-        return <th key={index} style={{width: header.width}}>
-            <span onClick={e => onClickHeader(header)} >
-                {header.label}{sortIcon}
-            </span>
-        </th>;
-    });
-
-    return <thead className={style.listTableHeader} >
-    <tr>
-        {headerElement}
-    </tr>
-    </thead>;
+    return <thead className={style.listTableHeader}><tr>{
+        headers.map((header,index) => {
+            // ソートアイコンを取得する
+            const sortIcon = getIconElement(
+                getIconFromSort(
+                    sortedHeaders.find(sortedHeader =>
+                        sortedHeader.key===header.key
+                    )?.sortType
+                )
+            );
+            return <th key={index} style={{width: header.width}}>
+                <span onClick={e => onClickHeader(header)} >
+                    {header.label}{sortIcon}
+                </span>
+            </th>;
+        })
+    }</tr></thead>;
 };
-
-export {ListTableHeader};

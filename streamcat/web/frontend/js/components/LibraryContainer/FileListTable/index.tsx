@@ -123,7 +123,6 @@ const FileListTable = (props: Props) => {
     const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
         if (event) event.stopPropagation();
 
-
         const isDialog = (HttpUtil.getURLParam('dialog') === 'true');
         const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? '&mode=' + mode : '') : '';
 
