@@ -1,1 +1,23 @@
 @import "../../../../../sass/common";
+
+.listTableHeader {
+    th {
+        height: 56px;
+        font-size: 16px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: normal;
+        vertical-align: middle;
+        color: #606c7a;
+        padding: 0 24px;
+        &::selection{
+            background: transparent;
+        }
+        user-select: none;
+        span{
+            cursor: pointer;
+        }
+    }
+}

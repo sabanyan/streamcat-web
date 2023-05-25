@@ -1,4 +1,5 @@
 import React from 'react';
+import style from './style.scss';
 import iconStyle from 'Shared/Input/FlatButton/style.scss';
 
 export interface ITableHeader {
@@ -93,7 +94,7 @@ const ListTableHeader = (props: Props) => {
         </th>;
     });
 
-    return <thead>
+    return <thead className={style.listTableHeader} >
     <tr>
         {headerElement}
     </tr>

@@ -71,7 +71,7 @@ const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TDatumTyp
 
     const bodiesElement = bodies.map((body, index) => {
         const selected = selectedDatas.some(datum => datum.uuid === body.uuid);
-        return <tr className={classnames(style.row,{[style.selected]: selected})}
+        return <tr className={classnames({[style.selected]: selected})}
                    onClick={(event)=>onClick(event,body)}
                    onMouseDown={(event)=>event.stopPropagation()}
                    key={index}>
@@ -80,7 +80,7 @@ const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TDatumTyp
         </tr>;
     });
 
-    return <tbody>
+    return <tbody className={style.listTableBody}>
         {bodiesElement}
     </tbody>;
 };
