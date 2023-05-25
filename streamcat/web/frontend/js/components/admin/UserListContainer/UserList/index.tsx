@@ -98,11 +98,6 @@ export const UserList = (props: Props) => {
     // FilterListLinkButton、FilterSelectedListコンポーネントに設定する値を作成する
     const categoryItems = makeCategoryItems(selectedProjects, selectedStatuses);
 
-    const onClickBody = () => {
-        // UserBodyをクリックしたら押下フラグをtrueにする
-        clickedUserListCell.current = true;
-    };
-
     const onClickUserList = () => {
         // 押下フラグがfalseの場合にユーザの選択を解除する
         if (!clickedUserListCell.current) {
@@ -112,6 +107,11 @@ export const UserList = (props: Props) => {
         }
         // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
         clickedUserListCell.current = false;
+    };
+
+    const onClickBody = () => {
+        // UserBodyをクリックしたら押下フラグをtrueにする
+        clickedUserListCell.current = true;
     };
 
     const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -159,10 +159,6 @@ export const Library = () => {
         });
     };
 
-    const clearSelected = () => {
-        setSelectedDatas([]);
-    };
-
     const onClickSelectDestination = () => {
         if (window.opener || !window.opener.closed) {
             window.opener.onCallbackApply(parentFolder.uuid);
@@ -184,17 +180,20 @@ export const Library = () => {
             return renderEmptyState();
         }
 
-        const onClickBody = () => {
-            // FileListBodyをクリックしたら押下フラグをtrueにする
-            clickedLibraryCell.current = true;
+        const onClickFileList = () => {
+            // 押下フラグがfalseの場合にユーザの選択を解除する
+            if (!clickedLibraryCell.current) {
+                // 選択状態を一旦解除
+                setSelectedDatas([]);
+                setLastSelectedDatum(null);
+            }
+            // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
+            clickedLibraryCell.current = false;
         };
 
-        const onMouseDownLibrary = () => {
-            if (clickedLibraryCell.current) {
-                clearSelected();// 選択状態を一旦解除
-                setLastSelectedDatum(null);
-                clickedLibraryCell.current = false;
-            }
+        const onClickBody = () => {
+            // FileListTableをクリックしたら押下フラグをtrueにする
+            clickedLibraryCell.current = true;
         };
 
         const renderMenuList = () => {
@@ -231,19 +230,25 @@ export const Library = () => {
 
         return <Flex justifyContent={'center'} fluid={true}>
             <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                onMouseDown={onMouseDownLibrary}>
+                onClick={onClickFileList}>
                 <Spacer width={40} />
-                <Flex flexDirection={'column'} fluid={true} onClick={onClickBody}>
-                    <Spacer height={40} />
-                    <BreadCrumb links={links} />
-                    <Spacer height={8} />
-                    <FileListTable
-                        bodies={sortedDatas}
-                        mode={mode}
-                        minWidth={800}
-                        selectedDatas={[selectedDatas, setSelectedDatas]}
-                        lastSelectedDatum={[lastSelectedDatum, setLastSelectedDatum]}
-                    />
+                <Flex flexDirection={'column'} fluid={true}>
+                    <Spacer height={40}/>
+                    <Flex flexDirection={'row'}>
+                        <Spacer height={40} />
+                        <BreadCrumb links={links} />
+                        <Spacer height={8} />
+                    </Flex>
+                    <Spacer height={10}/>
+                    <Flex flexDirection={'row'} onClick={onClickBody}>
+                        <FileListTable
+                            bodies={sortedDatas}
+                            mode={mode}
+                            minWidth={800}
+                            selectedDatas={[selectedDatas, setSelectedDatas]}
+                            lastSelectedDatum={[lastSelectedDatum, setLastSelectedDatum]}
+                        />
+                    </Flex>
                     <Spacer height={80} />
                 </Flex>
                 {renderMenuList()}
