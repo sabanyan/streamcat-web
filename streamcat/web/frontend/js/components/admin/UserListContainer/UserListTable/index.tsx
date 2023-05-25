@@ -2,10 +2,14 @@ import React from 'react';
 import {useState} from 'react';
 import * as style from './style.scss';
 import * as lodash from 'lodash';
-import { UserType } from 'Model/Navigation/NavigationModel';
-import {UserListBody} from 'UserListContainer/UserListTable/UserListBody';
 import { ListTableHeader, SortedHeader } from 'Components/shared/Base/ListTableHeader';
-
+import { ListTableBody } from 'Components/shared/Base/ListTableBody';
+import { RoleType, UserType } from 'Model/Navigation/NavigationModel';
+import {Badge} from 'Shared/Base/Badge';
+import {Spacer} from 'Shared/Base';
+import AdminUtil from 'Utils/AdminUtil';
+import ImageUtil from 'Utils/ImageUtil';
+import { ProjectType } from 'Model/Library';
 
 interface Props {
     bodies: UserType[];
@@ -68,12 +72,59 @@ const UserListTable = (props: Props) => {
         }
     };
 
+    const renderAdminTypes = (roles: RoleType[]) => {
+        return roles.map((role, index): React.ReactNode => {
+            const spacer = (index)?<React.Fragment key={index}><Spacer width={8}/></React.Fragment>:null
+            switch (role.systemRole) {
+                case 'USR_ADMIN':
+                    return <React.Fragment key={index}>{spacer}<Badge color={'darkGreen'}>ユーザー</Badge></React.Fragment>;
+                case 'SYS_ADMIN':
+                    return <React.Fragment key={index}>{spacer}<Badge color={'darkBlue'}>システム</Badge></React.Fragment>;
+                case 'EVERYONE':
+                default:
+                    return null;
+            }
+        })
+    };
+
+    const renderProjects = (projects: ProjectType[]) => {
+        if (projects.length > 1) {
+            return <div>{projects[0].label} 他{projects.length}</div>;
+        } else if (projects.length == 1) {
+            return <div>{projects[0].label}</div>;
+        } else {
+            return <></>;
+        }
+    };
+
+    const fileListRow = (body:UserType) => <>
+        <td>
+            {ImageUtil.getIconElement('icon-user')}
+            {body.name}
+        </td>
+        <td>
+            {body.email}
+        </td>
+        <td>
+            {renderProjects(body.projects || [])}
+        </td>
+        <td>
+            {AdminUtil.getUserStatus(body.state)}
+        </td>
+        <td>
+            {renderAdminTypes(body.roles || [])}
+        </td>
+    </>;
+
     return <table className={style.fileListTable} style={{minWidth:minWidth}}>
         <ListTableHeader headers={initialHeaders}
                          sortedHeaders={[sortedHeaders, setSortedHeaders]} />
-        <UserListBody bodies={sortBodies(bodies, sortedHeaders)}
-                      selectedUsers={selectedUsers}
-                      lastSelectedUser={lastSelectedUser} />
+        <ListTableBody<UserType>
+            bodies={sortBodies(bodies, sortedHeaders)}
+            selectedDatas={selectedUsers}
+            lastSelectedDatum={lastSelectedUser}
+            enableMultiSelect={true}
+            listTableRow={fileListRow} />
     </table>;
 };
 

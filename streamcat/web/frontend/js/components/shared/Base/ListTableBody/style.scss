@@ -1,6 +1,9 @@
 @import "../../../../../sass/common";
 .row{
   @extend .selectDisable;
+  td{
+    white-space: nowrap;
+  }
 }
 .selected{
   td{
@@ -23,8 +26,4 @@
 
 .filename{
   
-}
-
-.date {
-  white-space: nowrap;
 }

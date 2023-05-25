@@ -7,9 +7,7 @@ import Constants from 'Constants/index';
 import { Api } from 'Api';
 import { ErrorUtil,
         HttpUtil,
-        ReactDomUtil,
-        StringUtil,
-        WebUtil } from 'Utils/index';
+        ReactDomUtil} from 'Utils/index';
 import { DatumType,
         ParentProjectType,
         ParentFolderType,
@@ -172,13 +170,6 @@ export const Library = () => {
         window.close();
     };
 
-    const onClickApply = (selected_data: DatumType) => {
-        if (window.opener || !window.opener.closed) {
-            window.opener.onCallbackApply(selected_data);
-        }
-        window.close();
-    };
-
     const renderEmptyState = () => {
         return <EmptyState
             icon={'inbox'}
@@ -192,39 +183,6 @@ export const Library = () => {
         if (isEmptyLibraryList && mode === Constants.library.mode.dialog){
             return renderEmptyState();
         }
-
-        const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
-            if (event) event.stopPropagation();
-            const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? '&mode=' + mode : '') : '';
-
-            if (body.type === 'trash') {
-                WebUtil.navigateURL(WebUtil.webURL('/trashes' + dialogOption));
-            }else if (body.type === 'folder') {
-                WebUtil.navigateURL(WebUtil.webURL('/folders/' + body.uuid + dialogOption));
-            }else if (body.type === 'project') {
-                WebUtil.navigateURL(WebUtil.webURL('/projects/' + body.uuid + dialogOption));
-            }else if (body.type === 'database') {
-                // onClickEditDatabase(body as DatabaseType);
-            }else if (body.type === 'frame') {
-                if (mode === Constants.library.mode.frame_select) {
-                    // データソースの追加時
-                    onClickApply(body);
-                    return;
-                }
-                window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
-            }else if (body.type === 'document') {
-                window.open(WebUtil.webURL('/documents/' + body.uuid));
-            }else if (body.type === 'flow') {
-                if(mode===Constants.library.mode.flow_select){
-                    // フロー選択モードの場合
-                    onClickApply(body);
-                    return;
-                }
-                window.open(WebUtil.webURL('/flows/' + body.uuid + dialogOption));
-            }else if (body.type==='activity') {
-                window.open(WebUtil.webURL('/flows/' + (body as ActivityType).flowUuid + dialogOption));
-            }
-        };
 
         const onClickBody = () => {
             // FileListBodyをクリックしたら押下フラグをtrueにする
@@ -280,57 +238,11 @@ export const Library = () => {
                     <BreadCrumb links={links} />
                     <Spacer height={8} />
                     <FileListTable
-                        minWidth={800}
+                        bodies={sortedDatas}
                         mode={mode}
+                        minWidth={800}
                         selectedDatas={[selectedDatas, setSelectedDatas]}
                         lastSelectedDatum={[lastSelectedDatum, setLastSelectedDatum]}
-                        // onClickCell={onClickCell}
-                        onClickFileName={onClickFileName}
-                        // onClickHeader={(header: ITableHeader, event) => {
-                        //     if (event) event.stopPropagation();
-                        //     if (header.sort) {
-                        //         setSortedDatas(lodash.orderBy(parentFolder!.children, header.key, header.sort));
-                        //     } else {
-                        //         setSortedDatas(parentFolder!.children);
-                        //     }
-                        // }}
-                        // bodies={parentFolder!.children as DatumEntryType[]}
-                        bodies={
-                            sortedDatas.map((datum) => {
-                                const body = datum as DatumEntryType;
-                                if (mode === Constants.library.mode.folder_select) {
-                                    switch (body.type) {
-                                        case 'folder':
-                                        case 'project':
-                                            body.clickable = true;
-                                    }
-                                } else if (mode === Constants.library.mode.frame_select) {
-                                    switch (body.type) {
-                                        case 'frame':
-                                        case 'folder':
-                                        case 'project':
-                                        case Constants.library.type.remoteFolder:
-                                        case Constants.library.type.database:
-                                            body.clickable = true;
-                                    }
-                                }else if(mode===Constants.library.mode.flow_select){
-                                    switch(body.type){
-                                        case 'flow':
-                                        case 'folder':
-                                        case 'project':
-                                            body.clickable = true;
-                                    };
-                                } else {
-                                    body.clickable = true;
-                                    if (body.type === 'database') body.clickable = false;
-                                }
-                                if (inject_is_trash) {
-                                    // ゴミ箱の場合は全て選択不可
-                                    body.clickable = false;
-                                }
-                                return body;
-                            })
-                        }
                     />
                     <Spacer height={80} />
                 </Flex>
