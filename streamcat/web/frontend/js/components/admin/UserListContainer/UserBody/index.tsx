@@ -30,7 +30,6 @@ interface Props {
     selectedProjects: string[];
     selectedStatuses: string[];
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
-    lastSelectedUser: [UserType|null, (value:React.SetStateAction<UserType|null>)=>void];
 };
 
 export const UserBody = (props: Props) => {
@@ -44,7 +43,6 @@ export const UserBody = (props: Props) => {
     } = props;
 
     const [selectedUsers, setSelectedUsers] = props.selectedUsers;
-    const [lastSelectedUser, setLastSelectedUser] = props.lastSelectedUser;
 
     // 全てのユーザを取得する
     const [usersReader, refreshUsers] = useAsyncResource(getUsers, keyword);
@@ -220,8 +218,7 @@ export const UserBody = (props: Props) => {
     return <>
         {/* ユーザリスト */}
         <UserListTable  bodies={filterdUsers}
-                        selectedUsers={[selectedUsers, setSelectedUsers]}
-                        lastSelectedUser={[lastSelectedUser, setLastSelectedUser]} />
+                        selectedUsers={[selectedUsers, setSelectedUsers]} />
 
         {/* メニューボタン */}
         <Spacer minWidth={40}/>

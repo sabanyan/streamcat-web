@@ -5,7 +5,6 @@ import style from './style.scss';
 type Props<TDatumType> = {
     bodies: TDatumType[];
     selectedDatas: [TDatumType[], (value:React.SetStateAction<TDatumType[]>)=>void];
-    lastSelectedDatum: [TDatumType|null, (value:React.SetStateAction<TDatumType|null>)=>void];
     listTableRow: (body: TDatumType) => React.JSX.Element;
     enableMultiSelect: boolean;
 }
@@ -15,8 +14,6 @@ export const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TD
 
     // 選択中の行を保持する
     const [selectedDatas, setSelectedDatas] = props.selectedDatas;
-    // 範囲選択の開始行を保持する
-    const [lastSelectedDatum, setLastSelectedDatum] = props.lastSelectedDatum;
 
     const onClickCell = (selectedDatum: TDatumType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
         if(!selectedDatum){
@@ -30,36 +27,31 @@ export const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TD
         if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
             // command or ctrl + click
             if (selectedDatas.includes(selectedDatum)) {
+                // 既に選択状態の場合は選択を解除する
                 setSelectedDatas(
                     selectedDatas.filter(d => d.uuid !== selectedDatum.uuid)
                 );
             } else {
-                selectedDatas.push(selectedDatum);
-                setLastSelectedDatum(selectedDatum);
+                // 選択したDatumを追加する
+                setSelectedDatas([
+                    ...selectedDatas, selectedDatum
+                ])
             }
         } else if (event && event.shiftKey && enableMultiSelect) {
             // shift + click
-            // 選択状態を一旦解除
-            setSelectedDatas([]);
-            let current = bodies.findIndex(body => selectedDatum.uuid === body.uuid);
-            if (lastSelectedDatum) {
-                let last = bodies.findIndex(body => lastSelectedDatum.uuid === body.uuid);
-                let min, max;
-                if (current >= last) {
-                    min = last;
-                    max = current;
-                } else {
-                    min = current;
-                    max = last;
-                }
+            if (selectedDatas.length > 0) {
+                // 最後に選択したDatum
+                const lastSelectedDatum = selectedDatas[0];
+                const curr_index = bodies.findIndex(body => selectedDatum.uuid === body.uuid);
+                const last_index = bodies.findIndex(body => lastSelectedDatum.uuid === body.uuid);
+                // 最後に選択したDatumから現在選択したDatumまでを選択状態にする
                 setSelectedDatas(
-                    bodies.slice(min, max + 1)
+                    bodies.slice(Math.min(curr_index, last_index), Math.max(curr_index, last_index) + 1)
                 );
             }
         } else {
             // 単一選択
             setSelectedDatas([selectedDatum]);
-            setLastSelectedDatum(selectedDatum);
         }
     };
 

@@ -91,7 +91,6 @@ export const Library = () => {
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
     const [sortedDatas, setSortedDatas] = React.useState<DatumType[]>(folderReader().children);
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
-    const [lastSelectedDatum, setLastSelectedDatum] = React.useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const [links, setLinks] = React.useState<IBreadCrumbsLink[]>([]);
     const clickedLibraryCell = React.useRef(false);
@@ -185,7 +184,6 @@ export const Library = () => {
             if (!clickedLibraryCell.current) {
                 // 選択状態を一旦解除
                 setSelectedDatas([]);
-                setLastSelectedDatum(null);
             }
             // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
             clickedLibraryCell.current = false;
@@ -246,7 +244,6 @@ export const Library = () => {
                             mode={mode}
                             minWidth={800}
                             selectedDatas={[selectedDatas, setSelectedDatas]}
-                            lastSelectedDatum={[lastSelectedDatum, setLastSelectedDatum]}
                         />
                     </Flex>
                     <Spacer height={80} />

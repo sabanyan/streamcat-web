@@ -29,8 +29,6 @@ export const UserList = (props: Props) => {
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     // UserBodyコンポーネントで選択中のUser
     const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
-    // UserBodyコンポーネントで最後に選択したUser
-    const [lastSelectedUser, setLastSelectedUser] = useState<UserType | null>(null);
     // UserBodyコンポーネントをクリックした時にtrueにする
     const clickedUserListCell = useRef(false);
 
@@ -103,7 +101,6 @@ export const UserList = (props: Props) => {
         if (!clickedUserListCell.current) {
             // 選択状態を一旦解除
             setSelectedUsers([]);
-            setLastSelectedUser(null);
         }
         // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
         clickedUserListCell.current = false;
@@ -196,7 +193,6 @@ export const UserList = (props: Props) => {
                                 selectedProjects={selectedProjects}
                                 selectedStatuses={selectedStatuses}
                                 selectedUsers = {[selectedUsers, setSelectedUsers]}
-                                lastSelectedUser = {[lastSelectedUser, setLastSelectedUser]}
                         />
                         </AsyncResourceContent>
                     </Flex>

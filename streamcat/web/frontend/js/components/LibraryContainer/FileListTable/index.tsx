@@ -16,12 +16,11 @@ interface Props {
     mode: string;
     bodies: DatumType[];
     selectedDatas: [DatumType[], (value:React.SetStateAction<DatumType[]>)=>void];
-    lastSelectedDatum: [DatumType|null, (value:React.SetStateAction<DatumType|null>)=>void];
     minWidth?: number | string;
 }
 
 const FileListTable = (props: Props) => {
-    const {bodies, minWidth, mode, selectedDatas, lastSelectedDatum} = props;
+    const {bodies, minWidth, mode, selectedDatas} = props;
 
     const initialHeaders = [
         {label: '名前', key: 'label'},
@@ -178,7 +177,6 @@ const FileListTable = (props: Props) => {
         <ListTableBody<DatumType>
             bodies={sortBodies(bodies, sortedHeaders)}
             selectedDatas={selectedDatas}
-            lastSelectedDatum={lastSelectedDatum}
             enableMultiSelect={enableMultiSelect}
             listTableRow={fileListRow} />
     </table>;

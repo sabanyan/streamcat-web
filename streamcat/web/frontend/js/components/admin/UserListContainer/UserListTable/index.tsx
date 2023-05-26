@@ -14,12 +14,11 @@ import { ProjectType } from 'Model/Library';
 interface Props {
     bodies: UserType[];
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
-    lastSelectedUser: [UserType|null, (value:React.SetStateAction<UserType|null>)=>void];
     minWidth?: number | string;
 }
 
 const UserListTable = (props: Props) => {
-    const {bodies, minWidth, selectedUsers, lastSelectedUser} = props;
+    const {bodies, minWidth, selectedUsers} = props;
 
     const initialHeaders = [
         {label: '名前', key: 'name'},
@@ -122,7 +121,6 @@ const UserListTable = (props: Props) => {
         <ListTableBody<UserType>
             bodies={sortBodies(bodies, sortedHeaders)}
             selectedDatas={selectedUsers}
-            lastSelectedDatum={lastSelectedUser}
             enableMultiSelect={true}
             listTableRow={fileListRow} />
     </table>;
