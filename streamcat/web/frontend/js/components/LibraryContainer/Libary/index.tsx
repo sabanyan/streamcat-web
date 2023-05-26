@@ -89,10 +89,8 @@ export const Library = () => {
 
     const {notifyError} = useStreamCatNotifications();
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
-    const [sortedDatas, setSortedDatas] = React.useState<DatumType[]>(folderReader().children);
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
     const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
-    const [links, setLinks] = React.useState<IBreadCrumbsLink[]>([]);
     const clickedLibraryCell = React.useRef(false);
 
     React.useEffect(() => {
@@ -104,11 +102,6 @@ export const Library = () => {
             if (bodyEl) bodyEl.classList.add('dialog');
         }
     }, []);
-
-    React.useEffect(() => {
-        if (!parentFolder) return;
-        setLinks(makeBreadCrumbLinks(parentFolder.folderPath));
-    }, [parentFolder]);
 
     const isDialog = (HttpUtil.getURLParam('dialog') === 'true');
     const mode = HttpUtil.getURLParam('mode') ? HttpUtil.getURLParam('mode') : Constants.library.mode.list;
@@ -173,7 +166,7 @@ export const Library = () => {
     };
 
     const renderAll = () => {
-        const isEmptyLibraryList = !Array.isArray(parentFolder!.children) || parentFolder!.children.length === 0;
+        const isEmptyLibraryList = !Array.isArray(parentFolder.children) || parentFolder.children.length === 0;
 
         if (isEmptyLibraryList && mode === Constants.library.mode.dialog){
             return renderEmptyState();
@@ -211,7 +204,7 @@ export const Library = () => {
                 } else {
                     menuList = <MenuList
                         parent={parentFolder}
-                        allowlist={parentFolder!.allowlist}
+                        allowlist={parentFolder.allowlist}
                         onSuccess={forceFetchFolder}
                     />;
                 }
@@ -234,13 +227,13 @@ export const Library = () => {
                     <Spacer height={40}/>
                     <Flex flexDirection={'row'}>
                         <Spacer height={40} />
-                        <BreadCrumb links={links} />
+                        <BreadCrumb links={makeBreadCrumbLinks(parentFolder.folderPath)} />
                         <Spacer height={8} />
                     </Flex>
                     <Spacer height={10}/>
                     <Flex flexDirection={'row'} onClick={onClickBody}>
                         <FileListTable
-                            bodies={sortedDatas}
+                            bodies={parentFolder.children}
                             mode={mode}
                             minWidth={800}
                             selectedDatas={[selectedDatas, setSelectedDatas]}
@@ -264,7 +257,6 @@ export const Library = () => {
         return getParentFolder().then(response => {
             // 取得したフォルダ等を状態変数に格納する
             setParentFolder(response);
-            setSortedDatas(response.children);
             return response;
         }).catch(e => {
             notifyError('フォルダ取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(e)));
