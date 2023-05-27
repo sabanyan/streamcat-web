@@ -17,7 +17,7 @@ export const DuplicateButton = (props:Props) => {
 
     // Datumを複製する
     const duplicateDatum = (datum:FlowType) => {
-        return datum.duplicate().then(() => {
+        return datum.duplicate().then(datum => {
             notifySuccess('フローを複製しました', datum.label);
         }).catch((e) => {
             notifyError(`フロー複製エラー(${datum.label})`, e.message);

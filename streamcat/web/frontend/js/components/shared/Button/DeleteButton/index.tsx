@@ -18,7 +18,7 @@ export const DeleteButton = (props:Props) => {
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     const deleteDatum = (datum:DatumType) => {
-        let promise: Promise<void>;
+        let promise: Promise<DatumType>;
         if (datum.type === 'flow') {
             // Flowの場合は、Lockを取得してから削除する
             promise = Api.createLock(datum.uuid).then(lock => {
@@ -33,21 +33,27 @@ export const DeleteButton = (props:Props) => {
             promise = datum.delete(); 
         }
         // 削除完了メッセージを表示する
-        return promise.then(() => {
+        return promise.then(datum => {
             const typeLabel = LibraryUtil.getTypeLabel(datum.type);
             notifySuccess(typeLabel + 'を削除しました', datum.label);
+            return datum;
         }).catch((e) => {
             notifyError(`ライブラリー削除エラー(${datum.label})`, e.message);
+            return datum;
         });
     }
 
     // 全てのDatumを削除する
-    const onClickDelete = (data:DatumType[]) => {
+    const deleteData = (data:DatumType[]) => {
         // 全てのDatumを削除した後に、ダイアログを閉じる
         return Promise.all(
             data.map(datum => deleteDatum(datum))
-        ).finally(() => {
+        ).then(data => {
             // イベントハンドラを呼び出す
+            onSuccess && onSuccess(data);
+        }).catch(e => {
+            // 失敗してもイベントハンドラを呼び出す
+            // TODO: ただしonSuccessには全て削除前のDatumが渡される
             onSuccess && onSuccess(data);
         });
     };
@@ -73,7 +79,7 @@ export const DeleteButton = (props:Props) => {
             <Button2 key='cancel'
                      onClick={closeDialog}>キャンセル</Button2>,
             <Button2 key='delete'
-                     onClick={() => onClickDelete(targets).finally(() => {
+                     onClick={() => deleteData(targets).finally(() => {
                         // TODO: notifySuccessによる通知ダイアログの表示で、ダイアログが閉じられる
                         // そのためここでcloseDialog()を呼び出すと
                         // "Can't perform a React state update on an unmounted component."

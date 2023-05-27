@@ -51,8 +51,10 @@ export const MoveButton = (props:Props) => {
         return promise.then(datum => {
             const typeLabel = LibraryUtil.getTypeLabel(datum.type);
             notifySuccess(typeLabel + 'を移動しました', datum.label);
+            return datum;
         }).catch((e) => {
             notifyError(`ライブラリー移動エラー(${datum.label})`, e.message);
+            return datum;
         });
     };
 
@@ -61,8 +63,13 @@ export const MoveButton = (props:Props) => {
         // 全てのDatumを移動した後に、イベントハンドラを呼び出す
         Promise.all(
             data.map(datum => moveDatum(datum, newParent))
-        ).finally(() => {
+        ).then(data => {
             // イベントハンドラを呼び出す
+            onSuccess && onSuccess(data);
+            return data;
+        }).catch(e => {
+            // 失敗してもイベントハンドラを呼び出す
+            // TODO: ただしonSuccessには全て移動前のDatumが渡される
             onSuccess && onSuccess(data);
         });
     };
