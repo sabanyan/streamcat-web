@@ -251,12 +251,40 @@ class FrameTestCase(ApiTestCaseBase):
         ]
         frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
+        frame_label = self.factory.data.find_by_uuid(frame_uuid).label
 
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
 
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # APIの返り値を検証する
+        self.assertEqual(result['uuid'], frame_uuid)
+        self.assertEqual(result['type'], 'frame')
+        self.assertEqual(result['label'], frame_label)
+        self.assertIsNone(result['folderPath'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
+        self.assertEqual(result['fileSize'], 56)
+        self.assertEqual(result['encoding'], 'UTF-8')
+        self.assertEqual(result['newline'], 'LF')
+        self.assertTrue(result['allowlist']['read'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertTrue(result['allowlist']['download'])
+        self.assertFalse(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['move'])
+        self.assertFalse(result['allowlist']['lock'])
+        self.assertFalse(result['allowlist']['findMember'])
+        self.assertFalse(result['allowlist']['updateMember'])
+
         # ゴミ箱に移動しているかのテスト
         frame = self.factory.data.find_by_uuid(frame_uuid)
-        self.assertEqual(frame.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        self.assertEqual(frame.find_parent().uuid, trash_folder_uuid)
 
     # ここからフローの実行テスト
     """

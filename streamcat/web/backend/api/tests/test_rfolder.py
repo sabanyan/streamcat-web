@@ -223,3 +223,62 @@ class RemoteFolderTestCase(ApiTestCaseBase):
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_delete_folders(self):
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # RemoteFolderを作成する(POST /remote-folders)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "リモートフォルダ",
+            "protocol" : "smb",
+            "hostname" : "18.178.64.116",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            'userId'  : "samba",
+            "password" : "sabanyansoft"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
+        folder_uuid = result['uuid']
+
+        # RemoteFilderを削除する
+        result = self.delete_uri(f'/api/v0/remote-folders/{folder_uuid}', self.USER1)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "label"    : "リモートフォルダ",
+            "protocol" : "smb",
+            "hostname" : "18.178.64.116",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            'userId'  : "samba",
+            "password" : "sabanyansoft",
+            "type"     : "rfolder"
+        }
+
+        # PUT /remote-folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['protocol'], expected_result['protocol'])
+        self.assertEqual(result['hostname'], expected_result['hostname'])
+        self.assertEqual(result['domain'], expected_result['domain'])
+        self.assertEqual(result['directory'], expected_result['directory'])
+        self.assertEqual(result['userId'], expected_result['userId'])
+        self.assertEqual(result['password'], expected_result['password'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertIsNone(result['folderPath'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], self.USER1.name)
+        self.assertNotEqual(result['createdAt'], None)
+
+        # RemoteFolderはゴミ箱に移動していること
+        folder = self.factory.data.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+
+        # RemoteFolderを削除(unmount)する
+        self.delete_uri('/api/v0/trashes', self.USER1)

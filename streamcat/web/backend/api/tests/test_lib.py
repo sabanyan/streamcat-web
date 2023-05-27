@@ -139,7 +139,6 @@ class LibraryTestCase(ApiTestCaseBase):
         # フォルダに対応するディレクトリが存在することを検証する
         self.assertTrue(os.path.isdir((root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
 
-
     def test_move_folder2(self):
         # ルートを取得する
         root = self.factory.data.load_root()
@@ -185,6 +184,41 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1'))
         self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1' / '新しいフォルダ1_1'))
         self.assertTrue(os.path.isfile(dst_folder_path/ '新しいフォルダ1' / '新しいフォルダ1_1' / 'フレームファイル_1'))
+
+    def test_delete_folder(self):
+        # フォルダを作成する(POST /folders)
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {"label" : "私の新しいフォルダ", "parent": root.uuid}, self.USER1)
+        folder_uuid = result['uuid']
+
+        # フォルダを削除する(DELETE /folders)
+        result = self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER1)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '私の新しいフォルダ'
+            ,'type'     : 'folder'
+            ,'creator'  : 'ユーザー管理者'
+        }
+
+        # DELETE /folders apiの戻り値が正しいことを検証する
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
+
+        # フォルダはゴミ箱に移動していること
+        trash_folder = self.factory.data.load_trash_folder()
+        trashed = trash_folder.find_children()
+        self.assertEqual(len(trashed), 1)
+        self.assertEqual(trashed[0].label, '私の新しいフォルダ')
 
     def test_create_get_frame(self):
         # フォルダを作成する(POST /folders)

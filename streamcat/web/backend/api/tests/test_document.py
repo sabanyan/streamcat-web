@@ -118,6 +118,48 @@ class DocumentTest(ApiTestCaseBase):
         # 中のファイルごとプロジェクトをほかす(DELETE /projects)
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
 
+    def test_delete_document(self):
+        """
+        ドキュメントを作成して削除できること
+        """
+        # プロジェクトを作成する(POST /projects)
+        result = self.post_uri('/api/v0/projects', {'label' : '新しいプロジェクト', 'parent': self.root.uuid}, self.USER3)
+        project_uuid = result['uuid']
+
+        # アップロード用に一時ファイルを作成する
+        import io
+        f = (io.BytesIO(b"abcdefghijk"), 'dummy.doc')
+
+        # ドキュメントを作成する(POST /documents)
+        result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
+        document_uuid = result['uuid']
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいドキュメント!'
+            ,'type'     : 'document'
+            ,'creator'  : self.USER3.name
+        }
+
+        # Post /documents apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+
+        # ドキュメントをほかす(DELETE /projects)
+        result = self.delete_uri(f'/api/v0/documents/{document_uuid}', self.USER3)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # DELETE /documents apiの戻り値が正しいことを検証する
+        self.assertEqual(result['uuid'], document_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
+
     def test_detect_content_type(self):
         """
         新規作成するドキュメントのファイルタイプを識別できること

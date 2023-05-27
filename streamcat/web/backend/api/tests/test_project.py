@@ -326,9 +326,41 @@ class ProjectTestCase(ApiTestCaseBase):
                 'label' : 'フロー格納フォルダ'}
         result = self.post_uri('/api/v0/projects', data, self.USER1)
         project_uuid = result['uuid']
+        project_label = result['label']
 
         # DELETE /projects
-        self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)
+        result = self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # APIの返り値を検証する
+        self.assertEqual(result['uuid'], project_uuid)
+        self.assertEqual(result['type'], 'project')
+        self.assertEqual(result['label'], project_label)
+        self.assertIsNone(result['folderPath'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['modifiedAt'])
+        self.assertIsNotNone(result['createdAt'])
+        # 期待するallowlistが返ることを確認する
+        self.assertTrue(result['allowlist']['read'])
+        self.assertFalse(result['allowlist']['createProject'])
+        self.assertTrue(result['allowlist']['createFolder'])
+        self.assertTrue(result['allowlist']['createFile'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertFalse(result['allowlist']['move'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['upload'])
+        self.assertTrue(result['allowlist']['download'])
+        self.assertTrue(result['allowlist']['import'])
+        self.assertTrue(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['findMember'])
+        self.assertTrue(result['allowlist']['updateMember'])
+        self.assertFalse(result['allowlist']['lock'])
 
         # プロジェクトはゴミ箱に移動していること
         project = self.factory.data.find_by_uuid(project_uuid)

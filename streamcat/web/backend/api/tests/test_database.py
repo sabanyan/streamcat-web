@@ -196,3 +196,56 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['type'], expected_result['type'])
         self.assertEqual(result['creator'], expected_result['creator'])
         self.assertNotEqual(result['createdAt'], None)
+
+    def test_delete_database(self):
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "リモートフォルダ?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "streamcat",
+            'userId'  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER1)
+        database_uuid = result['uuid']
+
+        # Databaseを削除する
+        result = self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER1)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "label"    : "リモートフォルダ?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "streamcat",
+            'userId'  : "postgres",
+            "password" : "",
+            'type'     : 'database',
+            'creator'  : 'ユーザー管理者'
+        }
+
+        # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['uuid'], database_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['dbms'], expected_result['dbms'])
+        self.assertEqual(result['hostname'], expected_result['hostname'])
+        self.assertEqual(result['port'], expected_result['port'])
+        self.assertEqual(result['database'], expected_result['database'])
+        self.assertEqual(result['userId'], expected_result['userId'])
+        self.assertEqual(result['password'], expected_result['password'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertIsNone(result['folderPath'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
