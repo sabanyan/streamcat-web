@@ -1,11 +1,9 @@
-import React from 'react'
-import classnames from 'classnames'
-
-import style from './style.scss'
-
-import { Button, TextField } from 'Shared/Input'
-import { Loader } from 'Shared/Base'
-import { FolderType } from 'Model/Library'
+import React from 'react';
+import classnames from 'classnames';
+import style from './style.scss';
+import { Button, TextField } from 'Shared/Input';
+import { Loader } from 'Shared/Base';
+import { FolderType } from 'Model/Library';
 
 type Props = {
   accept?: string[];
@@ -13,24 +11,24 @@ type Props = {
   uploadType: 'document'|'flow';
   notify: (title:string, message:string) => string;
   onSuccess?: () => void;
-}
+};
 
 enum Status {
   Ready,
   Success,
   Fail
-}
+};
 
 export type UploadFile = {
   file: File
   uploadName: string
   status: Status
-}
+};
 
 type State = {
   uploadFiles: UploadFile[],
   isLoading: boolean
-}
+};
 
 export default class FileUploader extends React.Component<Props, State> {
 
@@ -40,7 +38,7 @@ export default class FileUploader extends React.Component<Props, State> {
     disabled: false,
     onChangeFile: {},
     multiple: false
-  }
+  };
 
   constructor(props: Props) {
     super(props)
@@ -48,61 +46,62 @@ export default class FileUploader extends React.Component<Props, State> {
       uploadFiles: [],
       isLoading: false
     }
-  }
+  };
 
   onChangeUploadName(e, index: number) {
     this.state.uploadFiles[index].uploadName = e.target.value
-  }
+  };
 
   onChangeFile(e) {
-    const fileList: FileList = e.target.files
-    let uploadFiles: UploadFile[] = []
+    const fileList: FileList = e.target.files;
+    const uploadFiles: UploadFile[] = [];
     Array.from(fileList).forEach((file: File, index) => {
-      let uploadFile: UploadFile = {
+      const uploadFile: UploadFile = {
         file: file,
-        uploadName: file.name.replace(/\..+$/, ''),
+        // 最後の.以降の文字列を拡張子と見做して削除する
+        uploadName: file.name.replace(/\.[^/.]+$/, ''),
         status: Status.Ready
       }
-      uploadFiles.push(uploadFile)
+      uploadFiles.push(uploadFile);
     })
     this.setState({
       uploadFiles: uploadFiles
     })
-  }
+  };
 
   onClickFileSelect(e) {
-    const element: any = this.refs.file
-    element.click()
-  }
+    const element: any = this.refs.file;
+    element.click();
+  };
 
   onClickUpload(e) {
     if (this.state.uploadFiles.length === 0) {
-      alert('ファイルを選択してください')
+      alert('ファイルを選択してください');
       return
     }
 
-    let noNames = this.state.uploadFiles.filter((uploadFile) => {
-      return (!uploadFile.uploadName || uploadFile.uploadName === "")
-    })
+    const noNames = this.state.uploadFiles.filter((uploadFile) => {
+      return (!uploadFile.uploadName || uploadFile.uploadName === '')
+    });
 
     if (noNames.length > 0) {
-      alert('名称を入力してください')
-      return
+      alert('名称を入力してください');
+      return;
     }
 
     this.setState({
       isLoading: true
     }, () => {
       this.uploadSync()
-    })
-  }
+    });
+  };
 
   uploadSync() {
-    const { notify, parent } = this.props
+    const { notify, parent } = this.props;
 
     const uploadTargets = this.state.uploadFiles.filter((uploadFile) => {
-      if (uploadFile.status !== Status.Success) return true
-      return false
+      if (uploadFile.status !== Status.Success) return true;
+      return false;
     });
 
     Promise.all(
@@ -141,7 +140,7 @@ export default class FileUploader extends React.Component<Props, State> {
         }
       })
 
-      let content = "アップロードが完了しました。<br> (成功:" + successCount + "、失敗:" + failCount + ")"
+      const content = 'アップロードが完了しました。<br> (成功:' + successCount + '、失敗:' + failCount + ')';
       notify('アップロードしました', content);
 
       self.setState({
@@ -152,20 +151,22 @@ export default class FileUploader extends React.Component<Props, State> {
       self.props.onSuccess && self.props.onSuccess();
 
     })
-  }
+  };
 
   renderFields(uploadFiles: UploadFile[]) {
-    let fields: any = []
+    const fields: React.JSX.Element[] = [];
 
     if (uploadFiles.length > 0) {
       uploadFiles.forEach((uploadFile: UploadFile, index: number) => {
-        let upload
+        let upload;
         if (uploadFile.status !== Status.Success) {
-          upload = <TextField placeholder={'名称'} defaultValue={uploadFile.uploadName} onChange={(e) => this.onChangeUploadName(e, index)} disabled={this.state.isLoading}/>
+          upload = <TextField placeholder={'名称'}
+                              defaultValue={uploadFile.uploadName}
+                              onChange={(e) => this.onChangeUploadName(e, index)} disabled={this.state.isLoading}/>;
         } else {
-          upload = <label className={style.upload}>{uploadFile.uploadName}</label>
+          upload = <label className={style.upload}>{uploadFile.uploadName}</label>;
         }
-        let field = <div className={style.field} key={uploadFile.uploadName + index + this.state.isLoading}>
+        const field = <div className={style.field} key={uploadFile.uploadName + index + this.state.isLoading}>
           <div className={style.textField}>
             {this.renderIcon(uploadFile.status)}
             {upload}
@@ -173,16 +174,16 @@ export default class FileUploader extends React.Component<Props, State> {
           <div className={style.originalName}>
             <label >{uploadFile.file.name}</label>
           </div>
-        </div>
-        fields.push(field)
+        </div>;
+        fields.push(field);
       })
     }
 
-    return fields
+    return fields;
   }
 
   renderIcon(status: Status) {
-    let result
+    let result: React.JSX.Element;
     switch (status) {
       case Status.Ready:
         result = <i className={classnames('material-icons', style.ready)}>{'assignment_return'}</i>
@@ -195,52 +196,51 @@ export default class FileUploader extends React.Component<Props, State> {
         break;
     }
 
-    return result
+    return result;
   }
 
   renderSelectFiles() {
-    const title = 'ファイルを選択する'
-    const icon = 'add_circle_outline'
-    const onClick = (e) => this.onClickFileSelect(e)
+    const title = 'ファイルを選択する';
+    const icon = 'add_circle_outline';
+    const onClick = (e) => this.onClickFileSelect(e);
 
     return <React.Fragment key={title + icon}>
-      <a href="#" className={style.button} onClick={onClick}>
+      <a href='#' className={style.button} onClick={onClick}>
         <i className={'material-icons'}>{icon}</i>
         {title}
       </a >
-    </React.Fragment>
+    </React.Fragment>;
   }
 
   renderButtons() {
     const uploads = this.state.uploadFiles.filter((uploadFile) => {
-      if (uploadFile.status !== Status.Success) return true
-      return false
-    })
-    const disabled = this.state.isLoading || uploads.length === 0 ? true : false
-    const visibled = (uploads.length > 0)
+      if (uploadFile.status !== Status.Success) return true;
+      return false;
+    });
+    const disabled = this.state.isLoading || uploads.length === 0 ? true : false;
+    const visibled = (uploads.length > 0);
     if(!visibled)return null;
 
-    const upload = "アップロードする";
-    const onClickUpload = (e) => this.onClickUpload(e)
-    const uploadButton = <Button icon={"get_app"}
+    const upload = 'アップロードする';
+    const onClickUpload = (e) => this.onClickUpload(e);
+    const uploadButton = <Button icon={'get_app'}
       primary={true}
       onClick={onClickUpload}
-      disabled={disabled}
-      >
+      disabled={disabled} >
       {upload}
-    </Button>
+    </Button>;
 
     return <React.Fragment>
       <div className={style.uploadButton}>
         &nbsp;
         {uploadButton}
       </div>
-    </React.Fragment>
+    </React.Fragment>;
   }
 
   render() {
-    const { accept } = this.props
-    const attrAccept = (accept) ? accept.join(',') : undefined
+    const { accept } = this.props;
+    const attrAccept = (accept) ? accept.join(',') : undefined;
 
     return <div className={style.fileUploader}>
       <Loader center={true} absolute={true} visible={this.state.isLoading} />
@@ -248,7 +248,7 @@ export default class FileUploader extends React.Component<Props, State> {
       {this.renderFields(this.state.uploadFiles)}
       <div className={'mt-8px'} />
       {this.state.isLoading ? null : this.renderSelectFiles()}
-      <input type="file" ref={'file'} accept={attrAccept} multiple={true} className={style.input_file} onChange={(e) => this.onChangeFile(e)} />
-    </div>
+      <input type='file' ref={'file'} accept={attrAccept} multiple={true} className={style.input_file} onChange={(e) => this.onChangeFile(e)} />
+    </div>;
   }
-}
+};
