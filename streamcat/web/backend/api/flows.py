@@ -457,7 +457,7 @@ def throw_away_flow(flow_uuid):
         raise Exception('排他ロックのUUIDを指定してください')
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    flow.throw_away(lock_uuid=lock_uuid)
+    return flow.throw_away(lock_uuid=lock_uuid)
 
 
 @mod.route('/frames/<frame_uuid>', methods=['GET'])
@@ -799,4 +799,4 @@ def throw_away_schedule(schedule_uuid):
     指定したスケジュールをほかす
     """
     schedule = g.factory.data.find_by_uuid(schedule_uuid)
-    schedule.throw_away()
+    return schedule.throw_away()

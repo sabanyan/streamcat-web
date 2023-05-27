@@ -153,7 +153,7 @@ def throw_away_project(project_uuid):
     指定したプロジェクトをほかす
     """
     project = g.factory.data.find_by_uuid(project_uuid)
-    project.throw_away()
+    return project.throw_away()
 
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
@@ -212,7 +212,7 @@ def throw_away_folder(folder_uuid):
     指定したフォルダをほかす
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    folder.throw_away()
+    return folder.throw_away()
 
 
 @mod.route('/trashes', methods=['GET'])
@@ -319,7 +319,7 @@ def throw_away_remote_folder(folder_uuid):
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     # リモートフォルダレコードをDBから削除する
-    folder.throw_away()
+    return folder.throw_away()
 
 
 @mod.route('/databases/<database_uuid>', methods=['GET'])
@@ -394,7 +394,7 @@ def throw_away_database(database_uuid):
     """
     database = g.factory.data.find_by_uuid(database_uuid)
     # DatabaseレコードをDBから削除する
-    database.throw_away()
+    return database.throw_away()
 
 
 @mod.route('/frames', methods=['POST'])
@@ -466,7 +466,7 @@ def throw_away_frame(frame_uuid):
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
-    frame.throw_away()
+    return frame.throw_away()
 
 
 @mod.route('/documents/<document_uuid>', methods=['GET'])
@@ -554,7 +554,7 @@ def throw_away_document(document_uuid):
     指定したドキュメントをほかす
     """
     document = g.factory.data.find_by_uuid(document_uuid)
-    document.throw_away()
+    return document.throw_away()
 
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
@@ -606,4 +606,4 @@ def throw_away_awss3(awss3_uuid):
 
     folder = g.factory.data.find_by_uuid(awss3_uuid)
     # AWS S3 folderレコードをDBから削除する
-    folder.throw_away()
+    return folder.throw_away()
