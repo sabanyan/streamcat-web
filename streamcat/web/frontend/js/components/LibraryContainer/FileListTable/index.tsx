@@ -36,7 +36,10 @@ const FileListTable = (props: Props) => {
         if(sortedHeaders.length===0){
             return bodies;
         }
-        return lodash.orderBy(bodies, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
+        // lodash.orderBy()の前に、Array.slice()を用いて全てのDatumにWebAPIを発行する関数を付与する必要がある
+        const cloneBodies = bodies.slice();
+        // NOTE: Lodash.sortByよりArray.prototype.sortの方が早いらしい
+        return lodash.orderBy(cloneBodies, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
     };
 
     // ライブラリ画面の単体表示時のみ複数選択を許可

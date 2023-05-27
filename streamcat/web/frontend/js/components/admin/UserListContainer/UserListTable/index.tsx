@@ -36,9 +36,12 @@ const UserListTable = (props: Props) => {
             return bodies;
         }
 
+        // lodash.orderBy()の前に、Array.slice()を用いて全てのDatumにWebAPIを発行する関数を付与する必要がある
+        const cloneBodies = bodies.slice();
+
         if(sortedHeaders[0].key==='projects'){
             return lodash.orderBy(
-                bodies,
+                cloneBodies,
                 // 所属するプロジェクト数でソートする
                 (body: UserType) => body.projects?.length || 0,
                 // 昇順/降順
@@ -46,7 +49,7 @@ const UserListTable = (props: Props) => {
             );
         }else if(sortedHeaders[0].key==='admin_types'){
             return lodash.orderBy(
-                bodies,
+                cloneBodies,
                 (body: UserType) => {
                     // システムとユーザ管理権限の有無を抽出する
                     const adminTypes = body.roles?.filter(
@@ -67,7 +70,7 @@ const UserListTable = (props: Props) => {
                 sortedHeaders[0].sortType || undefined
             );
         } else{
-            return lodash.orderBy(bodies, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
+            return lodash.orderBy(cloneBodies, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
         }
     };
 
