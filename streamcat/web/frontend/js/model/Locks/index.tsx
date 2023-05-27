@@ -8,7 +8,7 @@ export type LockType = {
     created_at: string;
     modified_at: string;
 
-    delete: () => Promise<void>;
+    delete: () => Promise<LockType>;
     extend: () => Promise<void>;
 };
 

@@ -104,7 +104,7 @@ export const putBase = <TDatumType>(url: string, body: {}) => {
  * @param url
  * @throws {ErrorResponse}
  */
-export const delBase = (url: string, body={}) => {
+export const delBase = <TDatumType>(url: string, body={}) => {
     return fetch(
         url,
         {
@@ -115,7 +115,7 @@ export const delBase = (url: string, body={}) => {
                 'Content-Type': 'application/json'
             }
         }
-    ).then<void>(
+    ).then<TDatumType>(
         res => toJsonOrRaise(res)
     );
 };

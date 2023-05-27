@@ -80,7 +80,7 @@ type DatumBaseType<TAllowlist> = {
 
     move: (parent:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
     rename: (label:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
-    delete: (lockUUID?:string) => Promise<void>;
+    delete: (lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
 };
 
 /**

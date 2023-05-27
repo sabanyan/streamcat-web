@@ -20,10 +20,10 @@ import {
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import {
     toJsonOrRaise,
+    getBase as get,
     postBase,
     putBase,
-    getBase as get,
-    delBase as del,
+    delBase,
     makeArrayCtor
 } from './ApiBase';
 
@@ -36,6 +36,13 @@ const post = <TDatumType>(url: string, body: {}) => {
 
 const put = <TDatumType>(url: string, body: {}) => {
     return putBase<TDatumType>(url, body).then<TDatumType>(datum => {
+        // DatumArrayのshift()を用いてdatumに各種関数を付与する
+        return datum && (new DatumArray([datum as any])).shift() as any;
+    });
+};
+
+const del = <TDatumType>(url: string, body={}) => {
+    return delBase<TDatumType>(url, body).then<TDatumType>(datum => {
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift() as any;
     });
@@ -172,7 +179,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             d.rename = (label) => 
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
             d.delete = () =>
-                del(`/api/v0/projects/${d.uuid}`);
+                del<ProjectType>(`/api/v0/projects/${d.uuid}`);
             d.initMembers = (members, lastModifiedAt) =>
                 put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
             d.joinMember = (member) =>
@@ -187,13 +194,13 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             d.rename = (label) => 
                 put<FolderType>(`/api/v0/folders/${d.uuid}`, {label:label});
             d.delete = () =>
-                del(`/api/v0/folders/${d.uuid}`);
+                del<FolderType>(`/api/v0/folders/${d.uuid}`);
         }
 
     }else if(datum.type === 'trash') {
         const d = datum as TrashType;
         d.trashAll = () =>
-            del(`/api/v0/trashes`);
+            del<void>(`/api/v0/trashes`);
         d.putBack = (uuid) =>
             put<TrashType>(`/api/v0/trashes/${uuid}`, {});
     }else if(datum.type === 'rfolder') {
@@ -203,7 +210,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label) => 
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {label:label});
         d.delete = () =>
-            del(`/api/v0/remote-folders/${d.uuid}`);
+            del<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`);
         d.update = (label, protocol, hostname, domain, directory, userId, password) =>
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`,
                                     { label    : label,
@@ -220,7 +227,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label) => 
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {label:label});
         d.delete = () =>
-            del(`/api/v0/databases/${d.uuid}`);
+            del<DatabaseType>(`/api/v0/databases/${d.uuid}`);
         d.update = (label, dbms, hostname, port, database, userId, password) =>
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`,
                                 { label   : label,
@@ -237,7 +244,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label, lockUUID) => 
             put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label, lock:lockUUID});
         d.delete = (lockUUID) =>
-            del(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
+            del<FlowType>(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
         d.update = (flow, lockUUID) =>
             put<FlowType>(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
         d.updateLock = (editLock, lockUUID) =>
@@ -245,7 +252,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.duplicate = () =>
             post(`/api/v0/flows`, {source:d.uuid});
         d.deleteCache = (nodeId) =>
-            del(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
+            del<void>(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
     }else if(datum.type === 'schedule') {
         const d = datum as ScheduleType;
         d.move = (parent) => 
@@ -253,7 +260,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label) => 
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {label:label});
         d.delete = () =>
-            del(`/api/v0/schedules/${d.uuid}`);
+            del<ScheduleType>(`/api/v0/schedules/${d.uuid}`);
         d.update = (label, runnableUUID, args, inputs, trigger) =>
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`,
                                 { label   : label,
@@ -268,7 +275,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label) => 
             put<FrameType>(`/api/v0/frames/${d.uuid}`, {label:label});
         d.delete = () =>
-            del(`/api/v0/frames/${d.uuid}`);
+            del<FrameType>(`/api/v0/frames/${d.uuid}`);
         d.update = (encoding, newline) =>
             put<FrameType>(`/api/v0/frames/${d.uuid}`,
                             { encoding: encoding,
@@ -280,7 +287,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label) => 
             put<DocumentType>(`/api/v0/documents/${d.uuid}`, {label:label});
         d.delete = () =>
-            del(`/api/v0/documents/${d.uuid}`);
+            del<DocumentType>(`/api/v0/documents/${d.uuid}`);
     }else if(datum.type === 'activity') {
         // Activityの変更・削除はできない
     }

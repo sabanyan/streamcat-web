@@ -2,12 +2,20 @@ import {LockType} from 'Model/Locks';
 import {
     postBase,
     putBase as put,
-    delBase as del,
+    delBase,
     makeArrayCtor
 } from './ApiBase';
 
 const post = (url: string, body: {}) => {
     return postBase<LockType>(url, body).then<LockType>(lock => {
+        // LockArrayのshift()を用いてlockに各種関数を付与する
+        // NOTE: shift()は必ずLockオブジェクトを返す
+        return lock && (new LockArray([lock])).shift() as LockType;
+    });
+};
+
+const del = (url: string, body: {}) => {
+    return delBase<LockType>(url, body).then<LockType>(lock => {
         // LockArrayのshift()を用いてlockに各種関数を付与する
         // NOTE: shift()は必ずLockオブジェクトを返す
         return lock && (new LockArray([lock])).shift() as LockType;
