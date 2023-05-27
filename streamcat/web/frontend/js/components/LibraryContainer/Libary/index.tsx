@@ -272,11 +272,18 @@ export const Library = () => {
         fetchFolder();
     };
 
-    const refreshLibrary = (datum:DatumType) => {
-        // フォルダを再取得する
+    const refreshLibrary = (...data:DatumType[]) => {
+        // フォルダを再取得してListTableを再表示する
         fetchFolder();
-        // 状態変数を更新する
-        setSelectedDatas([datum]);
+        // 処理前後で親フォルダのUUIDが異なる場合は削除または移動処理がなされたと見做す
+        const isDeleteOrMove = data.some(datum => datum.folderUuid!==parentFolder.uuid)
+        if(isDeleteOrMove){
+            // 削除または移動後はDatumを未選択状態に変更してペインを非表示にする
+            setSelectedDatas([]);
+        }else{
+            // ペインの表示を更新する
+            setSelectedDatas(data);
+        }
     };
 
     const getProject = (project:DatumType|null) => {
@@ -311,7 +318,7 @@ export const Library = () => {
             return <TrashDrawer 
                         trashFolder={parentFolder as ParentTrashType}
                         datum={datum}
-                        onSuccess={data=>refreshLibrary(data[0])} />;
+                        onSuccess={data=>refreshLibrary(...data)} />;
         }else{
             // Datumをゴミ箱から戻した直後にselectedDatas[0]がundefinedになるため、
             return <></>;
@@ -362,7 +369,7 @@ export const Library = () => {
     const unkownDrawer = <UnkownDrawer
                             parent={parentFolder}
                             datum={selectedDatas[0]}
-                            onSuccess={data => refreshLibrary(data[0])} />;
+                            onSuccess={data=>refreshLibrary(...data)} />;
 
     const Drawer = (props:{selectedDatas:DatumType[]}) => {
         const {selectedDatas} = props;
@@ -385,7 +392,10 @@ export const Library = () => {
             // Datumが2つ以上選択されている場合
             if(mode === Constants.library.mode.list) {
                 // リストモードの場合は、MultiDataDrawerを表示する
-                return <MultiDataDrawer parent={parentFolder} data={selectedDatas} onSuccess={fetchFolder}/>;
+                return <MultiDataDrawer
+                            parent={parentFolder}
+                            data={selectedDatas}
+                            onSuccess={data=>refreshLibrary(...data)}/>;
             }else{
                 // それ以外のモードの場合は、ペインを表示しない
                 return <></>;
