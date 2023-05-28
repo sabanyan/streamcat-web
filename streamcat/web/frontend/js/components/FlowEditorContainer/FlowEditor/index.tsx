@@ -432,6 +432,9 @@ const FlowEditor = () => {
             console.log(error);
         });
 
+        // ブラウザバックによってブラウザタブを閉じれるように設定する
+        WebUtil.setCloseWindowOnBack();
+
     }, []);
 
     const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長

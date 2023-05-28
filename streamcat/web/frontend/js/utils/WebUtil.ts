@@ -8,6 +8,19 @@ export default class WebUtil {
         return window.location.protocol + "//" + window.location.host + url;
     }
 
+    static setCloseWindowOnBack(){
+        // ブラウザバックができるように履歴URLを一つ追加する
+        history.pushState(null, '', window.location.href);
+        // 最後のpushStateが現在URLになる
+        history.pushState(null, '', window.location.href);
+    
+        // Chromeではセキュリティ対策として、
+        // ページ読み込み直後にブラウザバックでのpopstateイベントが発火しない
+        // クリックなどのユーザ操作の後であれば発火する
+        // https://www.zdnet.com/article/google-working-on-blocking-back-button-hijacking-in-chrome/
+        window.addEventListener('popstate', () => {window.close()});
+    }
+
     static logout(){
         const currentUrl = location.href;
         let logoutUrl: string;
