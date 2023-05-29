@@ -2,6 +2,49 @@ import pprint
 from .api_test_case_base import ApiTestCaseBase
 
 class DatabaseTestCase(ApiTestCaseBase):
+
+    def test_connection_database(self):
+        """
+        指定するデータベースが接続可能か問い合わせる
+        """
+        # 
+        # 接続可能な場合
+        # 
+        data = {
+            'dbms'     : "postgresql",
+            'hostname' : "db", 
+            'port'     : 5432, 
+            'database' : "streamcat", 
+            'userId'  : "streamcat", 
+            'password' : 'ZQZtVgL6G32Vy6p6WJtG3C3K84yuJ4zz'
+        }
+        # 接続情報をクエリパラメタ文字列に変換する
+        arg_str = ''
+        for key, value in data.items():
+            arg_str += f'&{key}={value}'
+
+        # 接続が可能であることを確認する
+        result = self.get_uri(f'/api/v0/connections/databases?{arg_str}', self.USER2)
+
+        # GET /connections/databasesの戻り値が正しいことを検証する
+        self.assertTrue(result['conn'])
+
+        # 
+        # 接続不可能な場合
+        # 
+        data_err = data.copy()
+        data_err['userId'] = 'anonymous'
+        # 接続情報をクエリパラメタ文字列に変換する
+        arg_str = ''
+        for key, value in data_err.items():
+            arg_str += f'&{key}={value}'
+
+        # 接続が不可能であることを確認する
+        result = self.get_uri(f'/api/v0/connections/databases?{arg_str}', self.USER2)
+
+        # GET /connections/databasesの戻り値が正しいことを検証する
+        self.assertFalse(result['conn'])
+
     def test_create_get_database(self):
         root = self.factory.data.load_root()
         root_uuid = root.uuid
@@ -10,7 +53,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # Databaseを作成する(POST /databases)
         data = {
             "parent"   : root_uuid,
-            "label"    : "リモートフォルダ",
+            "label"    : "データベース",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
@@ -23,7 +66,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # POST /databasesの戻り値が正しいことを検証する
         self.assertIsNotNone(result['uuid'])
         self.assertEqual(result['type'], 'database')
-        self.assertEqual(result['label'], 'リモートフォルダ')
+        self.assertEqual(result['label'], 'データベース')
         self.assertEqual(result['dbms'], 'postgresql')
         self.assertEqual(result['hostname'], 'db')
         self.assertEqual(result['port'], 5432)
@@ -41,7 +84,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # GET /databasesの戻り値が正しいことを検証する
         self.assertEqual(result['uuid'], database_uuid)
         self.assertEqual(result['type'], 'database')
-        self.assertEqual(result['label'], 'リモートフォルダ')
+        self.assertEqual(result['label'], 'データベース')
         self.assertEqual(result['dbms'], 'postgresql')
         self.assertEqual(result['hostname'], 'db')
         self.assertEqual(result['port'], 5432)
@@ -65,7 +108,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # Databaseを作成する(POST /databases)
         data = {
             "parent"   : root_uuid,
-            "label"    : "リモートフォルダ",
+            "label"    : "データベース",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
@@ -106,7 +149,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # Databaseを作成する(POST /databases)
         data = {
             "parent"   : root_uuid,
-            "label"    : "リモートフォルダ",
+            "label"    : "データベース",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
@@ -157,7 +200,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # Databaseを作成する(POST /databases)
         data = {
             "parent"   : root.uuid,
-            "label"    : "リモートフォルダ?",
+            "label"    : "データベース?",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
@@ -173,7 +216,7 @@ class DatabaseTestCase(ApiTestCaseBase):
 
         # 期待するAPIの戻り値
         expected_result = {
-            "label"    : "リモートフォルダ?",
+            "label"    : "データベース?",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
@@ -204,7 +247,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         # Databaseを作成する(POST /databases)
         data = {
             "parent"   : root.uuid,
-            "label"    : "リモートフォルダ?",
+            "label"    : "データベース?",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,
@@ -223,7 +266,7 @@ class DatabaseTestCase(ApiTestCaseBase):
 
         # 期待するAPIの戻り値
         expected_result = {
-            "label"    : "リモートフォルダ?",
+            "label"    : "データベース?",
             "dbms"     : "postgresql",
             "hostname" : "db",
             "port"     : 5432,

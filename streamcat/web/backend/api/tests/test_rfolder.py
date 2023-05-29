@@ -4,6 +4,48 @@ from .api_test_case_base import ApiTestCaseBase
 
 class RemoteFolderTestCase(ApiTestCaseBase):
 
+    def test_connection_folders(self):
+        """
+        指定するリモートフォルダが接続可能か問い合わせる
+        """
+        # 
+        # 接続可能な場合
+        # 
+        data = {
+            "protocol" : "smb",
+            "hostname" : "18.178.64.116",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            'userId'  : "samba",
+            "password" : "kskanalytics"
+        }
+        # 接続情報をクエリパラメタ文字列に変換する
+        arg_str = ''
+        for key, value in data.items():
+            arg_str += f'&{key}={value}'
+
+        # 接続が可能であることを確認する
+        result = self.get_uri(f'/api/v0/connections/remote-folders?{arg_str}', self.USER2)
+
+        # GET /connections/remote-foldersの戻り値が正しいことを検証する
+        self.assertTrue(result['conn'])
+
+        # 
+        # 接続不可能な場合
+        # 
+        data_err = data.copy()
+        data_err['directory'] = '存在しないディレクトリ'
+        # 接続情報をクエリパラメタ文字列に変換する
+        arg_str = ''
+        for key, value in data_err.items():
+            arg_str += f'&{key}={value}'
+
+        # 接続が不可能であることを確認する
+        result = self.get_uri(f'/api/v0/connections/remote-folders?{arg_str}', self.USER2)
+
+        # GET /connections/remote-foldersの戻り値が正しいことを検証する
+        self.assertFalse(result['conn'])
+
     def test_create_get_folders(self):
         root = self.factory.data.load_root()
         root_uuid = root.uuid

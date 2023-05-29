@@ -92,6 +92,50 @@ def delete_store(store_id):
     store.delete()
 
 
+@mod.route('/connections/remote-folders', methods=['GET'])
+@login_required_api
+@api_base
+def is_remote_folder_connectable():
+    """
+    リモートフォルダの接続を確認する
+    """
+    from streamcat.store import RemoteFolderConn
+
+    # 接続に用いるリモートフォルダを作成する(保存しないこと)
+    root = g.factory.data.load_root()
+    remote_folder_conn = RemoteFolderConn(request.args)
+    tmp_folder = root.create_remote_folder('CONNECTION-TEST', remote_folder_conn)
+
+    # 接続情報に漏れがあれば例外を送出する
+    tmp_folder.valid_or_raise()
+
+    # 接続の確認結果を返す
+    return {'conn': tmp_folder.is_mountable()}
+
+@mod.route('/connections/databases', methods=['GET'])
+@login_required_api
+@api_base
+def is_database_connectable():
+    """
+    データベースの接続を確認する
+    """
+    from streamcat.store import DatabaseConn
+    from streamcat.engine import execute
+    from streamcat.depo.std.commands.scmd.script import DbIsConnectableCommand
+
+    # 接続に用いるデータベースを作成する(保存しないこと)
+    root = g.factory.data.load_root()
+    db_conn = DatabaseConn(request.args)
+    tmp_db = root.create_database('CONNECTION-TEST', db_conn)
+
+    # Restoreコマンドを実行する
+    outs = execute(DbIsConnectableCommand(), inputs={'i':tmp_db}).join()
+    if 'o' not in outs or isinstance(outs['o'], Exception):
+        raise Exception(f'DbIsConnectableCommandの実行に失敗しました {outs.get("o","")}')
+
+    # 接続の確認結果を返す
+    return {'conn': outs['o']}
+
 @mod.route('/archives/flows/<uuid>', methods=['GET'])
 @login_required_api
 def download_flow(uuid):
