@@ -77,7 +77,10 @@ export const ListTableHeader = (props: Props) => {
         setSortedHeaders(nextSortedHeaders);
     };
 
-    return <thead className={style.listTableHeader}><tr>{
+    return <thead className={style.listTableHeader}
+                  // ヘッダへのクリックイベントを親コンポーネントに伝搬させないことで
+                  // ListTableBodyの選択状態を維持する
+                  onClick={e => e.stopPropagation()}><tr>{
         headers.map((header,index) => {
             // ソートアイコンを取得する
             const sortIcon = getIconElement(

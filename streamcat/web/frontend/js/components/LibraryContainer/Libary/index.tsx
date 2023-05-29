@@ -91,7 +91,6 @@ export const Library = () => {
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
     const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
-    const clickedLibraryCell = React.useRef(false);
 
     React.useEffect(() => {
         // 
@@ -172,19 +171,9 @@ export const Library = () => {
             return renderEmptyState();
         }
 
-        const onClickFileList = () => {
-            // 押下フラグがfalseの場合にユーザの選択を解除する
-            if (!clickedLibraryCell.current) {
-                // 選択状態を一旦解除
-                setSelectedDatas([]);
-            }
-            // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
-            clickedLibraryCell.current = false;
-        };
-
-        const onClickBody = () => {
-            // FileListTableをクリックしたら押下フラグをtrueにする
-            clickedLibraryCell.current = true;
+        const clearSelection = () => {
+            // FileListTableの選択行を解除する
+            setSelectedDatas([]);
         };
 
         const renderMenuList = () => {
@@ -220,8 +209,11 @@ export const Library = () => {
         };
 
         return <Flex justifyContent={'center'} fluid={true}>
-            <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                onClick={onClickFileList}>
+            <Flex flexDirection={'row'}
+                  width={1480 + 40 + 40}
+                  minHeight={'calc(100vh - 64px)'}
+                  fluid={true}
+                  onClick={clearSelection}>
                 <Spacer width={40} />
                 <Flex flexDirection={'column'} fluid={true}>
                     <Spacer height={40}/>
@@ -231,13 +223,12 @@ export const Library = () => {
                         <Spacer height={8} />
                     </Flex>
                     <Spacer height={10}/>
-                    <Flex flexDirection={'row'} onClick={onClickBody}>
+                    <Flex flexDirection={'row'}>
                         <FileListTable
                             bodies={parentFolder.children}
                             mode={mode}
                             minWidth={800}
-                            selectedDatas={[selectedDatas, setSelectedDatas]}
-                        />
+                            selectedDatas={[selectedDatas, setSelectedDatas]} />
                     </Flex>
                     <Spacer height={80} />
                 </Flex>

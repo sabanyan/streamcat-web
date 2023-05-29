@@ -150,8 +150,11 @@ export const UserList = (props: Props) => {
 
     return <>
         <Flex justifyContent={'center'} fluid={true}>
-            <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                    onClick={onClickUserList}>
+            <Flex flexDirection={'row'}
+                  width={1480 + 40 + 40}
+                  minHeight={'calc(100vh - 64px)'}
+                  fluid={true}
+                  onClick={onClickUserList}>
                 <Spacer width={40}/>
                 <Flex flexDirection={'column'}>
                     <Spacer height={40}/>

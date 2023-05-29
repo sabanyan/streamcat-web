@@ -15,14 +15,10 @@ export const ListTableBody = <TDatumType extends {uuid:string},>(props: Props<TD
     // 選択中の行を保持する
     const [selectedDatas, setSelectedDatas] = props.selectedDatas;
 
-    const onClickCell = (selectedDatum: TDatumType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-        if(!selectedDatum){
-            return;
-        }
-
-        if(event){
-            event.stopPropagation();
-        }
+    const onClickCell = (selectedDatum: TDatumType, event: React.MouseEvent<HTMLTableRowElement>): void => {
+        // リストボディへのクリックイベントを親コンポーネントに伝搬させないことで
+        // ListTableBodyの選択状態を維持する
+        event.stopPropagation();        
 
         if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
             // command or ctrl + click
