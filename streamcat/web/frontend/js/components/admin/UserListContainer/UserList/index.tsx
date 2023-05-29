@@ -26,7 +26,12 @@ export const UserList = (props: Props) => {
     // 所属プロジェクト条件
     const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     // ユーザ状態条件
-    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+    const initStatuses = [
+        Constants.admin.userStatus.tmp,
+        Constants.admin.userStatus.active,
+        Constants.admin.userStatus.expired
+    ];
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initStatuses);
     // UserBodyコンポーネントで選択中のUser
     const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
     // UserBodyコンポーネントをクリックした時にtrueにする
