@@ -71,3 +71,7 @@ export type NavigationType = {
     user: UserType;
     allowlist: NavigationAllowlist;
 };
+
+export type ConnectivityType = {
+    conn: boolean;
+};
