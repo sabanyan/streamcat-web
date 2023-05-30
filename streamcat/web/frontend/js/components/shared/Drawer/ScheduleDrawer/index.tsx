@@ -391,7 +391,7 @@ export const ScheduleDrawer = (props:Props) => {
             update={update}
             onSuccess={datum=>onSuccess(datum as ScheduleType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[schedule]}
@@ -399,7 +399,7 @@ export const ScheduleDrawer = (props:Props) => {
                 <DeleteButton key='del'
                               targets={[schedule]}
                               onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />
-            ],
+            ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
                 <TextField2 key='label'

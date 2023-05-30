@@ -72,7 +72,7 @@ export const RemoteFolderDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as RemoteFolderType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[remoteFolder]}
@@ -80,7 +80,7 @@ export const RemoteFolderDrawer = (props:Props) => {
                 <DeleteButton key='del'
                               targets={[remoteFolder]}
                               onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />
-            ],
+            ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
                 <TextField2 key='label'

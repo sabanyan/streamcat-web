@@ -92,13 +92,13 @@ export const ProjectDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as ProjectType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <DeleteButton key='del'
                               targets={[project]}
                               onSuccess={(data)=>onSuccess(data[0] as ProjectType)} />,
                 <DownloadFlowButton key='download'
                                     targets={[project]} />
-            ],
+            ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
                 <TextField2 key='label'

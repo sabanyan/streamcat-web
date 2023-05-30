@@ -44,7 +44,7 @@ export const FolderDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as FolderType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[folder]}
@@ -54,7 +54,7 @@ export const FolderDrawer = (props:Props) => {
                               onSuccess={(data)=>onSuccess(data[0] as FolderType)} />,
                 <DownloadFlowButton key='download'
                                     targets={[folder]} />
-            ],
+            ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
                 <TextField2 key='label'

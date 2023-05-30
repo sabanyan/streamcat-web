@@ -52,7 +52,7 @@ export const FlowDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as FlowType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[flow]}
@@ -70,7 +70,7 @@ export const FlowDrawer = (props:Props) => {
                                   // 編集ロックの値はこのコンポーネント内では保持しない
                                   state={[{value:flow.editLock,isError:false}, ()=>{}]}
                                   onChange={(updated)=>onSuccess(updated)} />
-            ],
+            ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
                 <TextField2 key='label'

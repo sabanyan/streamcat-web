@@ -46,7 +46,7 @@ export const CreateFlowButton = (props:Props) => {
                 }}
                 onCancel={closeDialog} >{[
                 // ボタン
-                [],
+                () => [],
                 // テキストボックス
                 (readOnly, onErrorChange, onEnterKeyPress) => [
                     <TextField2 key='label'

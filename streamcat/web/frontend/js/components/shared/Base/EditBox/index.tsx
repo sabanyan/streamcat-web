@@ -33,8 +33,9 @@ type Props = {
     // (EditBoxにおいてreadOnlyとonErrorChangeを制御したいので
     //  子コンポーネントを生成する関数を引数とする)
     children:[
-        JSX.Element[],
-        (readOnly: boolean,
+        (   readonly: boolean,
+        ) => JSX.Element[],
+        (   readOnly: boolean,
             onErrorChange: (isError:boolean) => void,
             onEnterKeyPress: (value:Value) => void
         ) => JSX.Element[]
@@ -55,7 +56,7 @@ export const EditBox = (props:Props) => {
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     // ペインの変更可否
-    const [editMode, setEditMode] = React.useState(!createMode);
+    const [editMode, setEditMode] = React.useState(createMode);
     // 追加ボタンの押下可否
     const [editBoxError, setEditBoxError] = React.useState(createMode);
 
@@ -66,7 +67,7 @@ export const EditBox = (props:Props) => {
         // datum、またはcreateの変更に応じてreadOnlyを変更する
         setEditMode(createMode);
         setEditBoxError(createMode);
-    }, [datum,createMode]);
+    }, [datum]);
 
     /**
      * テキストボックスのエラー状態が変更された時、確定ボタンの押下可否を更新する
@@ -108,7 +109,7 @@ export const EditBox = (props:Props) => {
 
     // Datumの新規作成処理
     const createDatum = () => {
-        // リモートフォルダを新規作成する
+        // Datumを新規作成する
         create().then(datum => {
             // ペインを変更不可にする
             setEditMode(false);
@@ -130,7 +131,7 @@ export const EditBox = (props:Props) => {
             // updateが指定されていない場合、処理を中断する
             return;
         }
-        // リモートフォルダを変更する
+        // Datumを変更する
         update().then(datum => {
             // ペインを変更不可にする
             setEditMode(false);
@@ -150,27 +151,29 @@ export const EditBox = (props:Props) => {
     const enabled = datum && datum.allowlist.update && !readOnly;
 
     // 変更ボタン
-    const EditButton = (props:{align:'left'|'right'}) => {
+    const editbuttons = (align:'left'|'right') => {
         if(editMode){
-            return <Box textAlign={props.align}>
+            return <Box textAlign={align}>
+                {createMode? buttons(!editMode): []}
                 <Button2 onClick={onClickCancel}>キャンセル</Button2>
                 <Button2 disabled={editBoxError} onClick={submit}>確定</Button2>
-            </Box>;
+                {createMode? []: buttons(!editMode)}
+            </Box>
         }else{
-            return <Box textAlign={props.align}>
+            return <Box textAlign={align}>
                 <Button2 disabled={!enabled} onClick={()=>setEditMode(true)}>変更</Button2>
-                {buttons}
+                {buttons(!editMode)}
             </Box>;
         }
-    }
+    };
 
     return <>
         {/* 変更モードの場合はボタンを左上に配置する */}
-        {createMode? <></>: <EditButton align='left'/>}
+        {createMode? <></>: editbuttons('left')}
         {/* Function as Child Components pattern
             https://stackoverflow.com/questions/32370994/how-to-pass-props-to-this-props-children */}
         {inputs(!editMode, onErrorChange, submit)}
         {/* 新規追加モードの場合はボタンを右下に配置する */}
-        {createMode? <EditButton align='right'/>: <></>}
+        {createMode? editbuttons('right'): <></>}
     </>;
 };

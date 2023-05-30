@@ -72,7 +72,7 @@ export const DatabaseDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as DatabaseType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[datum]}
@@ -80,7 +80,7 @@ export const DatabaseDrawer = (props:Props) => {
                 <DeleteButton key='del'
                               targets={[datum]}
                               onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />
-            ],
+            ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
                 <TextField2 key='label'
