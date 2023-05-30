@@ -3,6 +3,7 @@ import { FolderType, DatabaseType } from 'Model/Library';
 import { DialogButton, TextField2, Select2 } from 'Shared/Input';
 import { Value } from 'Shared/Input/TextField2';
 import { EditBox } from 'Shared/Base/EditBox';
+import { CheckDatabaseButton } from '../CheckDatabaseButton';
 
 type Props = {
     parent:FolderType;
@@ -29,6 +30,9 @@ export const CreateDatabaseButton = (props:Props) => {
     const [database, setDatabase] = React.useState(initValue);
     const [userId, setUserId]     = React.useState(initValue);
     const [password, setPassword] = React.useState(initValue);
+
+    // データベースへの接続が確認済みの場合はTrue
+    const [checked, setChecked] = React.useState(false);
 
     // 値の初期化処理
     const initValues = () => {
@@ -68,7 +72,19 @@ export const CreateDatabaseButton = (props:Props) => {
                 }}
                 onCancel={closeDialog} >{[
                 // ボタン
-                () => [],
+                (readOnly) => [
+                    <CheckDatabaseButton
+                        key='check'
+                        readOnly={readOnly}
+                        forceUnchecked={!checked}
+                        dbms={dbms}
+                        hostname={hostname}
+                        port={port}
+                        database={database}
+                        userId={userId}
+                        password={password}
+                        onSuccess={() => setChecked(true)} />
+                ],
                 // テキストボックス
                 (readOnly, onErrorChange, onEnterKeyPress) => [
                     <TextField2 key='label'
@@ -86,12 +102,14 @@ export const CreateDatabaseButton = (props:Props) => {
                                         {label:'ORACLE',value:'oracle'}]}
                                 readOnly={readOnly}
                                 state={[dbms,setDbms]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange} />,
                     <TextField2 key='hostname'
                                 label='ホスト名またはIPアドレス'
                                 required={true}
                                 readOnly={readOnly}
                                 state={[hostname,setHostname]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='port'
@@ -100,6 +118,7 @@ export const CreateDatabaseButton = (props:Props) => {
                                 required={true}
                                 readOnly={readOnly}
                                 state={[port,setPort]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='database'
@@ -107,18 +126,21 @@ export const CreateDatabaseButton = (props:Props) => {
                                 required={true}
                                 readOnly={readOnly}
                                 state={[database,setDatabase]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='userId'
                                 label='ユーザーID'
                                 readOnly={readOnly}
                                 state={[userId,setUserId]}
+                                onChange={() => setChecked(false)}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='password'
                                 label='パスワード'
                                 type='password'
                                 readOnly={readOnly}
                                 state={[password,setPassword]}
+                                onChange={() => setChecked(false)}
                                 onEnterKeyPress={onEnterKeyPress} />
                 ]
             ]}</EditBox>
