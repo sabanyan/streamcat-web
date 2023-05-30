@@ -3,6 +3,7 @@ import { FolderType, RemoteFolderType } from 'Model/Library';
 import { DialogButton, TextField2, Select2 } from 'Shared/Input';
 import { Value } from 'Shared/Input/TextField2';
 import { EditBox } from 'Shared/Base/EditBox';
+import { CheckRemoteFolderButton } from 'Shared/Button/CheckRemoteFolderButton';
 
 type Props = {
     parent:FolderType;
@@ -28,6 +29,9 @@ export const CreateRemoteFolderButton = (props:Props) => {
     const [directory, setDirectory] = React.useState(initValue);
     const [userId, setUserId] = React.useState(initValue);
     const [password, setPassword] = React.useState(initValue);
+
+    // リモートフォルダへの接続が確認済みの場合はTrue
+    const [checked, setChecked] = React.useState(false);
 
     // 値の初期化処理
     const initValues = () => {
@@ -67,7 +71,19 @@ export const CreateRemoteFolderButton = (props:Props) => {
                 }}
                 onCancel={closeDialog} >{[
                 // ボタン
-                () => [],
+                (readOnly) => [
+                    <CheckRemoteFolderButton
+                        key='check'
+                        readOnly={readOnly}
+                        forceUnchecked={!checked}
+                        protocol={protocol}
+                        hostname={hostname}
+                        domain={domain}
+                        directory={directory}
+                        userId={userId}
+                        password={password}
+                        onSuccess={() => setChecked(true)} />
+                ],
                 // テキストボックス
                 (readOnly, onErrorChange, onEnterKeyPress) => [
                     <TextField2 key='label'
@@ -84,12 +100,14 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                 items={[{label:'Samba',value:'smb'}]}
                                 readOnly={readOnly}
                                 state={[protocol, setProtocol]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange} />,
                     <TextField2 key='hostname'
                                 label='ホスト名またはIPアドレス'
                                 required={true}
                                 readOnly={readOnly}
                                 state={[hostname,setHostname]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='domain'
@@ -97,6 +115,7 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                 required={true}
                                 readOnly={readOnly}
                                 state={[domain,setDomain]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='directory'
@@ -104,18 +123,21 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                 required={true}
                                 readOnly={readOnly}
                                 state={[directory,setDirectory]}
+                                onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='userId'
                                 label='ユーザーID'
                                 readOnly={readOnly}
                                 state={[userId,setUserId]}
+                                onChange={() => setChecked(false)}
                                 onEnterKeyPress={onEnterKeyPress} />,
                     <TextField2 key='password'
                                 label='パスワード'
                                 type='password'
                                 readOnly={readOnly}
                                 state={[password,setPassword]}
+                                onChange={() => setChecked(false)}
                                 onEnterKeyPress={onEnterKeyPress} />
                 ]
             ]}</EditBox>
