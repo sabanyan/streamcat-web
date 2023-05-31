@@ -2,6 +2,7 @@ import React from 'react'
 
 import { AppBar, IconButton, Tabs, Tab } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import { Link2 } from 'Components/shared/Input';
 
 import style from './style.scss'
 
@@ -74,11 +75,7 @@ export function Helper(props: Props) {
       result.push(
         <div key={index} className={style.shortcut}>
           {v.label + " : "}
-          <a href={"#"}
-            onClick={(event) => onClickShortcut(event, v.value, v.delimiter)}
-          >
-            {v.link}
-          </a>
+          <Link2 value={v.link} onClick={e=>onClickShortcut(event, v.value, v.delimiter)} />
         </div>
 
       )

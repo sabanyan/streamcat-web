@@ -10,15 +10,20 @@ export default class WebUtil {
 
     static setCloseWindowOnBack(){
         // ブラウザバックができるように履歴URLを一つ追加する
-        history.pushState(null, '', window.location.href);
+        history.pushState({closeWindow:true}, '', window.location.href);
         // 最後のpushStateが現在URLになる
-        history.pushState(null, '', window.location.href);
+        history.pushState({closeWindow:true}, '', window.location.href);
     
         // Chromeではセキュリティ対策として、
         // ページ読み込み直後にブラウザバックでのpopstateイベントが発火しない
         // クリックなどのユーザ操作の後であれば発火する
         // https://www.zdnet.com/article/google-working-on-blocking-back-button-hijacking-in-chrome/
-        window.addEventListener('popstate', () => {window.close()});
+        // window.addEventListener('popstate', () => {window.close()});
+        window.addEventListener('popstate', (e) => {
+            // Anchorタグの押下でもpopstateが発火するので
+            // stateの値を見てウインドウを閉じるか判断する
+            e.state && e.state.closeWindow && window.close();
+        });
     }
 
     static logout(){
