@@ -55,6 +55,7 @@ export const CheckRemoteFolderButton = (props:Props) => {
             // イベントハンドラを呼び出す
             onSuccess && onSuccess(result);
         }).catch((e) => {
+            setConnectivity(false);
             notifyError(`接続確認エラー`, e.message);
         }).finally(() =>{
             // ボタン押下禁止を解除する
