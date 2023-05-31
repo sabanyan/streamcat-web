@@ -27,6 +27,8 @@ type Props = {
     update?: () => Promise<DatumType>;
     // 新規追加/変更後の処理
     onSuccess: (datum:DatumType) => void;
+    // 変更ボタン押下時の処理
+    onEdit?: () => void;
     // キャンセルボタン押下時の処理
     onCancel?: () => void;
     // 入力コンポーネント
@@ -47,7 +49,7 @@ type Props = {
  * @param props 
  */
 export const EditBox = (props:Props) => {
-    const { datum, values, initValues, create, update, onSuccess, onCancel } = props;
+    const { datum, values, initValues, create, update, onSuccess, onEdit, onCancel } = props;
     const readOnly = !!props.readOnly;
     const createMode = !!props.createMode;
     const [ buttons, inputs ] = props.children
@@ -85,6 +87,14 @@ export const EditBox = (props:Props) => {
             const myPrevErrorCount = prevIsError? 1: 0;
             setEditBoxError((errorCount - myPrevErrorCount) > 0);
         }
+    };
+
+    // 変更ボタン押下時の処理
+    const onClickEdit = () => {
+        // ペインの変更可能にする
+        setEditMode(true);
+        // イベントハンドラを呼び出す
+        onEdit && onEdit();
     };
 
     // キャンセルボタン押下時の処理
@@ -161,7 +171,7 @@ export const EditBox = (props:Props) => {
             </Box>
         }else{
             return <Box textAlign={align}>
-                <Button2 disabled={!enabled} onClick={()=>setEditMode(true)}>変更</Button2>
+                <Button2 disabled={!enabled} onClick={onClickEdit}>変更</Button2>
                 {buttons(!editMode)}
             </Box>;
         }

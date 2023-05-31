@@ -42,6 +42,7 @@ export const CreateRemoteFolderButton = (props:Props) => {
         setDirectory(initValue);
         setUserId(initValue);
         setPassword(initValue);
+        setChecked(false);
     };
 
     // リモートフォルダの新規追加処理

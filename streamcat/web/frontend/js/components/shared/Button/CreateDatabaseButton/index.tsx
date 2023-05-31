@@ -43,6 +43,7 @@ export const CreateDatabaseButton = (props:Props) => {
         setDatabase(initValue);
         setUserId(initValue);
         setPassword(initValue);
+        setChecked(false);
     };
 
     // データベースの新規追加処理

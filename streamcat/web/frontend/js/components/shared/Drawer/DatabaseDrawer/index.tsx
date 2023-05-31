@@ -47,6 +47,7 @@ export const DatabaseDrawer = (props:Props) => {
         setDatabase(initDatabase);
         setUserId(initUserId);
         setPassword(initPassword);
+        setChecked(false);
     };
 
     // リモートフォルダの新規追加処理
@@ -74,6 +75,9 @@ export const DatabaseDrawer = (props:Props) => {
                  initValues={initValues}
                  create={create}
                  update={update}
+                 // キャンセル押下後に接続確認ボタンの確認結果が反映される場合があるので
+                 // 変更ボタン押下時にも未確認状態に戻しておく 
+                 onEdit={()=>setChecked(false)}
                  onSuccess={datum=>onSuccess(datum as DatabaseType)} >{[
             // ボタン
             (readonly) => readonly? [
