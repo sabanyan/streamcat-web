@@ -25,6 +25,9 @@
     tr.selected {
         @include list-select-color();
     }
+    tr.canDrop {
+        background-color: orange;
+    }
 }
 
 .selectDisable {

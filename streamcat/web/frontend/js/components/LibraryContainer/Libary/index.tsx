@@ -224,8 +224,9 @@ export const Library = () => {
                     </Flex>
                     <Spacer height={10}/>
                     <Flex flexDirection={'row'}>
+                        {/* DatumのListTable */}
                         <FileListTable
-                            bodies={parentFolder.children}
+                            allDatas={parentFolder.children}
                             mode={mode}
                             minWidth={800}
                             selectedDatas={[selectedDatas, setSelectedDatas]} />

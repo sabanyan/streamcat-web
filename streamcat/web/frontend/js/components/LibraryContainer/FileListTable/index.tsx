@@ -3,24 +3,27 @@ import {useState} from 'react';
 import dayjs from 'dayjs';
 import * as style from './style.scss';
 import * as lodash from 'lodash';
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import Constants from 'Constants/index';
-import {ActivityType, DatumType} from 'Model/Library';
-import {ListTableBody} from 'Components/shared/Base/ListTableBody';
-import { ListTableHeader, SortedHeader } from 'Components/shared/Base/ListTableHeader';
-import { Link2 } from 'Components/shared/Input';
-import WebUtil from 'Utils/WebUtil';
 import StringUtil from 'Utils/StringUtil';
 import HttpUtil from 'Utils/HttpUtil';
+import WebUtil from 'Utils/WebUtil';
+import {ActivityType, DatumType,} from 'Model/Library';
+import { Link2 } from 'Shared/Input';
+import { ListTableHeader, SortedHeader } from 'Shared/Base/ListTableHeader';
+import {ListTableBodyDnD} from 'Shared/Base/ListTableBodyDnD';
+import { SampleDragLayer } from 'Shared/Base/SampleDragLayer';
 
 interface Props {
     mode: string;
-    bodies: DatumType[];
+    allDatas: DatumType[];
     selectedDatas: [DatumType[], (value:React.SetStateAction<DatumType[]>)=>void];
     minWidth?: number | string;
-}
+};
 
-const FileListTable = (props: Props) => {
-    const {bodies, minWidth, mode, selectedDatas} = props;
+export const FileListTable = (props: Props) => {
+    const {allDatas, minWidth, mode, selectedDatas} = props;
 
     const initialHeaders = [
         {label: '名前', key: 'label'},
@@ -31,50 +34,37 @@ const FileListTable = (props: Props) => {
     const [sortedHeaders, setSortedHeaders] = useState<SortedHeader[]>([]);
 
     // ファイルリストをソートする
-    const sortBodies = (bodies: DatumType[], sortedHeaders: SortedHeader[]) => {
+    const sortDatas = (datas: DatumType[], sortedHeaders: SortedHeader[]) => {
         // ヘッダが押下状態でない場合はソートしない
         if(sortedHeaders.length===0){
-            return bodies;
+            return datas;
         }
         // lodash.orderBy()の前に、Array.slice()を用いて全てのDatumにWebAPIを発行する関数を付与する必要がある
-        const cloneBodies = bodies.slice();
+        const cloneDatas = datas.slice();
         // NOTE: Lodash.sortByよりArray.prototype.sortの方が早いらしい
-        return lodash.orderBy(cloneBodies, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
+        return lodash.orderBy(cloneDatas, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
     };
 
     // ライブラリ画面の単体表示時のみ複数選択を許可
     const enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
 
-    const getIconElement = (icon: string | null) => {
+    const getIconElement = (type: string) => {
+        // DatumのTypeとアイコンファイル名の対応テーブル
+        const iconTable = {
+            project: 'icon-project',
+            folder: 'icon-folder',
+            trash:'icon-trash',
+            flow: 'icon-flow',
+            frame:'icon-file-csv',
+            database:'icon-database',
+            rfolder: 'icon-remote-folder',
+            document:'icon-file-csv',
+        };
+        const icon = iconTable[type];
         const baseUrl = '/front_static/';
-        const iconElement = (icon)
+        return icon
             ? <img className={style.icon} src={baseUrl + 'images/icon/' + icon + '.svg'} />
             : null;
-        return iconElement;
-    };
-
-    const getIconFromBodyType = (type: string): string | null => {
-        switch (type) {
-            case 'project':
-                return 'icon-project';
-            case 'folder':
-                return 'icon-folder';
-            case 'trash':
-                return 'icon-trash';
-            case 'frame':
-                return 'icon-file-csv';
-            case 'flow':
-                return 'icon-flow';
-            case 'database':
-                return 'icon-database';
-            case 'rfolder':
-                return 'icon-remote-folder';
-            case 'document':
-                return 'icon-file-csv';
-            default:
-                console.log(type);
-                return null;
-        }
     };
 
     const isClickable = (datum:DatumType) => {
@@ -111,9 +101,10 @@ const FileListTable = (props: Props) => {
                     return false;
             };
         } else {
-            return datum.type !== 'database';
+            // データベースとリモートフォルダはクリックさせない
+            return datum.type !== 'database' && datum.type!=='rfolder';
         }
-    }
+    };
 
     const onClickApply = (selected_data: DatumType) => {
         if (window.opener || !window.opener.closed) {
@@ -122,67 +113,74 @@ const FileListTable = (props: Props) => {
         window.close();
     };
 
-    const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
+    const onClickFileName = (datum: DatumType, event?: React.SyntheticEvent<any, Event>) => {
         if (event) event.stopPropagation();
 
         const isDialog = (HttpUtil.getURLParam('dialog') === 'true');
         const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? '&mode=' + mode : '') : '';
 
-        if (body.type === 'trash') {
+        if (datum.type === 'trash') {
             WebUtil.navigateURL(WebUtil.webURL('/trashes' + dialogOption));
-        }else if (body.type === 'folder') {
-            WebUtil.navigateURL(WebUtil.webURL('/folders/' + body.uuid + dialogOption));
-        }else if (body.type === 'project') {
-            WebUtil.navigateURL(WebUtil.webURL('/projects/' + body.uuid + dialogOption));
-        }else if (body.type === 'database') {
-            // onClickEditDatabase(body as DatabaseType);
-        }else if (body.type === 'frame') {
+        }else if (datum.type === 'folder') {
+            WebUtil.navigateURL(WebUtil.webURL('/folders/' + datum.uuid + dialogOption));
+        }else if (datum.type === 'project') {
+            WebUtil.navigateURL(WebUtil.webURL('/projects/' + datum.uuid + dialogOption));
+        }else if (datum.type === 'frame') {
             if (mode === Constants.library.mode.frame_select) {
                 // データソースの追加時
-                onClickApply(body);
+                onClickApply(datum);
                 return;
             }
-            window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
-        }else if (body.type === 'document') {
-            window.open(WebUtil.webURL('/documents/' + body.uuid));
-        }else if (body.type === 'flow') {
+            window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + datum.uuid + '&title=' + StringUtil.urlEncode(datum.label)));
+        }else if (datum.type === 'document') {
+            window.open(WebUtil.webURL('/documents/' + datum.uuid));
+        }else if (datum.type === 'flow') {
             if(mode===Constants.library.mode.flow_select){
                 // フロー選択モードの場合
-                onClickApply(body);
+                onClickApply(datum);
                 return;
             }
-            window.open(WebUtil.webURL('/flows/' + body.uuid + dialogOption));
-        }else if (body.type==='activity') {
-            window.open(WebUtil.webURL('/flows/' + (body as ActivityType).flowUuid + dialogOption));
+            window.open(WebUtil.webURL('/flows/' + datum.uuid + dialogOption));
+        }else if (datum.type==='activity') {
+            window.open(WebUtil.webURL('/flows/' + (datum as ActivityType).flowUuid + dialogOption));
         }
     };
 
-    const fileListRow = (body:DatumType) => <>
+    // テーブル行を作成する
+    const createRowData = (datum:DatumType) => <>
         <td>
-            {getIconElement(getIconFromBodyType(body.type))}
-            {isClickable(body) ?
-                <Link2 value={body.label} onClick={e => onClickFileName(body, e)} />
+            {getIconElement(datum.type)}
+            {isClickable(datum) ?
+                <Link2 value={datum.label} onClick={e => onClickFileName(datum, e)} />
                 :
-                <span className={style.filename}>{body.label}</span>
+                <span className={style.filename}>{datum.label}</span>
             }
         </td>
         <td>
-            {body.creator}
+            {datum.creator}
         </td>
         <td className={style.date}>
-            {dayjs(body.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}
+            {dayjs(datum.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}
         </td>
     </>;
-    
-    return <table className={style.fileListTable} style={{minWidth:minWidth}}>
-        <ListTableHeader headers={initialHeaders}
-                         sortedHeaders={[sortedHeaders, setSortedHeaders]} />
-        <ListTableBody<DatumType>
-            bodies={sortBodies(bodies, sortedHeaders)}
-            selectedDatas={selectedDatas}
-            enableMultiSelect={enableMultiSelect}
-            listTableRow={fileListRow} />
-    </table>;
-};
 
-export {FileListTable};
+    return <DndProvider backend={HTML5Backend}>
+        <table className={style.fileListTable} style={{minWidth:minWidth}}>
+            <ListTableHeader headers={initialHeaders}
+                             sortedHeaders={[sortedHeaders, setSortedHeaders]} />
+            {/* ListTableBodyDnDで表示するallDatas配列の要素数が変更された時に
+                ListTableBodyDnDのkey属性を変更して、各行に紐づくdropAndDragRefが保持する状態変数を破棄させる */}
+            {/* NOTE: レンダリングを跨いで状態変数の数が異なる場合はReactからエラーが送出される
+                https://react.dev/learn/preserving-and-resetting-state */}
+            <ListTableBodyDnD<DatumType>
+                key={allDatas.length}
+                allDatas={sortDatas(allDatas, sortedHeaders)}
+                selectedDatas={selectedDatas}
+                createRowData={createRowData}
+                canDrop={(draggingDatas,targetDatum) => ['project','folder'].includes(targetDatum.type)}
+                enableMultiSelect={enableMultiSelect} />
+        </table>
+        {/* ドラッグ中のプレビュー */}
+        <SampleDragLayer />
+    </DndProvider>;
+};

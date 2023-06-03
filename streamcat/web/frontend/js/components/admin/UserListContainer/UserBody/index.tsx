@@ -217,7 +217,7 @@ export const UserBody = (props: Props) => {
     // 描画する
     return <>
         {/* ユーザリスト */}
-        <UserListTable  bodies={filterdUsers}
+        <UserListTable  allUsers={filterdUsers}
                         selectedUsers={[selectedUsers, setSelectedUsers]} />
 
         {/* メニューボタン */}

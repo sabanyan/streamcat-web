@@ -1,24 +1,23 @@
-import React from 'react';
-import {useState} from 'react';
+import React, {useState} from 'react';
 import * as style from './style.scss';
 import * as lodash from 'lodash';
-import { ListTableHeader, SortedHeader } from 'Components/shared/Base/ListTableHeader';
-import { ListTableBody } from 'Components/shared/Base/ListTableBody';
+import { ProjectType } from 'Model/Library';
 import { RoleType, UserType } from 'Model/Navigation/NavigationModel';
-import {Badge} from 'Shared/Base/Badge';
+import { ListTableHeader, SortedHeader } from 'Shared/Base/ListTableHeader';
+import { ListTableBody } from 'Shared/Base/ListTableBody';
 import {Spacer} from 'Shared/Base';
+import {Badge} from 'Shared/Base/Badge';
 import AdminUtil from 'Utils/AdminUtil';
 import ImageUtil from 'Utils/ImageUtil';
-import { ProjectType } from 'Model/Library';
 
 interface Props {
-    bodies: UserType[];
+    allUsers: UserType[];
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
     minWidth?: number | string;
-}
+};
 
-const UserListTable = (props: Props) => {
-    const {bodies, minWidth, selectedUsers} = props;
+export const UserListTable = (props: Props) => {
+    const {allUsers, minWidth, selectedUsers} = props;
 
     const initialHeaders = [
         {label: '名前', key: 'name'},
@@ -30,29 +29,30 @@ const UserListTable = (props: Props) => {
     const [sortedHeaders, setSortedHeaders] = useState<SortedHeader[]>([]);
 
     // ユーザリストをソートする
-    const sortBodies = (bodies: UserType[], sortedHeaders: SortedHeader[]) => {
+    // (lodash.orderByを用いた非破壊ソート)
+    const sortUsers = (users: UserType[], sortedHeaders: SortedHeader[]) => {
         // ヘッダが押下状態でない場合はソートしない
         if(sortedHeaders.length===0){
-            return bodies;
+            return users;
         }
 
         // lodash.orderBy()の前に、Array.slice()を用いて全てのDatumにWebAPIを発行する関数を付与する必要がある
-        const cloneBodies = bodies.slice();
+        const cloneUsers = users.slice();
 
         if(sortedHeaders[0].key==='projects'){
             return lodash.orderBy(
-                cloneBodies,
+                cloneUsers,
                 // 所属するプロジェクト数でソートする
-                (body: UserType) => body.projects?.length || 0,
+                (user: UserType) => user.projects?.length || 0,
                 // 昇順/降順
                 sortedHeaders[0].sortType || undefined
             );
         }else if(sortedHeaders[0].key==='admin_types'){
             return lodash.orderBy(
-                cloneBodies,
-                (body: UserType) => {
+                cloneUsers,
+                (user: UserType) => {
                     // システムとユーザ管理権限の有無を抽出する
-                    const adminTypes = body.roles?.filter(
+                    const adminTypes = user.roles?.filter(
                         role => role.systemRole==='SYS_ADMIN' || role.systemRole==='USR_ADMIN'
                     ) || [];
                     // 抽出した管理権限からソート順序を決定する
@@ -70,7 +70,7 @@ const UserListTable = (props: Props) => {
                 sortedHeaders[0].sortType || undefined
             );
         } else{
-            return lodash.orderBy(cloneBodies, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
+            return lodash.orderBy(cloneUsers, sortedHeaders[0].key, sortedHeaders[0].sortType || undefined);
         }
     };
 
@@ -99,22 +99,22 @@ const UserListTable = (props: Props) => {
         }
     };
 
-    const fileListRow = (body:UserType) => <>
+    const createRowData = (user:UserType) => <>
         <td>
             {ImageUtil.getIconElement('icon-user')}
-            {body.name}
+            {user.name}
         </td>
         <td>
-            {body.email}
+            {user.email}
         </td>
         <td>
-            {renderProjects(body.projects || [])}
+            {renderProjects(user.projects || [])}
         </td>
         <td>
-            {AdminUtil.getUserStatus(body.state)}
+            {AdminUtil.getUserStatus(user.state)}
         </td>
         <td>
-            {renderAdminTypes(body.roles || [])}
+            {renderAdminTypes(user.roles || [])}
         </td>
     </>;
 
@@ -122,11 +122,10 @@ const UserListTable = (props: Props) => {
         <ListTableHeader headers={initialHeaders}
                          sortedHeaders={[sortedHeaders, setSortedHeaders]} />
         <ListTableBody<UserType>
-            bodies={sortBodies(bodies, sortedHeaders)}
+            key={allUsers.length}
+            allDatas={sortUsers(allUsers, sortedHeaders)}
             selectedDatas={selectedUsers}
-            enableMultiSelect={true}
-            listTableRow={fileListRow} />
+            createRowData={createRowData}
+            enableMultiSelect={true} />
     </table>;
 };
-
-export {UserListTable};
