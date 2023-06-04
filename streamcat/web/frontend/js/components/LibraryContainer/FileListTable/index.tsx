@@ -13,7 +13,8 @@ import WebUtil from 'Utils/WebUtil';
 import {ActivityType, DatumType,} from 'Model/Library';
 import { Link2 } from 'Shared/Input';
 import { ListTableHeader, SortedHeader } from 'Shared/Base/ListTableHeader';
-import {ListTableBodyDnD} from 'Shared/Base/ListTableBodyDnD';
+import { ListTableBody } from 'Shared/Base/ListTableBody';
+import { ListTableBodyDnD } from 'Shared/Base/ListTableBodyDnD';
 import { DragPreview } from 'Shared/Base/DragPreview';
 
 interface Props {
@@ -165,21 +166,50 @@ export const FileListTable = (props: Props) => {
         </td>
     </>;
 
-    return <DndProvider backend={HTML5Backend}>
-        <table className={style.fileListTable} style={{minWidth:minWidth}}>
-            <ListTableHeader headers={initialHeaders}
-                             sortedHeaders={[sortedHeaders, setSortedHeaders]} />
-            {/* ListTableBodyDnDで表示するallDatas配列の要素数が変更された時に
-                ListTableBodyDnDのkey属性を変更して、各行に紐づくdropAndDragRefが保持する状態変数を破棄させる */}
-            {/* NOTE: レンダリングを跨いで状態変数の数が異なる場合はReactからエラーが送出される
-                https://react.dev/learn/preserving-and-resetting-state */}
-            <ListTableBodyDnD<DatumType>
+    const switchListTableBody = (mode:string, inject_is_trash:boolean) => {
+        // ライブラリ画面の単体表示時のみドラッグ&ドロップを許可する
+        const enableDragAndDrop = (!inject_is_trash && mode===Constants.library.mode.list);
+
+        if(enableDragAndDrop){
+            // ListTableBodyDnDで表示するallDatas配列の要素数が変更された時に
+            // ListTableBodyDnDのkey属性を変更して、各行に紐づくdropAndDragRefが保持する状態変数を破棄させる
+            // 
+            // NOTE: レンダリングを跨いで状態変数の数が異なる場合はReactからエラーが送出される
+            // https://react.dev/learn/preserving-and-resetting-state 
+            return <ListTableBodyDnD<DatumType>
                 key={allDatas.length}
                 allDatas={sortDatas(allDatas, sortedHeaders)}
                 selectedDatas={selectedDatas}
+                enableMultiSelect={enableMultiSelect} 
                 createRowData={createRowData}
-                canDrop={(draggingDatas,targetDatum) => ['project','folder'].includes(targetDatum.type)}
-                enableMultiSelect={enableMultiSelect} />
+                // 全てのドラッグ対象は移動処理が可能であること
+                canDrag={datas => datas.every(datum => datum.allowlist.move)}
+                // 全てのドラッグ対象が移動可能(canDragで担保される)、
+                // かつ移動元フォルダ(ドラッグ対象が移動可能ならば移動元フォルダの更新権限はあるはず)と
+                // 移動先フォルダの更新権限がある場合に移動できる
+                canDrop={(draggingDatas,targetDatum) =>
+                    ['project','folder','trash'].includes(targetDatum.type) && targetDatum.allowlist.update
+                }
+                // ドロップ時の処理
+                doDrop={(droppedDatas,datum) => {console.log(droppedDatas.map(datum=>datum.label).join(','), ' => ', datum.label)}}
+            />;
+        }else{
+            return <ListTableBody<DatumType>
+                key={allDatas.length}
+                allDatas={sortDatas(allDatas, sortedHeaders)}
+                selectedDatas={selectedDatas}
+                enableMultiSelect={enableMultiSelect} 
+                createRowData={createRowData} />;
+        }
+    };
+
+    return <DndProvider backend={HTML5Backend}>
+        <table className={style.fileListTable} style={{minWidth:minWidth}}>
+            {/* ListTableのヘッダを表示する */}
+            <ListTableHeader headers={initialHeaders}
+                             sortedHeaders={[sortedHeaders, setSortedHeaders]} />
+            {/* ListTableのボディを表示する */}
+            {switchListTableBody(mode, inject_is_trash)}
         </table>
         {/* ドラッグ中のプレビュー */}
         <DragPreview<DatumType>>

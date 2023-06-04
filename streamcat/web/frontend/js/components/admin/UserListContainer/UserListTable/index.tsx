@@ -125,7 +125,7 @@ export const UserListTable = (props: Props) => {
             key={allUsers.length}
             allDatas={sortUsers(allUsers, sortedHeaders)}
             selectedDatas={selectedUsers}
-            createRowData={createRowData}
-            enableMultiSelect={true} />
+            enableMultiSelect={true}
+            createRowData={createRowData} />
     </table>;
 };

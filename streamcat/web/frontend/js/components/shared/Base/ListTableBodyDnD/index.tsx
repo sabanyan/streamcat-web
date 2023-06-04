@@ -8,31 +8,37 @@ import style from '../ListTableBodyBase/style.scss';
 type Props<TDatumType> = {
     allDatas: TDatumType[];
     selectedDatas: [TDatumType[], (value:React.SetStateAction<TDatumType[]>)=>void];
-    createRowData: (datum:TDatumType) => React.JSX.Element;
-    canDrop?: (draggingDatas:TDatumType[], targetDatum:TDatumType) => boolean;
     enableMultiSelect: boolean;
+    createRowData: (datum:TDatumType) => React.JSX.Element;
+    canDrag: (datas:TDatumType[]) => boolean;
+    canDrop?: (draggingDatas:TDatumType[], targetDatum:TDatumType) => boolean;
+    doDrop? : (droppedDatas:TDatumType[], targetDatum:TDatumType) => void;
 };
 
 export const ListTableBodyDnD = <TDatumType extends {uuid:string},>(props: Props<TDatumType>) => {
-    const { allDatas, createRowData, enableMultiSelect } = props;
+    const { allDatas, enableMultiSelect, createRowData} = props;
 
     // 選択中の行を保持する
     const [selectedDatas,] = props.selectedDatas;
 
     const useDragAndDrop = (datum:TDatumType) => {
+        // ドラッグ対象のDatumを返す
+        const dragDatas = (selectedDatas:TDatumType[]) => {
+            if(selectedDatas.some(selectDatum => selectDatum.uuid===datum.uuid)){
+                // 複数の行が選択されている場合は、それら選択行をドラッグする
+                return selectedDatas;
+            }else{
+                return [datum];
+            }
+        };
+
         // ドラッグ
         // 選択行またはテーブルの並び順が変更された場合はdragRef等を再生成する必要がある
         const [{isDragging}, dragRef, dragPreview] = useDrag(() => ({
             type: 'Datum',
-            item: () => {
-                if(selectedDatas.some(selectDatum => selectDatum.uuid===datum.uuid)){
-                    // 複数の行が選択されている場合は、それら選択行をドラッグする
-                    return selectedDatas;
-                }else{
-                    return [datum];
-                }
-            },
-            // canDrag: () => false,
+            item: () => dragDatas(selectedDatas),
+            // NOTE: canDragがコールバックする関数ではmonitor.getItem()は常にnullを返すようだ
+            canDrag: monitor => !!props.canDrag && props.canDrag(dragDatas(selectedDatas)),
             // 複数の行がドラッグされている場合はそれら全てについてtrueを返す
             isDragging: monitor => monitor.getItem().some(item => item.uuid===datum.uuid),
             collect: monitor => ({
@@ -43,10 +49,8 @@ export const ListTableBodyDnD = <TDatumType extends {uuid:string},>(props: Props
         // ドロップ
         const [{canDrop}, dropRef] = useDrop<TDatumType[], any, {canDrop:boolean}>(() => ({
             accept: 'Datum',
-            canDrop: (item, monitor) => !!props.canDrop && props.canDrop(selectedDatas, datum),
-            drop: (item, monitor) => {
-                console.log(item, datum.uuid)
-            },
+            canDrop: (items, monitor) => !!props.canDrop && props.canDrop(items, datum),
+            drop: (items, monitor) => !!props.doDrop && props.doDrop(items, datum),
             collect: (monitor) => ({
                 canDrop: !!monitor.isOver() && !!monitor.canDrop()
             }),
