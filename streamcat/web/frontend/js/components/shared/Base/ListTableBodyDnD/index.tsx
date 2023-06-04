@@ -32,7 +32,10 @@ export const ListTableBodyDnD = <TDatumType extends {uuid:string},>(props: Props
                     return [datum];
                 }
             },
-            collect: (monitor) => ({
+            // canDrag: () => false,
+            // 複数の行がドラッグされている場合はそれら全てについてtrueを返す
+            isDragging: monitor => monitor.getItem().some(item => item.uuid===datum.uuid),
+            collect: monitor => ({
                 isDragging: monitor.isDragging()
             })
         }), [selectedDatas, allDatas]);

@@ -5,6 +5,7 @@ import * as style from './style.scss';
 import * as lodash from 'lodash';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { Typography } from '@mui/material';
 import Constants from 'Constants/index';
 import StringUtil from 'Utils/StringUtil';
 import HttpUtil from 'Utils/HttpUtil';
@@ -13,7 +14,7 @@ import {ActivityType, DatumType,} from 'Model/Library';
 import { Link2 } from 'Shared/Input';
 import { ListTableHeader, SortedHeader } from 'Shared/Base/ListTableHeader';
 import {ListTableBodyDnD} from 'Shared/Base/ListTableBodyDnD';
-import { SampleDragLayer } from 'Shared/Base/SampleDragLayer';
+import { DragPreview } from 'Shared/Base/DragPreview';
 
 interface Props {
     mode: string;
@@ -181,6 +182,24 @@ export const FileListTable = (props: Props) => {
                 enableMultiSelect={enableMultiSelect} />
         </table>
         {/* ドラッグ中のプレビュー */}
-        <SampleDragLayer />
+        <DragPreview<DatumType>>
+            {datas => {
+                // ドラッグ中のDatumのラベルを一覧表示する
+                const labels = datas.map((datum, index) =>
+                    <Typography key={index}
+                                variant='body1'
+                                color='textPrimary'
+                                component='p'
+                                sx={{lineHeight: 2.4,
+                                    paddingLeft: 1,
+                                    paddingBottom: 0,
+                                    verticalAlign: 'bottom'}}>
+                        {getIconElement(datum.type)}
+                        {datum.label}
+                    </Typography>
+                );
+                return <>{labels}</>;
+            }}
+        </DragPreview>
     </DndProvider>;
 };
