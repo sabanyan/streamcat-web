@@ -473,7 +473,7 @@ const FlowEditor = () => {
                     messageStatus: "warning"
                 }));
             } else {
-                //　フロー保存
+                // フロー保存
                 return await targetFlow.update(flow.flow, lock.uuid).then(flow => {
                     updateLastSavedFlow();
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
@@ -500,7 +500,7 @@ const FlowEditor = () => {
         targetFlow.flow.nodes = nodes;
 
         return new Promise(async (reslove, reject) => {
-            //　フロー保存
+            // フロー保存
             anotherFlow.update(flow.flow, newLockUUID).then(flow => {
                 updateLastSavedFlow();
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
@@ -646,8 +646,8 @@ const FlowEditor = () => {
         let edges: any = [];
         if (Array.isArray(graph.edges)) {
             graph.edges.forEach((edge, index) => {
-                const v_node = GraphUtil.getNode(nodes, edge.v);　// 入力元ノード
-                const w_node = GraphUtil.getNode(nodes, edge.w);　// 出力元ノード
+                const v_node = GraphUtil.getNode(nodes, edge.v); // 入力元ノード
+                const w_node = GraphUtil.getNode(nodes, edge.w); // 出力元ノード
 
                 if (v_node && w_node) {
                     const vx = v_node.position.x +
@@ -659,7 +659,7 @@ const FlowEditor = () => {
                     const wy = w_node.position.y +
                         Constants.default.operator.height / 2;
                     let outPortLabel; // 入力元ノードからの出力ポートラベル
-                    let inPortLabel;　// 出力元ノードからの入力ポートラベル
+                    let inPortLabel;  // 出力元ノードからの入力ポートラベル
                     //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
                     if (w_node instanceof DataFrameStepModel) {
                         outPortLabel = JSON.parse(edge.name).port_name;
@@ -699,7 +699,7 @@ const FlowEditor = () => {
     }
 
     // 読み取り専用モードの場合は disabled にする
-    // ☁️保存　☁️データソース追加　💬メモ　↩︎もとに戻す　↪︎繰り返す の制御
+    // ☁️保存 ☁️データソース追加 💬メモ ↩︎もとに戻す ↪︎繰り返す の制御
     const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
         editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || networkStatus === NetworkStatusValue.Offline || readOnly
 
