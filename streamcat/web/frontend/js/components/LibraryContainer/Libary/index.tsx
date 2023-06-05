@@ -18,6 +18,7 @@ import { DatumType,
         RemoteFolderType,
         FlowType,
         FrameType,
+        DocumentType,
         ActivityType,
         ScheduleType,
         TrashType } from 'Model/Library';
@@ -35,7 +36,8 @@ import { SystemFolderDrawer } from 'Shared/Drawer/SystemFolderDrawer';
 import { TrashFolderDrawer } from 'Shared/Drawer/TrashFolderDrawer';
 import { FlowDrawer } from 'Shared/Drawer/FlowDrawer';
 import { FrameDrawer } from 'Shared/Drawer/FrameDrawer';
-import { TrashDrawer } from 'Shared/Drawer/TrashDrawer'
+import { DocumentDrawer } from 'Shared/Drawer/DocumentDrawer';
+import { TrashDrawer } from 'Shared/Drawer/TrashDrawer';
 import { ActivityDrawer } from 'Shared/Drawer/ActivityDrawer';
 import { ScheduleDrawer } from 'Shared/Drawer/ScheduleDrawer';
 import { MultiDataDrawer } from 'Shared/Drawer/MultiDataDrawer';
@@ -346,6 +348,10 @@ export const Library = () => {
                         parent={parentFolder}
                         frame={selectedDatas[0] as FrameType}
                         onSuccess={refreshLibrary} />,
+        document:   <DocumentDrawer
+                        parent={parentFolder}
+                        document={selectedDatas[0] as DocumentType}
+                        onSuccess={data=>refreshLibrary(...data)} />,
         schedule:   <ScheduleDrawer
                         createMode={false}
                         parent={parentFolder}
