@@ -13,8 +13,8 @@ type ToolBarProps = {
     notifyLoading: (title: string, message: string) => string;
     notifiWarning: (title: string, message: string) => string;
     notifyError: (title: string, message: string) => string;
-    notifyComplete: Function;
-    dismissNotify: Function;
+    notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
+    dismissNotify: (id:string) => void;
     addStep: Function;
     addHistory: Function;
     sortFlow: Function;
