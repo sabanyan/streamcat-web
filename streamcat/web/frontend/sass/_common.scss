@@ -147,6 +147,14 @@ $danger: #DE1117 !default;
   }
 }
 
+@mixin list-candrop-color() {
+  background-color: #d1e9ff;
+  @media (prefers-color-scheme: dark) {
+    color:#fff;
+    background-color: #506a81;
+  }
+}
+
 @mixin button-background-color() {
   background-color: #F5F7F8;
   @media (prefers-color-scheme: dark) {
