@@ -16,16 +16,21 @@ import { ListTableHeader, SortedHeader } from 'Shared/Base/ListTableHeader';
 import { ListTableBody } from 'Shared/Base/ListTableBody';
 import { ListTableBodyDnD } from 'Shared/Base/ListTableBodyDnD';
 import { DragPreview } from 'Shared/Base/DragPreview';
+import { useMoveData } from 'Shared/Button/MoveButton/hooks';
 
 interface Props {
     mode: string;
     allDatas: DatumType[];
     selectedDatas: [DatumType[], (value:React.SetStateAction<DatumType[]>)=>void];
     minWidth?: number | string;
+    onSuccess:(movedDatum:DatumType) => void;
 };
 
 export const FileListTable = (props: Props) => {
-    const {allDatas, minWidth, mode, selectedDatas} = props;
+    const {allDatas, minWidth, mode, selectedDatas, onSuccess} = props;
+
+    // 移動処理の関数を取得する
+    const moveData = useMoveData();
 
     const initialHeaders = [
         {label: '名前', key: 'label'},
@@ -48,7 +53,7 @@ export const FileListTable = (props: Props) => {
     };
 
     // ライブラリ画面の単体表示時のみ複数選択を許可
-    const enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
+    const enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list);
 
     const getIconElement = (type: string) => {
         // DatumのTypeとアイコンファイル名の対応テーブル
@@ -191,7 +196,10 @@ export const FileListTable = (props: Props) => {
                     ['project','folder','trash'].includes(targetDatum.type) && targetDatum.allowlist.update
                 }
                 // ドロップ時の処理
-                doDrop={(droppedDatas,datum) => {console.log(droppedDatas.map(datum=>datum.label).join(','), ' => ', datum.label)}}
+                doDrop={(droppedDatas,datum) =>
+                    // ドラッグしたDatumをドロップ先フォルダに移動する
+                    moveData(droppedDatas, datum.uuid, (data)=>onSuccess(data[0]))
+                }
             />;
         }else{
             return <ListTableBody<DatumType>

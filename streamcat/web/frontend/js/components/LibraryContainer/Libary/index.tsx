@@ -226,10 +226,11 @@ export const Library = () => {
                     <Flex flexDirection={'row'}>
                         {/* DatumのListTable */}
                         <FileListTable
-                            allDatas={parentFolder.children}
                             mode={mode}
+                            allDatas={parentFolder.children}
+                            selectedDatas={[selectedDatas, setSelectedDatas]}
                             minWidth={800}
-                            selectedDatas={[selectedDatas, setSelectedDatas]} />
+                            onSuccess={refreshLibrary} />
                     </Flex>
                     <Spacer height={80} />
                 </Flex>
