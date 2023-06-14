@@ -4,6 +4,7 @@ import { Drawer2, FixedField2, Select2, TextField2 } from "Shared/Input";
 import { MoveButton } from "Shared/Button/MoveButton";
 import { DeleteButton } from "Shared/Button/DeleteButton";
 import { EditBox } from "Shared/Base/EditBox";
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DownloadCsvButton } from "Shared/Button/DownloadCsvButton";
 import StringUtil from "Utils/StringUtil";
 import Constants from "Constants/index";
@@ -88,6 +89,9 @@ export const FrameDrawer = (props:Props) => {
                             parent={parent} 
                             targets={[frame]}
                             onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[frame]}
+                                 onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
                 <DeleteButton key='del'
                               targets={[frame]}
                               onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,

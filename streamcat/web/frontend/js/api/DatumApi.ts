@@ -212,6 +212,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/remote-folders`, {source:d.uuid});
         d.delete = () =>
             del<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`);
         d.update = (label, protocol, hostname, domain, directory, userId, password) =>
@@ -229,6 +231,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/databases`, {source:d.uuid});
         d.delete = () =>
             del<DatabaseType>(`/api/v0/databases/${d.uuid}`);
         d.update = (label, dbms, hostname, port, database, userId, password) =>
@@ -262,6 +266,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/schedules`, {source:d.uuid});
         d.delete = () =>
             del<ScheduleType>(`/api/v0/schedules/${d.uuid}`);
         d.update = (label, runnableUUID, args, inputs, trigger) =>
@@ -277,6 +283,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<FrameType>(`/api/v0/frames/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<FrameType>(`/api/v0/frames/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/frames`, {source:d.uuid});
         d.delete = () =>
             del<FrameType>(`/api/v0/frames/${d.uuid}`);
         d.update = (encoding, newline) =>
@@ -289,6 +297,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<DocumentType>(`/api/v0/documents/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<DocumentType>(`/api/v0/documents/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/documents`, {source:d.uuid});
         d.delete = () =>
             del<DocumentType>(`/api/v0/documents/${d.uuid}`);
     }else if(datum.type === 'activity') {

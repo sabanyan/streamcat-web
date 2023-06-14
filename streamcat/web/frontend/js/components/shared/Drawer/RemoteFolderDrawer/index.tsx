@@ -3,6 +3,7 @@ import { FolderType, RemoteFolderType } from "Model/Library";
 import { Drawer2, Select2, TextField2 } from "Shared/Input";
 import { MoveButton } from "Shared/Button/MoveButton";
 import { DeleteButton } from "Shared/Button/DeleteButton";
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { CheckRemoteFolderButton } from "Shared/Button/CheckRemoteFolderButton";
 import { EditBox } from "Shared/Base/EditBox";
 import { CreatorField } from "Shared/Input/CreatorField";
@@ -85,6 +86,9 @@ export const RemoteFolderDrawer = (props:Props) => {
                             parent={parent} 
                             targets={[remoteFolder]}
                             onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[remoteFolder]}
+                                 onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,
                 <DeleteButton key='del'
                               targets={[remoteFolder]}
                               onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,

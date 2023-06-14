@@ -1,13 +1,13 @@
-import React from "react"
-import { FolderType, FlowType } from "Model/Library";
-import { Drawer2, TextField2 } from "Shared/Input";
-import { MoveButton } from "Shared/Button/MoveButton";
-import { DeleteButton } from "Shared/Button/DeleteButton";
-import { EditBox } from "Shared/Base/EditBox";
-import { EditLockCheckbox } from "Shared/Input/EditLockCheckbox";
-import { DuplicateButton } from "Shared/Button/DuplicateButton";
-import { DownloadFlowButton } from "Shared/Button/DownloadFlowButton";
-import { CreatorField } from "Shared/Input/CreatorField";
+import React from 'react'
+import { FolderType, FlowType } from 'Model/Library';
+import { Drawer2, TextField2 } from 'Shared/Input';
+import { MoveButton } from 'Shared/Button/MoveButton';
+import { DeleteButton } from 'Shared/Button/DeleteButton';
+import { EditBox } from 'Shared/Base/EditBox';
+import { EditLockCheckbox } from 'Shared/Input/EditLockCheckbox';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
+import { CreatorField } from 'Shared/Input/CreatorField';
 import { Api } from 'Api';
 
 type Props = {
@@ -57,12 +57,12 @@ export const FlowDrawer = (props:Props) => {
                             parent={parent} 
                             targets={[flow]}
                             onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
-                <DeleteButton key='del'
-                              targets={[flow]}
-                              onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
                 <DuplicateButton key='duplicate'
                                  targets={[flow]}
                                  onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
+                <DeleteButton key='del'
+                              targets={[flow]}
+                              onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
                 <DownloadFlowButton key='download'
                                     targets={[flow]} />,
                 <EditLockCheckbox key='editLock'

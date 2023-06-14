@@ -4,6 +4,7 @@ import StringUtil from "Utils/StringUtil";
 import { FolderType, DocumentType } from "Model/Library";
 import { Drawer2, FixedField2 } from "Shared/Input";
 import { MoveButton } from "Shared/Button/MoveButton";
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DeleteButton } from "Shared/Button/DeleteButton";
 import { CreatorField } from "Shared/Input/CreatorField";
 
@@ -25,6 +26,9 @@ export const DocumentDrawer = (props:Props) => {
                         parent={parent}
                         targets={[document]}
                         onSuccess={data => onSuccess(data as DocumentType[])} />
+            <DuplicateButton key='duplicate'
+                             targets={[document]}
+                             onSuccess={(data)=>onSuccess(data as DocumentType[])} />
             <DeleteButton key='del'
                           targets={[document]}
                           onSuccess={data => onSuccess(data as DocumentType[])} />

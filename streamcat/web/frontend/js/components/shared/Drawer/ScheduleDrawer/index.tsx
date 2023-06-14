@@ -9,6 +9,7 @@ import { Value } from 'Shared/Input/FlowLinkField';
 import { EditBox } from 'Shared/Base/EditBox';
 import { FlowLinkField } from 'Shared/Input/FlowLinkField';
 import { MoveButton } from 'Shared/Button/MoveButton';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DeleteButton } from 'Shared/Button/DeleteButton';
 import { CreatorField } from 'Shared/Input/CreatorField';
 import { MultiSelect2 } from "Shared/Input";
@@ -396,6 +397,9 @@ export const ScheduleDrawer = (props:Props) => {
                             parent={parent} 
                             targets={[schedule]}
                             onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[schedule]}
+                                 onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />,
                 <DeleteButton key='del'
                               targets={[schedule]}
                               onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />

@@ -5,6 +5,7 @@ import { MoveButton } from 'Shared/Button/MoveButton';
 import { DeleteButton } from 'Shared/Button/DeleteButton';
 import { EditBox } from 'Shared/Base/EditBox';
 import { CreatorField } from 'Shared/Input/CreatorField';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { CheckDatabaseButton } from 'Components/shared/Button/CheckDatabaseButton';
 
 type Props = {
@@ -85,6 +86,9 @@ export const DatabaseDrawer = (props:Props) => {
                             parent={parent} 
                             targets={[datum]}
                             onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[datum]}
+                                 onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />,
                 <DeleteButton key='del'
                               targets={[datum]}
                               onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />
