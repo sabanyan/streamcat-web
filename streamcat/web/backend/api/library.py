@@ -16,7 +16,8 @@ from .utils import (
     login_required_api,
     update_project_info,
     update_projects_info,
-    update_projects_info2
+    update_projects_info2,
+    duplicate_datum
 )
 
 mod = Blueprint('library', __name__)
@@ -264,17 +265,22 @@ def make_new_remote_folder():
     """
     新しいリモートフォルダを作成する
     """
-    remote_folder_conn = RemoteFolderConn(request.json)
+    req = RequestJson(request.json)
 
-    # 接続情報に漏れがあれば例外を送出する
-    remote_folder_conn.valid_or_raise()
+    if req.has('source'):
+        # リモートフォルダを複製する
+        return duplicate_datum(req['source'])
+    else:
+        remote_folder_conn = RemoteFolderConn(request.json)
+        # 接続情報に漏れがあれば例外を送出する
+        remote_folder_conn.valid_or_raise()
 
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_folder = parent.create_remote_folder(request.json['label'],
-                                             remote_folder_conn)
-    ret = new_folder.to_json()
-    new_folder.save()
-    return ret
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_folder = parent.create_remote_folder(req['label'],
+                                                remote_folder_conn)
+        ret = new_folder.to_json()
+        new_folder.save()
+        return ret
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
@@ -339,17 +345,22 @@ def make_new_database():
     """
     新しいデータベースを作成する
     """
-    database_conn = DatabaseConn(request.json)
+    req = RequestJson(request.json)
 
-    # 接続情報に漏れがあれば例外を送出する
-    database_conn.valid_or_raise()
+    if req.has('source'):
+        # データベースを複製する
+        return duplicate_datum(req['source'])
+    else:
+        database_conn = DatabaseConn(request.json)
+        # 接続情報に漏れがあれば例外を送出する
+        database_conn.valid_or_raise()
 
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_database= parent.create_database(request.json['label'],
-                                         database_conn)
-    ret = new_database.to_json()
-    new_database.save()
-    return ret
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_database= parent.create_database(req['label'],
+                                            database_conn)
+        ret = new_database.to_json()
+        new_database.save()
+        return ret
 
 @mod.route('/databases/<database_uuid>', methods=['PUT'])
 @login_required_api
@@ -404,19 +415,25 @@ def create_frame():
     """
     新しいフレームを作成する
     """
-    if request.files.get('file') is None:
-        raise Exception('No frame file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-    if 'label' not in request.form:
-        raise Exception('No label is designated.')
+    if request.headers.get('Content-Type') == 'application/json':
+        req = RequestJson(request.json)
+        if not req.has('source'):
+            raise Exception('No source is designated.')
+        # フレームを複製する
+        return duplicate_datum(req['source'])
+    else:
+        req = RequestJson(request.form)
+        if request.files.get('file') is None:
+            raise Exception('No frame file found.')
+        if not req.has_all('parent', 'label'):
+            raise Exception('No parent or label are designated.')
 
-    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
-    new_frame = parent.create_frame(request.form.get('label'),
-                                    request.files.get('file').stream)
-    # FrameをDBに格納する
-    new_frame.save()
-    return new_frame
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_frame = parent.create_frame(req['label'],
+                                        request.files.get('file').stream)
+        # FrameをDBに格納する
+        new_frame.save()
+        return new_frame
 
 @mod.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
@@ -498,26 +515,32 @@ def make_new_document():
     ファイルストリームからファイルタイプを判定して
     新しいフレームまたはドキュメントを作成する
     """
-    if request.files.get('file') is None:
-        raise Exception('No file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-    if 'label' not in request.form:
-        raise Exception('No label is designated.')
+    if request.headers.get('Content-Type') == 'application/json':
+        req = RequestJson(request.json)
+        if not req.has('source'):
+            raise Exception('No source is designated.')
+        # ファイルを複製する
+        return duplicate_datum(req['source'])
+    else:
+        req = RequestJson(request.form)
+        if request.files.get('file') is None:
+            raise Exception('No frame file found.')
+        if not req.has_all('parent', 'label'):
+            raise Exception('No parent or label are designated.')
 
-    # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
-    content_type = request.files['file'].content_type
-    maybe_csv = content_type == 'text/csv'
+        # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
+        content_type = request.files['file'].content_type
+        maybe_csv = content_type == 'text/csv'
 
-    # 格納先フォルダを取得する
-    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
-    # ファイルを作成する
-    new_file = parent.create_file(request.form.get('label'),
-                                  request.files.get('file').stream,
-                                  maybe_csv=maybe_csv)
-    # ファイルをDBに格納する
-    new_file.save()
-    return new_file
+        # 格納先フォルダを取得する
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        # ファイルを作成する
+        new_file = parent.create_file(req['label'],
+                                    request.files.get('file').stream,
+                                    maybe_csv=maybe_csv)
+        # ファイルをDBに格納する
+        new_file.save()
+        return new_file
 
 @mod.route('/documents/<document_uuid>', methods=['PUT'])
 @login_required_api

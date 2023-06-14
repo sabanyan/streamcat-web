@@ -201,3 +201,48 @@ class DocumentTest(ApiTestCaseBase):
 
         # 一時ファイルを削除する
         tmp_file.unlink()
+
+    def test_duplicate_document(self):
+        """
+        ドキュメントを複製できること
+        """
+        # プロジェクトを作成する(POST /projects)
+        result = self.post_uri('/api/v0/projects', {'label' : '新しいプロジェクト', 'parent': self.root.uuid}, self.USER3)
+        project_uuid = result['uuid']
+
+        # アップロード用に一時ファイルを作成する
+        import io
+        f = (io.BytesIO(b"abcdefghijk"), 'dummy.doc')
+
+        # ドキュメントを作成する(POST /documents)
+        result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
+        document_uuid = result['uuid']
+
+        # ドキュメントを複製する(POST /documents)
+        result = self.post_uri(f'/api/v0/documents', {'source':document_uuid}, self.USER1)
+
+        # APIの返り値を検証する
+        self.assertNotEqual(result['uuid'], document_uuid)
+        self.assertEqual(result['type'], 'document')
+        self.assertEqual(result['label'], '新しいドキュメント! のコピー')
+        self.assertIsNone(result['folderPath'])
+        self.assertEqual(result['folderUuid'], project_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['createdAt'])
+        self.assertEqual(result['fileSize'], 11)
+        self.assertTrue(result['allowlist']['read'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertTrue(result['allowlist']['download'])
+        self.assertFalse(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['move'])
+        self.assertFalse(result['allowlist']['lock'])
+        self.assertFalse(result['allowlist']['findMember'])
+        self.assertFalse(result['allowlist']['updateMember'])
+
+        # ドキュメントをほかす(DELETE /projects)
+        result = self.delete_uri(f'/api/v0/documents/{result["uuid"]}', self.USER3)
+        result = self.delete_uri(f'/api/v0/documents/{document_uuid}', self.USER3)

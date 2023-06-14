@@ -292,3 +292,60 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertIsNone(result['prevFolderPath'])
         self.assertEqual(result['creator'], expected_result['creator'])
         self.assertNotEqual(result['createdAt'], None)
+
+    def test_duplicate_database(self):
+        """
+        データベースを複製できること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "データベース?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "streamcat",
+            'userId'  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER1)
+        database_uuid = result['uuid']
+
+        # Databaseを複製する(POST /databases)
+        result = self.post_uri(f'/api/v0/databases', {'source':database_uuid}, self.USER1)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "label"    : "データベース? のコピー",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "streamcat",
+            'userId'  : "postgres",
+            "password" : "",
+            'type'     : 'database',
+            'creator'  : 'ユーザー管理者'
+        }
+
+        # POST /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertNotEqual(result['uuid'], database_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['dbms'], expected_result['dbms'])
+        self.assertEqual(result['hostname'], expected_result['hostname'])
+        self.assertEqual(result['port'], expected_result['port'])
+        self.assertEqual(result['database'], expected_result['database'])
+        self.assertEqual(result['userId'], expected_result['userId'])
+        self.assertEqual(result['password'], expected_result['password'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['folderPath'], '/ライブラリ')
+        self.assertEqual(result['folderUuid'], root.uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
+
+        # Databaseを削除する
+        result = self.delete_uri(f'/api/v0/databases/{result["uuid"]}', self.USER1)
+        result = self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER1)

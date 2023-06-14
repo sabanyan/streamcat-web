@@ -10,7 +10,8 @@ from .utils import (
     RequestJson,
     Constraints,
     api_base,
-    login_required_api
+    login_required_api,
+    duplicate_datum
 )
 
 mod = Blueprint('flows', __name__)
@@ -393,13 +394,8 @@ def new_flow():
     req = RequestJson(request.json)
 
     if req.has('source'):
-        source_flow = g.factory.data.find_by_uuid(req['source'])
-        source_label = source_flow.label + ' のコピー'
-        # 同じフォルダ内の他データと重複しないラベル名を取得する
-        parent = source_flow.find_parent()
-        new_label = parent.make_unique_label(source_label)
         # フローを複製する
-        return source_flow.duplicate(new_label)
+        return duplicate_datum(req['source'])
     elif req.has_all('parent', 'label', 'flow'):
         # フローを作成する
         from streamcat.store import FlowData
@@ -749,16 +745,21 @@ def make_new_schedule():
     スケジュールを作成する
     """
     req = RequestJson(request.json)
-    parent = g.factory.data.find_by_uuid(req['parent'])
-    args = req.get('args') or {}
-    inputs = req.get('inputs') or {}
-    schedule = parent.create_schedule(req['label'],
-                                      req['runnable'],
-                                      args=args,
-                                      inputs=inputs,
-                                      trigger=req['trigger'])
-    schedule.save()
-    return schedule.reload()
+
+    if req.has('source'):
+        # スケジュールを複製する
+        return duplicate_datum(req['source'])
+    else:
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        args = req.get('args') or {}
+        inputs = req.get('inputs') or {}
+        schedule = parent.create_schedule(req['label'],
+                                        req['runnable'],
+                                        args=args,
+                                        inputs=inputs,
+                                        trigger=req['trigger'])
+        schedule.save()
+        return schedule.reload()
 
 @mod.route('/schedules/<schedule_uuid>', methods=['PUT'])
 @login_required_api
