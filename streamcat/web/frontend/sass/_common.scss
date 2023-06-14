@@ -165,6 +165,7 @@ $danger: #DE1117 !default;
 @mixin form-background-color() {
   background-color: #ffffff;
   @media (prefers-color-scheme: dark) {
+    color:#fff;
     background-color: #000000;
   }
 }
