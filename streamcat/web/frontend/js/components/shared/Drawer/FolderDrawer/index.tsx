@@ -1,11 +1,12 @@
-import React from "react"
-import { FolderType } from "Model/Library";
-import { Drawer2, TextField2 } from "Shared/Input";
-import { MoveButton } from "Shared/Button/MoveButton";
-import { DeleteButton } from "Shared/Button/DeleteButton";
-import { EditBox } from "Shared/Base/EditBox";
-import { DownloadFlowButton } from "Shared/Button/DownloadFlowButton";
-import { CreatorField } from "Shared/Input/CreatorField";
+import React from 'react'
+import { FolderType } from 'Model/Library';
+import { Drawer2, TextField2 } from 'Shared/Input';
+import { MoveButton } from 'Shared/Button/MoveButton';
+import { DeleteButton } from 'Shared/Button/DeleteButton';
+import { EditBox } from 'Shared/Base/EditBox';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
+import { CreatorField } from 'Shared/Input/CreatorField';
 
 type Props = {
     createMode: boolean;
@@ -49,6 +50,9 @@ export const FolderDrawer = (props:Props) => {
                             parent={parent} 
                             targets={[folder]}
                             onSuccess={(data)=>onSuccess(data[0] as FolderType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[folder]}
+                                 onSuccess={(data)=>onSuccess(data[0] as FolderType)} />,
                 <DeleteButton key='del'
                               targets={[folder]}
                               onSuccess={(data)=>onSuccess(data[0] as FolderType)} />,

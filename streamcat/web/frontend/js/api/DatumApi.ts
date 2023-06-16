@@ -196,6 +196,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
                 put<FolderType>(`/api/v0/folders/${d.uuid}`, {parent:parent});
             d.rename = (label) => 
                 put<FolderType>(`/api/v0/folders/${d.uuid}`, {label:label});
+            d.duplicate = () =>
+                post(`/api/v0/folders`, {source:d.uuid});
             d.delete = () =>
                 del<FolderType>(`/api/v0/folders/${d.uuid}`);
         }
