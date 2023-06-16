@@ -175,10 +175,16 @@ def make_new_folder():
     """
     新しいフォルダを作成する
     """
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_folder = parent.create_folder(request.json['label'])
-    new_folder.save()
-    return new_folder
+    req = RequestJson(request.json)
+
+    if req.has('source'):
+        # フォルダを複製する
+        return duplicate_datum(req['source'])
+    else:
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_folder = parent.create_folder(req['label'])
+        new_folder.save()
+        return new_folder
 
 @mod.route('/folders/<folder_uuid>', methods=['PUT'])
 @login_required_api

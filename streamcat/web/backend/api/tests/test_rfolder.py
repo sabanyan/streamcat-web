@@ -361,7 +361,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
             "type"     : "rfolder"
         }
 
-        # PUT /remote-folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        # POST /remote-folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
         self.assertNotEqual(result['uuid'], folder_uuid)
         self.assertEqual(result['label'], expected_result['label'])
         self.assertEqual(result['protocol'], expected_result['protocol'])
