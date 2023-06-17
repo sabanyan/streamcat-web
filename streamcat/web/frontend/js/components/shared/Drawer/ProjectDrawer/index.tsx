@@ -1,11 +1,12 @@
-import React from "react"
-import { DatumType, FolderType, Member, ProjectType } from "Model/Library";
-import { Drawer2, TextField2 } from "Shared/Input";
-import { DeleteButton } from "Shared/Button/DeleteButton";
-import { EditBox } from "Shared/Base/EditBox";
-import { DownloadFlowButton } from "Shared/Button/DownloadFlowButton";
-import { MembersSelect } from "Shared/Input/MembersSelect";
-import { CreatorField } from "Shared/Input/CreatorField";
+import React from 'react'
+import { DatumType, FolderType, Member, ProjectType } from 'Model/Library';
+import { Drawer2, TextField2 } from 'Shared/Input';
+import { DeleteButton } from 'Shared/Button/DeleteButton';
+import { EditBox } from 'Shared/Base/EditBox';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
+import { MembersSelect } from 'Shared/Input/MembersSelect';
+import { CreatorField } from 'Shared/Input/CreatorField';
 
 type Props = {
     createMode: boolean;
@@ -96,6 +97,9 @@ export const ProjectDrawer = (props:Props) => {
                 <DeleteButton key='del'
                               targets={[project]}
                               onSuccess={(data)=>onSuccess(data[0] as ProjectType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[project]}
+                                 onSuccess={(data)=>onSuccess(data[0] as ProjectType)} />,
                 <DownloadFlowButton key='download'
                                     targets={[project]} />
             ]: [],
