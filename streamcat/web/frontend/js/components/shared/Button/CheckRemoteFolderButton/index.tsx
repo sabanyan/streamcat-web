@@ -3,7 +3,7 @@ import { useStreamCatNotifications } from 'Shared/Notification';
 import { Api } from 'Api';
 import { ConnectivityType } from 'Model/Navigation/NavigationModel';
 import { Value } from 'Shared/Input/TextField2';
-import { Button2 } from 'Shared/Input';
+import { AwaitButton } from 'Shared/Input';
 
 type Props = {
     readOnly?: boolean;
@@ -34,15 +34,11 @@ export const CheckRemoteFolderButton = (props:Props) => {
     // 通知ダイアログ
     const {notifyError} = useStreamCatNotifications();
 
-    // API応答待ち状態
-    const [isLoading, setIsLoading] = React.useState(false);
     // 接続確認の結果
     const [connectivity, setConnectivity] = React.useState(false);
 
     // RemoteFolderの接続を確認する
     const checkConnection = () => {
-        // ボタン押下を禁止する
-        setIsLoading(true);
         return Api.checkRemoteFolderConnection(
             protocol.value as 'smb',
             hostname.value,
@@ -57,9 +53,6 @@ export const CheckRemoteFolderButton = (props:Props) => {
         }).catch((e) => {
             setConnectivity(false);
             notifyError(`接続確認エラー`, e.message);
-        }).finally(() =>{
-            // ボタン押下禁止を解除する
-            setIsLoading(false);
         });
     };
 
@@ -77,6 +70,6 @@ export const CheckRemoteFolderButton = (props:Props) => {
         forceUnchecked? '':
         connectivity? '✔': '❌';
 
-    return <Button2 disabled={disabled || readOnly || isLoading}
-                    onClick={() => checkConnection()}>{statusEmoji + ' 接続確認'}</Button2>
+    return <AwaitButton disabled={disabled || readOnly}
+                        onClick={checkConnection}>{statusEmoji + ' 接続確認'}</AwaitButton>
 };

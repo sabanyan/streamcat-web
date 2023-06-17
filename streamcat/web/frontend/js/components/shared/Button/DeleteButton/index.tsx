@@ -1,7 +1,7 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
 import LibraryUtil from "Utils/LibraryUtil";
-import { Button2, DialogButton } from "Shared/Input";
+import { AwaitButton, Button2, DialogButton } from "Shared/Input";
 import { DatumType } from "Model/Library";
 import { Api } from 'Api';
 
@@ -78,14 +78,14 @@ export const DeleteButton = (props:Props) => {
         (closeDialog) => [
             <Button2 key='cancel'
                      onClick={closeDialog}>キャンセル</Button2>,
-            <Button2 key='delete'
-                     onClick={() => deleteData(targets).finally(() => {
-                        // TODO: notifySuccessによる通知ダイアログの表示で、ダイアログが閉じられる
-                        // そのためここでcloseDialog()を呼び出すと
-                        // "Can't perform a React state update on an unmounted component."
-                        // という警告が表示される
-                        closeDialog()
-                     })}>削除する</Button2>
+            <AwaitButton key='delete'
+                        onClick={() => deleteData(targets).finally(() => {
+                            // TODO: notifySuccessによる通知ダイアログの表示で、ダイアログが閉じられる
+                            // そのためここでcloseDialog()を呼び出すと
+                            // "Can't perform a React state update on an unmounted component."
+                            // という警告が表示される
+                            closeDialog()
+                        })}>削除する</AwaitButton>
         ]
     ]}</DialogButton>;
 };

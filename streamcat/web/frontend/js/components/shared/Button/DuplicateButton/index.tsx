@@ -1,7 +1,7 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { DatumType } from "Model/Library";
-import { Button2 } from "Shared/Input";
+import { AwaitButton } from "Shared/Input";
 
 type Props = {
     readOnly?:boolean;
@@ -27,7 +27,7 @@ export const DuplicateButton = (props:Props) => {
     // 全てのDatumを複製する
     const duplicateData = (data:DatumType[]) => {
         // 全てのDatumを複製した後に、イベントハンドラを呼び出す
-        Promise.all(
+        return Promise.all(
             data.map(datum => duplicateDatum(datum))
         ).finally(() => {
             // イベントハンドラを呼び出す
@@ -41,6 +41,6 @@ export const DuplicateButton = (props:Props) => {
         prevAllow && allow
     );
 
-    return <Button2 disabled={!enabled || readOnly}
-                    onClick={() => duplicateData(targets)}>複製</Button2>;
+    return <AwaitButton disabled={!enabled || readOnly}
+                        onClick={() => duplicateData(targets)}>複製</AwaitButton>;
 };
