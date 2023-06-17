@@ -368,3 +368,87 @@ class ProjectTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_duplicate_project(self):
+        """
+        プロジェクトを複製できること
+        """
+        # ルートフォルダを取得する(GET /library)
+        result = self.get_uri('/api/v0/library', self.USER1)
+        root_uuid = result['uuid']
+
+        # プロジェクトを作成する(POST /project)
+        data = {'parent': root_uuid,
+                'label' : '私のプロジェクト'}
+        result = self.post_uri('/api/v0/projects', data, self.USER1)
+        project_uuid = result['uuid']
+
+        # プロジェクトの下にフローを作成する
+        data = {
+            'parent': project_uuid,
+            'label': '私のフロー',
+            'flow': {}
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+        flow_uuid = result['uuid']
+
+        # プロジェクトを複製する(POST /project)
+        result = self.post_uri(f'/api/v0/projects', {'source':project_uuid}, self.USER1)
+        duplicated_project_uuid = result['uuid']
+
+        # POST /project apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertNotEqual(result['uuid'], project_uuid)
+        self.assertEqual(result['label'], '私のプロジェクト のコピー')
+        self.assertEqual(result['type'], 'project')
+        self.assertEqual(result['folderPath'], '/ライブラリ')
+        self.assertEqual(result['folderUuid'], root_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], self.USER1.name)
+        self.assertNotEqual(result['createdAt'], None)
+        self.assertTrue(result['allowlist']['read'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertTrue(result['allowlist']['download'])
+        self.assertTrue(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertFalse(result['allowlist']['move'])
+        self.assertFalse(result['allowlist']['lock'])
+        self.assertTrue(result['allowlist']['findMember'])
+        self.assertTrue(result['allowlist']['updateMember'])
+        self.assertFalse(result['allowlist']['createProject'])
+        self.assertTrue(result['allowlist']['createFolder'])
+        self.assertTrue(result['allowlist']['createFile'])
+        self.assertTrue(result['allowlist']['upload'])
+        self.assertTrue(result['allowlist']['import'])
+
+        # 複製したフォルダの下にフローも複製されること
+        result = self.get_uri(f'/api/v0/folders/{duplicated_project_uuid}', self.USER1)
+        self.assertEqual(len(result['children']), 1)
+        duplicated_flow = result['children'][0]
+        self.assertNotEqual(duplicated_flow['uuid'], flow_uuid)
+        self.assertEqual(duplicated_flow['label'], '私のフロー')
+        self.assertEqual(duplicated_flow['type'], 'flow')
+        self.assertIsNone(duplicated_flow['folderPath'])
+        self.assertEqual(duplicated_flow['folderUuid'], duplicated_project_uuid)
+        self.assertIsNone(duplicated_flow['prevFolderPath'])
+        self.assertEqual(duplicated_flow['creator'], self.USER1.name)
+        self.assertNotEqual(duplicated_flow['createdAt'], None)
+        self.assertTrue(duplicated_flow['allowlist']['read'])
+        self.assertTrue(duplicated_flow['allowlist']['update'])
+        self.assertTrue(duplicated_flow['allowlist']['delete'])
+        self.assertTrue(duplicated_flow['allowlist']['execute'])
+        self.assertTrue(duplicated_flow['allowlist']['download'])
+        self.assertTrue(duplicated_flow['allowlist']['export'])
+        self.assertTrue(duplicated_flow['allowlist']['copy'])
+        self.assertTrue(duplicated_flow['allowlist']['move'])
+        self.assertTrue(duplicated_flow['allowlist']['lock'])
+        self.assertFalse(duplicated_flow['allowlist']['findMember'])
+        self.assertFalse(duplicated_flow['allowlist']['updateMember'])
+
+        # DELETE /projects
+        result = self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)
+        result = self.delete_uri((f'/api/v0/projects/{duplicated_project_uuid}'), self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)

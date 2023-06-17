@@ -90,13 +90,18 @@ def new_project():
     """
     新しいプロジェクトを作成する
     """
-    if 'parent' not in request.json:
-        raise Exception('parent属性を指定してください')
+    req = RequestJson(request.json)
 
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_project = parent.create_project_folder(request.json['label'])
-    new_project.save()
-    return new_project
+    if req.has('source'):
+        # プロジェクトを複製する
+        return duplicate_datum(req['source'])
+    elif req.has('parent'):
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_project = parent.create_project_folder(req['label'])
+        new_project.save()
+        return new_project
+    else:
+        raise Exception('parent属性を指定してください')
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
