@@ -22,9 +22,11 @@ from .utils import (
 
 mod = Blueprint('library', __name__)
 
-def _add_children_info(folder, prev_folder_path=False):
+def _add_children_info(folder, offset=None, limit=None, prev_folder_path=False):
     # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-    children = folder.find_children(prev_folder_path=prev_folder_path)
+    children = folder.find_children(offset=offset,
+                                    limit=limit,
+                                    prev_folder_path=prev_folder_path)
 
     # folderPath属性を作成する
     folder_list = folder.get_folder_path()
@@ -44,6 +46,14 @@ def _add_children_info(folder, prev_folder_path=False):
 
     return folder
 
+def _get_offset_limit(request_args):
+    offset = request_args.get('offset')
+    limit  = request_args.get('limit')
+    if offset is not None:
+        offset = int(offset)
+    if limit is not None:
+        limit = int(limit)
+    return offset, limit
 
 @mod.route('/library', methods=['GET'])
 @login_required_api
@@ -53,8 +63,9 @@ def fecth_library():
     """
     ルートフォルダを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     root = g.factory.data.load_root()
-    return _add_children_info(root)
+    return _add_children_info(root, offset=offset, limit=limit)
 
 
 @mod.route('/projects')
@@ -80,8 +91,9 @@ def fetch_project(project_uuid):
     """
     指定したプロジェクトを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     project = g.factory.data.find_by_uuid(project_uuid)
-    return _add_children_info(project)
+    return _add_children_info(project, offset=offset, limit=limit)
 
 @mod.route('/projects', methods=['POST'])
 @login_required_api
@@ -170,8 +182,9 @@ def fetch_folder(folder_uuid):
     """
     指定したフォルダを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    return _add_children_info(folder)
+    return _add_children_info(folder, offset=offset, limit=limit)
 
 @mod.route('/folders', methods=['POST'])
 @login_required_api
@@ -234,8 +247,12 @@ def fetch_trashes():
     """
     ゴミ箱を取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     trash_folder = g.factory.data.find_trashcan()
-    return _add_children_info(trash_folder, prev_folder_path=True)
+    return _add_children_info(trash_folder,
+                              offset=offset,
+                              limit=limit,
+                              prev_folder_path=True)
 
 @mod.route('/trashes/<datum_uuid>', methods=['PUT'])
 @login_required_api
@@ -599,8 +616,9 @@ def fetch_awss3_folder(awss3_uuid):
     """
     指定したAWS S3フォルダを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     folder = g.factory.data.find_by_uuid(awss3_uuid)
-    return _add_children_info(folder)
+    return _add_children_info(folder, offset=offset, limit=limit)
 
 @mod.route('/awss3s', methods=['POST'])
 @login_required_api

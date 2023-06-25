@@ -160,6 +160,63 @@ class ProjectTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/projects/{project2_uuid}', self.USER2)
         self.delete_uri(f'/api/v0/projects/{project3_uuid}', self.USER2)
 
+    def test_get_project_offset_limit(self):
+        """
+        GET /projects?offset=&limit= APIをテストする
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        data = {'parent': root.uuid,
+                'label' : 'Myプロジェクト'}
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project_uuid = result['uuid']
+
+        # プロジェクトの下にフォルダを作成する
+        self.post_uri('/api/v0/folders', {'parent':project_uuid, 'label':'フォルダ0'}, self.USER2)
+        self.post_uri('/api/v0/folders', {'parent':project_uuid, 'label':'フォルダ1'}, self.USER2)
+        self.post_uri('/api/v0/folders', {'parent':project_uuid, 'label':'フォルダ2'}, self.USER2)
+        self.post_uri('/api/v0/folders', {'parent':project_uuid, 'label':'フォルダ3'}, self.USER2)
+        self.post_uri('/api/v0/folders', {'parent':project_uuid, 'label':'フォルダ4'}, self.USER2)
+        self.post_uri('/api/v0/folders', {'parent':project_uuid, 'label':'フォルダ5'}, self.USER2)
+
+        # 
+        # プロジェクトを取得する
+        # 
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?offset=0&limit=6', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['uuid'], project_uuid)
+        self.assertEqual(result['type'], 'project')
+        self.assertEqual(result['label'], 'Myプロジェクト')
+        self.assertEqual(result['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['folderPath'][0]['label'], 'ライブラリ')
+        # offsetとlimitに対応する取得する子Datumが取得できること
+        self.assertEqual(len(result['children']), 6)
+        self.assertEqual(result['children'][0]['label'], 'フォルダ5')
+
+        # 
+        # プロジェクトを取得する
+        # 
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?offset=2&limit=3', self.USER2)
+        # offsetとlimitに対応する取得する子Datumが取得できること
+        self.assertEqual(len(result['children']), 3)
+        self.assertEqual(result['children'][0]['label'], 'フォルダ3')
+
+        # 
+        # プロジェクトを取得する
+        # 
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?offset=9&limit=10', self.USER2)
+        # offsetとlimitに対応する取得する子Datumが取得できること
+        self.assertEqual(len(result['children']), 0)
+
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
     def test_get_project(self):
         """
         一般ユーザがGET /projects APIを発行する

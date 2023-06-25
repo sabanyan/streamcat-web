@@ -10,13 +10,14 @@ type Props<TDatumType> = {
     selectedDatas: [TDatumType[], (value:React.SetStateAction<TDatumType[]>)=>void];
     enableMultiSelect: boolean;
     createRowData: (datum:TDatumType) => React.JSX.Element;
+    onLoadMore?: (offset:number, limit:number) => Promise<boolean>;
     canDrag: (datas:TDatumType[]) => boolean;
     canDrop?: (draggingDatas:TDatumType[], targetDatum:TDatumType) => boolean;
     doDrop? : (droppedDatas:TDatumType[], targetDatum:TDatumType) => void;
 };
 
 export const ListTableBodyDnD = <TDatumType extends {uuid:string},>(props: Props<TDatumType>) => {
-    const { allDatas, enableMultiSelect, createRowData} = props;
+    const { allDatas, enableMultiSelect, createRowData, onLoadMore} = props;
 
     // 選択中の行を保持する
     const [selectedDatas,] = props.selectedDatas;
@@ -91,5 +92,6 @@ export const ListTableBodyDnD = <TDatumType extends {uuid:string},>(props: Props
         allDatas={allDatas}
         selectedDatas={props.selectedDatas}
         createRow={createRow}
+        onLoadMore={onLoadMore}
         enableMultiSelect={enableMultiSelect} />;
 };

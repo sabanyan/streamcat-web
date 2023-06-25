@@ -352,6 +352,16 @@ PortArray.prototype.toJSON = function(){
 }
 
 /**
+ * 引数を追加する共通関数
+ */
+const addOffsetLimit = (params:{offset?:number,limit?:number}, offset?:number, limit?:number) => {
+    // offset==0の場合はoffsetパラメタを指定しない
+    offset && (params.offset = offset);
+    // limit==0の場合はlimitパラメタを指定する
+    limit != null && (params.limit = limit);
+};
+
+/**
  * Web APIを発行する関数を纏めるクラス
  */
 export const DatumApi = {
@@ -380,9 +390,10 @@ export const DatumApi = {
      * GET /libraryを発行してルートフォルダを取得する
      * @throws {ErrorResponse}
      */
-    findLibrary: (members?: boolean) => {
+    findLibrary: (offset?:number, limit?:number, members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
-        let params: {members?:string} = {};
+        let params: {offset?:number, limit?:number, members?:string} = {};
+        addOffsetLimit(params, offset, limit);
         members && (params.members = 'on');
         return get<ParentFolderType>('/api/v0/library', params).then(folder => {
             folder = (new DatumArray([folder])).shift() as any;
@@ -395,8 +406,10 @@ export const DatumApi = {
      * GET /trashesを発行してゴミ箱を取得する
      * @throws {ErrorResponse}
      */
-    findTrash: () => {
-        return get<ParentTrashType>('/api/v0/trashes').then(trash => {
+    findTrash: (offset?:number, limit?:number) => {
+        let params: {offset?:number, limit?:number} = {};
+        addOffsetLimit(params, offset, limit);
+        return get<ParentTrashType>('/api/v0/trashes', params).then(trash => {
             trash = (new DatumArray([trash])).shift() as any;
             trash.children = new DatumArray(trash.children);
             return trash;
@@ -423,9 +436,10 @@ export const DatumApi = {
      * @param uuid 取得するプロジェクトのUUID
      * @throws {ErrorResponse}
      */
-    findProject: (uuid: string, members?: boolean) => {
+    findProject: (uuid: string, offset?:number, limit?:number, members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
-        let params: {members?:string} = {};
+        let params: {offset?:number, limit?:number, members?:string} = {};
+        addOffsetLimit(params, offset, limit);
         members && (params.members = 'on');
         return get<ParentProjectType>(`/api/v0/projects/${uuid}`, params).then(project => {
             project = (new DatumArray([project])).shift() as any;
@@ -439,8 +453,10 @@ export const DatumApi = {
      * @param uuid 取得するフォルダのUUID
      * @throws {ErrorResponse}
      */
-    findFolder: (uuid: string) => {
-        return get<ParentFolderType>(`/api/v0/folders/${uuid}`).then(folder => {
+    findFolder: (uuid: string, offset?:number, limit?:number) => {
+        let params: {offset?:number, limit?:number} = {};
+        addOffsetLimit(params, offset, limit);
+        return get<ParentFolderType>(`/api/v0/folders/${uuid}`, params).then(folder => {
             folder = (new DatumArray([folder])).shift() as any;
             folder.children = new DatumArray(folder.children);
             return folder;

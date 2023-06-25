@@ -23,11 +23,12 @@ interface Props {
     allDatas: DatumType[];
     selectedDatas: [DatumType[], (value:React.SetStateAction<DatumType[]>)=>void];
     minWidth?: number | string;
-    onSuccess:(movedDatum:DatumType) => void;
+    onLoadMore?: (offset:number, limit:number) => Promise<boolean>;
+    onSuccess:(movedData:DatumType[]) => void;
 };
 
 export const FileListTable = (props: Props) => {
-    const {allDatas, minWidth, mode, selectedDatas, onSuccess} = props;
+    const {allDatas, minWidth, mode, selectedDatas, onLoadMore, onSuccess} = props;
 
     // 移動処理の関数を取得する
     const moveData = useMoveData();
@@ -187,6 +188,7 @@ export const FileListTable = (props: Props) => {
                 selectedDatas={selectedDatas}
                 enableMultiSelect={enableMultiSelect} 
                 createRowData={createRowData}
+                onLoadMore={onLoadMore}
                 // 全てのドラッグ対象は移動処理が可能であること
                 canDrag={datas => datas.every(datum => datum.allowlist.move)}
                 // 全てのドラッグ対象が移動可能(canDragで担保される)、
@@ -198,7 +200,7 @@ export const FileListTable = (props: Props) => {
                 // ドロップ時の処理
                 doDrop={(droppedDatas,datum) =>
                     // ドラッグしたDatumをドロップ先フォルダに移動する
-                    moveData(droppedDatas, datum.uuid, (data)=>onSuccess(data[0]))
+                    moveData(droppedDatas, datum.uuid, data => onSuccess(data))
                 }
             />;
         }else{
@@ -207,7 +209,8 @@ export const FileListTable = (props: Props) => {
                 allDatas={sortDatas(allDatas, sortedHeaders)}
                 selectedDatas={selectedDatas}
                 enableMultiSelect={enableMultiSelect} 
-                createRowData={createRowData} />;
+                createRowData={createRowData}
+                onLoadMore={onLoadMore} />;
         }
     };
 

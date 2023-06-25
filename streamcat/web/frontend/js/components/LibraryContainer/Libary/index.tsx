@@ -28,6 +28,7 @@ import { TrashMenuList } from 'LibraryContainer/TrashMenuList';
 import { ApplyMenuList } from 'Components/LibraryContainer/ApplyMenuList';
 import { MenuList } from 'LibraryContainer/MenuList';
 import { VisualizeModel, VisualizeModelProps } from 'Model/index';
+import { childrenLimit } from 'Shared/Base/ListTableBodyBase';
 import { ProjectDrawer } from 'Shared/Drawer/ProjectDrawer';
 import { FolderDrawer } from 'Shared/Drawer/FolderDrawer';
 import { DatabaseDrawer } from 'Shared/Drawer/DatabaseDrawer';
@@ -51,21 +52,21 @@ export type DatumEntryType = DatumType & {
     clickable: boolean;
 };
 
-const getParentFolder = () => {
+const getParentFolder = (offset:number=0, limit:number=childrenLimit) => {
     if(inject_folder_uuid){
         if(inject_is_project){
             // プロジェクトを表示する場合
-            return Api.findProject(inject_folder_uuid);
+            return Api.findProject(inject_folder_uuid, offset, limit);
         }else{
             // フォルダを表示する場合
-            return Api.findFolder(inject_folder_uuid);
+            return Api.findFolder(inject_folder_uuid, offset, limit);
         }
     }else if(inject_is_trash) {
         // ゴミ箱を表示する場合
-        return Api.findTrash();
+        return Api.findTrash(offset, limit);
     }else{
         // ルートフォルダを表示する場合
-        return Api.findLibrary();
+        return Api.findLibrary(offset, limit);
     }
 };
 
@@ -210,6 +211,21 @@ export const Library = () => {
             </>;
         };
 
+        const onLoadMore = (offset:number, limit:number) => getParentFolder(offset, limit).then(response => {
+            const nextChildren = response.children;
+            if(nextChildren.length > 0){
+                // parentFolder.childrenは__isWrapped=trueなので
+                // nextChildrenの全要素にWebAPIを発行する関数を付与してからpushする
+                parentFolder.children.push(...nextChildren.slice());
+                response.children = parentFolder.children;
+                // useStateに同じオブジェクトインスタンスを設定すると再レンダリングされないのでresponseを設定する
+                setParentFolder(response);
+                return true;
+            }else{
+                return false;
+            }
+        });
+
         return <Flex justifyContent={'center'} fluid={true}>
             <Flex flexDirection={'row'}
                   width={1480 + 40 + 40}
@@ -232,7 +248,8 @@ export const Library = () => {
                             allDatas={parentFolder.children}
                             selectedDatas={[selectedDatas, setSelectedDatas]}
                             minWidth={800}
-                            onSuccess={refreshLibrary} />
+                            onLoadMore={onLoadMore}
+                            onSuccess={data=>refreshLibrary(...data)} />
                     </Flex>
                     <Spacer height={80} />
                 </Flex>
@@ -249,7 +266,13 @@ export const Library = () => {
     };
 
     const fetchFolder = () => {
-        return getParentFolder().then(response => {
+        // 読み込み済みのDatum数
+        const loadedLength = parentFolder.children.length;
+        // Datumの追加や(複数一括の)複製によって読み込むDatum数が増える場合に備え
+        // 読み込むDatum数をchildrenLimitの倍数にして再読み込み可能な状態にしておく
+        const minMultiple = loadedLength + (childrenLimit - loadedLength % childrenLimit);
+        // 今読み込んでいる位置まで再読み込みする
+        return getParentFolder(0, minMultiple).then(response => {
             // 取得したフォルダ等を状態変数に格納する
             setParentFolder(response);
             return response;
