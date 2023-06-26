@@ -140,7 +140,7 @@ export default class FileUploader extends React.Component<Props, State> {
         }
       })
 
-      const content = 'アップロードが完了しました。<br> (成功:' + successCount + '、失敗:' + failCount + ')';
+      const content = `成功:${successCount}  失敗:${failCount}`;
       notify('アップロードしました', content);
 
       self.setState({
