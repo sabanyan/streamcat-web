@@ -525,13 +525,31 @@ export const DatumApi = {
         const params = {contents:true};
         const accept = `text/csv; charset=${encoding||'utf-8'}`;
         // ダウンロードファイル名を作成する
-        let fileName: string;;
+        let fileName: string;
         if(label.endsWith('.csv') || label.endsWith('.txt')){
             fileName = label;
         }else{
             fileName = label + '.csv';
         }
         return download(`/api/v0/frames/${uuid}`, accept, fileName, params);
+    },
+
+    /**
+     * GET /documentsを発行してドキュメントファイルを取得する
+     * @param uuid 取得するドキュメントのUUID
+     */
+    downloadDocument: (uuid: string, label: string, extension: string='') => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        const params = {contents:true};
+        const accept = '*/*';
+        // ダウンロードファイル名を作成する
+        let fileName: string;
+        if(label.includes('.') || extension===''){
+            fileName = label;
+        }else{
+            fileName = label + '.' + extension;
+        }
+        return download(`/api/v0/documents/${uuid}`, accept, fileName, params);
     },
 
     /**

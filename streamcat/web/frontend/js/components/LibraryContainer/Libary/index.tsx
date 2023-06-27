@@ -372,9 +372,10 @@ export const Library = () => {
                         frame={selectedDatas[0] as FrameType}
                         onSuccess={refreshLibrary} />,
         document:   <DocumentDrawer
+                        createMode={false}
                         parent={parentFolder}
                         document={selectedDatas[0] as DocumentType}
-                        onSuccess={data=>refreshLibrary(...data)} />,
+                        onSuccess={refreshLibrary} />,
         schedule:   <ScheduleDrawer
                         createMode={false}
                         parent={parentFolder}
