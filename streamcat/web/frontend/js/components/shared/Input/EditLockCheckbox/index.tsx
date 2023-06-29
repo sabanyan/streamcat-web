@@ -1,8 +1,8 @@
-import React from "react";
-import { useStreamCatNotifications } from "Shared/Notification";
+import React from 'react';
+import { useStreamCatNotifications } from 'Shared/Notification';
 import { Api, ErrorResponse } from 'Api';
-import { FlowType } from "Model/Library";
-import { Checkbox2 } from "Shared/Input";
+import { FlowType } from 'Model/Library';
+import { TriStateSwitch } from 'Shared/Input';
 
 export type Value = {
     readOnly?:boolean;
@@ -59,8 +59,12 @@ export const EditLockCheckbox = (props:Props) => {
     // 編集ロック可能の場合にTrue
     const enabled = target.allowlist.lock;
 
-    return <Checkbox2 label='編集ロック' 
-                      readOnly={!enabled || readOnly}
-                      state={state}
-                      onChange={onChangeValue} />;
+    return <TriStateSwitch<boolean> 
+        label='編集ロック'
+        readOnly={!enabled || readOnly}
+        // 2状態のトグルスイッチとして使用する
+        doubleState={true}
+        state={state}
+        onChange={onChangeValue}
+    />;
 };

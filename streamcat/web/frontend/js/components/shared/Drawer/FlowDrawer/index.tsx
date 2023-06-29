@@ -64,12 +64,7 @@ export const FlowDrawer = (props:Props) => {
                               targets={[flow]}
                               onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
                 <DownloadFlowButton key='download'
-                                    targets={[flow]} />,
-                <EditLockCheckbox key='editLock'
-                                  target={flow}
-                                  // 編集ロックの値はこのコンポーネント内では保持しない
-                                  state={[{value:flow.editLock,isError:false}, ()=>{}]}
-                                  onChange={(updated)=>onSuccess(updated)} />
+                                    targets={[flow]} />
             ]: [],
             // テキストボックス
             (readOnly, onErrorChange, onEnterKeyPress) => [
@@ -80,6 +75,11 @@ export const FlowDrawer = (props:Props) => {
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
+                <EditLockCheckbox key='editLock'
+                                  target={flow}
+                                  // 編集ロックの値はこのコンポーネント内では保持しない
+                                  state={[{value:flow.editLock,isError:false}, ()=>{}]}
+                                  onChange={(updated)=>onSuccess(updated)} />,
                 <CreatorField key='creator' datum={flow} />
             ]
         ]}</EditBox>
