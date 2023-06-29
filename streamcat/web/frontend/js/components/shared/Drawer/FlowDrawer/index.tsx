@@ -4,7 +4,7 @@ import { Drawer2, TextField2 } from 'Shared/Input';
 import { MoveButton } from 'Shared/Button/MoveButton';
 import { DeleteButton } from 'Shared/Button/DeleteButton';
 import { EditBox } from 'Shared/Base/EditBox';
-import { EditLockCheckbox } from 'Shared/Input/EditLockCheckbox';
+import { EditLockSwitch } from 'Shared/Input/EditLockSwitch';
 import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
 import { CreatorField } from 'Shared/Input/CreatorField';
@@ -75,11 +75,11 @@ export const FlowDrawer = (props:Props) => {
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
-                <EditLockCheckbox key='editLock'
-                                  target={flow}
-                                  // 編集ロックの値はこのコンポーネント内では保持しない
-                                  state={[{value:flow.editLock,isError:false}, ()=>{}]}
-                                  onChange={(updated)=>onSuccess(updated)} />,
+                <EditLockSwitch key='editLock'
+                                target={flow}
+                                // 編集ロックの値はこのコンポーネント内では保持しない
+                                state={[{value:flow.editLock,isError:false}, ()=>{}]}
+                                onChange={(updated)=>onSuccess(updated)} />,
                 <CreatorField key='creator' datum={flow} />
             ]
         ]}</EditBox>

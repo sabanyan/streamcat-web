@@ -17,7 +17,7 @@ type Props = {
     onChange?: (datum:FlowType) => void;
 };
 
-export const EditLockCheckbox = (props:Props) => {
+export const EditLockSwitch = (props:Props) => {
     const {readOnly, target, state} = props;
     const onChange = props.onChange || (() => {});
 
