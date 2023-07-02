@@ -5,7 +5,7 @@ import {Autocomplete,
         TextField} from "@mui/material";
 import {Array2, List2} from "Shared/Input";
 
-export type Value<T> ={
+export type Values<T> ={
     value: T[];
     isError: boolean;
 };
@@ -17,12 +17,12 @@ type Props<T> = {
     requiredMessage?:string;
     readOnlyLayout?: 'array'|'list';
     items: T[];
-    state?: [Value<T>, (value:React.SetStateAction<Value<T>>)=>void];
+    state?: [Values<T>, (value:React.SetStateAction<Values<T>>)=>void];
     isEqual: (item:T, value:T) => boolean;
     compare?: (item1:T, item2:T) => number;
     isDisabledItem: (item:T) => boolean;
     getLabel: (value:T) => string;
-    onChange?: (value:Value<T>) => void;
+    onChange?: (value:Values<T>) => void;
     onErrorChange?:(isError:boolean) => void;
 };
 
