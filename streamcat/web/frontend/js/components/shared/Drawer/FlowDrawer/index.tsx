@@ -76,10 +76,10 @@ export const FlowDrawer = (props:Props) => {
                             onErrorChange={onErrorChange}
                             onEnterKeyPress={onEnterKeyPress} />,
                 <EditLockSwitch key='editLock'
-                                target={flow}
+                                targets={[flow]}
                                 // 編集ロックの値はこのコンポーネント内では保持しない
-                                state={[{value:flow.editLock,isError:false}, ()=>{}]}
-                                onChange={(updated)=>onSuccess(updated)} />,
+                                state={[{value:[flow.editLock],isError:false}, ()=>{}]}
+                                onChange={updated=>onSuccess(updated[0])} />,
                 <CreatorField key='creator' datum={flow} />
             ]
         ]}</EditBox>

@@ -1,10 +1,12 @@
 import React from 'react';
+import {Box} from '@mui/material';
 import { Drawer2 } from 'Shared/Input';
 import { DatumType, FolderType, FlowType, FrameType, DocumentType } from 'Model/Library';
 import { MoveButton } from 'Shared/Button/MoveButton';
 import { DeleteButton } from 'Shared/Button/DeleteButton';
 import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
 import { DownloadFileButton } from 'Shared/Button/DownloadFileButton';
+import { EditLockSwitch } from 'Shared/Input/EditLockSwitch';
 
 type Props = {
     parent: FolderType;
@@ -38,10 +40,24 @@ export const MultiDataDrawer = (props:Props) => {
             <DownloadFileButton targets={data as (FrameType|DocumentType)[]} />:
             <></>
         }
-        {/* MUIのSliderでTrippleSwitchを実装する予定 */}
         {
             flowAll ?
-            <p>全てフロー</p>:
+                // FIXME: onChangeハンドラが呼ばれると、親コンポーネントであるLibraryが
+                // このMultiDataDrawerを破棄するので、EditLockSwitchが保持するstateの初期値も破棄される
+                // そのため一度EditLockSwitchを変更すると初期値(トグル中央の状態)に戻せない
+                <Box>
+                <EditLockSwitch key='editLock'
+                                targets={data as FlowType[]}
+                                // 編集ロックの値はこのコンポーネント内では保持しない
+                                state={[
+                                    {
+                                        value: (data as FlowType[]).map(datum => datum.editLock),
+                                        isError: false
+                                    },
+                                    ()=>{}
+                                ]}
+                                onChange={updated=>onSuccess(updated)} />
+                </Box> :
             <></>
         }
     </Drawer2>;

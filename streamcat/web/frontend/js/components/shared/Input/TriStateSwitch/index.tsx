@@ -28,6 +28,10 @@ export const TriStateSwitch = <TValue=TriStateType|boolean,>(props:Props<TValue>
         setValue({value:value.value, isError:false});
     }, []);
 
+    const toBoolean = (v:number) => {
+        return v? true: false;
+    };
+
     // 入力値が変更された時の処理
     const onChangeValue = (newValue:number) => {
         if(newValue < 0 || 2 < newValue){
@@ -38,10 +42,12 @@ export const TriStateSwitch = <TValue=TriStateType|boolean,>(props:Props<TValue>
         if(newValue == value.value){
             return;
         }
+        // doubleStateに従って入力値を型変換する
+        const castedNewValue = (doubleState? toBoolean(newValue): newValue) as TValue;
         // 入力値を設定する
-        setValue({value:newValue as TValue, isError:false});
+        setValue({value:castedNewValue, isError:false});
         // イベントハンドラを呼び出す
-        onChange({value:newValue as TValue, isError:false});
+        onChange({value:castedNewValue, isError:false});
     };
 
     return <>
@@ -70,7 +76,10 @@ export const TriStateSwitch = <TValue=TriStateType|boolean,>(props:Props<TValue>
                     // 増分値
                     step={1}
                     // booleanに単項演算子(+)を付けるとnumberに変換される
-                    value={+value.value}
+                    value={doubleState? 
+                        (value.value? 1: 0):
+                        +value.value
+                    }
                     // マウスボタンを離した時に呼び出される
                     onChangeCommitted={(e,v) => onChangeValue(v as number)} />
         </Box>
