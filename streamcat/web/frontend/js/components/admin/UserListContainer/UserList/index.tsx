@@ -6,6 +6,7 @@ import {Api} from 'Api';
 import Constants from 'Constants/index';
 import {Flex, Spacer} from 'Shared/Base';
 import {NotificationManager} from 'Shared/Notification';
+import { TextField2  } from 'Shared/Input';
 import {FilterListLinkButton, IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelectedList';
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
@@ -22,7 +23,7 @@ export const UserList = (props: Props) => {
     const [projectsReader] = useAsyncResource(Api.findProjects, true, exceptMyProject);
 
     // キーワード条件
-    const [keyword, setKeyword] = useState('');
+    const [keyword, setKeyword] = useState({value:'', isError:true});
     // 所属プロジェクト条件
     const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     // ユーザ状態条件
@@ -116,10 +117,6 @@ export const UserList = (props: Props) => {
         clickedUserListCell.current = true;
     };
 
-    const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setKeyword(e.target.value)
-    };
-
     const onClickListItem = (categoryId: string, selectedListItems: IFilterListItem[]) => {
         // Project : 新たに選択されたProjectだけが渡される
         // Status  : 既に選択済みのStatusも含めて渡される
@@ -165,29 +162,20 @@ export const UserList = (props: Props) => {
                     <Spacer height={40}/>
                     <Flex flexDirection={'row'}>
                         <div className={style.pageTitleHeader}>
-                            <div className={style.searchHeaderContainer}>
-                                <div className={style.pageTitle}>
-                                    ユーザー管理
-                                </div>
-                                <div className={style.searchBarContainer}>
-                                    <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
-                                </div>
+                            <div className={style.searchBarContainer}>
+                                <TextField2 key='search'
+                                            label='ユーザー名、E-mail で絞り込む'
+                                            state={[keyword,setKeyword]} />
                             </div>
                             <Spacer height={20}/>
-                            <div className={style.resultAndFilterContainer}>
-                                <div className={style.resultCount}>
-                                    {/* FIXME: users変数をUserBodyコンポーネントに移動したので件数を取得できなくなった */}
-                                    表示されている件数 {0}件
-                                </div>
-                                <div className={style.filterLinkContainer}>
-                                    <FilterListLinkButton
-                                        list={categoryItems}
-                                        onClickFilterCategoryItem={()=>{}}
-                                        onClickFilterListItem={onClickListItem}
-                                    >検索フィルタ</FilterListLinkButton>
-                                    <Spacer width={20}/>
-                                    <FilterSelectedList onClickRemove={onClickRemove} list={categoryItems}/>
-                                </div>
+                            <div className={style.filterLinkContainer}>
+                                <FilterListLinkButton
+                                    list={categoryItems}
+                                    onClickFilterCategoryItem={()=>{}}
+                                    onClickFilterListItem={onClickListItem}
+                                >検索フィルタ</FilterListLinkButton>
+                                <Spacer width={20}/>
+                                <FilterSelectedList list={categoryItems} onClickRemove={onClickRemove}/>
                             </div>
                         </div>
                         <Spacer width={420}/>
@@ -197,7 +185,7 @@ export const UserList = (props: Props) => {
                         <AsyncResourceContent fallback={<p>Loading...</p>}>
                         <UserBody navigation={props.navigation}
                                 allProjects={allProjects}
-                                keyword={keyword}
+                                keyword={keyword.value}
                                 selectedProjects={selectedProjects}
                                 selectedStatuses={selectedStatuses}
                                 selectedUsers = {[selectedUsers, setSelectedUsers]}

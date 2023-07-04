@@ -26,10 +26,21 @@
 
 .searchBarContainer,.filterLinkContainer {
   display: inline-flex;
-  max-width: 600px;
   width: 100%;
   min-width: 160px;
   align-items: center;
+}
+
+// キーワード入力(TextField2)
+.searchBarContainer{
+  max-width: 32rem;
+  div{
+    @include list-color();
+  }
+}
+
+.filterLinkContainer{
+  max-width: 64rem;
 }
 
 .resultCount{
