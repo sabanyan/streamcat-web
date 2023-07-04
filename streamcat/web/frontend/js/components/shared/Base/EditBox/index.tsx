@@ -39,7 +39,7 @@ type Props = {
         ) => JSX.Element[],
         (   readOnly: boolean,
             onErrorChange: (isError:boolean) => void,
-            onEnterKeyPress: (value:Value) => void
+            onEnterKeyDown: (value:Value) => void
         ) => JSX.Element[]
     ];
 };

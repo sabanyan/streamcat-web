@@ -64,14 +64,14 @@ export const DocumentDrawer = (props:Props) => {
                                     targets={[document]} />
             ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <FixedField2 key='size'
                              label='ファイルサイズ'
                              value={ConvToFileSizeStr(document.fileSize)} />,

@@ -116,7 +116,7 @@ export const CreateScheduleButton = (props:Props) => {
                 // ボタン
                 () => [],
                 // テキストボックス
-                (readOnly, onErrorChange, onEnterKeyPress) => [
+                (readOnly, onErrorChange, onEnterKeyDown) => [
                     <TextField2 key='label'
                                 label='ラベル'
                                 required={true}
@@ -124,7 +124,7 @@ export const CreateScheduleButton = (props:Props) => {
                                 autoFocus={true}
                                 state={[label, setLabel]}
                                 onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
+                                onEnterKeyDown={onEnterKeyDown} />,
                     <FlowLinkField  key='flow'
                                     label='起動させるフロー'
                                     required={true}

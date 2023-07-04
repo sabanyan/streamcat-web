@@ -67,14 +67,14 @@ export const FlowDrawer = (props:Props) => {
                                     targets={[flow]} />
             ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <EditLockSwitch key='editLock'
                                 targets={[flow]}
                                 // 編集ロックの値はこのコンポーネント内では保持しない

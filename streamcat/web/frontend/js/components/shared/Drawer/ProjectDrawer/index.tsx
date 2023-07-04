@@ -104,14 +104,14 @@ export const ProjectDrawer = (props:Props) => {
                                     targets={[project]} />
             ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <MembersSelect  key='members'
                                 // プロジェクトメンバの更新権限
                                 readOnly={readOnly || !project.allowlist.updateMember}

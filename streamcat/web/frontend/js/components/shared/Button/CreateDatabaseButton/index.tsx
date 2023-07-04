@@ -87,7 +87,7 @@ export const CreateDatabaseButton = (props:Props) => {
                         onSuccess={() => setChecked(true)} />
                 ],
                 // テキストボックス
-                (readOnly, onErrorChange, onEnterKeyPress) => [
+                (readOnly, onErrorChange, onEnterKeyDown) => [
                     <TextField2 key='label'
                                 label='ラベル'
                                 required={true}
@@ -95,7 +95,7 @@ export const CreateDatabaseButton = (props:Props) => {
                                 autoFocus={true}
                                 state={[label, setLabel]}
                                 onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
+                                onEnterKeyDown={onEnterKeyDown} />,
                     <Select2    key='dbms'
                                 label='DBMS'
                                 required={true}
@@ -112,7 +112,7 @@ export const CreateDatabaseButton = (props:Props) => {
                                 state={[hostname,setHostname]}
                                 onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
+                                onEnterKeyDown={onEnterKeyDown} />,
                     <TextField2 key='port'
                                 label='ポート番号'
                                 type='number'
@@ -121,7 +121,7 @@ export const CreateDatabaseButton = (props:Props) => {
                                 state={[port,setPort]}
                                 onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
+                                onEnterKeyDown={onEnterKeyDown} />,
                     <TextField2 key='database'
                                 label='データベース名'
                                 required={true}
@@ -129,20 +129,20 @@ export const CreateDatabaseButton = (props:Props) => {
                                 state={[database,setDatabase]}
                                 onChange={() => setChecked(false)}
                                 onErrorChange={onErrorChange}
-                                onEnterKeyPress={onEnterKeyPress} />,
+                                onEnterKeyDown={onEnterKeyDown} />,
                     <TextField2 key='userId'
                                 label='ユーザーID'
                                 readOnly={readOnly}
                                 state={[userId,setUserId]}
                                 onChange={() => setChecked(false)}
-                                onEnterKeyPress={onEnterKeyPress} />,
+                                onEnterKeyDown={onEnterKeyDown} />,
                     <TextField2 key='password'
                                 label='パスワード'
                                 type='password'
                                 readOnly={readOnly}
                                 state={[password,setPassword]}
                                 onChange={() => setChecked(false)}
-                                onEnterKeyPress={onEnterKeyPress} />
+                                onEnterKeyDown={onEnterKeyDown} />
                 ]
             ]}</EditBox>
         ],

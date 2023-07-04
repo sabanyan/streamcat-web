@@ -405,7 +405,7 @@ export const ScheduleDrawer = (props:Props) => {
                               onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />
             ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
@@ -413,7 +413,7 @@ export const ScheduleDrawer = (props:Props) => {
                             autoFocus={true}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <FlowLinkField  key='flow'
                                 label='起動させるフロー'
                                 required={true}

@@ -122,7 +122,7 @@ export const FlowLinkField = (props:Props) => {
                     value={flowPath}
                     // テキストフィールドへのキー入力を無効にする
                     onChange={()=>{}}
-                    onKeyPress={onClickSelect}
+                    onKeyDown={onClickSelect}
                     onClick={onClickSelect} />
     }</>;
 };

@@ -106,14 +106,14 @@ export const RemoteFolderDrawer = (props:Props) => {
                     onSuccess={() => setChecked(true)} />
             ],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <Select2    key='protocol'
                             label='プロトコル'
                             required={true}
@@ -129,7 +129,7 @@ export const RemoteFolderDrawer = (props:Props) => {
                             state={[hostname,setHostname]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='domain'
                             label='ドメイン名'
                             required={true}
@@ -137,7 +137,7 @@ export const RemoteFolderDrawer = (props:Props) => {
                             state={[domain,setDomain]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='directory'
                             label='ディレクトリパス'
                             required={true}
@@ -145,13 +145,13 @@ export const RemoteFolderDrawer = (props:Props) => {
                             state={[directory,setDirectory]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='userId'
                             label='ユーザーID'
                             readOnly={readOnly}
                             state={[userId,setUserId]}
                             onChange={() => setChecked(false)}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='password'
                             label='パスワード'
                             type='password'
@@ -159,7 +159,7 @@ export const RemoteFolderDrawer = (props:Props) => {
                             state={[password,setPassword]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <CreatorField key='creator' datum={remoteFolder} />
             ]
         ]}</EditBox>

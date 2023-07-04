@@ -17,7 +17,7 @@ type Props = {
     state?: [Value, (value:React.SetStateAction<Value>)=>void];
     onChange?:(value:Value) => void;
     onErrorChange?:(isError:boolean) => void;
-    onEnterKeyPress?:(value:Value) => void;
+    onEnterKeyDown?:(value:Value) => void;
 };
 
 /**
@@ -39,7 +39,7 @@ export const TextField2 = (props:Props) => {
     const [value, setValue] = props.state || [{value:'',isError:isError('')}, () => {}];
     const onChange = props.onChange || (() => {});
     const onErrorChange = props.onErrorChange || (() => {});
-    const onEnterKeyPress = props.onEnterKeyPress || (() => {});
+    const onEnterKeyDown = props.onEnterKeyDown || (() => {});
 
     // 入力値の変更の有無
     const [valueChanged, setValueChanged] = React.useState(false);
@@ -67,9 +67,9 @@ export const TextField2 = (props:Props) => {
     };
 
     // エンターキーの押下でイベントハンドラを呼び出す
-    const onPressKey = (key:string, value:string, isError:boolean) => {
+    const onDownKey = (key:string, value:string, isError:boolean) => {
         if(key==='Enter'){
-            onEnterKeyPress({value:value, isError:isError});
+            onEnterKeyDown({value:value, isError:isError});
         }
     };
 
@@ -106,6 +106,6 @@ export const TextField2 = (props:Props) => {
                     // 入力値
                     value={value.value}
                     onChange={onChangeValue}
-                    onKeyPress={e => onPressKey(e.key, value.value, isError(value.value))} />
+                    onKeyDown={e => onDownKey(e.key, value.value, isError(value.value))} />
     }</>;
 };

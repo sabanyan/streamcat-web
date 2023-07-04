@@ -106,14 +106,14 @@ export const DatabaseDrawer = (props:Props) => {
                     onSuccess={() => setChecked(true)} />
             ],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <Select2    key='dbms'
                             label='DBMS'
                             required={true}
@@ -130,7 +130,7 @@ export const DatabaseDrawer = (props:Props) => {
                             state={[hostname,setHostname]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='port'
                             label='ポート番号'
                             type='number'
@@ -139,7 +139,7 @@ export const DatabaseDrawer = (props:Props) => {
                             state={[port,setPort]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='database'
                             label='データベース名'
                             required={true}
@@ -147,13 +147,13 @@ export const DatabaseDrawer = (props:Props) => {
                             state={[database,setDatabase]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='userId'
                             label='ユーザーID'
                             readOnly={readOnly}
                             state={[userId,setUserId]}
                             onChange={() => setChecked(false)}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='password'
                             label='パスワード'
                             type='password'
@@ -161,7 +161,7 @@ export const DatabaseDrawer = (props:Props) => {
                             state={[password,setPassword]}
                             onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <CreatorField key='creator' datum={datum} />
             ]
         ]}</EditBox>
