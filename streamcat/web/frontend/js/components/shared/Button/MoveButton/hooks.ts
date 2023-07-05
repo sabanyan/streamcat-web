@@ -1,6 +1,6 @@
 import { useStreamCatNotifications } from "Shared/Notification";
 import { Api } from 'Api';
-import LibraryUtil from "Utils/LibraryUtil";
+import { typeNames } from "Utils/TypeNames";
 import { DatumType } from "Model/Library";
 
 const useMoveDatum = () => {
@@ -24,7 +24,7 @@ const useMoveDatum = () => {
         }
         // 移動完了メッセージを表示する
         return promise.then(datum => {
-            const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+            const typeLabel = typeNames[datum.type];
             notifySuccess(typeLabel + 'を移動しました', datum.label);
             return datum;
         }).catch((e) => {

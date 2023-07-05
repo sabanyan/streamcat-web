@@ -20,7 +20,7 @@ type Props<T> = {
     state?: [Values<T>, (value:React.SetStateAction<Values<T>>)=>void];
     isEqual: (item:T, value:T) => boolean;
     compare?: (item1:T, item2:T) => number;
-    isDisabledItem: (item:T) => boolean;
+    isDisabledItem?: (item:T) => boolean;
     getLabel: (value:T) => string;
     onChange?: (value:Values<T>) => void;
     onErrorChange?:(isError:boolean) => void;
@@ -35,7 +35,7 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
         return !!required && (!value || value.length===0);
     };
 
-    const {label, readOnly, required, items, readOnlyLayout, isEqual, compare, isDisabledItem: isDisabledItem, getLabel} = props;
+    const {label, readOnly, required, items, readOnlyLayout, isEqual, compare, isDisabledItem, getLabel} = props;
     const requiredMessage = props.requiredMessage || '入力必須です';
     const [value, setValue] = props.state || [{value:[],isError:isError([])}, () => {}];
     const onChange = props.onChange || (() => {});

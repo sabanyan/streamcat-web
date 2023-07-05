@@ -1,32 +1,42 @@
-import React from "react"
-import { Box } from "@mui/material"
+import React from 'react'
+import { Box } from '@mui/material'
 import { useStreamCatNotifications } from 'Shared/Notification';
 import { ErrorResponse } from 'Api';
-import { DatumType } from "Model/Library";
-import LibraryUtil from "Utils/LibraryUtil";
-import { Button2 } from "Shared/Input";
+import { DatumType } from 'Model/Library';
+import { UserType } from 'Model/Navigation/NavigationModel';
+import { typeNames } from 'Utils/TypeNames';
+import { Button2 } from 'Shared/Input';
 
-type Value ={
+// UserTypeを扱う場合は追加のプロパティが必要になる
+export type ExtendedUserType = UserType & {
+    label: string;
+    type: string;
+    allowlist: {
+        update: boolean;
+    };
+};
+
+type Value = {
     value: any;
     isError: boolean;
 };
 
-type Props = {
+type Props<T> = {
     readOnly?: boolean;
     // Datumを新規追加する場合はtrue
     createMode?: boolean;
     // EditBoxの状態を初期化するためのトリガー
-    datum?: DatumType;
+    datum?: T;
     // 入力値
     values: Value[];
     // 入力値の初期化処理
     initValues: () => void;
     // Datumを新規追加する処理
-    create: () => Promise<DatumType>;
+    create: () => Promise<T>;
     // Datumを変更する処理
-    update?: () => Promise<DatumType>;
+    update?: () => Promise<T>;
     // 新規追加/変更後の処理
-    onSuccess: (datum:DatumType) => void;
+    onSuccess: (datum:T) => void;
     // 変更ボタン押下時の処理
     onEdit?: () => void;
     // キャンセルボタン押下時の処理
@@ -48,7 +58,7 @@ type Props = {
  * 新規追加/変更可能なBox
  * @param props 
  */
-export const EditBox = (props:Props) => {
+export const EditBox = <T extends DatumType|ExtendedUserType = DatumType>(props:Props<T>) => {
     const { datum, values, initValues, create, update, onSuccess, onEdit, onCancel } = props;
     const readOnly = !!props.readOnly;
     const createMode = !!props.createMode;
@@ -125,7 +135,7 @@ export const EditBox = (props:Props) => {
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
             if(datum){
-                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                const typeLabel = typeNames[datum.type];
                 notifySuccess(`${typeLabel}を作成しました`, datum.label);
                 // イベントハンドラを呼び出す
                 onSuccess(datum);
@@ -147,7 +157,7 @@ export const EditBox = (props:Props) => {
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
             if(datum){
-                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                const typeLabel = typeNames[datum.type];
                 notifySuccess(`${typeLabel}を変更しました`, datum.label);
                 // イベントハンドラを呼び出す
                 onSuccess(datum);

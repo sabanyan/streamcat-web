@@ -18,8 +18,8 @@ export const CreateRemoteFolderButton = (props:Props) => {
     const { parent, onSuccess } = props;
 
     // 空の入力値
-    const initValue:Value = {value:'', isError:true}
-    const initSelectValue:Value = {value:'smb', isError:false}
+    const initValue:Value = {value:'', isError:true};
+    const initSelectValue:Value = {value:'smb', isError:false};
 
     // テキストボックスの入力値
     const [label, setLabel] = React.useState(initValue);

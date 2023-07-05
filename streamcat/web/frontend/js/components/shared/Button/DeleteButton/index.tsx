@@ -1,6 +1,6 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
-import LibraryUtil from "Utils/LibraryUtil";
+import { typeNames } from "Utils/TypeNames";
 import { AwaitButton, Button2, DialogButton } from "Shared/Input";
 import { DatumType } from "Model/Library";
 import { Api } from 'Api';
@@ -34,7 +34,7 @@ export const DeleteButton = (props:Props) => {
         }
         // 削除完了メッセージを表示する
         return promise.then(datum => {
-            const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+            const typeLabel = typeNames[datum.type];
             notifySuccess(typeLabel + 'を削除しました', datum.label);
             return datum;
         }).catch((e) => {
