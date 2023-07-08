@@ -33,7 +33,7 @@ export const TrashAllButton = (props:Props) => {
     return <DialogButton label='ゴミ箱を空にする'
                          icon='trash'
                          large={large}
-                         dialogTitle={'ゴミ箱にある項目を完全に消去してもよろしいですか？'}
+                         dialogTitle='ゴミ箱にある項目を完全に消去してもよろしいですか？'
                          readOnly={!enabled || readOnly}>{[
         // Contents
         ()=>[<p key='warning'>この操作は取り消せません</p>],

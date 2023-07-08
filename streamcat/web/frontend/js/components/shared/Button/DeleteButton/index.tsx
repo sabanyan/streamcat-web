@@ -1,8 +1,8 @@
-import React from "react";
-import { useStreamCatNotifications } from "Shared/Notification";
-import { typeNames } from "Utils/TypeNames";
-import { AwaitButton, Button2, DialogButton } from "Shared/Input";
-import { DatumType } from "Model/Library";
+import React from 'react';
+import { useStreamCatNotifications } from 'Shared/Notification';
+import { typeNames } from 'Utils/TypeNames';
+import { AwaitButton, Button2, DialogButton } from 'Shared/Input';
+import { DatumType } from 'Model/Library';
 import { Api } from 'Api';
 
 type Props = {
