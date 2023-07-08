@@ -1,6 +1,6 @@
-import React from "react";
-import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { Button2 } from "Shared/Input";
+import React from 'react';
+import { Dialog2 } from 'Shared/Base/Dialog2'
+import { Button2 } from 'Shared/Input';
 
 type Props = {
     label: string;
@@ -20,40 +20,21 @@ type Props = {
 export const DialogButton = (props:Props) => {
     const {label, icon, large, readOnly} = props;
     const dialogTitle = props.dialogTitle || label;
-    const [ contents, buttons ] = props.children
+    const [ contents, buttons ] = props.children;
 
-    // ダイアログの開閉状態
-    const [isOpen, setIsOpen] = React.useState(false);
-    // ダイアログを開く
-    const openDialog = () => {
-        setIsOpen(true);
-    };
-    // ダイアログを閉じる
-    const closeDialog = () => {
-        setIsOpen(false);
-    };
-
-    return <>
-        {/* ダイアログを開くボタン */}
+    // ダイアログを開くボタン
+    const button = (openDialog:() => void) =>
         <Button2 icon={icon}
                 large={large}
                 disabled={readOnly}
-                onClick={openDialog}>{label}</Button2>
-        {/* ダイアログ */}
-        <Dialog // ある程度の横幅を設定する
-                fullWidth={true}
-                // ダイアログの開閉状態
-                open={isOpen}
-                onClose={closeDialog}>
-            <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogContent>
-                {/* Function as Child Components pattern
-                    https://stackoverflow.com/questions/32370994/how-to-pass-props-to-this-props-children */}
-                {contents(closeDialog)}
-            </DialogContent>
-            <DialogActions>
-                {buttons(closeDialog)}
-            </DialogActions>
-        </Dialog>
-    </>;
+                onClick={openDialog}>{label}</Button2>;
+
+    // ダイアログ
+    return <Dialog2 dialogTitle={dialogTitle}
+                    control={button}>{[
+        // Contents
+        contents,
+        // Buttons
+        buttons
+    ]}</Dialog2>;
 };
