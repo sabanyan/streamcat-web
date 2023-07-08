@@ -24,7 +24,7 @@ export const UserListTable = (props: Props) => {
         {label: 'E-mail', key: 'email', width: 200},
         {label: '所属プロジェクト', key: 'projects', width: 220},
         {label: 'ステータス', key: 'state', width: 220},
-        {label: 'StreamCat 管理権限', key: 'admin_types', width: 220}
+        {label: '管理権限', key: 'admin_types', width: 220}
     ];
     const [sortedHeaders, setSortedHeaders] = useState<SortedHeader[]>([]);
 
@@ -113,7 +113,7 @@ export const UserListTable = (props: Props) => {
         <td>
             {AdminUtil.getUserStatus(user.state)}
         </td>
-        <td>
+        <td style={{paddingLeft:'1rem'}}>
             {renderAdminTypes(user.roles || [])}
         </td>
     </>;

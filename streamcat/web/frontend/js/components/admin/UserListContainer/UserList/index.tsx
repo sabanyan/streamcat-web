@@ -181,17 +181,17 @@ export const UserList = (props: Props) => {
                         <Spacer width={420}/>
                     </Flex>
                     <Spacer height={30}/>
-                    <Flex flexDirection={'row'} onClick={onClickBody}>
+                    <span onClick={onClickBody}>
                         <AsyncResourceContent fallback={<p>Loading...</p>}>
-                        <UserBody navigation={props.navigation}
-                                allProjects={allProjects}
-                                keyword={keyword.value}
-                                selectedProjects={selectedProjects}
-                                selectedStatuses={selectedStatuses}
-                                selectedUsers = {[selectedUsers, setSelectedUsers]}
-                        />
+                            <UserBody navigation={props.navigation}
+                                    allProjects={allProjects}
+                                    keyword={keyword.value}
+                                    selectedProjects={selectedProjects}
+                                    selectedStatuses={selectedStatuses}
+                                    selectedUsers = {[selectedUsers, setSelectedUsers]}
+                            />
                         </AsyncResourceContent>
-                    </Flex>
+                    </span>
                     <Spacer height={80}/>
                 </Flex>
                 <Spacer width={40}/>
