@@ -49,9 +49,7 @@ export const DeleteUsersButton = (props:Props) => {
 
     const targetLabels = targets.map(target =>
                             target.name).reduce((prevLabel, label) =>
-                            prevLabel + ', ' + label,
-                            // targetsが0件の場合は空文字を返す
-                            ''
+                            prevLabel + ', ' + label
                         );
 
     return <DialogButton label='削除'
