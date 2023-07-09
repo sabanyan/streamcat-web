@@ -1,26 +1,26 @@
 import React from 'react';
 import { LinearProgress, Typography, Box} from '@mui/material';
 import {StringUtil} from "Utils/index";
-import { DiskUsageType } from 'Model/Navigation/NavigationModel';
+import { StorageUsageType } from 'Model/Navigation/NavigationModel';
 
 interface Props {
-    // ディスク使用量情報
-    diskUsage?: DiskUsageType
+    // ストレージ使用量情報
+    storageUsage?: StorageUsageType
 };
 
 /**
- * ディスク使用量グラフ
+ * ストレージ使用量グラフ
  */
-export const DiskUsage = (props: Props) => {
-    if(! props.diskUsage){
+export const StorageUsage = (props: Props) => {
+    if(! props.storageUsage){
         return <></>;
     }
-    // ディスク容量と使用量
-    const {total, used} = props.diskUsage;
+    // ストレージ容量と使用量
+    const {total, used} = props.storageUsage;
     // 表示文字列に変換する
     const totalSize = StringUtil.convertToFileSize(total);
     const usedSize = StringUtil.convertToFileSize(used, false);
-    // ディスク使用率
+    // ストレージ使用率
     const usageRate = (used / total) * 100
 
     return <Box sx={{pl:2, pr:2}}>

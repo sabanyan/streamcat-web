@@ -25,13 +25,13 @@ def get_navigation():
     import shutil
     from streamcat.core import SavableDatum, STREAMCAT_VER
 
-    # 指定したディレクトリパスにおけるディスクの使用量と空容量を取得する
+    # 指定したディレクトリパスにおけるストレージの使用量と空容量を取得する
     total, used, free = shutil.disk_usage(SavableDatum.STORE_DIR)
 
     navigation = {
         'version': STREAMCAT_VER,
         'depoName': os.environ.get('STREAMCAT_DEPO') or 'Unit Test',
-        'diskUsage': {
+        'storageUsage': {
             'total': used + free,
             'used' : used,
             'free' : free

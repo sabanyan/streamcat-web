@@ -55,7 +55,7 @@ export type SelfUserType = UserBaseType & {
     updatePassword: (password:string, currentPassword:string) => Promise<SelfUserType>;
 };
 
-export type DiskUsageType = {
+export type StorageUsageType = {
     total: number;
     used : number;
     free : number;
@@ -67,7 +67,7 @@ export type DiskUsageType = {
 export type NavigationType = {
     version: string;
     depoName: string;
-    diskUsage: DiskUsageType;
+    storageUsage: StorageUsageType;
     user: UserType;
     allowlist: NavigationAllowlist;
 };
