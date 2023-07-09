@@ -101,10 +101,14 @@ export const CreateUserButton = (props:Props) => {
                                 onErrorChange={onErrorChange}
                                 onEnterKeyDown={onEnterKeyDown} />,
                     <MultiSelect2<ProjectType>
+                                key='projects'
                                 label='所属プロジェクト'
                                 readOnly={readOnly}
                                 readOnlyLayout='list'
-                                items={allProjects}
+                                // itemsにArrayオブジェクト以外を設定すると
+                                // MUIから"Failed prop type"の警告が出力されるので
+                                // slice()を用いてArrayCtor => Arrayへ変換する
+                                items={allProjects.slice()}
                                 state={[projects, setProjects]}
                                 isEqual={isEaual}
                                 getLabel={project=>project.label}/>
