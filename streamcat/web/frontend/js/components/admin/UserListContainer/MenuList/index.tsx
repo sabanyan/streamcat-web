@@ -1,13 +1,13 @@
 import React from 'react';
 import * as style from './style.scss';
-import { NavigationType } from 'Model/Navigation/NavigationModel';
+import { NavigationType, UserType } from 'Model/Navigation/NavigationModel';
 import { ProjectType } from 'Model/Library';
 import { CreateUserButton } from 'Shared/Button/CreateUserButton';
 
 interface Props {
     navigation: NavigationType | null;
     allProjects: ProjectType[];
-    onSuccess: () => void;
+    onSuccess: (newUser:UserType) => void;
 };
 
 export const MenuList = (props: Props) => {

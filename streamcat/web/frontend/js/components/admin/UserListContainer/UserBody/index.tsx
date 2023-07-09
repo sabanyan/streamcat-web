@@ -24,6 +24,7 @@ interface Props {
     selectedProjects: string[];
     selectedStatuses: string[];
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
+    onSuccess: (newUsers:UserType[]) => void;
 };
 
 export const UserBody = (props: Props) => {
@@ -32,7 +33,7 @@ export const UserBody = (props: Props) => {
         allProjects,
         keyword,
         selectedProjects,
-        selectedStatuses,
+        selectedStatuses
     } = props;
 
     // 選択中のユーザ
@@ -62,8 +63,8 @@ export const UserBody = (props: Props) => {
         selectedStatuses.includes(user.state)
     );
 
-    // ユーザを再取得する
-    const reloadUsers = () =>
+    const onSuccess = (newUsers: UserType[]) => {
+        // ユーザを再取得する
         getUsers(keyword).then(latestUsers => {
             setUsers(latestUsers)
             // 選択中のユーザを再取得したユーザで更新する
@@ -75,6 +76,9 @@ export const UserBody = (props: Props) => {
                 )
             );
         });
+        // コールバック関数を実行する
+        props.onSuccess(newUsers);
+    };
 
     return <>
         <Flex flexDirection={'row'}>
@@ -87,7 +91,7 @@ export const UserBody = (props: Props) => {
                 <Spacer height={60}/>
                 <MenuList navigation={navigation}
                         allProjects={allProjects}
-                        onSuccess={reloadUsers} />
+                        onSuccess={newUser => onSuccess([newUser])} />
             </Flex>
         </Flex>
         {/* ペイン */}
@@ -97,10 +101,10 @@ export const UserBody = (props: Props) => {
             selectedUsers.length===1 ?
             <UserDrawer navigation={navigation}
                         user={selectedUsers[0]}
-                        onSuccess={reloadUsers} /> :
+                        onSuccess={newUser => onSuccess([newUser])} /> :
             <MultiUsersDrawer navigation={navigation}
                               users={selectedUsers}
-                              onSuccess={reloadUsers} />
+                              onSuccess={onSuccess} />
         }
     </>;
 };

@@ -40,8 +40,8 @@ export const AdminCheckbox = (props:Props) => {
     // ダイアログメッセージ
     let dialogMessage:string;
     if(needLogout){
-        dialogMessage = '自身のユーザー管理権限を外すと、ユーザー管理機能が利用できなくなります。' +
-                        'ユーザー管理権限を外す場合、直ちにログアウトされますがよろしいですか？';
+        dialogMessage = '自身のユーザー管理権限を外すと、このユーザー管理画面が利用できなくなります。' +
+                        'よろしいですか？';
     }else{
         dialogMessage = `${adminRoleName}を${checked? '外': '付与'}してもよろしいですか?`;
     }

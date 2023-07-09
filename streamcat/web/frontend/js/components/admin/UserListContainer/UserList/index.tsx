@@ -1,15 +1,15 @@
-import React from 'react';
-import {useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import style from './style.scss';
-import {Api} from 'Api';
 import Constants from 'Constants/index';
+import {Api} from 'Api';
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
+import { NotAllowed } from 'Components/NotAllowedContainer';
 import {Flex, Spacer} from 'Shared/Base';
 import {NotificationManager} from 'Shared/Notification';
 import { TextField2  } from 'Shared/Input';
 import {FilterListLinkButton, IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelectedList';
-import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import { UserBody } from '../UserBody';
 
 interface Props {
@@ -17,11 +17,12 @@ interface Props {
 };
 
 export const UserList = (props: Props) => {
-
     // 全てのプロジェクトを取得する
     const exceptMyProject = true;
     const [projectsReader] = useAsyncResource(Api.findProjects, true, exceptMyProject);
 
+    // 自身のユーザ情報が変更された時は最新のNavigationを再取得するため状態変数として保持する
+    const [navigation, setNavigation] = useState(props.navigation);
     // キーワード条件
     const [keyword, setKeyword] = useState({value:'', isError:true});
     // 所属プロジェクト条件
@@ -37,6 +38,11 @@ export const UserList = (props: Props) => {
     const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
     // UserBodyコンポーネントをクリックした時にtrueにする
     const clickedUserListCell = useRef(false);
+
+    // ユーザ一覧を参照する権限がない場合は表示しない
+    if(! navigation?.allowlist.findUsers){
+        return <NotAllowed />;
+    };
 
     // 全てのプロジェクト
     const allProjects = projectsReader();
@@ -150,6 +156,13 @@ export const UserList = (props: Props) => {
         );
     };
 
+    const onSuccess = (newUsers:UserType[]) => {
+        // 自身のユーザ情報が変更された時はallowlistを再読み込みする
+        if(-1 !== newUsers.findIndex(user => user.uuid===navigation.user.uuid)){
+            Api.findNavigation().then(navi => setNavigation(navi));
+        }
+    };
+
     return <>
         <Flex justifyContent={'center'} fluid={true}>
             <Flex flexDirection={'row'}
@@ -183,12 +196,13 @@ export const UserList = (props: Props) => {
                     <Spacer height={30}/>
                     <span onClick={onClickBody}>
                         <AsyncResourceContent fallback={<p>Loading...</p>}>
-                            <UserBody navigation={props.navigation}
+                            <UserBody navigation={navigation}
                                     allProjects={allProjects}
                                     keyword={keyword.value}
                                     selectedProjects={selectedProjects}
                                     selectedStatuses={selectedStatuses}
                                     selectedUsers = {[selectedUsers, setSelectedUsers]}
+                                    onSuccess={onSuccess}
                             />
                         </AsyncResourceContent>
                     </span>
