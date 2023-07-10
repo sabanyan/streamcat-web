@@ -10,9 +10,11 @@ setup(
     install_requires=[
         # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
         'blinker==1.6.2',
+        'fastapi',
         'Flask==2.3.2',
         # 'flask_mail',
         'oauthlib==3.2.2',
         'PyJWT==2.6.0',
+        'uvicorn'
     ],
 )
