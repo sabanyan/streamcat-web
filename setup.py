@@ -15,6 +15,7 @@ setup(
         # 'flask_mail',
         'oauthlib==3.2.2',
         'PyJWT==2.6.0',
-        'uvicorn'
+        # "standard"を指定して"--reload"指定によるCPUの高負荷を下げる
+        'uvicorn[standard]'
     ],
 )
