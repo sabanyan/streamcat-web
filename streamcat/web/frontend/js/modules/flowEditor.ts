@@ -48,7 +48,7 @@ const ADD_DATASRC_ACTION = "add_datasrc_action";
 const graph: GraphUtil = new GraphUtil();
 
 type State = {
-  allowlist: {},
+  // allowlist: {},
   selected_step_ids: string[],
   graph: any,
   zoom: number,
@@ -93,7 +93,7 @@ type State = {
 }
 
 let flowEditorReducerInitialState: State = {
-  allowlist: {},
+  // allowlist: {},
   selected_step_ids: [],
   graph: graph.getGraph({}),
   zoom: 100,
@@ -134,7 +134,7 @@ let flowEditorReducerInitialState: State = {
   flow: undefined
 };
 
-const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: any) => {
+export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: any) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState: State = StateUtil.deepCopy(state);
@@ -151,7 +151,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
       newState.history.nodes = [[...newState.nodes]];
-      newState.allowlist = flowJson.allowlist;
+      // newState.allowlist = flowJson.allowlist;
       newState.folderPath = context.folderPath;
       newState.folderUuid = context.folderUuid;
       newState.modifiedAt = context.modifiedAt;
@@ -169,7 +169,7 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
       newState.flow = context;
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
-      newState.allowlist = flowJson.allowlist;
+      // newState.allowlist = flowJson.allowlist;
       newState.folderPath = context.folderPath;
       newState.folderUuid = context.folderUuid;
       newState.modifiedAt = context.modifiedAt;
@@ -917,8 +917,6 @@ const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: 
   return newState;
 
 };
-
-export default FlowEditorReducer;
 
 /**
  * エッジのつなぎ直し処理

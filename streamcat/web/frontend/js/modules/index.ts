@@ -1,1 +1,1 @@
-export { default as FlowEditorReducer } from './flowEditor'
+export { FlowEditorReducer } from './flowEditor'
