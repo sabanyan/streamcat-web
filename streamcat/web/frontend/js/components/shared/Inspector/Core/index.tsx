@@ -1,4 +1,5 @@
 import React from 'react'
+import { useDispatch } from 'react-redux';
 import {AsyncResourceContent} from 'use-async-resource';
 import {
   CommandInspector,
@@ -14,6 +15,13 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index
 import { GraphUtil } from 'Utils/index'
 import { MastType } from "Types/index";
 import { FlowType, FrameType } from 'Model/Library';
+import {
+  addDataDstStepAction,
+  addDataSrcStepAction,
+  deleteCacheAction,
+  resizeInspectorAction,
+  updateFlowAction
+} from 'Modules/flowEditor';
 
 type InspectorProps = {
   inspector: { width: number };
@@ -26,16 +34,11 @@ type InspectorProps = {
   lockUUID: string | undefined;
   updateDataFrameDetail: Function
   addStep: Function;
-  addDataSrcStep: Function;
-  addDataDstStep: Function;
   selectSteps: Function;
-  updateFlow: Function;
   refreshFlow: Function;
   deleteSteps: Function;
   addHistory: Function;
-  deleteCache: Function;
   updateStep: Function;
-  resizeInspector: Function;
   updateLastSavedFlow: Function;
   addFlowVariableHidden: boolean;
   previewDisabled: boolean;
@@ -43,14 +46,32 @@ type InspectorProps = {
   baseInspectorDisabled: boolean;
 }
 
-class Inspector extends React.Component<InspectorProps> {
+export const Inspector = (props:InspectorProps) => {
 
-  render() {
-    let { selected_step_ids, lockUUID, nodes, mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, flow,
-      updateFlow, selected_data_source_detail, updateDataFrameDetail,
-      deleteSteps, addHistory, deleteCache, updateStep, refreshFlow,
-      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
-      updateLastSavedFlow, previewDisabled } = this.props
+    const dispatch = useDispatch();
+
+    const addDataDstStep = (dataDst: any, selectedDataNodeId: string) => {
+        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId));
+    };
+    const addDataSrcStep = (dataSrc: any) => {
+        dispatch(addDataSrcStepAction(dataSrc));
+    };
+    const updateFlow = (flow) => {
+        dispatch(updateFlowAction(flow));
+    };
+    const deleteCache = (selected_step_id: string) => {
+        dispatch(deleteCacheAction(selected_step_id));
+    };
+    const resizeInspector = (width: number) => {
+        dispatch(resizeInspectorAction(width));
+    };
+
+
+    const { selected_step_ids, lockUUID, nodes, mast, flow,
+      selected_data_source_detail,
+      inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
+      previewDisabled, addStep,updateStep,selectSteps,addHistory,
+      updateDataFrameDetail,deleteSteps,refreshFlow,updateLastSavedFlow } = props
 
     let property
 
@@ -186,9 +207,5 @@ class Inspector extends React.Component<InspectorProps> {
         </AsyncResourceContent>
       </Resizer>
     </React.Fragment>
-  }
 
-}
-
-export {Inspector};
-
+};

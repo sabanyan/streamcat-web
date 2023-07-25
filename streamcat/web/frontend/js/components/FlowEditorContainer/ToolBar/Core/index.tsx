@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
 import { HistoryType } from 'Types/index';
+import { refreshFlowAction, setZoomAction, sortFlowAction } from 'Modules/flowEditor';
 
 type ToolBarProps = {
     nodes: any[];
@@ -17,13 +19,10 @@ type ToolBarProps = {
     dismissNotify: (id:string) => void;
     addStep: Function;
     addHistory: Function;
-    sortFlow: Function;
-    setZoom: Function;
     undo: Function;
     redo: Function;
     baseDisabled: boolean
     runDisabled: boolean;
-    refreshFlow: Function;
     onClickSaveFlow: () => {};
     onClickRunFlowPromise: any;
 };
@@ -40,16 +39,14 @@ export const ToolBar = (props: ToolBarProps) => {
             dismissNotify,
             addStep,
             addHistory, 
-            sortFlow,
-            setZoom,
             undo,
             redo, 
             baseDisabled,
             runDisabled,
-            refreshFlow,
             onClickSaveFlow,
             onClickRunFlowPromise} = props;
 
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
 
     const current = history.current;
@@ -57,6 +54,16 @@ export const ToolBar = (props: ToolBarProps) => {
 
     const redoDisabled = !(current + 1 < max);
     const undoDisabled = !(current - 1 >= 0);
+
+    const refreshFlow = (context) => {
+        dispatch(refreshFlowAction(context));
+    };
+    const setZoom = ({ offset, value }) => {
+        dispatch(setZoomAction({ offset, value }));
+    };
+    const sortFlow = () => {
+        dispatch(sortFlowAction());
+    };
 
     return <div>
         <div className={classnames(style.flow_toolbar)}>

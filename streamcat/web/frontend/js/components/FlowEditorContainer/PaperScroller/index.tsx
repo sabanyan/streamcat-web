@@ -1,19 +1,22 @@
 import React from 'react';
 import {useState} from "react";
+import { useDispatch } from 'react-redux';
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
 import {CommandStepModel, SubFlowStepModel} from "Model/index";
 import {DragType, HistoryType} from "Types/index";
+import {
+    copyStepsAction,
+    dragEndAction,
+    dragStartAction,
+    draggingAction,
+    pasteStepsAction
+} from 'Modules/flowEditor';
 
 type Props = {
     editor: any;
-    pasteSteps: Function;
-    copySteps: Function;
     deleteSteps: Function;
     selectSteps: Function;
-    dragStart: Function;
-    dragging: Function;
-    dragEnd: Function;
     addHistory: Function;
     redo: Function;
     undo: Function;
@@ -25,9 +28,13 @@ type Props = {
 }
 
 const PaperScroller = (props: Props) => {
+    const dispatch = useDispatch();
+
     const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
-        const {pasteSteps} = props;
+        const pasteSteps = (paste_nodes: []) => {
+            dispatch(pasteStepsAction(paste_nodes));
+        };
         navigator.clipboard.readText().then((data: any) => {
             pasteSteps(data);
         }, (err) => {
@@ -61,7 +68,9 @@ const PaperScroller = (props: Props) => {
     };
 
     const copySteps = () => {
-        const {copySteps} = props;
+        const copySteps = (step_ids: string[]) => {
+            dispatch(copyStepsAction(step_ids));
+        };
         if (!copyableStep()) {
             navigator.clipboard.writeText("");
             return;
@@ -131,7 +140,10 @@ const PaperScroller = (props: Props) => {
     };
 
     const onMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {selectSteps, dragStart} = props;
+        const {selectSteps} = props;
+        const dragStart = (x: number, y: number) => {
+            dispatch(dragStartAction(x, y));
+        };
         if (isOnClickPaper(e) && !e.shiftKey) {
             // 規定の要素からのカーソル座標値を求めるためには
             // https://qiita.com/yukiB/items/cc533fbbf3bb8372a924
@@ -149,7 +161,10 @@ const PaperScroller = (props: Props) => {
     };
 
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {drag, dragging} = props;
+        const {drag} = props;
+        const dragging = (x: number, y: number) => {
+            dispatch(draggingAction(x, y));
+        };
         if (drag.start) {
             const target_rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - target_rect.left;
@@ -160,7 +175,10 @@ const PaperScroller = (props: Props) => {
     };
 
     const onMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {drag, dragEnd, addHistory} = props;
+        const {drag, addHistory} = props;
+        const dragEnd = (x: number, y: number) => {
+            dispatch(dragEndAction(x, y));
+        };
         if (drag.start) {
             if (drag.end) {
                 const target_rect = e.currentTarget.getBoundingClientRect();

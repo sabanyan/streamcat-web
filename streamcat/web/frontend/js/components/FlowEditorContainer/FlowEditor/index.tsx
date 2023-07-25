@@ -18,29 +18,16 @@ import {
     addMasterAction,
     addSelectStepAction,
     addStepAction,
-    addDataDstStepAction,
-    addDataSrcStepAction,
-    copyStepsAction,
-    deleteCacheAction,
     deleteSelectStepAction,
     deleteStepsAction,
-    dragEndAction,
-    draggingAction,
-    dragStartAction,
     loadFlowJSONAction,
     moveStepsAction,
-    pasteStepsAction,
     redoAction,
-    resizeInspectorAction,
     selectStepsAction,
     setEditModeAction,
     setExecuteModeAction,
-    setZoomAction,
-    sortFlowAction,
-    sortStepSrcEndAction,
     undoAction,
     updateDataFrameDetailAction,
-    updateFlowAction,
     updateStepAction,
     refreshCanvasSizeAction,
     refreshFlowAction,
@@ -48,7 +35,6 @@ import {
 } from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
-import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { NotAllowed } from 'Components/NotAllowedContainer';
 import { TextField } from 'Shared/Input';
@@ -107,109 +93,70 @@ const FlowEditor = () => {
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
-    const loadFlowJSON = useCallback((context: {}) => {
+    const loadFlowJSON = (context: {}) => {
         return dispatch(loadFlowJSONAction(context));
-    }, []);
-    const addMaster = useCallback((context: {}) => {
+    };
+    const addMaster = (context: {}) => {
         dispatch(addMasterAction(context));
-    }, []);
-    const addStep = useCallback((add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
+    };
+    const addStep = (add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
         dispatch(addStepAction(add_step, src_step_ids, dst_step_ids));
-    }, []);
-    const addDataDstStep = useCallback((dataDst: any, selectedDataNodeId: string) => {
-        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId));
-    }, []);
-    const addDataSrcStep = useCallback((dataSrc: any) => {
-        dispatch(addDataSrcStepAction(dataSrc));
-    }, []);
-    const updateStep = useCallback((step: StepModelType) => {
+    };
+    const updateStep = (step: StepModelType) => {
         dispatch(updateStepAction(step));
-    }, []);
-    const updateFlow = useCallback((flow) => {
-        dispatch(updateFlowAction(flow));
-    }, []);
-    const selectSteps = useCallback((selected_steps: []) => {
+    };
+    const selectSteps = (selected_steps: []) => {
         dispatch(selectStepsAction(selected_steps));
-    }, []);
-    const addSelectStep = useCallback((selected_step_id: string) => {
+    };
+    const addSelectStep = (selected_step_id: string) => {
         dispatch(addSelectStepAction(selected_step_id));
-    }, []);
-    const deleteSelectStep = useCallback((selected_step_id: string) => {
+    };
+    const deleteSelectStep = (selected_step_id: string) => {
         dispatch(deleteSelectStepAction(selected_step_id));
-    }, []);
-    const deleteSteps = useCallback((step_ids: []) => {
+    };
+    const deleteSteps = (step_ids: []) => {
         dispatch(deleteStepsAction(step_ids));
-    }, []);
-    const deleteCache = useCallback((selected_step_id: string) => {
-        dispatch(deleteCacheAction(selected_step_id));
-    }, []);
-    // const cutSteps = useCallback((step_ids: []) => {
+    };
+    // const cutSteps = (step_ids: []) => {
     //     dispatch(cutStepsAction(step_ids));
-    // },[]);
-    const copySteps = useCallback((step_ids: []) => {
-        dispatch(copyStepsAction(step_ids));
-    }, []);
-    const pasteSteps = useCallback((paste_nodes: []) => {
-        dispatch(pasteStepsAction(paste_nodes));
-    }, []);
-    const addHistory = useCallback(() => {
+    // };
+    const addHistory = () => {
         dispatch(addHistoryAction());
-    }, []);
-    const undo = useCallback(() => {
+    };
+    const undo = () => {
         dispatch(undoAction());
-    }, []);
-    const redo = useCallback(() => {
+    };
+    const redo = () => {
         dispatch(redoAction());
-    }, []);
-    const sortFlow = useCallback(() => {
-        dispatch(sortFlowAction());
-    }, []);
-    // const executeFlow = useCallback((flowid: string) => {
+    };
+    // const executeFlow = (flowid: string) => {
     //     // flowidは未使用
     //     dispatch(executeFlowAction(flowid));
-    // },[]);
-    // const selectTab = useCallback((tab_id: string) => {
+    // };
+    // const selectTab = (tab_id: string) => {
     //     dispatch(selectTabAction(tab_id));
-    // },[]);
-    const dragStart = useCallback((x: number, y: number) => {
-        dispatch(dragStartAction(x, y));
-    }, []);
-    const dragging = useCallback((x: number, y: number) => {
-        dispatch(draggingAction(x, y));
-    }, []);
-    const dragEnd = useCallback((x: number, y: number) => {
-        dispatch(dragEndAction(x, y));
-    }, []);
-    const setZoom = useCallback(({ offset, value }) => {
-        dispatch(setZoomAction({ offset, value }));
-    }, []);
-    const updateDataFrameDetail = useCallback((detail: FrameType) => {
+    // };
+    const updateDataFrameDetail = (detail: FrameType) => {
         dispatch(updateDataFrameDetailAction(detail));
-    }, []);
-    // const addNote = useCallback((x: number, y: number) => {
+    };
+    // const addNote = (x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
-    // },[]);
-    const moveSteps = useCallback((x: number, y: number, step) => {
+    // };
+    const moveSteps = (x: number, y: number, step) => {
         dispatch(moveStepsAction(x, y, step));
-    }, []);
-    const resizeInspector = useCallback((width: number) => {
-        dispatch(resizeInspectorAction(width));
-    }, []);
-    const setExecuteMode = useCallback((mode: FlowExecuteModeValue) => {
+    };
+    const setExecuteMode = (mode: FlowExecuteModeValue) => {
         dispatch(setExecuteModeAction(mode));
-    }, []);
-    const setEditMode = useCallback((mode: FlowEditModeValue) => {
+    };
+    const setEditMode = (mode: FlowEditModeValue) => {
         dispatch(setEditModeAction(mode));
-    }, []);
-    const refreshCanvasSize = useCallback(() => {
+    };
+    const refreshCanvasSize = () => {
         dispatch(refreshCanvasSizeAction());
-    }, []);
-    const refreshFlow = useCallback((context) => {
-        dispatch(refreshFlowAction(context));
-    }, []);
-    const updateLastSavedFlow = useCallback(() => {
+    };
+    const updateLastSavedFlow = () => {
         dispatch(updateLastSavedFlowAction());
-    }, []);
+    };
 
     const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
     const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
@@ -742,13 +689,10 @@ const FlowEditor = () => {
                 dismissNotify={dismissNotify}
                 addStep={addStep}
                 addHistory={addHistory}
-                sortFlow={sortFlow}
-                setZoom={setZoom}
                 undo={undo}
                 redo={redo}
                 baseDisabled={baseToolBarDisabled}
                 runDisabled={runDisabled}
-                refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}
                 onClickSaveFlow={onClickSaveFlow}
             />
@@ -756,13 +700,8 @@ const FlowEditor = () => {
                 message={"フローを構築中です"} />
             <PaperScroller
                 editor={editor}
-                pasteSteps={pasteSteps}
-                copySteps={copySteps}
                 deleteSteps={deleteSteps}
                 selectSteps={selectSteps}
-                dragStart={dragStart}
-                dragging={dragging}
-                dragEnd={dragEnd}
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
@@ -783,20 +722,15 @@ const FlowEditor = () => {
                 mast={mast}
                 selected_tab_id={selected_tab_id}
                 addStep={addStep}
-                addDataSrcStep={addDataSrcStep}
-                addDataDstStep={addDataDstStep}
                 selectSteps={selectSteps}
                 flow={flow}
                 lockUUID={lockUUID}
                 inspector={inspector}
-                updateFlow={updateFlow}
                 selected_data_source_detail={selected_data_source_detail}
                 updateDataFrameDetail={updateDataFrameDetail}
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}
-                deleteCache={deleteCache}
                 updateStep={updateStep}
-                resizeInspector={resizeInspector}
                 refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}
