@@ -3,7 +3,6 @@ import dagre from 'dagre'
 import Constants from 'Constants/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
-import FlowModel from 'Model/Flow/FlowModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -243,7 +242,16 @@ class GraphUtil {
     const self = this
     let hasPosition = false
 
-    if (!json || !json.nodes) return new FlowModel()
+    // if (!json || !json.nodes) return new FlowModel()
+    if (!json || !json.nodes) {
+      return {
+        label: '',
+        nodes: [],
+        params:[],
+        ports: [[], []],
+        description: '',
+      }
+    }
 
     let newNodes: DataFrameStepModel[] = [];
     json.nodes.forEach((node) => {
