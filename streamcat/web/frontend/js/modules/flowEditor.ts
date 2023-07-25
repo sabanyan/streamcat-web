@@ -92,7 +92,7 @@ type State = {
   editMode?: any
 }
 
-export let flowEditorReducerInitialState = {
+let flowEditorReducerInitialState: State = {
   allowlist: {},
   selected_step_ids: [],
   graph: graph.getGraph({}),
@@ -1339,7 +1339,7 @@ export const cutStepsAction = (step_ids: []) => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const copyStepsAction = (step_ids: []) => {
+export const copyStepsAction = (step_ids: string[]) => {
   return {
     type: COPY_STEPS_ACTION,
     step_ids: step_ids

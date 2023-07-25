@@ -247,7 +247,7 @@ const FlowEditor = () => {
                                     // 転移する前にnewFlowのロックは一度解除する
                                     lock.delete();
                                     // 保存後に作成したフローに遷移する
-                                    WebUtil.navigateURL(WebUtil.webURL("/flows/" + anotherFlow.uuid));
+                                    WebUtil.navigateURL(WebUtil.webURL("/flows/" + anotherFlow.uuid, true));
                                 });
                             });
                         });
@@ -729,7 +729,7 @@ const FlowEditor = () => {
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
-            <PaperZoom />
+            {/* <PaperZoom /> */}
             <ToolBar
                 zoom={zoom}
                 lockUUID={lockUUID}
