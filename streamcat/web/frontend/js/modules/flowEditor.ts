@@ -82,13 +82,13 @@ export type State = {
   inspector: {
     width: number
   },
-  folderPath: string | null,
-  folderUuid: string | null,
-  modifiedAt: string | null,
+  // folderPath: string | null,
+  // folderUuid: string | null,
+  // modifiedAt: string | null,
   networkStatus: NetworkStatusValue,
   lastSavedFlow?: FlowType,
   flow?: FlowType,
-  originalFlow?: {}
+  // originalFlow?: {}
   executeMode?: any,
   editMode?: any
 }
@@ -127,9 +127,9 @@ let flowEditorReducerInitialState: State = {
   inspector: {
     width: Constants.default.inspector.width
   },
-  folderPath: null,
-  folderUuid: null,
-  modifiedAt: null,
+  // folderPath: null,
+  // folderUuid: null,
+  // modifiedAt: null,
   networkStatus: NetworkStatusValue.UnKnown,
   lastSavedFlow: undefined,
   flow: undefined
@@ -166,7 +166,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case LOAD_FLOW_JSON_ACTION: {
       let { context } = action;
       const flowJson = graph.load(context.flow);
-      newState.originalFlow = { ...flowJson };
+      // newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;
       // newState.flow = new FlowModel(context);
       newState.flow = context;
@@ -176,9 +176,9 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.history.current = 0;
       newState.history.nodes = [[...newState.nodes]];
       // newState.allowlist = flowJson.allowlist;
-      newState.folderPath = context.folderPath;
-      newState.folderUuid = context.folderUuid;
-      newState.modifiedAt = context.modifiedAt;
+      // newState.folderPath = context.folderPath;
+      // newState.folderUuid = context.folderUuid;
+      // newState.modifiedAt = context.modifiedAt;
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
@@ -188,15 +188,15 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case REFRESH_FLOW_ACTION: {
       let { context } = action;
       const flowJson = graph.load(context.flow);
-      newState.originalFlow = { ...flowJson };
+      // newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;
       newState.flow = context;
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       // newState.allowlist = flowJson.allowlist;
-      newState.folderPath = context.folderPath;
-      newState.folderUuid = context.folderUuid;
-      newState.modifiedAt = context.modifiedAt;
+      // newState.folderPath = context.folderPath;
+      // newState.folderUuid = context.folderUuid;
+      // newState.modifiedAt = context.modifiedAt;
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う

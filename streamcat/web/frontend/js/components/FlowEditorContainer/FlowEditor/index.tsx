@@ -63,9 +63,9 @@ const getLock = (targetUUID:string) => {
 const FlowEditor = () => {
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector((state:State) => state.folderUuid);
+    const folderUuid = useSelector((state:State) => state.flow && state.flow.folderUuid);
 
-    const _modifiedAt = useSelector((state:State) => state.modifiedAt);
+    const _modifiedAt = useSelector((state:State) => state.flow && state.flow.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
