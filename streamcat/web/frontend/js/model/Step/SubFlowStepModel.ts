@@ -1,5 +1,5 @@
 import {CommandStepModelProps} from "Model/Step/CommandStepModel";
-import {CommandStepModel, SubflowCommandModel} from "Model/index";
+import {CommandStepModel} from "Model/index";
 import {CommandParamType} from "Types/index";
 
 export interface SubFlowStepModelProps  extends  CommandStepModelProps{
@@ -70,7 +70,7 @@ export default class SubFlowStepModel extends CommandStepModel {
   validate () {
     //必須バリデーション
     Object.keys(this.args).map(key => {
-      let command: SubflowCommandModel = this.getCommand()
+      let command = this.getCommand()
       const value = this.args[key]
       //const param: CommandParamType = command.getParam(key)
       // if(!param.optional){

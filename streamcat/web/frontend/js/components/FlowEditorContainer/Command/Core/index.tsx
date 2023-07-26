@@ -8,10 +8,11 @@ import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
+import { Flow } from "Model/Library";
 
 type Props = {
     nodes: any[];
-    command: CommandModelType;
+    command: CommandModelType | SubflowCommandModel | Flow;
     selected_step_ids: string[];
     addStep: Function;
     selectSteps: Function;
@@ -106,7 +107,7 @@ const Command = (props: Props) => {
 
     let description;
     if (hasPdfLink) {
-        const url = WebUtil.webURL(command.description);
+        const url = WebUtil.webURL(command.description || '');
         description =
             <a className={style.show_detail} href="#" onClick={(e) => onClickPdf(e, url)}
                 onMouseDown={e => e.stopPropagation()}>詳細を見る</a>;
@@ -115,14 +116,14 @@ const Command = (props: Props) => {
     }
 
     let icon: React.ReactNode;
-    if (command.flow && command.classification === "data_source") {
-        icon = <DataSrcIcon />;
-    } else if (command.flow && command.classification === "data_dest") {
-        icon = <DataDstIcon />;
-    } else if (command instanceof SubflowCommandModel) {
-        icon = <SubFlowIcon />;
-    } else {
+    if(command instanceof CommandModel){
         icon = <CommandIcon command={command} />;
+    } else if(command.classification === "data_source") {
+        icon = <DataSrcIcon />;
+    } else if (command.classification === "data_dest") {
+        icon = <DataDstIcon />;
+    } else {
+        icon = <SubFlowIcon />;
     }
 
     return <div className={style.command} onClick={(e: React.MouseEvent<HTMLDivElement>) => onClickCommand(e, command)}>

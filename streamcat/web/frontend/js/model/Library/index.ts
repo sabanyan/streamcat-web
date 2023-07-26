@@ -246,6 +246,7 @@ type PortArray = [] & {
 
 export type Flow = {
     label?: string,
+    classification?: string,
     description?: string,
     creator?: string,
     createdAt?: string,

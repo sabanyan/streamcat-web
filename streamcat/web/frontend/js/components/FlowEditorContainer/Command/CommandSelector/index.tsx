@@ -4,6 +4,8 @@ import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
 import { CommandModelType, RunnablesType } from "Types/index";
 import { TextField } from "Shared/Input";
+import { CommandModel, SubflowCommandModel } from "Model/index";
+import { Flow } from "Model/Library";
 
 type Props = {
     runnables: RunnablesType;
@@ -26,7 +28,7 @@ const CommandSelector = (props: Props) => {
         setKeyword(e.target.value);
     };
 
-    const sortArray = (array: any[], key: string): any[] => {
+    const sortArray = <T,>(array: T[], key: string): T[] => {
         return array.sort((objectA, objectB) => {
             const a = objectA[key];
             const b = objectB[key];
@@ -69,7 +71,7 @@ const CommandSelector = (props: Props) => {
     ...sortedCommands.subflows, ...sortedCommands.commands];
 
     //コマンドの絞り込み
-    operators = operators.filter((command: any): boolean => {
+    operators = operators.filter((command): boolean => {
         if (isMultiInPorts(command)) {
             return true;
         } else if (command.ports[0].length === numberOfInput) {
@@ -77,25 +79,26 @@ const CommandSelector = (props: Props) => {
         }
         //}
         return false;
-    }).filter((command: any) => {
+    }).filter((command) => {
         noOperators = false;
         if (isNoKeyword) {
             return true;
         }
         const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1);
         const foundDescriptionWithKeyword = (command.description && command.description.indexOf(keyword) != -1);
-        const foundCommandIdWithKeyword = (command.id && command.id.indexOf(keyword) != -1);
+        const foundCommandIdWithKeyword = (command instanceof CommandModel && command.id && command.id.indexOf(keyword) != -1);
 
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });
     let operatorsContainer: React.ReactNode[] = [];
-    let beforeCommand: CommandModelType = null;
-    operators.map((command: CommandModelType, index) => {
+    let beforeCommand: CommandModelType | SubflowCommandModel | Flow;
+    operators.map((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
-            //区切りを表示
-            let label = Constants.lang.classification[command.classification];
+            // 区切りを表示
+            // classificationがない場合はSubFlowのはず
+            let label = Constants.lang.classification[command.classification || 'subflow'];
             if (!label) label = command.classification;
-            operatorsContainer.push(<div key={command.classification + index} className={style.command_separator}>{label}</div>);
+            operatorsContainer.push(<div key={command.classification || '' + index} className={style.command_separator}>{label}</div>);
         }
         operatorsContainer.push(<Command
             nodes={nodes}

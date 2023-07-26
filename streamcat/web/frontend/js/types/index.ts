@@ -30,9 +30,7 @@ export type StepModelType = any;
 // };
 export type CommandParamType = any;
 
-// TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
-// export type CommandModelType = CommandModel | SubflowCommandModel;
-export type CommandModelType = any;
+export type CommandModelType = CommandModel | SubflowCommandModel;
 
 export type CommandPortType = {
     label: string;
