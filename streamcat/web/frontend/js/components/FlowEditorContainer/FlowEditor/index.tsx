@@ -9,13 +9,12 @@ import { Api } from 'Api';
 import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DragType, StepModelType } from 'Types/index';
+import { DragType, RunnablesType, StepModelType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
     addHistoryAction,
-    addMasterAction,
     addSelectStepAction,
     addStepAction,
     deleteSelectStepAction,
@@ -44,7 +43,7 @@ import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
-import { FlowType, FrameType } from 'Model/Library';
+import { Command, Flow, FlowType, FrameType } from 'Model/Library';
 
 const getLock = (targetUUID:string) => {
     return Api.createLock(targetUUID).catch(e => {
@@ -79,7 +78,7 @@ const FlowEditor = () => {
     const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
     const nodes = useSelector((state:State) => state.nodes);
     const history = useSelector((state:State) => state.history);
-    const mast = useSelector((state:State) => state.mast);
+    // const mast = useSelector((state:State) => state.mast);
     const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
     const graph = useSelector((state:State) => state.graph);
     const zoom = useSelector((state:State) => state.zoom);
@@ -90,15 +89,24 @@ const FlowEditor = () => {
     const networkStatus = useSelector((state:State) => state.networkStatus);
     const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
 
+    // runnable: FlowまたはCommandを表す
+    const [runnables, setRunnables] = useState<RunnablesType>({
+        commands: [],
+        visualizers: [],
+        subflows: [],
+        datasrcs: [],
+        datadsts: [],
+    });
+
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
     const loadFlowJSON = (context: {}) => {
         return dispatch(loadFlowJSONAction(context));
     };
-    const addMaster = (context: {}) => {
-        dispatch(addMasterAction(context));
-    };
+    // const addMaster = (context: {}) => {
+    //     dispatch(addMasterAction(context));
+    // };
     const addStep = (add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
         dispatch(addStepAction(add_step, src_step_ids, dst_step_ids));
     };
@@ -307,28 +315,37 @@ const FlowEditor = () => {
     }, []);
 
     useEffect(() => {
-        const preRequest :Promise<any>[] = [];
+        const preRequest :Promise<{}>[] = [];
 
         // サブフローの一覧を取得する
         preRequest.push(
             Api.findSubflows().then(subflows => {
                 const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
                 window.subflows = subflowModels;
-                addMaster({ subflows: subflowModels });
+                // addMaster({ subflows: subflowModels });
+                return {
+                    subflows: subflowModels
+                };
             })
         );
 
         // データソースの一覧を取得する
         preRequest.push(
             Api.findDataSrcs().then(datasrcs => {
-                addMaster({ datasrcs: datasrcs });
+                // addMaster({ datasrcs: datasrcs });
+                return {
+                    datasrcs: datasrcs
+                };
             })
         );
 
         // データデストの一覧を取得する
         preRequest.push(
             Api.findDataDsts().then(datadsts => {
-                addMaster({ datadsts: datadsts });
+                // addMaster({ datadsts: datadsts });
+                return {
+                    datadsts: datadsts
+                };
             })
         );
 
@@ -337,7 +354,10 @@ const FlowEditor = () => {
             Api.findCommands().then(commands => {
                 const commandModels = commands.map(command => new CommandModel(command as any));
                 window.commands = commandModels;
-                addMaster({ commands: commandModels });
+                // addMaster({ commands: commandModels });
+                return {
+                    commands: commandModels
+                };
             })
         );
 
@@ -346,11 +366,23 @@ const FlowEditor = () => {
             Api.findVCommands().then(visualizers => {
                 const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
                 window.visualizers = visualizerModels;
-                addMaster({ visualizers: visualizerModels });
+                // addMaster({ visualizers: visualizerModels });
+                return {
+                    visualizers: visualizerModels
+                };
             })
         );
 
-        Promise.all(preRequest).then(() => {
+        Promise.all(preRequest).then((runnablesFragments) => {
+            // 全てのrunnableを取得した後に、状態変数runnablesにその取得結果を格納する
+            setRunnables({
+                ...runnables,
+                ...runnablesFragments[0],
+                ...runnablesFragments[1],
+                ...runnablesFragments[2],
+                ...runnablesFragments[3],
+                ...runnablesFragments[4],
+            });
             // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
             // これらを取得した後に、findFlowを実行する
             return Api.findFlow(inject_flow_uuid).then(flow => {
@@ -557,7 +589,7 @@ const FlowEditor = () => {
                     text={step.text}
                     invalid={step.invalid}
                     error={step.error}
-                    mast={mast}
+                    runnables={runnables}
                     flow={flow!}
                     selected_step_ids={selected_step_ids}
                     zoom={zoom}
@@ -575,7 +607,7 @@ const FlowEditor = () => {
         return steps;
     }, [nodes,
         selected_step_ids,
-        mast,
+        runnables,
         flow,
         zoom,
         drag,
@@ -717,7 +749,7 @@ const FlowEditor = () => {
             <Inspector
                 selected_step_ids={selected_step_ids}
                 nodes={nodes}
-                mast={mast}
+                runnables={runnables}
                 addStep={addStep}
                 selectSteps={selectSteps}
                 flow={flow!}

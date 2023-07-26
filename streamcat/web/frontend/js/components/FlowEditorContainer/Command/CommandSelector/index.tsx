@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import style from "./style.scss";
 import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { CommandModelType, MastType } from "Types/index";
+import { CommandModelType, RunnablesType } from "Types/index";
 import { TextField } from "Shared/Input";
 
 type Props = {
-    mast: MastType;
+    runnables: RunnablesType;
     nodes:any[];
     numberOfInput: number;
     selected_step_ids: string[];
@@ -52,8 +52,8 @@ const CommandSelector = (props: Props) => {
     };
 
     const { numberOfInput, selected_step_ids, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, mast, nodes } = props;
-    const { commands, subflows, datasrcs, datadsts } = mast;
+        selectSteps, addHistory, runnables, nodes } = props;
+    const { commands, subflows, datasrcs, datadsts } = runnables;
 
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;

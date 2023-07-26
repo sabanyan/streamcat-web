@@ -58,13 +58,13 @@ export type State = {
     current: number,
     nodes: any[]
   },
-  mast: {
-    commands: any[],
-    visualizers: any[],
-    subflows: any[],
-    datasrcs: any[],
-    datadsts: any[],
-  },
+  // mast: {
+  //   commands: any[],
+  //   visualizers: any[],
+  //   subflows: any[],
+  //   datasrcs: any[],
+  //   datadsts: any[],
+  // },
   // selected_tab_id: number,
   drag: DragType | {},
   selected_in_edges: any[],
@@ -103,13 +103,13 @@ let flowEditorReducerInitialState: State = {
     current: 0,
     nodes: []
   },
-  mast: {
-    commands: [],
-    visualizers: [],
-    subflows: [],
-    datasrcs: [],
-    datadsts: [],
-  },
+  // mast: {
+  //   commands: [],
+  //   visualizers: [],
+  //   subflows: [],
+  //   datasrcs: [],
+  //   datadsts: [],
+  // },
   // selected_tab_id: 0,
   drag: {},
   selected_in_edges: [],
@@ -211,11 +211,11 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       }
       break;
     }
-    case ADD_MASTER_ACTION: {
-      let { context } = action;
-      newState.mast = Object.assign(newState.mast, { ...context });
-      break;
-    }
+    // case ADD_MASTER_ACTION: {
+    //   let { context } = action;
+    //   newState.mast = Object.assign(newState.mast, { ...context });
+    //   break;
+    // }
     case ADD_STEP_ACTION: {
       let { add_step, src_step_ids, dst_step_ids } = action;
 
@@ -1295,12 +1295,12 @@ export function loadFlowJSONAction(context: {}) {
  * @param context
  * @returns {{type: string, context: *}}
  */
-export const addMasterAction = (context: {}) => {
-  return {
-    type: ADD_MASTER_ACTION,
-    context: context
-  };
-};
+// export const addMasterAction = (context: {}) => {
+//   return {
+//     type: ADD_MASTER_ACTION,
+//     context: context
+//   };
+// };
 
 /**
  * ステップの更新

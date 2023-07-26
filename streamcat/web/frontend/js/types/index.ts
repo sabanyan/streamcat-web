@@ -1,10 +1,12 @@
+import { Command, Flow } from 'Model/Library';
 import {
     CommandModel,
     CommandStepModel,
     DataFrameStepModel,
     NoteStepModel,
     SubflowCommandModel,
-    SubFlowStepModel
+    SubFlowStepModel,
+    VisualizeModel
 } from 'Model/index';
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
@@ -37,12 +39,12 @@ export type CommandPortType = {
     type: string;
 };
 
-export type MastType =  {
-    commands: any[];
-    visualizers: any[];
-    subflows: any[];
-    datasrcs: any[];
-    datadsts: any[];
+export type RunnablesType =  {
+    commands: CommandModel[];
+    visualizers: VisualizeModel<Command>[];
+    subflows: SubflowCommandModel[];
+    datasrcs: Flow[];
+    datadsts: Flow[];
 };
 
 export type HistoryType = {

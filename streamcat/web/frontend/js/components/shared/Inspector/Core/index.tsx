@@ -13,7 +13,7 @@ import {
 } from 'Shared/Inspector'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import { MastType } from "Types/index";
+import { RunnablesType } from "Types/index";
 import { FlowType, FrameType } from 'Model/Library';
 import {
   addDataDstStepAction,
@@ -28,7 +28,7 @@ type InspectorProps = {
   flow: FlowType;
   selected_step_ids: Array<string>;
   nodes: any[];
-  mast: MastType;
+  runnables: RunnablesType;
   selected_data_source_detail: FrameType;
   lockUUID: string | undefined;
   updateDataFrameDetail: Function
@@ -66,7 +66,7 @@ export const Inspector = (props:InspectorProps) => {
     };
 
 
-    const { selected_step_ids, lockUUID, nodes, mast, flow,
+    const { selected_step_ids, lockUUID, nodes, runnables, flow,
       selected_data_source_detail,
       inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, addStep,updateStep,selectSteps,addHistory,
@@ -80,7 +80,7 @@ export const Inspector = (props:InspectorProps) => {
     if (selected_step_ids.length === 1) {
       if (selected_step_ids[0] === 'flow') {
         property = <FlowSettingsInspector
-          mast={mast}
+          runnables={runnables}
           selected_step_ids={selected_step_ids}
           nodes={flow.flow.nodes}
           addStep={addStep}
@@ -100,7 +100,7 @@ export const Inspector = (props:InspectorProps) => {
             nodes={flow.flow.nodes}
             selected_data_source_detail={selected_data_source_detail}
             updateDataFrameDetail={updateDataFrameDetail}
-            mast={mast}
+            runnables={runnables}
             lockUUID={lockUUID}
             deleteSteps={deleteSteps}
             selectSteps={selectSteps}
@@ -146,7 +146,7 @@ export const Inspector = (props:InspectorProps) => {
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
             selected_step_ids={selected_step_ids}
-            mast={mast}
+            // runnables={runnables}
             nodes={nodes}
             updateStep={updateStep}
             addHistory={addHistory}
@@ -168,7 +168,7 @@ export const Inspector = (props:InspectorProps) => {
     } else if (!selected_step_ids.length) {
       property = <FlowSettingsInspector
         nodes={flow.flow.nodes}
-        mast={mast}
+        runnables={runnables}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
         addDataSrcStep={addDataSrcStep}
@@ -186,7 +186,7 @@ export const Inspector = (props:InspectorProps) => {
         deleteSteps={deleteSteps}
         selectSteps={selectSteps}
         nodes={flow.flow.nodes}
-        mast={mast}
+        runnables={runnables}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
         addDataSrcStep={addDataSrcStep}

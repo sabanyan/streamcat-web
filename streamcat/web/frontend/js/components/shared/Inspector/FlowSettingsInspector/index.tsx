@@ -6,10 +6,10 @@ import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import { FlowType } from "Model/Library";
-import { MastType } from 'Types/index';
+import { RunnablesType } from 'Types/index';
 
 type Props = {
-    mast: MastType;
+    runnables: RunnablesType;
     selected_step_ids: string[];
     nodes: any[];
     addStep: Function;
@@ -97,7 +97,7 @@ const FlowSettingsInspector = (props: Props) => {
         });
     };
 
-    const { flow, mast, addStep, addDataDstStep, addDataSrcStep,
+    const { flow, runnables, addStep, addDataDstStep, addDataSrcStep,
             selectSteps, selected_step_ids, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled, nodes } = props;
 
@@ -157,7 +157,7 @@ const FlowSettingsInspector = (props: Props) => {
                     <div className={style.full_hr} />
                     <CommandSelector
                         nodes={nodes}
-                        mast={mast}
+                        runnables={runnables}
                         numberOfInput={0}
                         selected_step_ids={selected_step_ids}
                         addStep={addStep}

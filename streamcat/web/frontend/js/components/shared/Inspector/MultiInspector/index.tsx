@@ -6,13 +6,13 @@ import {CommandSelector} from 'FlowEditorContainer/Command';
 import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from 'Model/index';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
-import { MastType } from 'Types/index';
+import { RunnablesType } from 'Types/index';
 
 type Props = {
     deleteSteps: Function;
     selectSteps: Function;
     nodes: any[];
-    mast: MastType;
+    runnables: RunnablesType;
     selected_step_ids: string[];
     addStep: Function;
     addDataSrcStep: Function;
@@ -63,7 +63,7 @@ const MultiInspector = (props: Props) => {
         return cnt;
     };
 
-    const {mast, selected_step_ids, addStep, addDataSrcStep, addDataDstStep,
+    const {runnables, selected_step_ids, addStep, addDataSrcStep, addDataDstStep,
            selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden, nodes} = props;
     const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
 
@@ -72,7 +72,7 @@ const MultiInspector = (props: Props) => {
         commandSelector = <div>
             <CommandSelector
                 nodes={nodes}
-                mast={mast}
+                runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
                 selected_step_ids={selected_step_ids}
                 addStep={addStep}

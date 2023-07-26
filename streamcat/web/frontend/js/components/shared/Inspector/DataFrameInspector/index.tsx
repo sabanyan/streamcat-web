@@ -7,14 +7,14 @@ import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
 import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {MastType} from "Types/index";
+import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
 import { FlowType, FrameType, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 
 type Props = {
     selected_data_source_detail: FrameType;
-    mast: MastType;
+    runnables: RunnablesType;
     deleteSteps: Function;
     selectSteps: Function;
     addHistory: Function;
@@ -92,8 +92,8 @@ const DataFrameInspector = (props: Props) => {
     useEffect(() => {
         if(!showPreview) return;
         
-        const {mast, lockUUID} = props;
-        let visualizers = mast.visualizers;
+        const {runnables, lockUUID} = props;
+        let visualizers = runnables.visualizers;
         const flowUuid = inject_flow_uuid;
         const selected_step = getSelectedStep();
         let id = selected_step.id;
@@ -270,7 +270,7 @@ const DataFrameInspector = (props: Props) => {
         updateStep(newSelectedStep);
     };
 
-    const { mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
+    const { runnables, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
             selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
@@ -399,7 +399,7 @@ const DataFrameInspector = (props: Props) => {
                         <div className={style.full_hr} />
                         <CommandSelector
                             nodes={[]}
-                            mast={mast}
+                            runnables={runnables}
                             numberOfInput={1}
                             selected_step_ids={selected_step_ids}
                             addStep={addStep}

@@ -7,18 +7,18 @@ import {SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
-import {CommandParamType, MastType, StepModelType} from "Types/index";
+import {CommandParamType, RunnablesType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
 
 type Props = {
     selected_step_ids: string[];
-    mast: MastType;
+    // runnables: RunnablesType;
     nodes: any[];
     updateStep: Function;
     addHistory: Function;
     selectSteps: Function;
     deleteSteps: Function;
-    children?: React.ReactNode;
+    // children?: React.ReactNode;
     baseInspectorDisabled: boolean;
 }
 

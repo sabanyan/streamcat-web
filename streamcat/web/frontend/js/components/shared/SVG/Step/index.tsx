@@ -5,7 +5,7 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel }
 import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
-import { DragType, MastType, StepModelType } from "Types/index";
+import { DragType, RunnablesType, StepModelType } from "Types/index";
 import { FlowType } from "Model/Library";
 
 let mouseMoveEvent;
@@ -19,7 +19,7 @@ interface Props {
     text: string;
     invalid: {};
     error: {};
-    mast: MastType;
+    runnables: RunnablesType;
     flow: FlowType;
     selected_step_ids: string[];
     zoom: number;
@@ -281,7 +281,7 @@ const Step = (props: Props) => {
         }
     });
 
-    const { position, mast, flow, invalid, error, model } = props;
+    const { position, runnables, flow, invalid, error, model } = props;
     const { x, y } = position;
     let icon: JSX.Element | null;
 
@@ -331,8 +331,8 @@ const Step = (props: Props) => {
     } else if (isCommandStep(step)) {
         // コマンドノード
         let command;
-        if (mast.commands) {
-            mast.commands.forEach(c => {
+        if (runnables.commands) {
+            runnables.commands.forEach(c => {
                 if (c.id === step.commandId) command = c;
             });
             icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />;
