@@ -80,7 +80,6 @@ const FlowEditor = () => {
     const nodes = useSelector((state:State) => state.nodes);
     const history = useSelector((state:State) => state.history);
     const mast = useSelector((state:State) => state.mast);
-    const selected_tab_id = useSelector((state:State) => state.selected_tab_id);
     const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
     const graph = useSelector((state:State) => state.graph);
     const zoom = useSelector((state:State) => state.zoom);
@@ -133,9 +132,6 @@ const FlowEditor = () => {
     // const executeFlow = (flowid: string) => {
     //     // flowidは未使用
     //     dispatch(executeFlowAction(flowid));
-    // };
-    // const selectTab = (tab_id: string) => {
-    //     dispatch(selectTabAction(tab_id));
     // };
     const updateDataFrameDetail = (detail: FrameType) => {
         dispatch(updateDataFrameDetailAction(detail));

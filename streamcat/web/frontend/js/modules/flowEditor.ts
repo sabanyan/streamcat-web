@@ -65,7 +65,7 @@ export type State = {
     datasrcs: any[],
     datadsts: any[],
   },
-  selected_tab_id: number,
+  // selected_tab_id: number,
   drag: DragType | {},
   selected_in_edges: any[],
   selected_out_edges: any[],
@@ -110,7 +110,7 @@ let flowEditorReducerInitialState: State = {
     datasrcs: [],
     datadsts: [],
   },
-  selected_tab_id: 0,
+  // selected_tab_id: 0,
   drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
@@ -665,13 +665,6 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // })
       // newState.nodes = newSteps
       // return newState
-    }
-    case SELECT_TAB_ACTION: {
-      newState = {
-        ...state,
-        selected_tab_id: action.selected_tab_id
-      };
-      break;
     }
     case DRAG_START_ACTION: {
       newState = {
@@ -1456,18 +1449,6 @@ export const executeFlowAction = (flowid: string) => {
 export const sortFlowAction = () => {
   return {
     type: SORT_FLOW_ACTION
-  };
-};
-
-/**
- * タブの選択
- * @param
- * @returns {{type: string, selected_steps: *}}
- */
-export const selectTabAction = (tab_id: string) => {
-  return {
-    type: SELECT_TAB_ACTION,
-    selected_tab_id: tab_id
   };
 };
 
