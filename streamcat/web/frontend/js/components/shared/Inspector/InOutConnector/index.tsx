@@ -11,7 +11,7 @@ type Props = {
     // selectedStep: SubFlowStepModel | CommandStepModel;
     selectedStep: any;
     updateStep: Function;
-    nodes: [];
+    nodes: any[];
     // FIXIT: 使用していないプロパティ?
     // selectedSubFlow: FlowModel | null;
     disabled?: boolean;

@@ -33,6 +33,6 @@ const enhancers = composeWithDevTools(
     // other store enhancers if any
 )
 
-const store = createStore(rootReducer, enhancers)
+const store = createStore(FlowEditorReducer, enhancers)
 
 export default store

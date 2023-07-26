@@ -13,7 +13,7 @@ type State = {
 }
 
 type Props = {
-  nodes: [];
+  nodes: any[];
 
   selected_step_ids: string[];
   baseInspectorDisabled: boolean;

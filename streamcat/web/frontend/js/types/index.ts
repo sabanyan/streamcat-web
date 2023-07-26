@@ -47,7 +47,7 @@ export type MastType =  {
 
 export type HistoryType = {
     current: number;
-    nodes: [];
+    nodes: any[];
 };
 
 export type DragType = {

@@ -9,7 +9,7 @@ import { Api } from 'Api';
 import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { StepModelType } from 'Types/index';
+import { DragType, StepModelType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
@@ -31,7 +31,8 @@ import {
     updateStepAction,
     refreshCanvasSizeAction,
     refreshFlowAction,
-    updateLastSavedFlowAction
+    updateLastSavedFlowAction,
+    State
 } from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
@@ -62,9 +63,9 @@ const getLock = (targetUUID:string) => {
 const FlowEditor = () => {
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector((state: any) => state.FlowEditorReducer.folderUuid);
+    const folderUuid = useSelector((state:State) => state.folderUuid);
 
-    const _modifiedAt = useSelector((state: any) => state.FlowEditorReducer.modifiedAt);
+    const _modifiedAt = useSelector((state:State) => state.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
@@ -73,22 +74,22 @@ const FlowEditor = () => {
         }
     }, [_modifiedAt])
     const [modifiedAt, setModifiedAt] = useState<string>();
-    const flow = useSelector<any, FlowType>((state: any) => state.FlowEditorReducer.flow);
-    const drag = useSelector((state: any) => state.FlowEditorReducer.drag);
-    const selected_step_ids = useSelector((state: any) => state.FlowEditorReducer.selected_step_ids);
-    const nodes = useSelector((state: any) => state.FlowEditorReducer.nodes);
-    const history = useSelector((state: any) => state.FlowEditorReducer.history);
-    const mast = useSelector((state: any) => state.FlowEditorReducer.mast);
-    const selected_tab_id = useSelector((state: any) => state.FlowEditorReducer.selected_tab_id);
-    const selected_data_source_detail = useSelector((state: any) => state.FlowEditorReducer.selected_data_source_detail);
-    const graph = useSelector((state: any) => state.FlowEditorReducer.graph);
-    const zoom = useSelector((state: any) => state.FlowEditorReducer.zoom);
-    const inspector = useSelector((state: any) => state.FlowEditorReducer.inspector);
-    const editor = useSelector((state: any) => state.FlowEditorReducer.editor);
-    const editMode = useSelector((state: any) => state.FlowEditorReducer.editMode);
-    const executeMode = useSelector((state: any) => state.FlowEditorReducer.executeMode);
-    const networkStatus = useSelector((state: any) => state.FlowEditorReducer.networkStatus);
-    const lastSavedFlow = useSelector<any, FlowType>((state: any) => state.FlowEditorReducer.lastSavedFlow);
+    const flow = useSelector((state:State) => state.flow);
+    const drag = useSelector((state:State) => state.drag);
+    const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
+    const nodes = useSelector((state:State) => state.nodes);
+    const history = useSelector((state:State) => state.history);
+    const mast = useSelector((state:State) => state.mast);
+    const selected_tab_id = useSelector((state:State) => state.selected_tab_id);
+    const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
+    const graph = useSelector((state:State) => state.graph);
+    const zoom = useSelector((state:State) => state.zoom);
+    const inspector = useSelector((state:State) => state.inspector);
+    const editor = useSelector((state:State) => state.editor);
+    const editMode = useSelector((state:State) => state.editMode);
+    const executeMode = useSelector((state:State) => state.executeMode);
+    const networkStatus = useSelector((state:State) => state.networkStatus);
+    const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
 
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
@@ -181,11 +182,11 @@ const FlowEditor = () => {
                     alert("フロー名を指定してください")
                 } else {
                     // フローを別名保存する
-                    Api.findFolder(folderUuid).then(folder => {
+                    Api.findFolder(folderUuid as string).then(folder => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
-                            const targetFlow = flow;
+                            const targetFlow = flow as FlowType;
                             targetFlow.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
                             Api.createLock(anotherFlow.uuid).then(lock => {
@@ -421,7 +422,7 @@ const FlowEditor = () => {
                 }));
             } else {
                 // フロー保存
-                return await targetFlow.update(flow.flow, lock.uuid).then(flow => {
+                return await targetFlow.update(flow!.flow, lock.uuid).then(flow => {
                     updateLastSavedFlow();
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                     reslove(flow);
@@ -448,7 +449,7 @@ const FlowEditor = () => {
 
         return new Promise(async (reslove, reject) => {
             // フロー保存
-            anotherFlow.update(flow.flow, newLockUUID).then(flow => {
+            anotherFlow.update(flow!.flow, newLockUUID).then(flow => {
                 updateLastSavedFlow();
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                 reslove(flow);
@@ -469,7 +470,7 @@ const FlowEditor = () => {
     };
 
     const onClickSaveFlow = () => {
-        const targetFlow = flow;
+        const targetFlow = flow as FlowType;
         return saveFlowPromise(targetFlow).then(flow => {
             if(!flow){
                 return flow;
@@ -561,7 +562,7 @@ const FlowEditor = () => {
                     invalid={step.invalid}
                     error={step.error}
                     mast={mast}
-                    flow={flow}
+                    flow={flow!}
                     selected_step_ids={selected_step_ids}
                     zoom={zoom}
                     drag={drag}
@@ -628,11 +629,12 @@ const FlowEditor = () => {
 
     const renderSelector = useCallback(() => {
         let selector: any = null;
-        if (Object.keys(drag).length) {
-            selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x, zoom)}
-                sy={ZoomUtil.zoomReverse(drag.start.y, zoom)}
-                ex={ZoomUtil.zoomReverse(drag.end.x, zoom)}
-                ey={ZoomUtil.zoomReverse(drag.end.y, zoom)} />;
+        if(drag.hasOwnProperty('start') && drag.hasOwnProperty('end')){
+            const drag0 = drag as DragType;
+            selector = <Selector sx={ZoomUtil.zoomReverse(drag0.start.x, zoom)}
+                sy={ZoomUtil.zoomReverse(drag0.start.y, zoom)}
+                ex={ZoomUtil.zoomReverse(drag0.end.x, zoom)}
+                ey={ZoomUtil.zoomReverse(drag0.end.y, zoom)} />;
         }
         return selector;
     }, [drag, zoom]);
@@ -720,13 +722,12 @@ const FlowEditor = () => {
                 selected_step_ids={selected_step_ids}
                 nodes={nodes}
                 mast={mast}
-                selected_tab_id={selected_tab_id}
                 addStep={addStep}
                 selectSteps={selectSteps}
-                flow={flow}
+                flow={flow!}
                 lockUUID={lockUUID}
                 inspector={inspector}
-                selected_data_source_detail={selected_data_source_detail}
+                selected_data_source_detail={selected_data_source_detail!}
                 updateDataFrameDetail={updateDataFrameDetail}
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}

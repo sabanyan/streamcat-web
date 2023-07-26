@@ -9,7 +9,7 @@ import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
 type Props = {
     portLabel: string;
     index: number;
-    nodes: [];
+    nodes: any[];
     selectedStep: any;
     updateStep: Function;
     disabled: boolean;

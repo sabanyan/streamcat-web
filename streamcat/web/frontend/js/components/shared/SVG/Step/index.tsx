@@ -23,7 +23,7 @@ interface Props {
     flow: FlowType;
     selected_step_ids: string[];
     zoom: number;
-    drag: DragType;
+    drag: DragType | {};
     addSelectStep: Function;
     deleteSelectStep: Function;
     selectSteps: Function;
@@ -207,8 +207,9 @@ const Step = (props: Props) => {
             height: Constants.default.step.height
         };
 
-        const { start, end } = drag;
-        if (start && end) {
+        if(drag.hasOwnProperty('start') && drag.hasOwnProperty('end')){
+            const { start, end } = drag as DragType;
+
             //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 
             let sx = (start.x <= end.x) ? start.x : end.x;

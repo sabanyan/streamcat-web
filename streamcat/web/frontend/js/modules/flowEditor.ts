@@ -3,9 +3,10 @@ import Constants from "Constants/index";
 import { FlowUtil, GraphUtil, StateUtil, ZoomUtil } from "Utils/index";
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
-import { CommandPortType, StepModelType } from "../types";
+import { CommandPortType, DragType, StepModelType } from "../types";
 import _ from "lodash";
 import { FlowType, FrameType, Port } from "Model/Library";
+import { Action } from "redux";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -47,7 +48,7 @@ const ADD_DATADST_ACTION = "add_datadst_action";
 const ADD_DATASRC_ACTION = "add_datasrc_action";
 const graph: GraphUtil = new GraphUtil();
 
-type State = {
+export type State = {
   // allowlist: {},
   selected_step_ids: string[],
   graph: any,
@@ -65,10 +66,10 @@ type State = {
     datadsts: any[],
   },
   selected_tab_id: number,
-  drag: {},
+  drag: DragType | {},
   selected_in_edges: any[],
   selected_out_edges: any[],
-  selected_data_source_detail: {},
+  selected_data_source_detail?: FrameType,
   // editor
   editor: {
     width: number,
@@ -113,7 +114,7 @@ let flowEditorReducerInitialState: State = {
   drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
-  selected_data_source_detail: {},
+  selected_data_source_detail: undefined,
   // editor
   editor: {
     width: window.innerWidth - Constants.default.inspector.width,
@@ -134,13 +135,36 @@ let flowEditorReducerInitialState: State = {
   flow: undefined
 };
 
-export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action: any) => {
+type FlowEditorAction = Action & {
+  context: FlowType;
+  add_step: any;
+  src_step_ids: string[];
+  dst_step_ids: string[];
+  flow: FlowType;
+  step_ids: string[];
+  paste_nodes: any;
+  selected_steps: any[];
+  selected_step_id: string;
+  selected_tab_id: number;
+  x: number;
+  y: number;
+  offset: number;
+  value: number;
+  detail: any;
+  payload: any;
+  step: any;
+  width: number;
+  mode: string;
+  status: NetworkStatusValue;
+};
+
+export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action:FlowEditorAction) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState: State = StateUtil.deepCopy(state);
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
-      let { context, onSuccess }: {context:FlowType, onSuccess:any} = action;
+      let { context } = action;
       const flowJson = graph.load(context.flow);
       newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;
@@ -162,7 +186,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
     case REFRESH_FLOW_ACTION: {
-      let { context, onSuccess } = action;
+      let { context } = action;
       const flowJson = graph.load(context.flow);
       newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;

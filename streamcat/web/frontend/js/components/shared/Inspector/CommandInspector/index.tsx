@@ -13,7 +13,7 @@ import CommandModel from "Model/Command/CommandModel";
 type Props = {
     selected_step_ids: string[];
     mast: MastType;
-    nodes: [];
+    nodes: any[];
     updateStep: Function;
     addHistory: Function;
     selectSteps: Function;

@@ -21,9 +21,9 @@ type Props = {
     redo: Function;
     undo: Function;
     selected_step_ids: string[];
-    nodes: [];
+    nodes: any[];
     history: HistoryType;
-    drag: DragType;
+    drag: DragType | {};
     children: React.ReactNode;
 }
 
@@ -165,7 +165,7 @@ const PaperScroller = (props: Props) => {
         const dragging = (x: number, y: number) => {
             dispatch(draggingAction(x, y));
         };
-        if (drag.start) {
+        if(drag.hasOwnProperty('start')){
             const target_rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - target_rect.left;
             const y = e.clientY - target_rect.top;
@@ -179,8 +179,8 @@ const PaperScroller = (props: Props) => {
         const dragEnd = (x: number, y: number) => {
             dispatch(dragEndAction(x, y));
         };
-        if (drag.start) {
-            if (drag.end) {
+        if(drag.hasOwnProperty('start')){
+            if(drag.hasOwnProperty('end')){
                 const target_rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - target_rect.left;
                 const y = e.clientY - target_rect.top;

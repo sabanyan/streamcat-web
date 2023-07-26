@@ -27,9 +27,8 @@ type InspectorProps = {
   inspector: { width: number };
   flow: FlowType;
   selected_step_ids: Array<string>;
-  nodes: [];
+  nodes: any[];
   mast: MastType;
-  selected_tab_id: string;
   selected_data_source_detail: FrameType;
   lockUUID: string | undefined;
   updateDataFrameDetail: Function

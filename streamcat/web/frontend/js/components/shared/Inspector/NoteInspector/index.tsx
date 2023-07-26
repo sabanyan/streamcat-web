@@ -9,7 +9,7 @@ import {Spacer} from 'Shared/Base';
 
 interface Props {
     selected_step_ids: string[];
-    nodes: [];
+    nodes: any[];
     selectSteps: Function;
     updateStep: Function;
     deleteSteps: Function;
