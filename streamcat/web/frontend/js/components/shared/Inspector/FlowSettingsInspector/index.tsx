@@ -11,7 +11,7 @@ import { RunnablesType } from 'Types/index';
 type Props = {
     runnables: RunnablesType;
     selected_step_ids: string[];
-    nodes: any[];
+    // nodes: any[];
     addStep: Function;
     addDataSrcStep: Function;
     addDataDstStep: Function;
@@ -99,7 +99,7 @@ const FlowSettingsInspector = (props: Props) => {
 
     const { flow, runnables, addStep, addDataDstStep, addDataSrcStep,
             selectSteps, selected_step_ids, addHistory, addFlowVariableHidden,
-            commandSelectorHidden, baseInspectorDisabled, nodes } = props;
+            commandSelectorHidden, baseInspectorDisabled } = props;
 
     if (!flow) return null;
 
@@ -156,7 +156,7 @@ const FlowSettingsInspector = (props: Props) => {
                 <Fragment>
                     <div className={style.full_hr} />
                     <CommandSelector
-                        nodes={nodes}
+                        // nodes={nodes}
                         runnables={runnables}
                         numberOfInput={0}
                         selected_step_ids={selected_step_ids}

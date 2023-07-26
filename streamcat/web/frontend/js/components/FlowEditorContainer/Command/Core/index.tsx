@@ -11,7 +11,7 @@ import { WebUtil } from "Utils/index";
 import { Flow } from "Model/Library";
 
 type Props = {
-    nodes: any[];
+    // nodes: any[];
     command: CommandModelType | SubflowCommandModel | Flow;
     selected_step_ids: string[];
     addStep: Function;

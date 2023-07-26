@@ -64,14 +64,14 @@ const MultiInspector = (props: Props) => {
     };
 
     const {runnables, selected_step_ids, addStep, addDataSrcStep, addDataDstStep,
-           selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden, nodes} = props;
+           selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
     const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
 
     let commandSelector;
     if (numberOfSelectedDataSources) {
         commandSelector = <div>
             <CommandSelector
-                nodes={nodes}
+                // nodes={nodes}
                 runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
                 selected_step_ids={selected_step_ids}

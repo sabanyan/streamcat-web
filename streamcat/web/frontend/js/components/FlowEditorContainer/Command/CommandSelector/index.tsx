@@ -9,7 +9,7 @@ import { Flow } from "Model/Library";
 
 type Props = {
     runnables: RunnablesType;
-    nodes:any[];
+    // nodes:any[];
     numberOfInput: number;
     selected_step_ids: string[];
     addStep: Function;
@@ -54,7 +54,7 @@ const CommandSelector = (props: Props) => {
     };
 
     const { numberOfInput, selected_step_ids, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, runnables, nodes } = props;
+        selectSteps, addHistory, runnables } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
     const isNoKeyword = (keyword.length == 0);
@@ -101,7 +101,7 @@ const CommandSelector = (props: Props) => {
             operatorsContainer.push(<div key={command.classification || '' + index} className={style.command_separator}>{label}</div>);
         }
         operatorsContainer.push(<Command
-            nodes={nodes}
+            // nodes={nodes}
             key={index}
             command={command}
             selected_step_ids={selected_step_ids}

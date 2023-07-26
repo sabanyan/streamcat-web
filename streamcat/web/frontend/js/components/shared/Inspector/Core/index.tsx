@@ -82,7 +82,7 @@ export const Inspector = (props:InspectorProps) => {
         property = <FlowSettingsInspector
           runnables={runnables}
           selected_step_ids={selected_step_ids}
-          nodes={flow.flow.nodes}
+          // nodes={flow.flow.nodes}
           addStep={addStep}
           addDataSrcStep={addDataSrcStep}
           addDataDstStep={addDataDstStep}
@@ -124,7 +124,6 @@ export const Inspector = (props:InspectorProps) => {
             nodes={nodes}
             selected_step_ids={selected_step_ids}
             baseInspectorDisabled={baseInspectorDisabled}
-
             updateStep={updateStep}
             addHistory={addHistory}
             selectSteps={selectSteps}
@@ -167,7 +166,7 @@ export const Inspector = (props:InspectorProps) => {
       }
     } else if (!selected_step_ids.length) {
       property = <FlowSettingsInspector
-        nodes={flow.flow.nodes}
+        // nodes={flow.flow.nodes}
         runnables={runnables}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
