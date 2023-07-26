@@ -53,10 +53,10 @@ export type State = {
   selected_step_ids: string[],
   graph: any,
   zoom: number,
-  nodes: any[],
+  nodes: (CommandStepModel | DataFrameStepModel)[],
   history: {
     current: number,
-    nodes: any[]
+    nodes: (CommandStepModel | DataFrameStepModel)[][]
   },
   // mast: {
   //   commands: any[],
@@ -729,7 +729,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     }
 
     case SORT_STEP_SRC_END_ACTION: {
-      newState.nodes.forEach((node, index) => {
+      newState.nodes.forEach((node:any, index) => {
         if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
           node.onSortEnd(action.payload.oldIndex, action.payload.newIndex);
         }

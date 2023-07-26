@@ -1,7 +1,7 @@
 //@flow
 import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel} from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
 
 export default class FlowUtil {
@@ -36,7 +36,7 @@ export default class FlowUtil {
     return param
   }
 
-  static getFlowJson (nodes: [], projectId: string, projectName: string): {} {
+  static getFlowJson (nodes: BaseStepModel[], projectId: string, projectName: string): {} {
     const flow_json = {
       projectId: projectId,
       name: projectName,
@@ -88,7 +88,7 @@ export default class FlowUtil {
   //   return newNodeId
   // }
 
-  static removeNodeId (nodes: any[], node_ids: any[]) {
+  static removeNodeId (nodes: CommandStepModel[], node_ids: string[]) {
     node_ids.forEach((removeId) => {
       nodes.forEach((node) => {
         if (node.dsts) {
@@ -153,15 +153,15 @@ export default class FlowUtil {
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
-  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: any[]) {
+  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: BaseStepModel[]) {
     let result = {x: x, y: y}
     const threshold = 3
     nodes.forEach((node) => {
       //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
-      if (parseInt(node.position.x) >= x - threshold &&
-        parseInt(node.position.x) <= x + threshold &&
-        parseInt(node.position.y) >= y - threshold &&
-        parseInt(node.position.y) <= y + threshold) {
+      if (node.position.x >= x - threshold &&
+          node.position.x <= x + threshold &&
+          node.position.y >= y - threshold &&
+          node.position.y <= y + threshold) {
         //合致していた場合新しい座標を計算
         result = FlowUtil.getNotOverlapNodePosition({x: x + 10, y: y + 10}, nodes)
       }
