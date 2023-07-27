@@ -89,8 +89,8 @@ export type State = {
   lastSavedFlow?: FlowType,
   flow?: FlowType,
   // originalFlow?: {}
-  executeMode?: any,
-  editMode?: any
+  executeMode: FlowExecuteModeValue | null,
+  editMode: FlowEditModeValue | null
 }
 
 let flowEditorReducerInitialState: State = {
@@ -132,7 +132,9 @@ let flowEditorReducerInitialState: State = {
   // modifiedAt: null,
   networkStatus: NetworkStatusValue.UnKnown,
   lastSavedFlow: undefined,
-  flow: undefined
+  flow: undefined,
+  executeMode: null,
+  editMode: null
 };
 
 type FlowEditorAction = Action & {
@@ -154,7 +156,8 @@ type FlowEditorAction = Action & {
   payload: any;
   step: any;
   width: number;
-  mode: string;
+  executeMode: FlowExecuteModeValue;
+  editMode: FlowEditModeValue;
   status: NetworkStatusValue;
 };
 
@@ -785,7 +788,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case SET_EDIT_MODE_ACTION: {
       newState = {
         ...newState,
-        editMode: action.mode
+        editMode: action.editMode
       };
       break;
     }
@@ -801,7 +804,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case SET_EXECUTE_MODE_ACTION: {
       newState = {
         ...newState,
-        executeMode: action.mode
+        executeMode: action.executeMode
       };
       break;
     }
@@ -1543,17 +1546,17 @@ export const refreshCanvasSizeAction = () => {
   };
 };
 
-export const setExecuteModeAction = (mode: FlowExecuteModeValue) => {
+export const setExecuteModeAction = (executeMode: FlowExecuteModeValue) => {
   return {
     type: SET_EXECUTE_MODE_ACTION,
-    mode: mode
+    executeMode: executeMode
   };
 };
 
-export const setEditModeAction = (mode: FlowEditModeValue) => {
+export const setEditModeAction = (editMode: FlowEditModeValue) => {
   return {
     type: SET_EDIT_MODE_ACTION,
-    mode: mode
+    editMode: editMode
   };
 };
 
