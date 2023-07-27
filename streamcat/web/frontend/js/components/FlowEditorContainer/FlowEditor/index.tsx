@@ -86,7 +86,7 @@ const FlowEditor = () => {
     const editor = useSelector((state:State) => state.editor);
     const editMode = useSelector((state:State) => state.editMode);
     const executeMode = useSelector((state:State) => state.executeMode);
-    const networkStatus = useSelector((state:State) => state.networkStatus);
+    // const networkStatus = useSelector((state:State) => state.networkStatus);
     const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
 
     // runnable: FlowまたはCommandを表す
@@ -98,8 +98,12 @@ const FlowEditor = () => {
         datadsts: [],
     });
 
+    // ネットワークの接続状態
+    const [networkStatus, setNetworkStatus] = useState<NetworkStatusValue>(NetworkStatusValue.UnKnown)
+    // ネットワークオフラインを通知するポップアップのId
+    // (オンライン復帰時にポップアップを閉じるために一時保存する)
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
-    const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
+    // const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
     const loadFlowJSON = (context: {}) => {
         return dispatch(loadFlowJSONAction(context));
@@ -246,11 +250,11 @@ const FlowEditor = () => {
         })
     }, [hasShowConfirmReloadFlowModal]);
 
-    useEffect(() => {
-        if (initialEditMode === null) {
-            setInitialEditMode(editMode);
-        }
-    }, [editMode]);
+    // useEffect(() => {
+    //     if (initialEditMode === null) {
+    //         setInitialEditMode(editMode);
+    //     }
+    // }, [editMode]);
 
     useEffect(() => {
         if (networkStatus === NetworkStatusValue.Online) {
@@ -423,6 +427,25 @@ const FlowEditor = () => {
         // ブラウザバックによってブラウザタブを閉じれるように設定する
         WebUtil.setCloseWindowOnBack();
 
+    }, []);
+
+    // 初回レンダリング時のみ実行する
+    useEffect(() => {
+        const getNavigatorNetworkStatus = () => {
+            if(navigator.onLine){
+                console.log('Online')
+                return NetworkStatusValue.Online;
+            }else{
+                console.log('offLine')
+                return NetworkStatusValue.Offline;
+            }
+        }
+        // 現在のネットワーク接続状態を設定する
+        setNetworkStatus(getNavigatorNetworkStatus());
+        // オンライン復帰時のイベントハンドラを設定する
+        window.addEventListener("online", () => setNetworkStatus(getNavigatorNetworkStatus()));
+        // ネットワーク切断時のイベントハンドラを設定する
+        window.addEventListener("offline", () => setNetworkStatus(getNavigatorNetworkStatus()));
     }, []);
 
     const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長

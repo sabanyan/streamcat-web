@@ -3,7 +3,7 @@ import {useState} from "react";
 import { useDispatch } from 'react-redux';
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
-import {CommandStepModel, SubFlowStepModel} from "Model/index";
+import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/index";
 import {DragType, HistoryType} from "Types/index";
 import {
     copyStepsAction,
@@ -21,7 +21,7 @@ type Props = {
     redo: Function;
     undo: Function;
     selected_step_ids: string[];
-    nodes: any[];
+    nodes: (CommandStepModel|DataFrameStepModel)[];
     history: HistoryType;
     drag: DragType | {};
     children: React.ReactNode;

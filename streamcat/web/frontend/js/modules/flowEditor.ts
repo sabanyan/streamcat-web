@@ -85,7 +85,7 @@ export type State = {
   // folderPath: string | null,
   // folderUuid: string | null,
   // modifiedAt: string | null,
-  networkStatus: NetworkStatusValue,
+  // networkStatus: NetworkStatusValue,
   lastSavedFlow?: FlowType,
   flow?: FlowType,
   // originalFlow?: {}
@@ -130,7 +130,7 @@ let flowEditorReducerInitialState: State = {
   // folderPath: null,
   // folderUuid: null,
   // modifiedAt: null,
-  networkStatus: NetworkStatusValue.UnKnown,
+  // networkStatus: NetworkStatusValue.UnKnown,
   lastSavedFlow: undefined,
   flow: undefined,
   executeMode: null,
@@ -793,13 +793,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
 
-    case SET_NETWORK_STATUS: {
-      newState = {
-        ...newState,
-        networkStatus: action.status
-      };
-      break;
-    }
+    // case SET_NETWORK_STATUS: {
+    //   newState = {
+    //     ...newState,
+    //     networkStatus: action.status
+    //   };
+    //   break;
+    // }
 
     case SET_EXECUTE_MODE_ACTION: {
       newState = {
@@ -1560,12 +1560,12 @@ export const setEditModeAction = (editMode: FlowEditModeValue) => {
   };
 };
 
-export const setNetworkStatusAction = (status: NetworkStatusValue) => {
-  return {
-    type: SET_NETWORK_STATUS,
-    status: status
-  };
-};
+// export const setNetworkStatusAction = (status: NetworkStatusValue) => {
+//   return {
+//     type: SET_NETWORK_STATUS,
+//     status: status
+//   };
+// };
 
 export const refreshFlowAction = (context: {}) => {
   return {
