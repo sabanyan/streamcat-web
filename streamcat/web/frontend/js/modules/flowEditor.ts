@@ -69,7 +69,7 @@ export type State = {
   drag: DragType | {},
   selected_in_edges: any[],
   selected_out_edges: any[],
-  selected_data_source_detail?: FrameType,
+  // selected_data_source_detail?: FrameType,
   // editor
   editor: {
     width: number,
@@ -114,7 +114,7 @@ let flowEditorReducerInitialState: State = {
   drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
-  selected_data_source_detail: undefined,
+  // selected_data_source_detail: undefined,
   // editor
   editor: {
     width: window.innerWidth - Constants.default.inspector.width,
@@ -726,10 +726,10 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
 
-    case UPDATE_DATA_SOURCE_DETAIL_ACTION: {
-      newState.selected_data_source_detail = action.detail;
-      break;
-    }
+    // case UPDATE_DATA_SOURCE_DETAIL_ACTION: {
+    //   newState.selected_data_source_detail = action.detail;
+    //   break;
+    // }
 
     case SORT_STEP_SRC_END_ACTION: {
       newState.nodes.forEach((node:any, index) => {
@@ -1499,12 +1499,12 @@ export const setZoomAction = ({ offset, value }) => {
  * @param dataFrame
  * @returns {{dataFrame: DataFrameStepModel, type: string}}
  */
-export const updateDataFrameDetailAction = (detail: FrameType) => {
-  return {
-    detail: detail,
-    type: UPDATE_DATA_SOURCE_DETAIL_ACTION
-  };
-};
+// export const updateDataFrameDetailAction = (detail: FrameType) => {
+//   return {
+//     detail: detail,
+//     type: UPDATE_DATA_SOURCE_DETAIL_ACTION
+//   };
+// };
 
 export const addNoteAction = (x: number, y: number) => {
   return {

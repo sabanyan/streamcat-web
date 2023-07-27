@@ -26,7 +26,7 @@ import {
     // setEditModeAction,
     // setExecuteModeAction,
     undoAction,
-    updateDataFrameDetailAction,
+    // updateDataFrameDetailAction,
     updateStepAction,
     refreshCanvasSizeAction,
     refreshFlowAction,
@@ -79,7 +79,7 @@ const FlowEditor = () => {
     const nodes = useSelector((state:State) => state.nodes);
     const history = useSelector((state:State) => state.history);
     // const mast = useSelector((state:State) => state.mast);
-    const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
+    // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
     const graph = useSelector((state:State) => state.graph);
     const zoom = useSelector((state:State) => state.zoom);
     const inspector = useSelector((state:State) => state.inspector);
@@ -97,6 +97,9 @@ const FlowEditor = () => {
         datasrcs: [],
         datadsts: [],
     });
+
+    // 選択中のDataFrameNodeのFrame
+    const [selectedFrame, setSelectedFrame] = useState<FrameType>();
 
     // 実行可否
     const [executeMode, setExecuteMode] = useState<FlowExecuteModeValue>(FlowExecuteModeValue.NotExecutable);
@@ -149,9 +152,9 @@ const FlowEditor = () => {
     //     // flowidは未使用
     //     dispatch(executeFlowAction(flowid));
     // };
-    const updateDataFrameDetail = (detail: FrameType) => {
-        dispatch(updateDataFrameDetailAction(detail));
-    };
+    // const updateDataFrameDetail = (detail: FrameType) => {
+    //     dispatch(updateDataFrameDetailAction(detail));
+    // };
     // const addNote = (x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // };
@@ -624,7 +627,7 @@ const FlowEditor = () => {
                     addSelectStep={addSelectStep}
                     deleteSelectStep={deleteSelectStep}
                     selectSteps={selectSteps}
-                    updateDataFrameDetail={updateDataFrameDetail}
+                    selectFrame={frame => setSelectedFrame(frame)}
                     updateStep={updateStep}
                     moveSteps={moveSteps}
                     readOnly={stepReadOnly}
@@ -641,7 +644,6 @@ const FlowEditor = () => {
         addSelectStep,
         deleteSelectStep,
         selectSteps,
-        updateDataFrameDetail,
         updateStep,
         moveSteps]);
 
@@ -782,8 +784,9 @@ const FlowEditor = () => {
                 flow={flow!}
                 lockUUID={lockUUID}
                 inspector={inspector}
-                selected_data_source_detail={selected_data_source_detail!}
-                updateDataFrameDetail={updateDataFrameDetail}
+                // selected_data_source_detail={selected_data_source_detail!}
+                // updateDataFrameDetail={updateDataFrameDetail}
+                selectedFrameState={[selectedFrame, setSelectedFrame]}
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}
                 updateStep={updateStep}

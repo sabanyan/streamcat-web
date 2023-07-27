@@ -13,13 +13,14 @@ import { FlowType, FrameType, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 
 type Props = {
-    selected_data_source_detail: FrameType;
+    // selected_data_source_detail: FrameType;
     runnables: RunnablesType;
     deleteSteps: Function;
     selectSteps: Function;
     addHistory: Function;
     flow: FlowType;
     selected_step_ids: string[];
+    selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
     nodes: any[];
     addStep: Function;
@@ -32,7 +33,7 @@ type Props = {
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;
     lockUUID: string | undefined;
-    updateDataFrameDetail: Function;
+    // updateDataFrameDetail: Function;
     refreshFlow: Function;
 }
 
@@ -226,13 +227,14 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const deleteCache = () => {
-        const {flow, selected_step_ids, deleteCache, updateDataFrameDetail} = props;
+        const {flow, selected_step_ids, deleteCache} = props;
+        const [, setSelectedFrame] = props.selectedFrameState;
         const id = (selected_step_ids as any)[0];
 
         // キャッシュを削除する
         flow.deleteCache(id).then(() => {
             deleteCache(id);
-            updateDataFrameDetail({});
+            setSelectedFrame(undefined);
         });
     };
 
@@ -271,7 +273,7 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const { runnables, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
-            selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
+            previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
     const selected_step = getSelectedStep();
@@ -315,10 +317,12 @@ const DataFrameInspector = (props: Props) => {
         content = <Loader center={true} absolute={true} fixed={false} visible={true} />;
     } else {
 
-        const fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0;
+        const [selectedFrame, ] = props.selectedFrameState;
+
+        const fileSize = selectedFrame && selectedFrame.fileSize ? selectedFrame.fileSize : 0;
         const fileSizeStr = StringUtil.convertToFileSize(fileSize);
-        const createdAt = selected_data_source_detail ? selected_data_source_detail.createdAt : "";
-        const creator = selected_data_source_detail ? selected_data_source_detail.creator : "";
+        const createdAt = selectedFrame ? selectedFrame.createdAt : "";
+        const creator = selectedFrame ? selectedFrame.creator : "";
 
         content = <div>
             <div className={style.property_overview}>
@@ -338,7 +342,7 @@ const DataFrameInspector = (props: Props) => {
                             {fileSizeStr}
                         </div>
                     </div>
-                    {renderFrameDetail(selected_data_source_detail)}
+                    {renderFrameDetail(selectedFrame)}
                     <div className={style.overview}>
                         <div className={style.overview_label}>
                             作成日時

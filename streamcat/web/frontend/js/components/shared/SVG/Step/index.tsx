@@ -6,7 +6,7 @@ import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
 import { DragType, RunnablesType, StepModelType } from "Types/index";
-import { FlowType } from "Model/Library";
+import { FlowType, FrameType } from "Model/Library";
 
 let mouseMoveEvent;
 let mouseUpEvent;
@@ -27,7 +27,7 @@ interface Props {
     addSelectStep: Function;
     deleteSelectStep: Function;
     selectSteps: Function;
-    updateDataFrameDetail: Function;
+    selectFrame: (frame?:FrameType) => void;
     updateStep: Function;
     moveSteps: Function;
     readOnly: boolean;
@@ -83,7 +83,7 @@ const Step = (props: Props) => {
 
         setCoords(null);
 
-        const { model, addSelectStep, deleteSelectStep, selectSteps, updateDataFrameDetail } = props;
+        const { model, addSelectStep, deleteSelectStep, selectSteps, selectFrame } = props;
         let step = model;
         //選択イベントの呼び出し
         if (e.shiftKey) {
@@ -103,13 +103,13 @@ const Step = (props: Props) => {
                 if (selected_step.hasData() && selected_step.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
                     Api.findFrame(selected_step.uuid).then(frame => {
-                        updateDataFrameDetail(frame);
+                        selectFrame(frame);
                     });
                 } else {
-                    updateDataFrameDetail({});
+                    selectFrame();
                 }
             } else {
-                updateDataFrameDetail({});
+                selectFrame();
             }
         }
 

@@ -29,9 +29,10 @@ type InspectorProps = {
   selected_step_ids: Array<string>;
   nodes: any[];
   runnables: RunnablesType;
-  selected_data_source_detail: FrameType;
+  // selected_data_source_detail: FrameType;
+  selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
   lockUUID: string | undefined;
-  updateDataFrameDetail: Function
+  // updateDataFrameDetail: Function
   addStep: Function;
   selectSteps: Function;
   refreshFlow: Function;
@@ -67,10 +68,9 @@ export const Inspector = (props:InspectorProps) => {
 
 
     const { selected_step_ids, lockUUID, nodes, runnables, flow,
-      selected_data_source_detail,
       inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, addStep,updateStep,selectSteps,addHistory,
-      updateDataFrameDetail,deleteSteps,refreshFlow,updateLastSavedFlow } = props
+      selectedFrameState, deleteSteps,refreshFlow,updateLastSavedFlow } = props
 
     let property
 
@@ -98,8 +98,9 @@ export const Inspector = (props:InspectorProps) => {
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataFrameInspector
             nodes={flow.flow.nodes}
-            selected_data_source_detail={selected_data_source_detail}
-            updateDataFrameDetail={updateDataFrameDetail}
+            // selected_data_source_detail={selected_data_source_detail}
+            // updateDataFrameDetail={updateDataFrameDetail}
+            selectedFrameState={selectedFrameState}
             runnables={runnables}
             lockUUID={lockUUID}
             deleteSteps={deleteSteps}
