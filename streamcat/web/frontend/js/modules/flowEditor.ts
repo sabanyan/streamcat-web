@@ -89,8 +89,8 @@ export type State = {
   lastSavedFlow?: FlowType,
   flow?: FlowType,
   // originalFlow?: {}
-  executeMode: FlowExecuteModeValue | null,
-  editMode: FlowEditModeValue | null
+  // executeMode: FlowExecuteModeValue | null,
+  // editMode: FlowEditModeValue | null
 }
 
 let flowEditorReducerInitialState: State = {
@@ -133,8 +133,8 @@ let flowEditorReducerInitialState: State = {
   // networkStatus: NetworkStatusValue.UnKnown,
   lastSavedFlow: undefined,
   flow: undefined,
-  executeMode: null,
-  editMode: null
+  // executeMode: null,
+  // editMode: null
 };
 
 type FlowEditorAction = Action & {
@@ -156,9 +156,9 @@ type FlowEditorAction = Action & {
   payload: any;
   step: any;
   width: number;
-  executeMode: FlowExecuteModeValue;
-  editMode: FlowEditModeValue;
-  status: NetworkStatusValue;
+  // executeMode: FlowExecuteModeValue;
+  // editMode: FlowEditModeValue;
+  // status: NetworkStatusValue;
 };
 
 export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action:FlowEditorAction) => {
@@ -785,13 +785,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
 
-    case SET_EDIT_MODE_ACTION: {
-      newState = {
-        ...newState,
-        editMode: action.editMode
-      };
-      break;
-    }
+    // case SET_EDIT_MODE_ACTION: {
+    //   newState = {
+    //     ...newState,
+    //     editMode: action.editMode
+    //   };
+    //   break;
+    // }
 
     // case SET_NETWORK_STATUS: {
     //   newState = {
@@ -801,13 +801,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     //   break;
     // }
 
-    case SET_EXECUTE_MODE_ACTION: {
-      newState = {
-        ...newState,
-        executeMode: action.executeMode
-      };
-      break;
-    }
+    // case SET_EXECUTE_MODE_ACTION: {
+    //   newState = {
+    //     ...newState,
+    //     executeMode: action.executeMode
+    //   };
+    //   break;
+    // }
 
     case UPDATE_LAST_SAVED_FLOW_ACTION: {
       newState = {
@@ -1546,19 +1546,19 @@ export const refreshCanvasSizeAction = () => {
   };
 };
 
-export const setExecuteModeAction = (executeMode: FlowExecuteModeValue) => {
-  return {
-    type: SET_EXECUTE_MODE_ACTION,
-    executeMode: executeMode
-  };
-};
+// export const setExecuteModeAction = (executeMode: FlowExecuteModeValue) => {
+//   return {
+//     type: SET_EXECUTE_MODE_ACTION,
+//     executeMode: executeMode
+//   };
+// };
 
-export const setEditModeAction = (editMode: FlowEditModeValue) => {
-  return {
-    type: SET_EDIT_MODE_ACTION,
-    editMode: editMode
-  };
-};
+// export const setEditModeAction = (editMode: FlowEditModeValue) => {
+//   return {
+//     type: SET_EDIT_MODE_ACTION,
+//     editMode: editMode
+//   };
+// };
 
 // export const setNetworkStatusAction = (status: NetworkStatusValue) => {
 //   return {

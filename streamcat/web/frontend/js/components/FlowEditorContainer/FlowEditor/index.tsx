@@ -23,8 +23,8 @@ import {
     moveStepsAction,
     redoAction,
     selectStepsAction,
-    setEditModeAction,
-    setExecuteModeAction,
+    // setEditModeAction,
+    // setExecuteModeAction,
     undoAction,
     updateDataFrameDetailAction,
     updateStepAction,
@@ -84,8 +84,8 @@ const FlowEditor = () => {
     const zoom = useSelector((state:State) => state.zoom);
     const inspector = useSelector((state:State) => state.inspector);
     const editor = useSelector((state:State) => state.editor);
-    const editMode = useSelector((state:State) => state.editMode);
-    const executeMode = useSelector((state:State) => state.executeMode);
+    // const editMode = useSelector((state:State) => state.editMode);
+    // const executeMode = useSelector((state:State) => state.executeMode);
     // const networkStatus = useSelector((state:State) => state.networkStatus);
     const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
 
@@ -98,8 +98,12 @@ const FlowEditor = () => {
         datadsts: [],
     });
 
+    // 実行可否
+    const [executeMode, setExecuteMode] = useState<FlowExecuteModeValue>(FlowExecuteModeValue.NotExecutable);
+    // 編集可否
+    const [editMode, setEditMode] = useState<FlowEditModeValue>(FlowEditModeValue.ReadOnlyUpdateDisabled);
     // ネットワークの接続状態
-    const [networkStatus, setNetworkStatus] = useState<NetworkStatusValue>(NetworkStatusValue.UnKnown)
+    const [networkStatus, setNetworkStatus] = useState<NetworkStatusValue>(NetworkStatusValue.UnKnown);
     // ネットワークオフラインを通知するポップアップのId
     // (オンライン復帰時にポップアップを閉じるために一時保存する)
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
@@ -154,12 +158,12 @@ const FlowEditor = () => {
     const moveSteps = (x: number, y: number, step) => {
         dispatch(moveStepsAction(x, y, step));
     };
-    const setExecuteMode = (mode: FlowExecuteModeValue) => {
-        dispatch(setExecuteModeAction(mode));
-    };
-    const setEditMode = (mode: FlowEditModeValue) => {
-        dispatch(setEditModeAction(mode));
-    };
+    // const setExecuteMode = (mode: FlowExecuteModeValue) => {
+    //     dispatch(setExecuteModeAction(mode));
+    // };
+    // const setEditMode = (mode: FlowEditModeValue) => {
+    //     dispatch(setEditModeAction(mode));
+    // };
     const refreshCanvasSize = () => {
         dispatch(refreshCanvasSizeAction());
     };
