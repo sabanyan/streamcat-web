@@ -14,7 +14,7 @@ import {
 } from 'Modules/flowEditor';
 
 type Props = {
-    editor: any;
+    canvasWidth: number;
     deleteSteps: Function;
     selectSteps: Function;
     addHistory: Function;
@@ -199,8 +199,7 @@ const PaperScroller = (props: Props) => {
         return 'nodeName' in e.target && (e.target['nodeName']==='svg' || e.target['nodeName']==='DIV');
     };
 
-    const {editor, children} = props;
-    const width = editor.width;
+    const {canvasWidth, children} = props;
     // onKeyDownには tabIndex が必要
     // ref:https://stackoverflow.com/questions/43503964/onkeydown-event-not-working-on-divs-in-react
     return <div tabIndex={0} onKeyDown={(e) => onKeyDown(e)}
@@ -208,7 +207,7 @@ const PaperScroller = (props: Props) => {
                 onMouseMove={(e) => onMouseMove(e)}
                 onMouseUp={(e) => onMouseUp(e)}
                 className={style.paper_scroller}
-                style={{width: width}}>
+                style={{width: canvasWidth}}>
         {children}
     </div>;
 };

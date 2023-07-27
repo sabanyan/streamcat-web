@@ -28,7 +28,7 @@ import {
     undoAction,
     // updateDataFrameDetailAction,
     updateStepAction,
-    refreshCanvasSizeAction,
+    // refreshCanvasSizeAction,
     refreshFlowAction,
     updateLastSavedFlowAction,
     State
@@ -82,8 +82,8 @@ const FlowEditor = () => {
     // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
     const graph = useSelector((state:State) => state.graph);
     const zoom = useSelector((state:State) => state.zoom);
-    const inspector = useSelector((state:State) => state.inspector);
-    const editor = useSelector((state:State) => state.editor);
+    // const inspector = useSelector((state:State) => state.inspector);
+    // const editor = useSelector((state:State) => state.editor);
     // const editMode = useSelector((state:State) => state.editMode);
     // const executeMode = useSelector((state:State) => state.executeMode);
     // const networkStatus = useSelector((state:State) => state.networkStatus);
@@ -111,6 +111,11 @@ const FlowEditor = () => {
     // (オンライン復帰時にポップアップを閉じるために一時保存する)
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
     // const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
+
+    // Inspectorの横幅
+    const [inspectorWidth, setInspectorWidth] = useState(Constants.default.inspector.width);
+    // Canvasの横幅
+    const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 
     const loadFlowJSON = (context: {}) => {
         return dispatch(loadFlowJSONAction(context));
@@ -167,9 +172,9 @@ const FlowEditor = () => {
     // const setEditMode = (mode: FlowEditModeValue) => {
     //     dispatch(setEditModeAction(mode));
     // };
-    const refreshCanvasSize = () => {
-        dispatch(refreshCanvasSizeAction());
-    };
+    // const refreshCanvasSize = () => {
+    //     dispatch(refreshCanvasSizeAction());
+    // };
     const updateLastSavedFlow = () => {
         dispatch(updateLastSavedFlowAction());
     };
@@ -279,10 +284,13 @@ const FlowEditor = () => {
     }, [networkStatus, lock]);
 
     useEffect(() => {
+        // Canvasのサイズを変更する
+        setCanvasWidth(window.innerWidth - inspectorWidth);
+        // Windowサイズの変更時にCanvasのサイズを変更する
         window.onresize = () => {
-            refreshCanvasSize();
-        }
-    }, [refreshCanvasSize]);
+            setCanvasWidth(window.innerWidth - inspectorWidth);
+        };
+    }, [inspectorWidth]);
 
     useEffect(() => {
         const handleLeavePage = (e) => {
@@ -440,10 +448,8 @@ const FlowEditor = () => {
     useEffect(() => {
         const getNavigatorNetworkStatus = () => {
             if(navigator.onLine){
-                console.log('Online')
                 return NetworkStatusValue.Online;
             }else{
-                console.log('offLine')
                 return NetworkStatusValue.Offline;
             }
         }
@@ -758,7 +764,7 @@ const FlowEditor = () => {
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                 message={"フローを構築中です"} />
             <PaperScroller
-                editor={editor}
+                canvasWidth={canvasWidth}
                 deleteSteps={deleteSteps}
                 selectSteps={selectSteps}
                 addHistory={addHistory}
@@ -783,7 +789,7 @@ const FlowEditor = () => {
                 selectSteps={selectSteps}
                 flow={flow!}
                 lockUUID={lockUUID}
-                inspector={inspector}
+                inspectorWidthState={[inspectorWidth, setInspectorWidth]}
                 // selected_data_source_detail={selected_data_source_detail!}
                 // updateDataFrameDetail={updateDataFrameDetail}
                 selectedFrameState={[selectedFrame, setSelectedFrame]}

@@ -70,18 +70,18 @@ export type State = {
   selected_in_edges: any[],
   selected_out_edges: any[],
   // selected_data_source_detail?: FrameType,
-  // editor
-  editor: {
-    width: number,
-    height?: number,
-    logBox?: {
-      height?: number
-    }
-  },
-  // inspector
-  inspector: {
-    width: number
-  },
+  // // editor
+  // editor: {
+  //   width: number,
+  //   height?: number,
+  //   logBox?: {
+  //     height?: number
+  //   }
+  // },
+  // // inspector
+  // inspector: {
+  //   width: number
+  // },
   // folderPath: string | null,
   // folderUuid: string | null,
   // modifiedAt: string | null,
@@ -116,17 +116,17 @@ let flowEditorReducerInitialState: State = {
   selected_out_edges: [],
   // selected_data_source_detail: undefined,
   // editor
-  editor: {
-    width: window.innerWidth - Constants.default.inspector.width,
-    height: undefined,
-    logBox: {
-      height: undefined
-    }
-  },
-  // inspector
-  inspector: {
-    width: Constants.default.inspector.width
-  },
+  // editor: {
+  //   width: window.innerWidth - Constants.default.inspector.width,
+  //   height: undefined,
+  //   logBox: {
+  //     height: undefined
+  //   }
+  // },
+  // // inspector
+  // inspector: {
+  //   width: Constants.default.inspector.width
+  // },
   // folderPath: null,
   // folderUuid: null,
   // modifiedAt: null,
@@ -155,7 +155,7 @@ type FlowEditorAction = Action & {
   detail: any;
   payload: any;
   step: any;
-  width: number;
+  // width: number;
   // executeMode: FlowExecuteModeValue;
   // editMode: FlowEditModeValue;
   // status: NetworkStatusValue;
@@ -762,28 +762,28 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
 
-    case RESIZE_INSPECTOR_ACTION: {
-      newState = {
-        ...newState,
-        inspector: {
-          width: action.width
-        },
-        editor: {
-          width: (window as any).innerWidth - action.width
-        }
-      };
-      break;
-    }
+    // case RESIZE_INSPECTOR_ACTION: {
+    //   newState = {
+    //     ...newState,
+    //     inspector: {
+    //       width: action.width
+    //     },
+    //     editor: {
+    //       width: (window as any).innerWidth - action.width
+    //     }
+    //   };
+    //   break;
+    // }
 
-    case REFRESH_CANVAS_SIZE_ACTION: {
-      newState = {
-        ...newState,
-        editor: {
-          width: (window as any).innerWidth
-        }
-      };
-      break;
-    }
+    // case REFRESH_CANVAS_SIZE_ACTION: {
+    //   newState = {
+    //     ...newState,
+    //     editor: {
+    //       width: (window as any).innerWidth
+    //     }
+    //   };
+    //   break;
+    // }
 
     // case SET_EDIT_MODE_ACTION: {
     //   newState = {
@@ -1533,18 +1533,18 @@ export const moveStepsAction = (x: number, y: number, step) => {
   };
 };
 
-export const resizeInspectorAction = (width: number) => {
-  return {
-    type: RESIZE_INSPECTOR_ACTION,
-    width: width
-  };
-};
+// export const resizeInspectorAction = (width: number) => {
+//   return {
+//     type: RESIZE_INSPECTOR_ACTION,
+//     width: width
+//   };
+// };
 
-export const refreshCanvasSizeAction = () => {
-  return {
-    type: REFRESH_CANVAS_SIZE_ACTION
-  };
-};
+// export const refreshCanvasSizeAction = () => {
+//   return {
+//     type: REFRESH_CANVAS_SIZE_ACTION
+//   };
+// };
 
 // export const setExecuteModeAction = (executeMode: FlowExecuteModeValue) => {
 //   return {

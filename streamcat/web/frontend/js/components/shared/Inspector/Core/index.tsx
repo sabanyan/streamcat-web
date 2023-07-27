@@ -19,12 +19,12 @@ import {
   addDataDstStepAction,
   addDataSrcStepAction,
   deleteCacheAction,
-  resizeInspectorAction,
+  // resizeInspectorAction,
   updateFlowAction
 } from 'Modules/flowEditor';
 
 type InspectorProps = {
-  inspector: { width: number };
+  inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];
   flow: FlowType;
   selected_step_ids: Array<string>;
   nodes: any[];
@@ -62,13 +62,13 @@ export const Inspector = (props:InspectorProps) => {
     const deleteCache = (selected_step_id: string) => {
         dispatch(deleteCacheAction(selected_step_id));
     };
-    const resizeInspector = (width: number) => {
-        dispatch(resizeInspectorAction(width));
-    };
+    // const resizeInspector = (width: number) => {
+    //     dispatch(resizeInspectorAction(width));
+    // };
 
 
     const { selected_step_ids, lockUUID, nodes, runnables, flow,
-      inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
+      addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, addStep,updateStep,selectSteps,addHistory,
       selectedFrameState, deleteSteps,refreshFlow,updateLastSavedFlow } = props
 
@@ -197,9 +197,15 @@ export const Inspector = (props:InspectorProps) => {
       />
     }
 
+    const [inspectorWidth, setInspectorWidth] = props.inspectorWidthState;
+
+    const resizeInspector = (inspectorWidth:number) => {
+      setInspectorWidth(inspectorWidth);
+    };
+
     return <React.Fragment>
       <Resizer
-        inspector={inspector}
+        inspectorWidth={inspectorWidth}
         resizeInspector={resizeInspector}>
         <AsyncResourceContent fallback={<p>Loading...</p>}>
           {property}
