@@ -74,7 +74,7 @@ const FlowEditor = () => {
     }, [_modifiedAt])
     const [modifiedAt, setModifiedAt] = useState<string>();
     const flow = useSelector((state:State) => state.flow);
-    const drag = useSelector((state:State) => state.drag);
+    // const drag = useSelector((state:State) => state.drag);
     const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
     const nodes = useSelector((state:State) => state.nodes);
     const history = useSelector((state:State) => state.history);
@@ -100,6 +100,8 @@ const FlowEditor = () => {
 
     // 選択中のDataFrameNodeのFrame
     const [selectedFrame, setSelectedFrame] = useState<FrameType>();
+    // Canvasでの選択範囲
+    const [dragRange, setDragRange] = useState<DragType | null>(null);
 
     // 実行可否
     const [executeMode, setExecuteMode] = useState<FlowExecuteModeValue>(FlowExecuteModeValue.NotExecutable);
@@ -629,7 +631,7 @@ const FlowEditor = () => {
                     flow={flow!}
                     selected_step_ids={selected_step_ids}
                     zoom={zoom}
-                    drag={drag}
+                    dragRange={dragRange}
                     addSelectStep={addSelectStep}
                     deleteSelectStep={deleteSelectStep}
                     selectSteps={selectSteps}
@@ -646,7 +648,7 @@ const FlowEditor = () => {
         runnables,
         flow,
         zoom,
-        drag,
+        dragRange,
         addSelectStep,
         deleteSelectStep,
         selectSteps,
@@ -692,15 +694,14 @@ const FlowEditor = () => {
 
     const renderSelector = useCallback(() => {
         let selector: any = null;
-        if(drag.hasOwnProperty('start') && drag.hasOwnProperty('end')){
-            const drag0 = drag as DragType;
-            selector = <Selector sx={ZoomUtil.zoomReverse(drag0.start.x, zoom)}
-                sy={ZoomUtil.zoomReverse(drag0.start.y, zoom)}
-                ex={ZoomUtil.zoomReverse(drag0.end.x, zoom)}
-                ey={ZoomUtil.zoomReverse(drag0.end.y, zoom)} />;
+        if(dragRange!==null){
+            selector = <Selector sx={ZoomUtil.zoomReverse(dragRange.start.x, zoom)}
+                sy={ZoomUtil.zoomReverse(dragRange.start.y, zoom)}
+                ex={ZoomUtil.zoomReverse(dragRange.end.x, zoom)}
+                ey={ZoomUtil.zoomReverse(dragRange.end.y, zoom)} />;
         }
         return selector;
-    }, [drag, zoom]);
+    }, [dragRange, zoom]);
 
     if (editMode === undefined || executeMode === undefined) {
         // モードが設定前はローディング中にする
@@ -773,7 +774,7 @@ const FlowEditor = () => {
                 selected_step_ids={selected_step_ids}
                 nodes={nodes}
                 history={history}
-                drag={drag}
+                dragRangeState={[dragRange, setDragRange]}
             >
                 <Paper graph={graph} zoom={zoom}>
                     {renderEdges()}

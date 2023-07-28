@@ -7,9 +7,9 @@ import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/inde
 import {DragType, HistoryType} from "Types/index";
 import {
     copyStepsAction,
-    dragEndAction,
     dragStartAction,
     draggingAction,
+    // dragEndAction,
     pasteStepsAction
 } from 'Modules/flowEditor';
 
@@ -23,14 +23,17 @@ type Props = {
     selected_step_ids: string[];
     nodes: (CommandStepModel|DataFrameStepModel)[];
     history: HistoryType;
-    drag: DragType | {};
+    // drag: DragType | {};
+    dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     children: React.ReactNode;
 }
 
 const PaperScroller = (props: Props) => {
     const dispatch = useDispatch();
 
-    const [coords, setCoords] = useState<{x:number, y:number}>();
+    const [dragRange, setDragRange] = props.dragRangeState;
+
+    // const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
         const pasteSteps = (paste_nodes: []) => {
             dispatch(pasteStepsAction(paste_nodes));
@@ -143,6 +146,16 @@ const PaperScroller = (props: Props) => {
         const {selectSteps} = props;
         const dragStart = (x: number, y: number) => {
             dispatch(dragStartAction(x, y));
+            setDragRange({
+                start: {
+                    x: x,
+                    y: y
+                },
+                end: {
+                    x: x,
+                    y: y
+                }
+            });
         };
         if (isOnClickPaper(e) && !e.shiftKey) {
             // 規定の要素からのカーソル座標値を求めるためには
@@ -153,38 +166,51 @@ const PaperScroller = (props: Props) => {
 
             selectSteps();
             dragStart(x, y);
-            setCoords({
-                x: x,
-                y: y
-            });
+            // setCoords({
+            //     x: x,
+            //     y: y
+            // });
         }
     };
 
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {drag} = props;
+        // const {drag} = props;
         const dragging = (x: number, y: number) => {
             dispatch(draggingAction(x, y));
+            setDragRange({
+                start: {
+                    x: dragRange?.start.x || x,
+                    y: dragRange?.start.y || y
+                },
+                end: {
+                    x: x,
+                    y: y
+                }
+            });
         };
-        if(drag.hasOwnProperty('start')){
+        // if(drag.hasOwnProperty('start')){
+        if(dragRange){
             const target_rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - target_rect.left;
             const y = e.clientY - target_rect.top;
-
             dragging(x, y);
         }
     };
 
     const onMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {drag, addHistory} = props;
+        const {addHistory} = props;
         const dragEnd = (x: number, y: number) => {
-            dispatch(dragEndAction(x, y));
+            // dispatch(dragEndAction(x, y));
+            setDragRange(null);
         };
-        if(drag.hasOwnProperty('start')){
-            if(drag.hasOwnProperty('end')){
+
+        // if(drag.hasOwnProperty('start')){
+        //     if(drag.hasOwnProperty('end')){
+        if(dragRange){
+            if(dragRange.start.x!==dragRange.end.x || dragRange.start.y!==dragRange.end.y){
                 const target_rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - target_rect.left;
                 const y = e.clientY - target_rect.top;
-
                 dragEnd(x, y);
             }
             addHistory();

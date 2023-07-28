@@ -23,7 +23,7 @@ interface Props {
     flow: FlowType;
     selected_step_ids: string[];
     zoom: number;
-    drag: DragType | {};
+    dragRange: DragType | null;
     addSelectStep: Function;
     deleteSelectStep: Function;
     selectSteps: Function;
@@ -199,7 +199,7 @@ const Step = (props: Props) => {
      * 範囲選択との衝突判定
      */
     const selectorIntersect = () => {
-        const { zoom, position, drag } = props;
+        const { zoom, position, dragRange } = props;
         const operator = {
             x: position.x,
             y: position.y,
@@ -207,8 +207,8 @@ const Step = (props: Props) => {
             height: Constants.default.step.height
         };
 
-        if(drag.hasOwnProperty('start') && drag.hasOwnProperty('end')){
-            const { start, end } = drag as DragType;
+        if(dragRange){
+            const { start, end } = dragRange;
 
             //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 

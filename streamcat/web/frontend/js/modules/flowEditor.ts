@@ -66,7 +66,7 @@ export type State = {
   //   datadsts: any[],
   // },
   // selected_tab_id: number,
-  drag: DragType | {},
+  // drag: DragType | {},
   selected_in_edges: any[],
   selected_out_edges: any[],
   // selected_data_source_detail?: FrameType,
@@ -111,7 +111,7 @@ let flowEditorReducerInitialState: State = {
   //   datadsts: [],
   // },
   // selected_tab_id: 0,
-  drag: {},
+  // drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
   // selected_data_source_detail: undefined,
@@ -657,31 +657,31 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.graph = graph.getGraph(newState);
       break;
     }
-    case EXECUTE_FLOW_ACTION: {
-      // let newState = StateUtil.deepCopy(state)
-      // let newSteps = {}
-      // Object.keys(newState.nodes).map((key)=>{
-      //   if(newState.nodes[key] instanceof DataSourceModel) {
-      //       newState.nodes[key].property.hasData = true
-      //     }
-      //     newSteps[key] = newState.nodes[key]
-      // })
-      // newState.nodes = newSteps
-      // return newState
-    }
+    // case EXECUTE_FLOW_ACTION: {
+    //   let newState = StateUtil.deepCopy(state)
+    //   let newSteps = {}
+    //   Object.keys(newState.nodes).map((key)=>{
+    //     if(newState.nodes[key] instanceof DataSourceModel) {
+    //         newState.nodes[key].property.hasData = true
+    //       }
+    //       newSteps[key] = newState.nodes[key]
+    //   })
+    //   newState.nodes = newSteps
+    //   return newState
+    // }
     case DRAG_START_ACTION: {
       newState = {
         ...state,
-        drag: {
-          start: {
-            x: action.x,
-            y: action.y
-          },
-          end: {
-            x: action.x,
-            y: action.y
-          }
-        },
+        // drag: {
+        //   start: {
+        //     x: action.x,
+        //     y: action.y
+        //   },
+        //   end: {
+        //     x: action.x,
+        //     y: action.y
+        //   }
+        // },
         graph: {
           ...state.graph,
           width: (action.x > state.graph.width) ? action.x : state.graph.width,
@@ -693,13 +693,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case DRAGGING_ACTION: {
       newState = {
         ...state,
-        drag: {
-          ...state.drag,
-          end: {
-            x: action.x,
-            y: action.y
-          }
-        },
+        // drag: {
+        //   ...state.drag,
+        //   end: {
+        //     x: action.x,
+        //     y: action.y
+        //   }
+        // },
         graph: {
           ...state.graph,
           width: (action.x > state.graph.width) ? action.x : state.graph.width,
@@ -708,10 +708,10 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       };
       break;
     }
-    case DRAG_END_ACTION: {
-      newState = { ...state, drag: {} };
-      break;
-    }
+    // case DRAG_END_ACTION: {
+    //   newState = { ...state, drag: {} };
+    //   break;
+    // }
 
     case SET_ZOOM_ACTION: {
       const { offset, value } = action;
@@ -1438,11 +1438,11 @@ export const deleteCacheAction = (selected_step_id: string) => {
  * @param flowid
  * @returns {{type: string, step: *}}
  */
-export const executeFlowAction = (flowid: string) => {
-  return {
-    type: EXECUTE_FLOW_ACTION
-  };
-};
+// export const executeFlowAction = (flowid: string) => {
+//   return {
+//     type: EXECUTE_FLOW_ACTION
+//   };
+// };
 
 /**
  * ステップの選択
@@ -1471,13 +1471,13 @@ export const draggingAction = (x: number, y: number) => {
   };
 };
 
-export const dragEndAction = (x: number, y: number) => {
-  return {
-    type: DRAG_END_ACTION,
-    x: x,
-    y: y
-  };
-};
+// export const dragEndAction = (x: number, y: number) => {
+//   return {
+//     type: DRAG_END_ACTION,
+//     x: x,
+//     y: y
+//   };
+// };
 
 /**
  * ズーム設定
