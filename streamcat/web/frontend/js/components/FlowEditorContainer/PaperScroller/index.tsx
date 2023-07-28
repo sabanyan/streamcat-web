@@ -22,6 +22,7 @@ type Props = {
     undo: Function;
     selected_step_ids: string[];
     nodes: (CommandStepModel|DataFrameStepModel)[];
+    zoom: number
     history: HistoryType;
     // drag: DragType | {};
     dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
@@ -36,7 +37,7 @@ const PaperScroller = (props: Props) => {
     // const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
         const pasteSteps = (paste_nodes: []) => {
-            dispatch(pasteStepsAction(paste_nodes));
+            dispatch(pasteStepsAction(paste_nodes, props.zoom));
         };
         navigator.clipboard.readText().then((data: any) => {
             pasteSteps(data);

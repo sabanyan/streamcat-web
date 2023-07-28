@@ -7,7 +7,7 @@ import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
 import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {RunnablesType} from "Types/index";
+import {RunnablesType, StepModelType} from "Types/index";
 import {Loader} from "Shared/Base";
 import { FlowType, FrameType, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
@@ -23,7 +23,8 @@ type Props = {
     selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
     nodes: any[];
-    addStep: Function;
+    zoom: number;
+    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: Function;
     addDataDstStep: Function;
     updateStep: Function;
@@ -272,7 +273,7 @@ const DataFrameInspector = (props: Props) => {
         updateStep(newSelectedStep);
     };
 
-    const { runnables, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
+    const { runnables, zoom, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
             previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
@@ -406,6 +407,7 @@ const DataFrameInspector = (props: Props) => {
                             runnables={runnables}
                             numberOfInput={1}
                             selected_step_ids={selected_step_ids}
+                            zoom={zoom}
                             addStep={addStep}
                             addDataSrcStep={addDataSrcStep}
                             addDataDstStep={addDataDstStep}

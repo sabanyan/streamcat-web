@@ -4,11 +4,12 @@ import Constants from 'Constants/index';
 import { NoteStepModel } from 'Model/index';
 import { FlowUtil, PositionUtil, ZoomUtil } from 'Utils/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
+import { StepModelType } from 'Types/index';
 
 type Props = {
     zoom: number;
     nodes: any[];
-    addStep: Function;
+    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addHistory: Function;
     children: React.ReactNode;
     disabled: boolean;
@@ -39,7 +40,7 @@ export const Note = (props: Props) => {
             content: ''
         });
 
-        addStep(note);
+        addStep(note, [], [], zoom);
         addHistory();
     };
 

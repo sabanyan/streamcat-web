@@ -4,20 +4,21 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
-import { HistoryType } from 'Types/index';
-import { refreshFlowAction, setZoomAction, sortFlowAction } from 'Modules/flowEditor';
+import { HistoryType, StepModelType } from 'Types/index';
+import { refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
 
 type ToolBarProps = {
     nodes: any[];
     history: HistoryType;
-    zoom: number;
+    // zoom: number;
+    zoomState: [number, (value:React.SetStateAction<number>)=>void];
     lockUUID?: string;
     notifyLoading: (title: string, message: string) => string;
     notifiWarning: (title: string, message: string) => string;
     notifyError: (title: string, message: string) => string;
     notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
     dismissNotify: (id:string) => void;
-    addStep: Function;
+    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addHistory: Function;
     undo: Function;
     redo: Function;
@@ -30,7 +31,8 @@ type ToolBarProps = {
 export const ToolBar = (props: ToolBarProps) => {
     const { nodes,
             history,
-            zoom,
+            // zoom,
+            zoomState,
             lockUUID,
             notifyLoading,
             notifiWarning,
@@ -46,6 +48,8 @@ export const ToolBar = (props: ToolBarProps) => {
             onClickSaveFlow,
             onClickRunFlowPromise} = props;
 
+    const [zoom, ] = props.zoomState;
+
     const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -56,13 +60,13 @@ export const ToolBar = (props: ToolBarProps) => {
     const undoDisabled = !(current - 1 >= 0);
 
     const refreshFlow = (context) => {
-        dispatch(refreshFlowAction(context));
+        dispatch(refreshFlowAction(context, zoom));
     };
-    const setZoom = ({ offset, value }) => {
-        dispatch(setZoomAction({ offset, value }));
-    };
+    // const setZoom = ({ offset, value }) => {
+    //     dispatch(setZoomAction({ offset, value }));
+    // };
     const sortFlow = () => {
-        dispatch(sortFlowAction());
+        dispatch(sortFlowAction(zoom));
     };
 
     return <div>
@@ -90,8 +94,7 @@ export const ToolBar = (props: ToolBarProps) => {
                   disabled={baseDisabled || redoDisabled}>繰り返す</Redo>
         </div>
         <div className={classnames(style.paper_toolbar)}>
-            <Zoom zoom={zoom}
-                  setZoom={setZoom}
+            <Zoom zoomState={zoomState}
                   disabled={false}/>
             <Sort disabled={baseDisabled}
                   addHistory={addHistory}

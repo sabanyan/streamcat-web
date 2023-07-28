@@ -13,7 +13,7 @@ import {
 } from 'Shared/Inspector'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import { RunnablesType } from "Types/index";
+import { RunnablesType, StepModelType } from "Types/index";
 import { FlowType, FrameType } from 'Model/Library';
 import {
   addDataDstStepAction,
@@ -33,7 +33,8 @@ type InspectorProps = {
   selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
   lockUUID: string | undefined;
   // updateDataFrameDetail: Function
-  addStep: Function;
+  zoom: number
+  addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
   selectSteps: Function;
   refreshFlow: Function;
   deleteSteps: Function;
@@ -51,10 +52,10 @@ export const Inspector = (props:InspectorProps) => {
     const dispatch = useDispatch();
 
     const addDataDstStep = (dataDst: any, selectedDataNodeId: string) => {
-        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId));
+        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId, zoom));
     };
     const addDataSrcStep = (dataSrc: any) => {
-        dispatch(addDataSrcStepAction(dataSrc));
+        dispatch(addDataSrcStepAction(dataSrc, zoom));
     };
     const updateFlow = (flow) => {
         dispatch(updateFlowAction(flow));
@@ -69,7 +70,7 @@ export const Inspector = (props:InspectorProps) => {
 
     const { selected_step_ids, lockUUID, nodes, runnables, flow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
-      previewDisabled, addStep,updateStep,selectSteps,addHistory,
+      previewDisabled, zoom, addStep,updateStep,selectSteps,addHistory,
       selectedFrameState, deleteSteps,refreshFlow,updateLastSavedFlow } = props
 
     let property
@@ -83,6 +84,7 @@ export const Inspector = (props:InspectorProps) => {
           runnables={runnables}
           selected_step_ids={selected_step_ids}
           // nodes={flow.flow.nodes}
+          zoom={zoom}
           addStep={addStep}
           addDataSrcStep={addDataSrcStep}
           addDataDstStep={addDataDstStep}
@@ -110,6 +112,7 @@ export const Inspector = (props:InspectorProps) => {
             updateFlow={updateFlow}
             selected_step_ids={selected_step_ids}
             deleteCache={deleteCache}
+            zoom={zoom}
             addStep={addStep}
             addDataSrcStep={addDataSrcStep}
             addDataDstStep={addDataDstStep}
@@ -170,6 +173,7 @@ export const Inspector = (props:InspectorProps) => {
         // nodes={flow.flow.nodes}
         runnables={runnables}
         selected_step_ids={selected_step_ids}
+        zoom={zoom}
         addStep={addStep}
         addDataSrcStep={addDataSrcStep}
         addDataDstStep={addDataDstStep}
@@ -188,6 +192,7 @@ export const Inspector = (props:InspectorProps) => {
         nodes={flow.flow.nodes}
         runnables={runnables}
         selected_step_ids={selected_step_ids}
+        zoom={zoom}
         addStep={addStep}
         addDataSrcStep={addDataSrcStep}
         addDataDstStep={addDataDstStep}

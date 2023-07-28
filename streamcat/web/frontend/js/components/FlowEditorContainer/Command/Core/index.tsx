@@ -6,7 +6,7 @@ import classnames from "classnames";
 import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { CommandModelType } from "Types/index";
+import { CommandModelType, StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
 import { Flow } from "Model/Library";
 
@@ -14,7 +14,8 @@ type Props = {
     // nodes: any[];
     command: CommandModelType | SubflowCommandModel | Flow;
     selected_step_ids: string[];
-    addStep: Function;
+    zoom: number;
+    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     selectSteps: Function;
     addHistory: Function;
     addDataDstStep: Function;
@@ -59,7 +60,7 @@ const Command = (props: Props) => {
     };
 
     const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: any) => {
-        const { selected_step_ids, addStep, selectSteps, addHistory, addDataDstStep, addDataSrcStep } = props;
+        const { selected_step_ids, zoom, addStep, selectSteps, addHistory, addDataDstStep, addDataSrcStep } = props;
 
         if (command.flow && command.classification === "data_source") {
             addDataSrcStep(command);
@@ -77,13 +78,13 @@ const Command = (props: Props) => {
                     uuid: null,
                     dataSource: Constants.data.dataSource.csv
                 });
-                addStep(output_step);
+                addStep(output_step, [], [], zoom);
                 return output_step;
             });
 
             const output_step_ids = output_steps.map(step => step.id);
 
-            addStep(added_command_step, selected_step_ids, output_step_ids);
+            addStep(added_command_step, selected_step_ids, output_step_ids, zoom);
         }
         //ステップの選択をキャンセル
         selectSteps();

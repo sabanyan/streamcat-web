@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import style from "./style.scss";
 import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { CommandModelType, RunnablesType } from "Types/index";
+import { CommandModelType, RunnablesType, StepModelType } from "Types/index";
 import { TextField } from "Shared/Input";
 import { CommandModel, SubflowCommandModel } from "Model/index";
 import { Flow } from "Model/Library";
@@ -12,7 +12,8 @@ type Props = {
     // nodes:any[];
     numberOfInput: number;
     selected_step_ids: string[];
-    addStep: Function;
+    zoom: number;
+    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     selectSteps: Function;
     addHistory: Function;
     disabled?: boolean;
@@ -53,7 +54,7 @@ const CommandSelector = (props: Props) => {
         return (command.ports[0][0].label === "*");
     };
 
-    const { numberOfInput, selected_step_ids, addStep, addDataDstStep, addDataSrcStep,
+    const { numberOfInput, selected_step_ids, zoom, addStep, addDataDstStep, addDataSrcStep,
         selectSteps, addHistory, runnables } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
@@ -105,6 +106,7 @@ const CommandSelector = (props: Props) => {
             key={index}
             command={command}
             selected_step_ids={selected_step_ids}
+            zoom={zoom}
             addStep={addStep}
             addDataDstStep={addDataDstStep}
             addDataSrcStep={addDataSrcStep}

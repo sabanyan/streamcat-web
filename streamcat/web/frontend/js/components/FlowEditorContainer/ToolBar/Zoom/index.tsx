@@ -1,26 +1,35 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
+import { setZoomAction } from 'Modules/flowEditor';
 
 type Props = {
-    zoom: number;
-    setZoom: Function;
+    // zoom: number;
+    // setZoom: Function;
+    zoomState: [number, (value:React.SetStateAction<number>)=>void];
     disabled: boolean;
 };
 
 export const Zoom = (props: Props) => {
-    const {zoom, setZoom, disabled} = props;
+    const {disabled} = props;
+    const [zoom, setZoom] = props.zoomState
+
+    const dispatch = useDispatch();
 
     const onClickZoomIn = (e: React.MouseEvent) => {
-        setZoom({ offset: 10 });
+        zoom < 180 && setZoom(zoom + 10);
+        dispatch(setZoomAction(zoom + 10));
     };
 
     const onClickZoomOut = (e: React.MouseEvent) => {
-        setZoom({ offset: -10 });
+        zoom > 40 && setZoom(zoom - 10);
+        dispatch(setZoomAction(zoom - 10));
     };
 
     const onClickDefaultZoom = (e: React.MouseEvent) => {
-        setZoom({ value: 100 });
+        setZoom(100);
+        dispatch(setZoomAction(100));
     };
 
     return <div className={style.zoom}>

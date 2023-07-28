@@ -3,6 +3,7 @@ import dagre from 'dagre'
 import Constants from 'Constants/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
+import { State } from 'Modules/flowEditor'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -132,8 +133,7 @@ class GraphUtil {
    * @returns {{width, height}}
    */
 
-  getGraph(GraphType) {
-    const { nodes, zoom } = GraphType
+  getGraph(nodes:(CommandStepModel | DataFrameStepModel)[], zoom:number) {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()

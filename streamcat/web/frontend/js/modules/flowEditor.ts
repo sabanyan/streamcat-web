@@ -3,7 +3,7 @@ import Constants from "Constants/index";
 import { FlowUtil, GraphUtil, StateUtil, ZoomUtil } from "Utils/index";
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
-import { CommandPortType, DragType, StepModelType } from "../types";
+import { CommandPortType, DragType, GraphType, StepModelType } from "../types";
 import _ from "lodash";
 import { FlowType, FrameType, Port } from "Model/Library";
 import { Action } from "redux";
@@ -51,8 +51,8 @@ const graph: GraphUtil = new GraphUtil();
 export type State = {
   // allowlist: {},
   selected_step_ids: string[],
-  graph: any,
-  zoom: number,
+  graph: GraphType,
+  // zoom: number,
   nodes: (CommandStepModel | DataFrameStepModel)[],
   history: {
     current: number,
@@ -96,8 +96,8 @@ export type State = {
 let flowEditorReducerInitialState: State = {
   // allowlist: {},
   selected_step_ids: [],
-  graph: graph.getGraph({}),
-  zoom: 100,
+  graph: graph.getGraph([], 100),
+  // zoom: 100,
   nodes: [],
   history: {
     current: 0,
@@ -150,8 +150,8 @@ type FlowEditorAction = Action & {
   selected_tab_id: number;
   x: number;
   y: number;
-  offset: number;
-  value: number;
+  // offset: number;
+  // value: number;
   detail: any;
   payload: any;
   step: any;
@@ -159,6 +159,7 @@ type FlowEditorAction = Action & {
   // executeMode: FlowExecuteModeValue;
   // editMode: FlowEditModeValue;
   // status: NetworkStatusValue;
+  zoom: number
 };
 
 export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action:FlowEditorAction) => {
@@ -175,7 +176,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.flow = context;
       newState.lastSavedFlow = StateUtil.deepCopy(newState.flow);
       newState.nodes = flowJson.nodes;
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
       newState.history.current = 0;
       newState.history.nodes = [[...newState.nodes]];
       // newState.allowlist = flowJson.allowlist;
@@ -195,7 +196,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       context.flow.label = context.label;
       newState.flow = context;
       newState.nodes = flowJson.nodes;
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
       // newState.allowlist = flowJson.allowlist;
       // newState.folderPath = context.folderPath;
       // newState.folderUuid = context.folderUuid;
@@ -273,8 +274,8 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
               y: window.pageYOffset
             };
             average = {
-              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2, newState.zoom),
-              sy: ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2, newState.zoom),
+              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2, action.zoom),
+              sy: ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2, action.zoom),
               dx: totalDX / 2
             };
           }
@@ -388,7 +389,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
       newState.nodes.push(add_step);
       newState.flow!.flow.nodes = newState.nodes;
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
       break;
     }
     case UPDATE_STEP_ACTION: {
@@ -401,7 +402,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.selected_out_edges = graph.g.outEdges(state.selected_step_ids[0]);
 
       //選択されているstepの値も更新する
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
       break;
     }
     case UPDATE_FLOW_ACTION: {
@@ -464,7 +465,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
       newState.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.nodes, deleteKeySet);
       newState.flow!.flow.nodes = newState.nodes;
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
 
       //削除後は非選択状態にする
       newState.selected_step_ids = [];
@@ -542,7 +543,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       });
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
       (window as any).nodes = newState.nodes;
 
       return newState;
@@ -582,7 +583,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         allRebuildNodesEdges(newState);
         (window as any).nodes = newState.nodes;
 
-        newState.graph = graph.getGraph(newState);
+        newState.graph = graph.getGraph(newState.nodes, action.zoom);
       }
       return newState;
     }
@@ -596,7 +597,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         newState.flow!.flow.nodes = newState.nodes;
         allRebuildNodesEdges(newState);
         (window as any).nodes = newState.nodes;
-        newState.graph = graph.getGraph(newState);
+        newState.graph = graph.getGraph(newState.nodes, action.zoom);
       }
       return newState;
     }
@@ -654,7 +655,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         return !(node instanceof NoteStepModel);
       });
       graph.refreshPosition(targets); //ノード位置を再計算
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
       break;
     }
     // case EXECUTE_FLOW_ACTION: {
@@ -714,15 +715,15 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     // }
 
     case SET_ZOOM_ACTION: {
-      const { offset, value } = action;
-      if (offset === undefined) {
-        //絶対値
-        newState = { ...state, zoom: value };
-      } else if (state.zoom + offset >= 40 && state.zoom + offset <= 180) {
-        //差分
-        newState = { ...state, zoom: state.zoom + offset };
-      }
-      newState.graph = graph.getGraph(newState);
+      // const { offset, value } = action;
+      // if (offset === undefined) {
+      //   //絶対値
+      //   newState = { ...state, zoom: value };
+      // } else if (state.zoom + offset >= 40 && state.zoom + offset <= 180) {
+      //   //差分
+      //   newState = { ...state, zoom: state.zoom + offset };
+      // }
+      newState.graph = graph.getGraph(state.nodes, action.zoom);
       break;
     }
 
@@ -756,7 +757,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           }
         });
         newState.flow!.flow.nodes = newState.nodes;
-        newState.graph = graph.getGraph(newState);
+        newState.graph = graph.getGraph(newState.nodes, action.zoom);
       }
 
       break;
@@ -872,7 +873,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.flow!.flow.nodes = [...nodes];
       newState.nodes = [...nodes]
       addToGraph(graph, newNode);
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
     };
       break;
 
@@ -924,7 +925,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.nodes = [...nodes]
       // graph
       addToGraph(graph, newNode);
-      newState.graph = graph.getGraph(newState);
+      newState.graph = graph.getGraph(newState.nodes, action.zoom);
     };
       break;
 
@@ -1272,12 +1273,13 @@ export function newDataDest(props: DataDestProps) {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const addStepAction = (add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
+export const addStepAction = (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
   return {
     type: ADD_STEP_ACTION,
     add_step: add_step,
     src_step_ids: src_step_ids,
-    dst_step_ids: dst_step_ids
+    dst_step_ids: dst_step_ids,
+    zoom: zoom
   };
 };
 
@@ -1286,10 +1288,11 @@ export const addStepAction = (add_step: StepModelType, src_step_ids: [] = [], ds
  * @param context
  * @returns {{type: string, context: *}}
  */
-export function loadFlowJSONAction(context: {}) {
+export function loadFlowJSONAction(context: {}, zoom:number) {
   return {
     type: LOAD_FLOW_JSON_ACTION,
-    context: context
+    context: context,
+    zoom: zoom
   };
 }
 
@@ -1310,10 +1313,11 @@ export function loadFlowJSONAction(context: {}) {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const updateStepAction = (step: StepModelType) => {
+export const updateStepAction = (step: StepModelType, zoom:number) => {
   return {
     type: UPDATE_STEP_ACTION,
-    step: step
+    step: step,
+    zoom: zoom
   };
 };
 
@@ -1334,10 +1338,11 @@ export const updateFlowAction = flow => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const deleteStepsAction = (step_ids: []) => {
+export const deleteStepsAction = (step_ids: [], zoom:number) => {
   return {
     type: DELETE_STEPS_ACTION,
-    step_ids: step_ids
+    step_ids: step_ids,
+    zoom: zoom
   };
 };
 
@@ -1367,10 +1372,11 @@ export const copyStepsAction = (step_ids: string[]) => {
  * ステップのペースト
  * @returns {{type: string, step: *}}
  */
-export const pasteStepsAction = (paste_nodes: []) => {
+export const pasteStepsAction = (paste_nodes: [], zoom:number) => {
   return {
     type: PASTE_STEPS_ACTION,
-    paste_nodes: paste_nodes
+    paste_nodes: paste_nodes,
+    zoom: zoom
   };
 };
 /**
@@ -1386,18 +1392,20 @@ export const addHistoryAction = () => {
  * アンドゥ
  * @returns {{type: string, step: *}}
  */
-export const undoAction = () => {
+export const undoAction = (zoom:number) => {
   return {
-    type: UNDO_ACTION
+    type: UNDO_ACTION,
+    zoom: zoom
   };
 };
 /**
  * リドゥ
  * @returns {{type: string, step: *}}
  */
-export const redoAction = () => {
+export const redoAction = (zoom:number) => {
   return {
-    type: REDO_ACTION
+    type: REDO_ACTION,
+    zoom: zoom
   };
 };
 /**
@@ -1449,9 +1457,10 @@ export const deleteCacheAction = (selected_step_id: string) => {
  * @param selected_steps
  * @returns {{type: string, selected_steps: *}}
  */
-export const sortFlowAction = () => {
+export const sortFlowAction = (zoom:number) => {
   return {
-    type: SORT_FLOW_ACTION
+    type: SORT_FLOW_ACTION,
+    zoom: zoom
   };
 };
 
@@ -1486,11 +1495,10 @@ export const draggingAction = (x: number, y: number) => {
  * @returns {{type: string, offset: *, value: *}}
  * @constructor
  */
-export const setZoomAction = ({ offset, value }) => {
+export const setZoomAction = (zoom:number) => {
   return {
     type: SET_ZOOM_ACTION,
-    offset: offset,
-    value: value
+    zoom: zoom,
   };
 };
 
@@ -1524,12 +1532,13 @@ export const sortStepSrcEndAction = (detail: any, mouseEvent: {}) => {
   };
 };
 
-export const moveStepsAction = (x: number, y: number, step) => {
+export const moveStepsAction = (x: number, y: number, step, zoom:number) => {
   return {
     type: MOVE_STEPS_ACTION,
     x: x,
     y: y,
-    step: step
+    step: step,
+    zoom: zoom
   };
 };
 
@@ -1567,10 +1576,11 @@ export const moveStepsAction = (x: number, y: number, step) => {
 //   };
 // };
 
-export const refreshFlowAction = (context: {}) => {
+export const refreshFlowAction = (context: {}, zoom:number) => {
   return {
     type: REFRESH_FLOW_ACTION,
-    context: context
+    context: context,
+    zoom: zoom
   };
 };
 
@@ -1580,21 +1590,23 @@ export const updateLastSavedFlowAction = () => {
   }
 }
 
-export const addDataSrcStepAction = (dataSrc: any) => {
+export const addDataSrcStepAction = (dataSrc: any, zoom:number) => {
   return {
     type: ADD_DATASRC_ACTION,
     payload: {
       dataSrc: dataSrc
-    }
+    },
+    zoom: zoom
   }
 }
 
-export const addDataDstStepAction = (dataDst: any, selectedDataNodeId: string) => {
+export const addDataDstStepAction = (dataDst: any, selectedDataNodeId: string, zoom:number) => {
   return {
     type: ADD_DATADST_ACTION,
     payload: {
       dataDest: dataDst,
-      selctedDataNodeId: selectedDataNodeId
-    }
+      selctedDataNodeId: selectedDataNodeId,
+    },
+    zoom: zoom
   }
 }

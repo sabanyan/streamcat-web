@@ -81,7 +81,7 @@ const FlowEditor = () => {
     // const mast = useSelector((state:State) => state.mast);
     // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
     const graph = useSelector((state:State) => state.graph);
-    const zoom = useSelector((state:State) => state.zoom);
+    // const zoom = useSelector((state:State) => state.zoom);
     // const inspector = useSelector((state:State) => state.inspector);
     // const editor = useSelector((state:State) => state.editor);
     // const editMode = useSelector((state:State) => state.editMode);
@@ -102,6 +102,8 @@ const FlowEditor = () => {
     const [selectedFrame, setSelectedFrame] = useState<FrameType>();
     // Canvasでの選択範囲
     const [dragRange, setDragRange] = useState<DragType | null>(null);
+    // Canvasの拡大率
+    const [zoom, setZoom] = useState(100);
 
     // 実行可否
     const [executeMode, setExecuteMode] = useState<FlowExecuteModeValue>(FlowExecuteModeValue.NotExecutable);
@@ -120,16 +122,16 @@ const FlowEditor = () => {
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 
     const loadFlowJSON = (context: {}) => {
-        return dispatch(loadFlowJSONAction(context));
+        return dispatch(loadFlowJSONAction(context, zoom));
     };
     // const addMaster = (context: {}) => {
     //     dispatch(addMasterAction(context));
     // };
-    const addStep = (add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
-        dispatch(addStepAction(add_step, src_step_ids, dst_step_ids));
+    const addStep = (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
+        dispatch(addStepAction(add_step, src_step_ids, dst_step_ids, zoom));
     };
     const updateStep = (step: StepModelType) => {
-        dispatch(updateStepAction(step));
+        dispatch(updateStepAction(step, zoom));
     };
     const selectSteps = (selected_steps: []) => {
         dispatch(selectStepsAction(selected_steps));
@@ -141,7 +143,7 @@ const FlowEditor = () => {
         dispatch(deleteSelectStepAction(selected_step_id));
     };
     const deleteSteps = (step_ids: []) => {
-        dispatch(deleteStepsAction(step_ids));
+        dispatch(deleteStepsAction(step_ids, zoom));
     };
     // const cutSteps = (step_ids: []) => {
     //     dispatch(cutStepsAction(step_ids));
@@ -150,10 +152,10 @@ const FlowEditor = () => {
         dispatch(addHistoryAction());
     };
     const undo = () => {
-        dispatch(undoAction());
+        dispatch(undoAction(zoom));
     };
     const redo = () => {
-        dispatch(redoAction());
+        dispatch(redoAction(zoom));
     };
     // const executeFlow = (flowid: string) => {
     //     // flowidは未使用
@@ -166,7 +168,7 @@ const FlowEditor = () => {
     //     dispatch(addNoteAction(x, y));
     // };
     const moveSteps = (x: number, y: number, step) => {
-        dispatch(moveStepsAction(x, y, step));
+        dispatch(moveStepsAction(x, y, step, zoom));
     };
     // const setExecuteMode = (mode: FlowExecuteModeValue) => {
     //     dispatch(setExecuteModeAction(mode));
@@ -744,7 +746,7 @@ const FlowEditor = () => {
         <div className={style.flow_editor}>
             {/* <PaperZoom /> */}
             <ToolBar
-                zoom={zoom}
+                zoomState={[zoom, setZoom]}
                 lockUUID={lockUUID}
                 nodes={nodes}
                 history={history}
@@ -773,6 +775,7 @@ const FlowEditor = () => {
                 undo={undo}
                 selected_step_ids={selected_step_ids}
                 nodes={nodes}
+                zoom={zoom}
                 history={history}
                 dragRangeState={[dragRange, setDragRange]}
             >
@@ -786,6 +789,7 @@ const FlowEditor = () => {
                 selected_step_ids={selected_step_ids}
                 nodes={nodes}
                 runnables={runnables}
+                zoom={zoom}
                 addStep={addStep}
                 selectSteps={selectSteps}
                 flow={flow!}
