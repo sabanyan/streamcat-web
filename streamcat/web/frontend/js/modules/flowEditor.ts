@@ -67,8 +67,8 @@ export type State = {
   // },
   // selected_tab_id: number,
   // drag: DragType | {},
-  selected_in_edges: any[],
-  selected_out_edges: any[],
+  // selected_in_edges: any[],
+  // selected_out_edges: any[],
   // selected_data_source_detail?: FrameType,
   // // editor
   // editor: {
@@ -112,8 +112,8 @@ let flowEditorReducerInitialState: State = {
   // },
   // selected_tab_id: 0,
   // drag: {},
-  selected_in_edges: [],
-  selected_out_edges: [],
+  // selected_in_edges: [],
+  // selected_out_edges: [],
   // selected_data_source_detail: undefined,
   // editor
   // editor: {
@@ -398,8 +398,8 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.flow!.flow.nodes = newState.nodes;
 
       //選択されているEdgeも更新する
-      newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0]);
-      newState.selected_out_edges = graph.g.outEdges(state.selected_step_ids[0]);
+      // newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0]);
+      // newState.selected_out_edges = graph.g.outEdges(state.selected_step_ids[0]);
 
       //選択されているstepの値も更新する
       newState.graph = graph.getGraph(newState.nodes, action.zoom);
@@ -605,12 +605,12 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       if (action.selected_steps && action.selected_steps.length === 1) {
         newState.selected_step_ids = action.selected_steps.map((step) => step.id);
         const selected_id = action.selected_steps[0].id;
-        newState.selected_in_edges = graph.g.inEdges(selected_id);
-        newState.selected_out_edges = graph.g.outEdges(selected_id);
+        // newState.selected_in_edges = graph.g.inEdges(selected_id);
+        // newState.selected_out_edges = graph.g.outEdges(selected_id);
       } else {
         newState.selected_step_ids = [];
-        newState.selected_in_edges = [];
-        newState.selected_out_edges = [];
+        // newState.selected_in_edges = [];
+        // newState.selected_out_edges = [];
       }
       break;
     }
