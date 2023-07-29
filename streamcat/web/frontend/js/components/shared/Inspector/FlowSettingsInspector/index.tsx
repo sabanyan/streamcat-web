@@ -10,13 +10,13 @@ import { RunnablesType, StepModelType } from 'Types/index';
 
 type Props = {
     runnables: RunnablesType;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     // nodes: any[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: Function;
     addDataDstStep: Function;
-    selectSteps: Function;
+    selectSteps: (selected_steps: any[]) => void;
     flow: FlowType;
     updateFlow: Function;
     addHistory: Function;
@@ -99,7 +99,7 @@ const FlowSettingsInspector = (props: Props) => {
     };
 
     const { flow, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
-            selectSteps, selected_step_ids, addHistory, addFlowVariableHidden,
+            selectSteps, selectedStepIds, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
     if (!flow) return null;
@@ -160,7 +160,7 @@ const FlowSettingsInspector = (props: Props) => {
                         // nodes={nodes}
                         runnables={runnables}
                         numberOfInput={0}
-                        selected_step_ids={selected_step_ids}
+                        selectedStepIds={selectedStepIds}
                         zoom={zoom}
                         addStep={addStep}
                         addDataSrcStep={addDataSrcStep}

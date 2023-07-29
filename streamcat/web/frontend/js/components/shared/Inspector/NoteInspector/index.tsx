@@ -8,11 +8,11 @@ import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
 
 interface Props {
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     nodes: any[];
-    selectSteps: Function;
+    selectSteps: (selected_steps: any[]) => void;
     updateStep: Function;
-    deleteSteps: Function;
+    deleteSteps: (step_ids: string[]) => void;
     baseInspectorDisabled: boolean;
     addHistory: Function;
 }
@@ -24,9 +24,9 @@ const NoteInspector = (props: Props) => {
     }, []);
 
     const getSelectedStep = (): NoteStepModel | null => {
-        const {selected_step_ids, nodes} = props;
-        if (Array.isArray(selected_step_ids) && selected_step_ids.length > 0) {
-            return GraphUtil.getNode(nodes, selected_step_ids[0]);
+        const {selectedStepIds, nodes} = props;
+        if (Array.isArray(selectedStepIds) && selectedStepIds.length > 0) {
+            return GraphUtil.getNode(nodes, selectedStepIds[0]);
         }
         return null;
     };
@@ -35,9 +35,9 @@ const NoteInspector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selected_step_ids, deleteSteps, selectSteps, addHistory} = props;
-                deleteSteps(selected_step_ids);
-                selectSteps();
+                const {selectedStepIds, deleteSteps, selectSteps, addHistory} = props;
+                deleteSteps(selectedStepIds);
+                selectSteps([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }

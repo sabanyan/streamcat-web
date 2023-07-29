@@ -9,11 +9,11 @@ import Constants from 'Constants/index';
 import { RunnablesType, StepModelType } from 'Types/index';
 
 type Props = {
-    deleteSteps: Function;
-    selectSteps: Function;
+    deleteSteps: (step_ids: string[]) => void;
+    selectSteps: (selected_steps: any[]) => void;
     nodes: any[];
     runnables: RunnablesType;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: Function;
@@ -29,9 +29,9 @@ const MultiInspector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selected_step_ids} = props;
-                deleteSteps(selected_step_ids);
-                selectSteps();
+                const {selectedStepIds} = props;
+                deleteSteps(selectedStepIds);
+                selectSteps([]);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
@@ -47,10 +47,10 @@ const MultiInspector = (props: Props) => {
     };
 
     const getNumberOfSelectedDataSources = () => {
-        const {nodes, selected_step_ids} = props;
+        const {nodes, selectedStepIds} = props;
         let cnt = 0;
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
-        selected_step_ids.forEach((id) => {
+        selectedStepIds.forEach((id) => {
             const node = GraphUtil.getNode(nodes, id);
             if (node instanceof DataFrameStepModel) {
                 cnt++;
@@ -64,7 +64,7 @@ const MultiInspector = (props: Props) => {
         return cnt;
     };
 
-    const {runnables, selected_step_ids, zoom, addStep, addDataSrcStep, addDataDstStep,
+    const {runnables, selectedStepIds, zoom, addStep, addDataSrcStep, addDataDstStep,
            selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
     const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
 
@@ -75,7 +75,7 @@ const MultiInspector = (props: Props) => {
                 // nodes={nodes}
                 runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
-                selected_step_ids={selected_step_ids}
+                selectedStepIds={selectedStepIds}
                 zoom={zoom}
                 addStep={addStep}
                 addDataSrcStep={addDataSrcStep}
@@ -90,9 +90,9 @@ const MultiInspector = (props: Props) => {
         commandSelector = null;
     }
 
-    return <BaseInspector key={JSON.stringify(selected_step_ids)}
+    return <BaseInspector key={JSON.stringify(selectedStepIds)}
                           header={''}
-                          title={selected_step_ids.length + ' files'}
+                          title={selectedStepIds.length + ' files'}
                           disabled={baseInspectorDisabled}>
         <div className='streamcat-form'>
             <Button onClick={() => onClickDelete()} danger={true} disabled={baseInspectorDisabled}>

@@ -15,15 +15,15 @@ type State = {
 type Props = {
   nodes: any[];
 
-  selected_step_ids: string[];
+  selectedStepIds: string[];
   baseInspectorDisabled: boolean;
 
   parentUUID?: string;
 
   updateStep: Function;
   addHistory: Function;
-  selectSteps: Function;
-  deleteSteps: Function;
+  selectSteps: (selected_steps: any[]) => void;
+  deleteSteps: (step_ids: string[]) => void;
 }
 
 
@@ -38,8 +38,8 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   getSelectedStep(): any {
-    let { selected_step_ids, nodes } = this.props
-    return GraphUtil.getNode(nodes, selected_step_ids[0])
+    let { selectedStepIds, nodes } = this.props
+    return GraphUtil.getNode(nodes, selectedStepIds[0])
   }
 
   renderActions() {
@@ -55,10 +55,10 @@ export class DataDstInspector extends React.Component<Props, State> {
   onClickDelete(e: any) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        let { selected_step_ids, nodes } = this.props
-        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
+        let { selectedStepIds, nodes } = this.props
+        const selected_step = GraphUtil.getNode(nodes, selectedStepIds[0])
         this.props.deleteSteps([selected_step.id])
-        this.props.selectSteps()
+        this.props.selectSteps([])
         this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },

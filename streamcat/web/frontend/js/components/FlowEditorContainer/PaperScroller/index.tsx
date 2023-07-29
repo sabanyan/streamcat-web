@@ -15,12 +15,12 @@ import {
 
 type Props = {
     canvasWidth: number;
-    deleteSteps: Function;
-    selectSteps: Function;
+    deleteSteps: (step_ids: string[]) => void;
+    selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     redo: Function;
     undo: Function;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     nodes: (CommandStepModel|DataFrameStepModel)[];
     zoom: number
     history: HistoryType;
@@ -47,8 +47,8 @@ const PaperScroller = (props: Props) => {
     };
 
     const getCopyNodes = (): string => {
-        const {selected_step_ids, nodes} = props;
-        return JSON.stringify(selected_step_ids.map((id) => {
+        const {selectedStepIds, nodes} = props;
+        return JSON.stringify(selectedStepIds.map((id) => {
             return GraphUtil.getNode(nodes, id);
         }));
     };
@@ -58,12 +58,12 @@ const PaperScroller = (props: Props) => {
      * @returns {boolean}
      */
     const copyableStep = () => {
-        const {selected_step_ids, nodes} = props;
+        const {selectedStepIds, nodes} = props;
 
-        if (selected_step_ids.length as number !== 1) return false;
+        if (selectedStepIds.length !== 1) return false;
 
-        if(selected_step_ids.length){
-            const targetNode = GraphUtil.getNode(nodes, selected_step_ids[0]);
+        if(selectedStepIds.length){
+            const targetNode = GraphUtil.getNode(nodes, selectedStepIds[0]);
             if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
                 return true;
             }
@@ -80,18 +80,18 @@ const PaperScroller = (props: Props) => {
             return;
         }
 
-        const {selected_step_ids} = props;
+        const {selectedStepIds} = props;
         const copyData = getCopyNodes();
         navigator.clipboard.writeText(copyData).then(() => {
-            copySteps(selected_step_ids);
+            copySteps(selectedStepIds);
         }, (err) => {
             alert("クリップボードが利用できません");
         });
     };
 
     const deleteSteps = () => {
-        const {selected_step_ids, deleteSteps} = props;
-        deleteSteps(selected_step_ids);
+        const {selectedStepIds, deleteSteps} = props;
+        deleteSteps(selectedStepIds);
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
@@ -165,7 +165,7 @@ const PaperScroller = (props: Props) => {
             const x = e.clientX - target_rect.left;
             const y = e.clientY - target_rect.top;
 
-            selectSteps();
+            selectSteps([]);
             dragStart(x, y);
             // setCoords({
             //     x: x,

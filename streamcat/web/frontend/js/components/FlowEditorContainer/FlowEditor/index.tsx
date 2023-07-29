@@ -15,14 +15,14 @@ import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel }
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
     addHistoryAction,
-    addSelectStepAction,
+    // addSelectStepAction,
     addStepAction,
-    deleteSelectStepAction,
+    // deleteSelectStepAction,
     deleteStepsAction,
     loadFlowJSONAction,
     moveStepsAction,
     redoAction,
-    selectStepsAction,
+    // selectStepsAction,
     // setEditModeAction,
     // setExecuteModeAction,
     undoAction,
@@ -75,7 +75,7 @@ const FlowEditor = () => {
     const [modifiedAt, setModifiedAt] = useState<string>();
     const flow = useSelector((state:State) => state.flow);
     // const drag = useSelector((state:State) => state.drag);
-    const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
+    // const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
     const nodes = useSelector((state:State) => state.nodes);
     const history = useSelector((state:State) => state.history);
     // const mast = useSelector((state:State) => state.mast);
@@ -98,6 +98,8 @@ const FlowEditor = () => {
         datadsts: [],
     });
 
+    // 選択中のStepのId
+    const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
     // 選択中のDataFrameNodeのFrame
     const [selectedFrame, setSelectedFrame] = useState<FrameType>();
     // Canvasでの選択範囲
@@ -133,17 +135,26 @@ const FlowEditor = () => {
     const updateStep = (step: StepModelType) => {
         dispatch(updateStepAction(step, zoom));
     };
-    const selectSteps = (selected_steps: []) => {
-        dispatch(selectStepsAction(selected_steps));
+    const selectSteps = (selected_steps: any[]) => {
+        // dispatch(selectStepsAction(selected_steps));
+        setSelectedStepIds(
+            selected_steps.map(step => step.id)
+        );
     };
     const addSelectStep = (selected_step_id: string) => {
-        dispatch(addSelectStepAction(selected_step_id));
+        // dispatch(addSelectStepAction(selected_step_id));
+        setSelectedStepIds([...selectedStepIds, selected_step_id])
     };
     const deleteSelectStep = (selected_step_id: string) => {
-        dispatch(deleteSelectStepAction(selected_step_id));
+        // dispatch(deleteSelectStepAction(selected_step_id));
+        setSelectedStepIds(
+            selectedStepIds.filter(stepId => stepId !== selected_step_id)
+        );
     };
-    const deleteSteps = (step_ids: []) => {
+    const deleteSteps = (step_ids: string[]) => {
         dispatch(deleteStepsAction(step_ids, zoom));
+        //削除後は非選択状態にする
+        setSelectedStepIds([]);
     };
     // const cutSteps = (step_ids: []) => {
     //     dispatch(cutStepsAction(step_ids));
@@ -167,8 +178,8 @@ const FlowEditor = () => {
     // const addNote = (x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // };
-    const moveSteps = (x: number, y: number, step) => {
-        dispatch(moveStepsAction(x, y, step, zoom));
+    const moveSteps = (x: number, y: number, step:any, selectedStepIds:string[]) => {
+        dispatch(moveStepsAction(x, y, step, selectedStepIds, zoom));
     };
     // const setExecuteMode = (mode: FlowExecuteModeValue) => {
     //     dispatch(setExecuteModeAction(mode));
@@ -618,7 +629,7 @@ const FlowEditor = () => {
         let steps: any = [];
         if (Array.isArray(nodes)) {
             steps = nodes.map((step: StepModelType) => {
-                let selected = (step.id === selected_step_ids[0]);
+                let selected = (step.id === selectedStepIds[0]);
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
                 return <Step
                     key={step.id}
@@ -631,7 +642,7 @@ const FlowEditor = () => {
                     error={step.error}
                     runnables={runnables}
                     flow={flow!}
-                    selected_step_ids={selected_step_ids}
+                    selectedStepIds={selectedStepIds}
                     zoom={zoom}
                     dragRange={dragRange}
                     addSelectStep={addSelectStep}
@@ -646,7 +657,7 @@ const FlowEditor = () => {
         }
         return steps;
     }, [nodes,
-        selected_step_ids,
+        selectedStepIds,
         runnables,
         flow,
         zoom,
@@ -773,7 +784,7 @@ const FlowEditor = () => {
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
-                selected_step_ids={selected_step_ids}
+                selectedStepIds={selectedStepIds}
                 nodes={nodes}
                 zoom={zoom}
                 history={history}
@@ -786,7 +797,7 @@ const FlowEditor = () => {
                 </Paper>
             </PaperScroller>
             <Inspector
-                selected_step_ids={selected_step_ids}
+                selectedStepIds={selectedStepIds}
                 nodes={nodes}
                 runnables={runnables}
                 zoom={zoom}

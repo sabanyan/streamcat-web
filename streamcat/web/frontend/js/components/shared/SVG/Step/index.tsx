@@ -21,12 +21,12 @@ interface Props {
     error: {};
     runnables: RunnablesType;
     flow: FlowType;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     zoom: number;
     dragRange: DragType | null;
-    addSelectStep: Function;
-    deleteSelectStep: Function;
-    selectSteps: Function;
+    addSelectStep: (selected_step_id: string) => void;
+    deleteSelectStep: (selected_step_id: string) => void;
+    selectSteps: (selected_steps: any[]) => void;
     selectFrame: (frame?:FrameType) => void;
     updateStep: Function;
     moveSteps: Function;
@@ -65,9 +65,9 @@ const Step = (props: Props) => {
     };
 
     const isSelected = () => {
-        const { selected_step_ids, model } = props;
+        const { selectedStepIds, model } = props;
         let selected = false;
-        selected_step_ids.map((id) => {
+        selectedStepIds.map((id) => {
             if (id === model.id) {
                 selected = true;
             }
@@ -94,7 +94,7 @@ const Step = (props: Props) => {
             }
         } else {
             //一度選択状態をクリアする（#71）
-            selectSteps();
+            selectSteps([]);
             selectSteps([step]);
 
             //データフレームの詳細を取得する
@@ -121,9 +121,9 @@ const Step = (props: Props) => {
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-        const { selected_step_ids, readOnly } = props;
+        const { selectedStepIds, readOnly } = props;
         if (readOnly) return; // 読み取り専用の場合は移動不可
-        if (selected_step_ids.length > 1) {
+        if (selectedStepIds.length > 1) {
             onMoveSteps(e);
         } else {
             onUpdateStep(e);
@@ -155,16 +155,16 @@ const Step = (props: Props) => {
 
 
     const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
-        const { model, selected_step_ids, moveSteps } = props;
-        if (selected_step_ids.includes(model.id)) {
+        const { model, selectedStepIds, moveSteps } = props;
+        if (selectedStepIds.includes(model.id)) {
             const { new_x, new_y } = calcNewPosition(e);
-            moveSteps(new_x, new_y, model);
+            moveSteps(new_x, new_y, model, selectedStepIds);
         }
     };
 
     const onUpdateStep = (e: React.MouseEvent<SVGElement>) => {
-        const { selected_step_ids, model, updateStep } = props;
-        if (selected_step_ids.length > 1) {
+        const { selectedStepIds, model, updateStep } = props;
+        if (selectedStepIds.length > 1) {
             onMoveSteps(e);
             return;
         }

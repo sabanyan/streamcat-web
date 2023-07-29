@@ -11,10 +11,10 @@ type Props = {
     runnables: RunnablesType;
     // nodes:any[];
     numberOfInput: number;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    selectSteps: Function;
+    selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     disabled?: boolean;
     addDataDstStep: Function
@@ -54,7 +54,7 @@ const CommandSelector = (props: Props) => {
         return (command.ports[0][0].label === "*");
     };
 
-    const { numberOfInput, selected_step_ids, zoom, addStep, addDataDstStep, addDataSrcStep,
+    const { numberOfInput, selectedStepIds, zoom, addStep, addDataDstStep, addDataSrcStep,
         selectSteps, addHistory, runnables } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
@@ -105,7 +105,7 @@ const CommandSelector = (props: Props) => {
             // nodes={nodes}
             key={index}
             command={command}
-            selected_step_ids={selected_step_ids}
+            selectedStepIds={selectedStepIds}
             zoom={zoom}
             addStep={addStep}
             addDataDstStep={addDataDstStep}

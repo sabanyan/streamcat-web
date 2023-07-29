@@ -13,10 +13,10 @@ import { Flow } from "Model/Library";
 type Props = {
     // nodes: any[];
     command: CommandModelType | SubflowCommandModel | Flow;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    selectSteps: Function;
+    selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     addDataDstStep: Function;
     addDataSrcStep: Function;
@@ -60,12 +60,12 @@ const Command = (props: Props) => {
     };
 
     const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: any) => {
-        const { selected_step_ids, zoom, addStep, selectSteps, addHistory, addDataDstStep, addDataSrcStep } = props;
+        const { selectedStepIds, zoom, addStep, selectSteps, addHistory, addDataDstStep, addDataSrcStep } = props;
 
         if (command.flow && command.classification === "data_source") {
             addDataSrcStep(command);
         } else if (command.flow && command.classification === "data_dest") {
-            addDataDstStep(command, selected_step_ids[0]);
+            addDataDstStep(command, selectedStepIds[0]);
         } else {
             const args = {};
             const added_command_step: CommandStepModelProps = getNewStepWithArgs(command, args);
@@ -84,10 +84,10 @@ const Command = (props: Props) => {
 
             const output_step_ids = output_steps.map(step => step.id);
 
-            addStep(added_command_step, selected_step_ids, output_step_ids, zoom);
+            addStep(added_command_step, selectedStepIds, output_step_ids, zoom);
         }
         //ステップの選択をキャンセル
-        selectSteps();
+        selectSteps([]);
         addHistory();
     };
 

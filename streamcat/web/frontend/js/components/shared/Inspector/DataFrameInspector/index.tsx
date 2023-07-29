@@ -15,11 +15,11 @@ import { useStreamCatNotifications } from "Shared/Notification";
 type Props = {
     // selected_data_source_detail: FrameType;
     runnables: RunnablesType;
-    deleteSteps: Function;
-    selectSteps: Function;
+    deleteSteps: (step_ids: string[]) => void;
+    selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     flow: FlowType;
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
     nodes: any[];
@@ -132,12 +132,12 @@ const DataFrameInspector = (props: Props) => {
 
     const onClickDelete = () => {
         const {deleteSteps, selectSteps, addHistory} = props;
-        let {selected_step_ids, nodes} = props;
+        let {selectedStepIds, nodes} = props;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const selected_step = GraphUtil.getNode(nodes, (selected_step_ids as any)[0]);
+                const selected_step = GraphUtil.getNode(nodes, selectedStepIds[0]);
                 deleteSteps([selected_step.id]);
-                selectSteps();
+                selectSteps([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -193,8 +193,8 @@ const DataFrameInspector = (props: Props) => {
 
 
     const getSelectedStep = (): DataFrameStepModel => {
-        let {selected_step_ids, nodes} = props;
-        return GraphUtil.getNode(nodes, (selected_step_ids as any)[0]);
+        let {selectedStepIds, nodes} = props;
+        return GraphUtil.getNode(nodes, selectedStepIds[0]);
     };
 
     const onChangeCacheCheck = () => {
@@ -228,9 +228,9 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const deleteCache = () => {
-        const {flow, selected_step_ids, deleteCache} = props;
+        const {flow, selectedStepIds, deleteCache} = props;
         const [, setSelectedFrame] = props.selectedFrameState;
-        const id = (selected_step_ids as any)[0];
+        const id = selectedStepIds[0];
 
         // キャッシュを削除する
         flow.deleteCache(id).then(() => {
@@ -273,7 +273,7 @@ const DataFrameInspector = (props: Props) => {
         updateStep(newSelectedStep);
     };
 
-    const { runnables, zoom, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
+    const { runnables, zoom, addStep, addDataSrcStep, addDataDstStep, selectSteps, selectedStepIds, addHistory,
             previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
@@ -406,7 +406,7 @@ const DataFrameInspector = (props: Props) => {
                             // nodes={[]}
                             runnables={runnables}
                             numberOfInput={1}
-                            selected_step_ids={selected_step_ids}
+                            selectedStepIds={selectedStepIds}
                             zoom={zoom}
                             addStep={addStep}
                             addDataSrcStep={addDataSrcStep}

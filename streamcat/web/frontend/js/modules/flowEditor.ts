@@ -50,7 +50,7 @@ const graph: GraphUtil = new GraphUtil();
 
 export type State = {
   // allowlist: {},
-  selected_step_ids: string[],
+  // selected_step_ids: string[],
   graph: GraphType,
   // zoom: number,
   nodes: (CommandStepModel | DataFrameStepModel)[],
@@ -95,7 +95,7 @@ export type State = {
 
 let flowEditorReducerInitialState: State = {
   // allowlist: {},
-  selected_step_ids: [],
+  // selected_step_ids: [],
   graph: graph.getGraph([], 100),
   // zoom: 100,
   nodes: [],
@@ -159,7 +159,8 @@ type FlowEditorAction = Action & {
   // executeMode: FlowExecuteModeValue;
   // editMode: FlowEditModeValue;
   // status: NetworkStatusValue;
-  zoom: number
+  zoom: number;
+  selectedStepIds: string[]
 };
 
 export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action:FlowEditorAction) => {
@@ -468,7 +469,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       newState.graph = graph.getGraph(newState.nodes, action.zoom);
 
       //削除後は非選択状態にする
-      newState.selected_step_ids = [];
+      // newState.selected_step_ids = [];
       break;
     }
     // case CUT_STEPS_ACTION: {
@@ -601,41 +602,41 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       }
       return newState;
     }
-    case SELECT_STEPS_ACTION: {
-      if (action.selected_steps && action.selected_steps.length === 1) {
-        newState.selected_step_ids = action.selected_steps.map((step) => step.id);
-        const selected_id = action.selected_steps[0].id;
-        // newState.selected_in_edges = graph.g.inEdges(selected_id);
-        // newState.selected_out_edges = graph.g.outEdges(selected_id);
-      } else {
-        newState.selected_step_ids = [];
-        // newState.selected_in_edges = [];
-        // newState.selected_out_edges = [];
-      }
-      break;
-    }
-    case ADD_SELECT_STEP_ACTION: {
-      if (action.selected_step_id) {
-        let new_selected_step_ids = newState.selected_step_ids;
-        new_selected_step_ids.push(action.selected_step_id);
-        newState.selected_step_ids = [...new Set(new_selected_step_ids)];
-        return newState;
-      }
-      break;
-    }
+    // case SELECT_STEPS_ACTION: {
+    //   if (action.selected_steps && action.selected_steps.length === 1) {
+    //     newState.selected_step_ids = action.selected_steps.map((step) => step.id);
+    //     const selected_id = action.selected_steps[0].id;
+    //     // newState.selected_in_edges = graph.g.inEdges(selected_id);
+    //     // newState.selected_out_edges = graph.g.outEdges(selected_id);
+    //   } else {
+    //     newState.selected_step_ids = [];
+    //     // newState.selected_in_edges = [];
+    //     // newState.selected_out_edges = [];
+    //   }
+    //   break;
+    // }
+    // case ADD_SELECT_STEP_ACTION: {
+    //   if (action.selected_step_id) {
+    //     let new_selected_step_ids = newState.selected_step_ids;
+    //     new_selected_step_ids.push(action.selected_step_id);
+    //     newState.selected_step_ids = [...new Set(new_selected_step_ids)];
+    //     return newState;
+    //   }
+    //   break;
+    // }
 
-    case DELETE_SELECT_STEP_ACTION: {
-      if (action.selected_step_id) {
-        newState.selected_step_ids = newState.selected_step_ids.filter((id) => {
-          if (id === action.selected_step_id) {
-            return false;
-          }
-          return true;
-        });
-        return newState;
-      }
-      break;
-    }
+    // case DELETE_SELECT_STEP_ACTION: {
+    //   if (action.selected_step_id) {
+    //     newState.selected_step_ids = newState.selected_step_ids.filter((id) => {
+    //       if (id === action.selected_step_id) {
+    //         return false;
+    //       }
+    //       return true;
+    //     });
+    //     return newState;
+    //   }
+    //   break;
+    // }
 
     case DELETE_CACHE_ACTION: {
       const id = action.selected_step_id;
@@ -732,32 +733,32 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     //   break;
     // }
 
-    case SORT_STEP_SRC_END_ACTION: {
-      newState.nodes.forEach((node:any, index) => {
-        if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
-          node.onSortEnd(action.payload.oldIndex, action.payload.newIndex);
-        }
-      });
-      newState.flow!.flow.nodes = newState.nodes;
-      break;
-    }
+    // case SORT_STEP_SRC_END_ACTION: {
+    //   newState.nodes.forEach((node:any, index) => {
+    //     if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
+    //       node.onSortEnd(action.payload.oldIndex, action.payload.newIndex);
+    //     }
+    //   });
+    //   newState.flow!.flow.nodes = newState.nodes;
+    //   break;
+    // }
 
     case MOVE_STEPS_ACTION: {
-      const { x, y, step } = action;
-      const { selected_step_ids, nodes } = newState;
+      const { x, y, step, selectedStepIds, zoom } = action;
+      const { nodes } = newState;
 
-      if (selected_step_ids.length > 0 && step) {
+      if (selectedStepIds.length > 0 && step) {
         const dx = (step.position.x - x);
         const dy = (step.position.y - y);
 
         nodes.map((node, index) => {
-          if (selected_step_ids.includes(node.id)) {
+          if (selectedStepIds.includes(node.id)) {
             node.position.x = node.position.x - dx;
             node.position.y = node.position.y - dy;
           }
         });
         newState.flow!.flow.nodes = newState.nodes;
-        newState.graph = graph.getGraph(newState.nodes, action.zoom);
+        newState.graph = graph.getGraph(newState.nodes, zoom);
       }
 
       break;
@@ -1338,7 +1339,7 @@ export const updateFlowAction = flow => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const deleteStepsAction = (step_ids: [], zoom:number) => {
+export const deleteStepsAction = (step_ids:string[], zoom:number) => {
   return {
     type: DELETE_STEPS_ACTION,
     step_ids: step_ids,
@@ -1413,26 +1414,26 @@ export const redoAction = (zoom:number) => {
  * @param selected_steps
  * @returns {{type: string, selected_steps: *}}
  */
-export const selectStepsAction = (selected_steps: []) => {
-  return {
-    type: SELECT_STEPS_ACTION,
-    selected_steps: selected_steps
-  };
-};
+// export const selectStepsAction = (selected_steps: any[]) => {
+//   return {
+//     type: SELECT_STEPS_ACTION,
+//     selected_steps: selected_steps
+//   };
+// };
 
-export const addSelectStepAction = (selected_step_id: string) => {
-  return {
-    type: ADD_SELECT_STEP_ACTION,
-    selected_step_id: selected_step_id
-  };
-};
+// export const addSelectStepAction = (selected_step_id: string) => {
+//   return {
+//     type: ADD_SELECT_STEP_ACTION,
+//     selected_step_id: selected_step_id
+//   };
+// };
 
-export const deleteSelectStepAction = (selected_step_id: string) => {
-  return {
-    type: DELETE_SELECT_STEP_ACTION,
-    selected_step_id: selected_step_id
-  };
-};
+// export const deleteSelectStepAction = (selected_step_id: string) => {
+//   return {
+//     type: DELETE_SELECT_STEP_ACTION,
+//     selected_step_id: selected_step_id
+//   };
+// };
 
 export const deleteCacheAction = (selected_step_id: string) => {
   return {
@@ -1522,22 +1523,23 @@ export const addNoteAction = (x: number, y: number) => {
   };
 };
 
-export const sortStepSrcEndAction = (detail: any, mouseEvent: {}) => {
-  return {
-    type: SORT_STEP_SRC_END_ACTION,
-    payload: {
-      oldIndex: detail.oldIndex,
-      newIndex: detail.newIndex
-    }
-  };
-};
+// export const sortStepSrcEndAction = (detail: any, mouseEvent: {}) => {
+//   return {
+//     type: SORT_STEP_SRC_END_ACTION,
+//     payload: {
+//       oldIndex: detail.oldIndex,
+//       newIndex: detail.newIndex
+//     }
+//   };
+// };
 
-export const moveStepsAction = (x: number, y: number, step, zoom:number) => {
+export const moveStepsAction = (x: number, y: number, step:any, selectedStepIds:string[], zoom:number) => {
   return {
     type: MOVE_STEPS_ACTION,
     x: x,
     y: y,
     step: step,
+    selectedStepIds: selectedStepIds,
     zoom: zoom
   };
 };

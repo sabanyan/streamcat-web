@@ -11,13 +11,13 @@ import {CommandParamType, RunnablesType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
 
 type Props = {
-    selected_step_ids: string[];
+    selectedStepIds: string[];
     // runnables: RunnablesType;
     nodes: any[];
     updateStep: Function;
     addHistory: Function;
-    selectSteps: Function;
-    deleteSteps: Function;
+    selectSteps: (selected_steps: any[]) => void;
+    deleteSteps: (step_ids: string[]) => void;
     // children?: React.ReactNode;
     baseInspectorDisabled: boolean;
 }
@@ -34,8 +34,8 @@ const getFlow = (uuid: string) => {
 const CommandInspector = (props: Props) => {
 
     const getSelectedStep = () => {
-        let {selected_step_ids, nodes} = props;
-        return GraphUtil.getNode(nodes, (selected_step_ids as any)[0]);
+        let {selectedStepIds, nodes} = props;
+        return GraphUtil.getNode(nodes, selectedStepIds[0]);
     };
 
     // 選択中のステップを取得する
@@ -52,7 +52,7 @@ const CommandInspector = (props: Props) => {
         const {deleteSteps, selectSteps, addHistory} = props;
         let selected_step = getSelectedStep();
         deleteSteps([selected_step.id]);
-        selectSteps();
+        selectSteps([]);
         addHistory()
     };
 
