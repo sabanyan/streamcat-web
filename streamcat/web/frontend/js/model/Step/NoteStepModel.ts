@@ -3,7 +3,7 @@ import {BaseStepModel} from "Model/index";
 import {StringUtil} from "Utils/index";
 import Constants from "Constants/index";
 
-export interface NoteStepModelProps extends BaseModelProps {
+interface NoteStepModelProps extends BaseModelProps {
     title: string;
     content: string;
     fontSize?: number;

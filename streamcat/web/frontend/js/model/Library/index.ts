@@ -231,6 +231,13 @@ export type DatabaseType = DatumType & {
     ) => Promise<DatabaseType>;
 };
 
+type Param = {
+    name: string;
+    type: string;
+    label?: string;
+    optional?: boolean;
+};
+
 export type Port = {
     label: string;
     nodeId: string;
@@ -238,22 +245,22 @@ export type Port = {
 };
 
 type PortArray = [] & {
-    exists: (portId: string) => boolean,
-    upsert: (port: Port) => void,
-    removeByNodeId: (nodeId: string) => void,
-    toJSON: () => string
+    exists: (portId: string) => boolean;
+    upsert: (port: Port) => void;
+    removeByNodeId: (nodeId: string) => void;
+    toJSON: () => string;
 };
 
 export type Flow = {
-    label?: string,
-    classification?: string,
-    description?: string,
-    creator?: string,
-    createdAt?: string,
-    projectId?: number,
-    nodes: any[]
-    params: any[]
-    ports: [PortArray,PortArray]
+    label?: string;
+    classification?: string;
+    description?: string;
+    creator?: string;
+    createdAt?: string;
+    projectId?: number;
+    nodes: any[];
+    params: Param[];
+    ports: [PortArray,PortArray];
 };
 
 export type Command = {
@@ -262,7 +269,7 @@ export type Command = {
     label: string;
     classification: string;
     description: string;
-    groups:[]
+    groups:[];
     params:[{
         name: string;
         type: string;

@@ -2,7 +2,7 @@ import {CommandStepModelProps} from "Model/Step/CommandStepModel";
 import {CommandStepModel} from "Model/index";
 import {CommandParamType} from "Types/index";
 
-export interface SubFlowStepModelProps  extends  CommandStepModelProps{
+interface SubFlowStepModelProps  extends  CommandStepModelProps{
   uuid: string
 }
 
