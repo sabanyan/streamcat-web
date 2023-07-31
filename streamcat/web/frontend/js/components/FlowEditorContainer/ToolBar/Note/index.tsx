@@ -2,9 +2,10 @@ import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import Constants from 'Constants/index';
 import { NoteStepModel } from 'Model/index';
-import { FlowUtil, PositionUtil, ZoomUtil } from 'Utils/index';
+import { FlowUtil, ModelUtil, PositionUtil, ZoomUtil } from 'Utils/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
 import { StepModelType } from 'Types/index';
+import { NoteNodeType, calcSize } from 'Model/Step/NodeTypes';
 
 type Props = {
     zoom: number;
@@ -32,13 +33,36 @@ export const Note = (props: Props) => {
             nodes
         );
 
-        const note = new NoteStepModel({
-            id: '',
-            type: Constants.step.type.note,
+        // const note = new NoteStepModel({
+        //     id: '',
+        //     type: Constants.step.type.note,
+        //     position: notOverlapNodePosition,
+        //     title: '新しいメモ',
+        //     content: ''
+        // });
+        const note = {
+            id: ModelUtil.getNewId('note'),
+            label: '',
+            type: 'note',
             position: notOverlapNodePosition,
+            size: {width:200, height:40},
+            error: {},
+            invalid: {},
             title: '新しいメモ',
-            content: ''
-        });
+            content: '',
+            fontSize: 16,
+            color: 'green',
+            // setTitle: (title:string) => {},
+            // setFontSize: (fontSize:number) => {}
+            setTitle: (title:string) => {
+                note.title = title;
+                note.size = calcSize(title, note.fontSize || 16);
+            },
+            setFontSize: (fontSize:number) => {
+                note.fontSize = fontSize;
+                note.size = calcSize(note.title, fontSize);
+            },
+        };
 
         addStep(note, [], [], zoom);
         addHistory();

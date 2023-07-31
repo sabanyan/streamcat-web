@@ -166,7 +166,9 @@ type FlowEditorAction = Action & {
 export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, action:FlowEditorAction) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
-  let newState: State = StateUtil.deepCopy(state);
+  // let newState: State = StateUtil.deepCopy(state);
+  // NOTE: deepCopyすると新規追加したNoteNodeの関数が機能しない
+  let newState = {...state};
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
       let { context } = action;
@@ -653,7 +655,8 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case SORT_FLOW_ACTION: {
       // memoはソート対象外にする
       let targets = newState.nodes.filter((node) => {
-        return !(node instanceof NoteStepModel);
+        // return !(node instanceof NoteStepModel);
+        return node.type !== 'note';
       });
       graph.refreshPosition(targets); //ノード位置を再計算
       newState.graph = graph.getGraph(newState.nodes, action.zoom);

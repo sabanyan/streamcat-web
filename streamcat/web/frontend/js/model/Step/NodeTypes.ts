@@ -1,4 +1,5 @@
 import { Flow } from 'Model/Library';
+import { StringUtil } from 'Utils/index';
 
 export type NodeType = {
     readonly id: string;
@@ -42,10 +43,19 @@ export type InlineFlowNodeType = BaseFlowNodeType & {
 };
 
 export type NoteNodeType = NodeType & {
-    readonly title: string;
+    title: string;
     content?: string;
-    readonly fontSize?: number;
+    fontSize?: number;
     color?: string;
     setTitle: (title:string) => void;
     setFontSize: (fontSize:number) => void;
+};
+
+export const calcSize = (title:string, fontSize:number) => {
+    const width = StringUtil.getTextWidth(title, fontSize) + 15;
+    const minWidth = 88;
+    return {
+        width: minWidth < width? width: minWidth,
+        height: fontSize + 15
+    };
 };

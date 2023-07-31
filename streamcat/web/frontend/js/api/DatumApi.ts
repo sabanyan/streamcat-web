@@ -22,6 +22,11 @@ import {
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
+    NodeType,
+    NoteNodeType,
+    calcSize
+} from 'Model/Step/NodeTypes';
+import {
     toJsonOrRaise,
     getBase as get,
     postBase,
@@ -311,7 +316,26 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
 });
 
 /**
- * PortArrayにhasPort関数を付与する
+ * NodeArrayのコンストラクタ関数を作成する
+ */
+const NodeArray = makeArrayCtor<NodeType>(node => {
+    if(node.type === 'note') {
+        const n = node as NoteNodeType;
+        n.setTitle = (title) => {
+            n.title = title;
+            n.size = calcSize(title, n.fontSize || 16);
+        };
+        n.setFontSize = (fontSize) => {
+            n.fontSize = fontSize;
+            n.size = calcSize(n.title, fontSize);
+        };
+    }else{
+        // TODO: 他のNodeTpeを追加予定
+    }
+});
+
+/**
+ * PortArrayのコンストラクタ関数を作成する
  */
 const PortArray = function(this: any, ports: Port[]){
     Array.prototype.push.apply(this, ports);
@@ -472,10 +496,8 @@ export const DatumApi = {
         return get<FlowType>(`/api/v0/flows/${uuid}`).then(flow => {
             flow = (new DatumArray([flow])).shift() as any;
             const flowJson = flow.flow;
+            flowJson.nodes = new NodeArray(flowJson.nodes);
             // 配列プロパティがない場合は空値を格納する
-            if(!flowJson.nodes){
-                flowJson.nodes = [];
-            }
             if(!flowJson.params){
                 flowJson.params = [];
             }

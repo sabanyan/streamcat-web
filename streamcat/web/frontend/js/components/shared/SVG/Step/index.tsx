@@ -171,7 +171,10 @@ const Step = (props: Props) => {
         const { new_x, new_y } = calcNewPosition(e);
         //移動に応じてStepの位置を更新
         let step = model;
-        step.setPosition({ x: new_x, y: new_y });
+        // step.setPosition({ x: new_x, y: new_y });
+        // step.position = {x:new_x, y:new_y} では何故かノードが移動しない
+        step.position.x = new_x;
+        step.position.y = new_y;
         updateStep(step);
     };
 
@@ -259,7 +262,8 @@ const Step = (props: Props) => {
     };
 
     const isNote = (model): boolean => {
-        return (model instanceof NoteStepModel);
+        // return (model instanceof NoteStepModel);
+        return model.type === 'note';
     };
 
     const getFilter = () => {
@@ -342,7 +346,7 @@ const Step = (props: Props) => {
         stepLabel = step.getLabel();
     } else if (isNote(step)) {
         icon = <NoteIcon hover={hover} selected={selected} model={step} />;
-        stepLabel = step.getLabel();
+        stepLabel = step.label;
     } else if (step.flow && step.classification === "data_source") {
         icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
     } else if (step.flow && step.classification === "data_dest") {

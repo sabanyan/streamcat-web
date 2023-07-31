@@ -6,6 +6,7 @@ import Constants from 'Constants/index';
 import {NoteStepModel} from 'Model/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
+import { NoteNodeType } from 'Model/Step/NodeTypes';
 
 interface Props {
     selectedStepIds: string[];
@@ -23,7 +24,7 @@ const NoteInspector = (props: Props) => {
         if (element) element.focus();
     }, []);
 
-    const getSelectedStep = (): NoteStepModel | null => {
+    const getSelectedStep = (): NoteNodeType | null => {
         const {selectedStepIds, nodes} = props;
         if (Array.isArray(selectedStepIds) && selectedStepIds.length > 0) {
             return GraphUtil.getNode(nodes, selectedStepIds[0]);
@@ -53,11 +54,13 @@ const NoteInspector = (props: Props) => {
         });
     };
 
-    const update = (getNewStep: Function) => {
+    const update = (getNewStep:(step:NoteNodeType) => NoteNodeType) => {
         const {updateStep} = props;
         const selectedStep = getSelectedStep();
-        const newStep = getNewStep(selectedStep);
-        updateStep(newStep);
+        if(selectedStep){
+            const newStep = getNewStep(selectedStep);
+            updateStep(newStep);
+        }
     };
 
     const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +74,7 @@ const NoteInspector = (props: Props) => {
 
     const onContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         update((step) => {
-            step.setContent(e.target.value);
+            step.content = e.target.value;
             return step;
         });
     };
@@ -86,7 +89,7 @@ const NoteInspector = (props: Props) => {
 
     const onChangeColor = (e: React.ChangeEvent<HTMLInputElement>, data, label) => {
         update((step) => {
-            step.setColor(e.target.value);
+            step.color = e.target.value;
             return step;
         });
     };
@@ -152,7 +155,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
-                defaultValue={fontSize.toString()}
+                defaultValue={fontSize?.toString() || '16'}
                 disabled={baseInspectorDisabled}
                 list={getFontSizeList()}
                 label={'文字'}
@@ -162,7 +165,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='color'
                 onChange={(e, data, label) => onChangeColor(e, data, label)}
-                defaultValue={color}
+                defaultValue={color || Constants.default.note.color.green}
                 disabled={baseInspectorDisabled}
                 list={getColorList()}
                 label={'色'}
@@ -175,7 +178,7 @@ const NoteInspector = (props: Props) => {
         </div>
     </div>;
 
-    return <BaseInspector key={selected_step.uuid} header={''} label={null} disabled={baseInspectorDisabled} >
+    return <BaseInspector key={selected_step.id} header={''} label={null} disabled={baseInspectorDisabled} >
         {content}
     </BaseInspector>;
 };

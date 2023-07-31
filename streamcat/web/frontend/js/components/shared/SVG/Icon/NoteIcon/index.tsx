@@ -2,11 +2,12 @@ import React from 'react';
 import {CSSProperties} from "react";
 import Constants from "Constants/index";
 import {NoteStepModel} from "Model/index";
+import { NoteNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     hover: boolean,
     selected: boolean,
-    model: NoteStepModel,
+    model: NoteNodeType,
     filter?: string | null,
 }
 
@@ -54,7 +55,7 @@ const NoteIcon = (props: Props) => {
 
     const getColor = () => {
         const {model} = props;
-        const color = model.getColor();
+        const color = model.color;
         switch (color) {
             case Constants.default.note.color.green:
                 return {
@@ -98,7 +99,7 @@ const NoteIcon = (props: Props) => {
         const style = NoteContentStyle;
         style.width = size.width;
         style.height = size.height;
-        style.fontSize = model.getFontSize();
+        style.fontSize = model.fontSize || 16;
         return <foreignObject {...style} transform={"translate(0,0)"}>
             <div style={{display: "table", width: "100%", height: style.height, paddingRight: style.padding + "px"}}>
                 <p style={NoteTextStyle}>
@@ -110,11 +111,10 @@ const NoteIcon = (props: Props) => {
 
     const {model} = props;
     const size = model.size;
-    const {width, height} = model.size;
 
     return <g>
-        <svg width={width}
-             height={height}>
+        <svg width={model.size?.width}
+             height={model.size?.height}>
             {renderShape(size)}
             {renderContent(size)}
         </svg>

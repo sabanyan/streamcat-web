@@ -157,7 +157,7 @@ export const Inspector = (props:InspectorProps) => {
             deleteSteps={deleteSteps}
             baseInspectorDisabled={baseInspectorDisabled}
           />
-        } else if (selected_step instanceof NoteStepModel) {
+        } else if (selected_step.type === 'note') {
           property = <NoteInspector
             selectedStepIds={selectedStepIds}
             nodes={nodes}

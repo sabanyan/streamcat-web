@@ -1,9 +1,10 @@
 //@flow
 import dagre from 'dagre'
 import Constants from 'Constants/index'
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import { State } from 'Modules/flowEditor'
+import { NoteNodeType, calcSize } from 'Model/Step/NodeTypes'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -165,12 +166,14 @@ class GraphUtil {
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
         let node = GraphUtil.getNode(nodes, key)
         if (node) {
-          node.setFrame({
-            x: graph_node.x,
-            y: graph_node.y,
-            width: graph_node.width,
-            height: graph_node.height,
-          })
+          // node.setFrame({
+          //   x: graph_node.x,
+          //   y: graph_node.y,
+          //   width: graph_node.width,
+          //   height: graph_node.height,
+          // })
+          node.position = {x:graph_node.x, y:graph_node.y};
+          node.size = {width:graph_node.width, height:graph_node.height};
         }
       }
     })
@@ -253,7 +256,7 @@ class GraphUtil {
       }
     }
 
-    let newNodes: DataFrameStepModel[] = [];
+    let newNodes: (DataFrameStepModel | NoteNodeType)[] = [];
     json.nodes.forEach((node) => {
       self.addNode(node.id)
       const type = node.type
@@ -342,21 +345,28 @@ class GraphUtil {
           }
           break
         case Constants.step.type.note:
-          const note = node
-
-          const model2 = {
-            id: note.id,
-            type: note.type,
-            label: note.label,
-            position: note.position,
-            size: note.size,
-            title: note.title,
-            content: note.content,
-            color: note.color,
-            fontSize: note.fontSize
-          }
-          node = new NoteStepModel(model2)
-          newNodes.push(node)
+          const note:NoteNodeType = {
+            id: node.id,
+            label: node.label,
+            type: 'note',
+            position: node.position,
+            size: node.size,
+            error: node.error,
+            invalid: node.invalid,
+            title: node.title,
+            content: node.content,
+            fontSize: node.fontSize,
+            color: node.color,
+            setTitle: (title:string) => {
+              note.title = title;
+              note.size = calcSize(title, note.fontSize || 16);
+            },
+            setFontSize: (fontSize:number) => {
+                note.fontSize = fontSize;
+                note.size = calcSize(note.title, fontSize);
+            },
+          };
+          newNodes.push(note);
 
           break
 
