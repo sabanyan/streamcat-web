@@ -1,12 +1,13 @@
 import { defaultGraphProps, defaultNodeProps } from "Utils/GraphUtil";
 import Constants from "Constants/index";
-import { FlowUtil, GraphUtil, StateUtil, ZoomUtil } from "Utils/index";
+import { FlowUtil, GraphUtil, ModelUtil, StateUtil, ZoomUtil } from "Utils/index";
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, DragType, GraphType, StepModelType } from "../types";
 import _ from "lodash";
 import { FlowType, FrameType, Port } from "Model/Library";
 import { Action } from "redux";
+import { FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -53,10 +54,10 @@ export type State = {
   // selected_step_ids: string[],
   graph: GraphType,
   // zoom: number,
-  nodes: (CommandStepModel | DataFrameStepModel)[],
+  nodes: (CommandStepModel | FrameNodeType)[],
   history: {
     current: number,
-    nodes: (CommandStepModel | DataFrameStepModel)[][]
+    nodes: (CommandStepModel | FrameNodeType)[][]
   },
   // mast: {
   //   commands: any[],
@@ -289,12 +290,8 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           };
 
           //追加されたノードの位置調整
-          add_step.setFrame({
-            x: newPosition.x,
-            y: newPosition.y,
-            width: defaultNodeProps.width,
-            height: defaultNodeProps.height
-          });
+          add_step.position = {x:newPosition.x, y:newPosition.y};
+          add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
 
           //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
           const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...add_step.position }, newState.nodes);
@@ -302,23 +299,18 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y;
           if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) {
             //再調整
-            add_step.setFrame({
-              x: notOverlapNodePosition.x,
-              y: notOverlapNodePosition.y,
-              width: defaultNodeProps.width,
-              height: defaultNodeProps.height
-            });
+            add_step.position = {x:notOverlapNodePosition.x, y:notOverlapNodePosition.y};
+            add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
           }
 
           //先行して設置されている接続先のノードの位置調整
           dst_step_ids.map((id, index) => {
             let new_node = GraphUtil.getNode(state.nodes, id);
-            new_node.setFrame({
+            new_node.position = {
               x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
-              y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator,
-              width: defaultNodeProps.width,
-              height: defaultNodeProps.height
-            });
+              y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
+            };
+            new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
             newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, key: id, new_node: new_node });
           });
           //出力先ステップの位置調整
@@ -377,17 +369,20 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         } else {
           add_step.srcs = {};
           add_step.dsts = {};
-          add_step.setFrame({ x: 0, y: 0, width: defaultNodeProps.width, height: defaultNodeProps.height });
+          add_step.position = {x:0, y:0};
+          add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
         }
       }
 
-      if (add_step instanceof DataFrameStepModel) {
-        add_step.setFrame({
+      if (add_step.type === 'frame') {
+        add_step.position = {
           x: window.innerWidth / 2 - defaultNodeProps.width / 2,
           y: window.innerHeight / 2 - defaultNodeProps.height / 2,
+        };
+        add_step.size = {
           width: defaultNodeProps.width,
           height: defaultNodeProps.height
-        });
+        };
       }
 
       newState.nodes.push(add_step);
@@ -421,7 +416,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //一つでもデータフレームが残っていると削除は行わない
       action.step_ids.forEach((id) => {
         const step = GraphUtil.getNode(newState.nodes, id);
-        if (GraphUtil.getNode(newState.nodes, id) instanceof DataFrameStepModel) {
+        if (GraphUtil.getNode(newState.nodes, id).type === 'frame') {
           //削除対象のノードの親がある場合、親を調べる
           if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v;
@@ -515,24 +510,26 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         let newDsts = {};
         Object.keys(newNode.dsts).forEach((key) => {
           //出力先を作成し、接続先を変更する
-          const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(newState.nodes as [any], newNode.dsts[key]);
-          const props: any = {
-            id: null,
-            type: Constants.step.type.frame,
-            uuid: null,
-            label: "コピー " + copiedStep.getLabel(),
-            dataSource: copiedStep.dataSource,
-            // srcs: newNode.id,
-            // dsts: [],
-            position: copiedStep.position
-          };
-          let add_step = new DataFrameStepModel(props);
-          add_step = FlowUtil.copyPositionWithOffsetX(add_step);
-          newState.nodes.push(add_step);
+          const copiedStep:FrameNodeType = FlowUtil.getNodeFromID(newState.nodes as [any], newNode.dsts[key]);
+          // const props: any = {
+          //   id: null,
+          //   type: Constants.step.type.frame,
+          //   uuid: null,
+          //   label: "コピー " + copiedStep.label,
+          //   dataSource: copiedStep.dataSource,
+          //   // srcs: newNode.id,
+          //   // dsts: [],
+          //   position: copiedStep.position
+          // };
+          // let add_step = new DataFrameStepModel(props);
+          let add_node:FrameNodeType = new FrameNode(copiedStep.position);
+          add_node.label = 'コピー ' + copiedStep.label;
+          add_node = FlowUtil.copyPositionWithOffsetX(add_node);
+          newState.nodes.push(add_node);
           //ノード本体をコピー
-          graph.addNode(add_step.id);
+          graph.addNode(add_node.id);
           //newState.selected_step_ids.push(add_step.id);
-          newDsts[key] = add_step.id;
+          newDsts[key] = add_node.id;
         });
         //convertMap[cacheId] = newNode.id
         newNode.dsts = {};
@@ -643,7 +640,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case DELETE_CACHE_ACTION: {
       const id = action.selected_step_id;
       let node = GraphUtil.getNode(state.nodes, id);
-      if (node instanceof DataFrameStepModel) {
+      if (node.type === 'frame') {
         node.deleteCache();
       }
 
@@ -1175,7 +1172,11 @@ function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: Object, prop
     props.size = dstNodesPositionAndSize[key].size;
     props.position = dstNodesPositionAndSize[key].position;
 
-    const newDstNode = new DataFrameStepModel(props);
+    // const newDstNode = new DataFrameStepModel(props);
+    const newDstNode = new FrameNode(dstNodesPositionAndSize[key].position as {x:number, y:number});
+    newDstNode.id = dstNodeIds[index];
+    newDstNode.label = key;
+
     result.push(newDstNode);
   })
 

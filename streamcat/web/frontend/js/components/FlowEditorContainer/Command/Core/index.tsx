@@ -9,6 +9,7 @@ import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandModelType, StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
 import { Flow } from "Model/Library";
+import { FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
@@ -71,13 +72,14 @@ const Command = (props: Props) => {
             const added_command_step: CommandStepModelProps = getNewStepWithArgs(command, args);
 
             const output_steps = command.ports[1].map(() => {
-                const output_step = new DataFrameStepModel({
-                    id: '',
-                    label: null,
-                    type: Constants.step.type.frame,
-                    uuid: null,
-                    dataSource: Constants.data.dataSource.csv
-                });
+                // const output_step = new DataFrameStepModel({
+                //     id: '',
+                //     label: null,
+                //     type: Constants.step.type.frame,
+                //     uuid: null,
+                //     dataSource: Constants.data.dataSource.csv
+                // });
+                const output_step:FrameNodeType = new FrameNode({x:0, y:0});
                 addStep(output_step, [], [], zoom);
                 return output_step;
             });

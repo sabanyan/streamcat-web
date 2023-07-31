@@ -1,25 +1,46 @@
 import { Flow } from 'Model/Library';
-import { StringUtil } from 'Utils/index';
+import { ModelUtil, StringUtil } from 'Utils/index';
 
 export type NodeType = {
     readonly id: string;
     label?: string | null;
     readonly type: 'frame' | 'store' | 'int' | 'command' | 'flow' | 'note';
-    position?: { x:number, y:number };
+    position: { x:number, y:number };
     size?: { width:number, height:number };
     error?: {};
     invalid?: {};
 };
     
 export type FrameNodeType = NodeType & {
-    uuid?: string|null
-    value?: any
+    uuid?: string | null;
+    value?: any;
     makeCache?: boolean;
     dataSource?: string;
-    cacheCreatedAt?: string;
+    cacheCreatedAt?: string | null;
     hasData: () => boolean;
     isCached: () => boolean;
     deleteCache: () => void;
+};
+
+export const FrameNode = function(this: FrameNodeType, position:{x:number, y:number}) {
+    const newId = ModelUtil.getNewId('frame');
+    (this as any).id = newId;
+    (this as any).type = 'frame';
+    this.label = newId;
+    this.position = position;
+    this.size = {width:38, height:38};
+    this.invalid = {};
+    this.error = {};
+    this.uuid = null;
+    this.makeCache = false;
+    this.dataSource = 'csv';
+    this.cacheCreatedAt = null;
+    this.hasData = () => !!this.uuid;
+    this.isCached = () => !!this.cacheCreatedAt;
+    this.deleteCache = () => {
+        this.cacheCreatedAt = null;
+        this.uuid = null;
+    };
 };
 
 export type CommandNodeType = NodeType & {

@@ -687,11 +687,11 @@ const FlowEditor = () => {
                     let outPortLabel; // 入力元ノードからの出力ポートラベル
                     let inPortLabel;  // 出力元ノードからの入力ポートラベル
                     //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
-                    if (w_node instanceof DataFrameStepModel) {
+                    if (w_node.type === 'frame') {
                         outPortLabel = JSON.parse(edge.name).port_name;
                     }
                     //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
-                    if (v_node instanceof DataFrameStepModel) {
+                    if (v_node.type === 'frame') {
                         inPortLabel = JSON.parse(edge.name).port_name;
                     }
 

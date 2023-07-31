@@ -72,7 +72,7 @@ export const InOutConnector = (props: Props) => {
                         {(subflowOutPort) ? subflowOutPort.label : null}
                     </div>
                     <div className={style.outPort_Node}>
-                        {node.getLabel()}
+                        {node.label}
                     </div>
                 </div>;
             });
@@ -89,7 +89,7 @@ export const InOutConnector = (props: Props) => {
                     {key}
                 </div>
                 <div className={style.outPort_Node}>
-                    {node.getLabel()}
+                    {node.label}
                 </div>
             </div>;
         });

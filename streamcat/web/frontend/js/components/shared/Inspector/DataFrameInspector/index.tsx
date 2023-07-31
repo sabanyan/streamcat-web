@@ -11,6 +11,7 @@ import {RunnablesType, StepModelType} from "Types/index";
 import {Loader} from "Shared/Base";
 import { FlowType, FrameType, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
+import { FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // selected_data_source_detail: FrameType;
@@ -192,7 +193,7 @@ const DataFrameInspector = (props: Props) => {
     };
 
 
-    const getSelectedStep = (): DataFrameStepModel => {
+    const getSelectedStep = (): FrameNodeType => {
         let {selectedStepIds, nodes} = props;
         return GraphUtil.getNode(nodes, selectedStepIds[0]);
     };
@@ -200,10 +201,10 @@ const DataFrameInspector = (props: Props) => {
     const onChangeCacheCheck = () => {
         const {updateFlow, flow} = props;
         let selected_step = getSelectedStep();
-        if (selected_step.isMakeCache()) {
-            selected_step.setMakeCache(false);
+        if (selected_step.makeCache) {
+            selected_step.makeCache = false;
         } else {
-            selected_step.setMakeCache(true);
+            selected_step.makeCache = true;
         }
         updateFlow(flow);
     };
@@ -278,7 +279,7 @@ const DataFrameInspector = (props: Props) => {
     let preview;
     let download;
     const selected_step = getSelectedStep();
-    if (selected_step instanceof DataFrameStepModel) {
+    if (selected_step.type === 'frame') {
         preview = <Button onClick={() => onClickPreview()}
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {

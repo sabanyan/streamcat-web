@@ -5,6 +5,7 @@ import {StepModelType} from 'Types/index';
 import {DataFrameStepModel} from 'Model/index';
 import {DropDownList} from 'Shared/Input';
 import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
+import { FrameNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     portLabel: string;
@@ -27,7 +28,7 @@ export const InConnector = (props: Props) => {
 
     const dataSourceOptions = FlowUtil.getAllDataFrame(nodes).map(dataFrame => ({
         value: dataFrame.id,
-        label: dataFrame.getLabel(),
+        label: dataFrame.label,
         object: dataFrame
     }));
 
@@ -37,7 +38,7 @@ export const InConnector = (props: Props) => {
         //data.objectにデータフレームが格納されている
         if (data.object) {
             //ノードが選択されたとき
-            const dataSource: DataFrameStepModel = data.object;
+            const dataSource: FrameNodeType = data.object;
             newSelectedStep.srcs[label] = dataSource.id;
             updateStep(newSelectedStep);
         } else {

@@ -97,7 +97,7 @@ export const Inspector = (props:InspectorProps) => {
           baseInspectorDisabled={baseInspectorDisabled}
         />
       } else {
-        if (selected_step instanceof DataFrameStepModel) {
+        if (selected_step.type === 'frame') {
           property = <DataFrameInspector
             nodes={flow.flow.nodes}
             // selected_data_source_detail={selected_data_source_detail}

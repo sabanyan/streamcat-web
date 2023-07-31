@@ -4,7 +4,7 @@ import Constants from 'Constants/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import { State } from 'Modules/flowEditor'
-import { NoteNodeType, calcSize } from 'Model/Step/NodeTypes'
+import { FrameNodeType, NoteNodeType, calcSize } from 'Model/Step/NodeTypes'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -134,7 +134,7 @@ class GraphUtil {
    * @returns {{width, height}}
    */
 
-  getGraph(nodes:(CommandStepModel | DataFrameStepModel)[], zoom:number) {
+  getGraph(nodes:(CommandStepModel | FrameNodeType)[], zoom:number) {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
@@ -256,25 +256,34 @@ class GraphUtil {
       }
     }
 
-    let newNodes: (DataFrameStepModel | NoteNodeType)[] = [];
+    let newNodes: (FrameNodeType | NoteNodeType)[] = [];
     json.nodes.forEach((node) => {
       self.addNode(node.id)
       const type = node.type
       switch (type) {
         //データフレーム
         case Constants.step.type.frame:
-          const frame = node
-          newNodes.push(new DataFrameStepModel({
-            id: frame.id,
-            type: Constants.step.type.frame,
-            uuid: frame.uuid,
-            label: frame.label,
-            dataSource: Constants.data.dataSource.csv,
-            position: frame.position,
-            size: frame.size,
-            makeCache: frame.makeCache,
-            cacheCreatedAt: frame.cacheCreatedAt
-          }))
+          const frame:FrameNodeType = {
+            id: node.id,
+            label: node.label,
+            type: 'frame',
+            position: node.position,
+            size: node.size,
+            error: node.error,
+            invalid: node.invalid,
+            uuid: node.uuid,
+            value: node.value,
+            makeCache: node.makeCache,
+            dataSource: node.dataSource,
+            cacheCreatedAt: node.cacheCreatedAt,
+            hasData: () => !!frame.uuid,
+            isCached: () => !!frame.cacheCreatedAt,
+            deleteCache: () => {
+              frame.cacheCreatedAt = null;
+              frame.uuid = null;
+            },
+          };
+          newNodes.push(frame);
           if (frame.position && frame.size) {
             hasPosition = true
           }

@@ -22,6 +22,7 @@ import {
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
+    FrameNodeType,
     NodeType,
     NoteNodeType,
     calcSize
@@ -319,7 +320,15 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
  * NodeArrayのコンストラクタ関数を作成する
  */
 const NodeArray = makeArrayCtor<NodeType>(node => {
-    if(node.type === 'note') {
+    if(node.type === 'frame'){
+        const n = node as FrameNodeType;
+        n.hasData = () => !!n.uuid;
+        n.isCached = () => !!n.cacheCreatedAt;
+        n.deleteCache = () => {
+            n.cacheCreatedAt = null;
+            n.uuid = null;
+        };
+    }else if(node.type === 'note'){
         const n = node as NoteNodeType;
         n.setTitle = (title) => {
             n.title = title;

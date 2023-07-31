@@ -3,12 +3,13 @@ import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
+import { FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
 
 export default class FlowUtil {
 
   static getAllDataFrame (nodes: StepModelType[]) {
     return nodes.filter((node) => {
-      if (node instanceof DataFrameStepModel) {
+      if (node.type === 'frame') {
         return true
       }
       return false
@@ -17,7 +18,7 @@ export default class FlowUtil {
 
   static getNodeFromID (nodes: StepModelType[], id: string) {
     return nodes.find((node) => {
-      if (node instanceof DataFrameStepModel) {
+      if (node.type === 'frame') {
         return (node.id === id)
       }
       return false
@@ -153,7 +154,7 @@ export default class FlowUtil {
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
-  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: BaseStepModel[]) {
+  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: {position:{x:number,y:number}}[]) {
     let result = {x: x, y: y}
     const threshold = 3
     nodes.forEach((node) => {
@@ -196,7 +197,14 @@ export default class FlowUtil {
       node.loadArgs()
       return node
     }
-    if (json['uuid'] !== undefined && json['dataSource'] !== undefined) return new DataFrameStepModel(json)
+    if (json['uuid'] !== undefined && json['dataSource'] !== undefined){
+      const newNode:FrameNodeType = new FrameNode({x:0, y:0});
+      newNode.label = json.label;
+      newNode.uuid = json.uuid;
+      newNode.makeCache = json.makeCache;
+      newNode.cacheCreatedAt = json.cacheCreatedAt;
+      return newNode;
+    }
     return json
   }
 

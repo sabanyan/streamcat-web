@@ -52,7 +52,7 @@ const MultiInspector = (props: Props) => {
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
         selectedStepIds.forEach((id) => {
             const node = GraphUtil.getNode(nodes, id);
-            if (node instanceof DataFrameStepModel) {
+            if (node.type === 'frame') {
                 cnt++;
             } else if (node instanceof SubFlowStepModel) {
                 hasMixedCommand = true;

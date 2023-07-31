@@ -99,7 +99,7 @@ const Step = (props: Props) => {
 
             //データフレームの詳細を取得する
             const selected_step: StepModelType = step;//this.getSelectedStep()
-            if (selected_step instanceof DataFrameStepModel) {
+            if (selected_step.type === 'frame') {
                 if (selected_step.hasData() && selected_step.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
                     Api.findFrame(selected_step.uuid).then(frame => {
@@ -254,7 +254,7 @@ const Step = (props: Props) => {
     };
 
     const isDataFrame = (model): boolean => {
-        return (model instanceof DataFrameStepModel);
+        return (model.type === 'frame');
     };
 
     const isSubFlow = (model): boolean => {
