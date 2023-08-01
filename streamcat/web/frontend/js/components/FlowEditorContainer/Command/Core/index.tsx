@@ -9,7 +9,7 @@ import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandModelType, StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
 import { Flow } from "Model/Library";
-import { FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
+import { CommandNode, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
@@ -47,10 +47,14 @@ const Command = (props: Props) => {
         };
 
         if (command instanceof CommandModel) {
-            (model as any).type = Constants.step.type.command;
-            (model as any).commandId = command.id;
-            node = new CommandStepModel((model as any));
-            node.initArgs();
+            // (model as any).type = Constants.step.type.command;
+            // (model as any).commandId = command.id;
+            // node = new CommandStepModel((model as any));
+            // node.initArgs();
+            node = new CommandNode(command.id || '', {x:0, y:0});
+            node.label = command.label;
+            node.args = args;
+
         } else if (command instanceof SubflowCommandModel) {
             (model as any).type = Constants.step.type.subflow;
             (model as any).uuid = command.uuid;

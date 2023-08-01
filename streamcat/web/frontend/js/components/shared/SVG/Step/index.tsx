@@ -250,7 +250,8 @@ const Step = (props: Props) => {
 
 
     const isCommandStep = (model): boolean => {
-        return (model instanceof CommandStepModel);
+        // return (model instanceof CommandStepModel);
+        return model.type === 'command';
     };
 
     const isDataFrame = (model): boolean => {
@@ -343,7 +344,7 @@ const Step = (props: Props) => {
         } else {
             icon = null;
         }
-        stepLabel = step.getLabel();
+        stepLabel = step.label;
     } else if (isNote(step)) {
         icon = <NoteIcon hover={hover} selected={selected} model={step} />;
         stepLabel = step.label;

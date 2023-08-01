@@ -4,7 +4,8 @@ import Constants from 'Constants/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import { State } from 'Modules/flowEditor'
-import { FrameNodeType, NoteNodeType, calcSize } from 'Model/Step/NodeTypes'
+import { CommandNodeType, FrameNodeType, NoteNodeType, calcSize } from 'Model/Step/NodeTypes'
+import { Flow } from 'Model/Library'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -134,7 +135,7 @@ class GraphUtil {
    * @returns {{width, height}}
    */
 
-  getGraph(nodes:(CommandStepModel | FrameNodeType)[], zoom:number) {
+  getGraph(nodes:(CommandNodeType | FrameNodeType)[], zoom:number) {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
@@ -241,7 +242,7 @@ class GraphUtil {
    * @param json
    * @returns {*}
    */
-  load(json: any) {
+  load(json: Flow) {
     const self = this
     let hasPosition = false
 
@@ -256,7 +257,28 @@ class GraphUtil {
       }
     }
 
-    let newNodes: (FrameNodeType | NoteNodeType)[] = [];
+    const connectEdge = (node:CommandNodeType) => {
+      if (node.srcs) {
+        Object.keys(node.srcs).forEach((portLabel) => {
+          const src = node.srcs![portLabel]
+          const from = src
+          const to = node.id
+          const label = GraphUtil.edgeName(from, to, portLabel)//src
+          self.addEdge(from, to, label)
+        })
+      }
+      if (node.dsts) {
+        Object.keys(node.dsts).forEach((portLabel) => {
+          const dst = node.dsts![portLabel]
+          const from = node.id
+          const to = dst
+          const label = GraphUtil.edgeName(from, to, portLabel)//dst
+          self.addEdge(from, to, label)
+        })
+      }
+    }
+
+    let newNodes: (FrameNodeType | CommandNodeType |  NoteNodeType)[] = [];
     json.nodes.forEach((node) => {
       self.addNode(node.id)
       const type = node.type
@@ -289,6 +311,70 @@ class GraphUtil {
           }
           break
         case Constants.step.type.command:
+          const c:CommandNodeType = {
+            id: node.id,
+            label: node.label,
+            type: 'command',
+            position: node.position,
+            size: node.size,
+            error: node.error,
+            invalid: node.invalid,
+            commandId: node.commandId,
+            args: node.args,
+            srcs: node.srcs,
+            dsts: node.dsts,
+            srcsOrder: node.srcsOrder,
+            deleteInPort : (label:string) => {
+              c.srcs && delete c.srcs[label];
+              if(c.srcsOrder){
+                  c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
+              }
+            },
+            addInPort : (label:string, nodeId:string) => {
+                if(!c.srcs){
+                    c.srcs = {};
+                }
+                c.srcs[label] = nodeId;
+                if(!c.srcsOrder){
+                    c.srcsOrder = [];
+                }
+                c.srcsOrder.push(label);
+            },
+            getInPortIndex : () => {
+                const srcKeys = Object.keys(c.srcs || {});
+    
+                const filterKeys = srcKeys.filter((key) => {
+                    return (key.indexOf("*") != -1);
+                });
+        
+                let max = 0;
+                filterKeys.forEach((key) => {
+                    const value = key.replace("*", "");
+                    max = (parseInt(value) > max) ? parseInt(value) : max;
+                });
+        
+                return max;
+            },
+            addableInPort : () => {
+                // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
+                const filterKeys = c.getCommand().ports[0].filter((inPort) => {
+                    return (inPort.label.indexOf("*") >= 0);
+                });
+                return filterKeys.length > 0;
+            },
+            getCommand : () => {
+                const commands = (window as any).commands;
+                return commands.find(command => command.id === c.commandId);
+            },
+          };
+
+          connectEdge(c)
+          newNodes.push(c);
+          if (c.position && c.size) {
+            hasPosition = true
+          }
+          break;
+
         case Constants.step.type.subflow:
           //コマンド
           const step = node
@@ -310,12 +396,7 @@ class GraphUtil {
             getDstsSteps: step.getDstsSteps,
             getCommand: step.getCommand
           }
-          if (type === Constants.step.type.command) {
-            model.type = Constants.step.type.command
-            model.commandId = step.commandId
-            node = new CommandStepModel(model)
-            node.loadArgs()
-          } else if (step.flow && step.classification === "data_source") {
+          if (step.flow && step.classification === "data_source") {
             node = new DataSrcStepModel({ ...step })
           } else if (step.flow && step.classification === "data_dest") {
             node = new DataDstStepModel({ ...step })

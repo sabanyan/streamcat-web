@@ -22,6 +22,7 @@ import {
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
+    CommandNodeType,
     FrameNodeType,
     NodeType,
     NoteNodeType,
@@ -327,6 +328,50 @@ const NodeArray = makeArrayCtor<NodeType>(node => {
         n.deleteCache = () => {
             n.cacheCreatedAt = null;
             n.uuid = null;
+        };
+    }else if(node.type === 'command'){
+        const c = node as CommandNodeType;
+        c.deleteInPort = (label:string) => {
+            c.srcs && delete c.srcs[label];
+            if(c.srcsOrder){
+                c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
+            }
+        };
+        c.addInPort = (label:string, nodeId:string) => {
+            if(!c.srcs){
+                c.srcs = {};
+            }
+            c.srcs[label] = nodeId;
+            if(!c.srcsOrder){
+                c.srcsOrder = [];
+            }
+            c.srcsOrder.push(label);
+        };
+        c.getInPortIndex = () => {
+            const srcKeys = Object.keys(c.srcs || {});
+
+            const filterKeys = srcKeys.filter((key) => {
+                return (key.indexOf("*") != -1);
+            });
+    
+            let max = 0;
+            filterKeys.forEach((key) => {
+                const value = key.replace("*", "");
+                max = (parseInt(value) > max) ? parseInt(value) : max;
+            });
+    
+            return max;
+        };
+        c.addableInPort = () => {
+            // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
+            const filterKeys = c.getCommand().ports[0].filter((inPort) => {
+                return (inPort.label.indexOf("*") >= 0);
+            });
+            return filterKeys.length > 0;
+        };
+        c.getCommand = () => {
+            const commands = (window as any).commands;
+            return commands.find(command => command.id === c.commandId);
         };
     }else if(node.type === 'note'){
         const n = node as NoteNodeType;

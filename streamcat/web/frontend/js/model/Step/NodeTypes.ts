@@ -1,4 +1,4 @@
-import { Flow } from 'Model/Library';
+import { Command, Flow } from 'Model/Library';
 import { ModelUtil, StringUtil } from 'Utils/index';
 
 export type NodeType = {
@@ -29,8 +29,8 @@ export const FrameNode = function(this: FrameNodeType, position:{x:number, y:num
     this.label = newId;
     this.position = position;
     this.size = {width:38, height:38};
-    this.invalid = {};
     this.error = {};
+    this.invalid = {};
     this.uuid = null;
     this.makeCache = false;
     this.dataSource = 'csv';
@@ -49,6 +49,69 @@ export type CommandNodeType = NodeType & {
     srcs?: { [port:string]:string };
     dsts?: { [port:string]:string };
     srcsOrder?: string[];
+    deleteInPort: (label:string) => void;
+    addInPort: (label:string, nodeId:string) => void;
+    getInPortIndex: () => number;
+    addableInPort: () => boolean;
+    getCommand: () => Command;
+};
+
+export const CommandNode = function(this: CommandNodeType, commandId:string, position:{x:number, y:number}) {
+    const newId = ModelUtil.getNewId('command');
+    (this as any).id = newId;
+    (this as any).type = 'command';
+    this.label = newId;
+    this.position = position;
+    this.size = {width:38, height:38};
+    this.error = {};
+    this.invalid = {};
+    this.commandId = commandId;
+    this.args = {};
+    this.srcs = {};
+    this.dsts = {};
+    this.srcsOrder =[];
+    this.deleteInPort = (label:string) => {
+        this.srcs && delete this.srcs[label];
+        if(this.srcsOrder){
+            this.srcsOrder = this.srcsOrder.filter(srcLabel => srcLabel !== label);
+        }
+    };
+    this.addInPort = (label:string, nodeId:string) => {
+        if(!this.srcs){
+            this.srcs = {};
+        }
+        this.srcs[label] = nodeId;
+        if(!this.srcsOrder){
+            this.srcsOrder = [];
+        }
+        this.srcsOrder.push(label);
+    };
+    this.getInPortIndex = () => {
+        const srcKeys = Object.keys(this.srcs || {});
+
+        const filterKeys = srcKeys.filter((key) => {
+            return (key.indexOf("*") != -1);
+        });
+
+        let max = 0;
+        filterKeys.forEach((key) => {
+            const value = key.replace("*", "");
+            max = (parseInt(value) > max) ? parseInt(value) : max;
+        });
+
+        return max;
+    };
+    this.addableInPort = () => {
+        // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
+        const filterKeys = this.getCommand().ports[0].filter((inPort) => {
+            return (inPort.label.indexOf("*") >= 0);
+        });
+        return filterKeys.length > 0;
+    };
+    this.getCommand = () => {
+        const commands = (window as any).commands;
+        return commands.find(command => command.id === this.commandId);
+    };
 };
 
 export type BaseFlowNodeType = NodeType & {

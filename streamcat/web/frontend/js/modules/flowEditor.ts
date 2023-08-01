@@ -7,7 +7,7 @@ import { CommandPortType, DragType, GraphType, StepModelType } from "../types";
 import _ from "lodash";
 import { FlowType, FrameType, Port } from "Model/Library";
 import { Action } from "redux";
-import { FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
+import { CommandNodeType, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -54,10 +54,10 @@ export type State = {
   // selected_step_ids: string[],
   graph: GraphType,
   // zoom: number,
-  nodes: (CommandStepModel | FrameNodeType)[],
+  nodes: (CommandNodeType | FrameNodeType)[],
   history: {
     current: number,
-    nodes: (CommandStepModel | FrameNodeType)[][]
+    nodes: (CommandNodeType | FrameNodeType)[][]
   },
   // mast: {
   //   commands: any[],
@@ -236,7 +236,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //ノードの追加
       graph.addNode(add_step.id);
 
-      if (add_step instanceof CommandStepModel ||
+      if (add_step.type === 'command' ||
         add_step instanceof SubFlowStepModel) {
 
         let totalSX = 0;
@@ -320,7 +320,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           let command;
           if (add_step instanceof SubFlowStepModel) {
             command = add_step.getCommand();
-          } else if (add_step instanceof CommandStepModel) {
+          } else if (add_step.type === 'command') {
             command = add_step.getCommand();
             isAddable = command.isInPortsAddable();
           }
@@ -421,7 +421,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v;
             const deleteTargetStep = GraphUtil.getNode(newState.nodes, deleteTargetStepId);
-            if (deleteTargetStep instanceof CommandStepModel ||
+            if (deleteTargetStep.type === 'command' ||
               deleteTargetStep instanceof SubFlowStepModel ||
               (deleteTargetStep.flow && deleteTargetStep.classification === "data_source")) {
               //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
@@ -950,7 +950,7 @@ const rebuildNodesEdges = (newState, action) => {
   return newState.nodes.map((node: any, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {
-      if (node instanceof CommandStepModel ||
+      if (node.type === 'command' ||
         node instanceof SubFlowStepModel ||
         node.classification === "data_source" ||
         node.classification === "data_dest") {
@@ -1011,7 +1011,7 @@ const allRebuildNodesEdges = (newState) => {
   //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
   graph.removeAllEdges(newState.graph.edges);
   return newState.nodes.map((node, index) => {
-    if (node instanceof CommandStepModel ||
+    if (node.type === 'command' ||
         node instanceof SubFlowStepModel ||
         node instanceof DataSrcStepModel ||
         node instanceof DataDstStepModel) {

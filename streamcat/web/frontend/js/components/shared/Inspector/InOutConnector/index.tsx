@@ -24,7 +24,7 @@ export const InOutConnector = (props: Props) => {
     // 入力コネクタリストを作成する
     // 
     let portlabels: string[] = [];
-    if (selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
+    if (selectedStep instanceof SubFlowStepModel || selectedStep.type === 'command') {
         // サブフローまたはコマンドの場合
         portlabels = selectedStep.srcsOrder;
     } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
@@ -77,7 +77,7 @@ export const InOutConnector = (props: Props) => {
                 </div>;
             });
         }
-    } else if (selectedStep instanceof CommandStepModel) {
+    } else if (selectedStep.type === 'command') {
         const commandStep = selectedStep;
         const commandStepDsts = commandStep.dsts;
         outConnectors = Object.keys(commandStepDsts).map((key, index) => {

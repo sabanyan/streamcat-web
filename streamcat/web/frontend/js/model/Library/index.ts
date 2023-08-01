@@ -270,18 +270,24 @@ export type Command = {
     classification: string;
     description: string;
     groups:[];
-    params:[{
+    params:{
         name: string;
         type: string;
         label: string;
         optional?: boolean;
         options: any;
         default?: string | number;
-    }];
-    ports:[{
-        name: string;
-        type: string;
-    }];
+    }[];
+    ports:[
+        {
+            label: string;
+            type: string;
+        }[],
+        {
+            label: string;
+            type: string;
+        }[]
+    ];
 };
 
 /**

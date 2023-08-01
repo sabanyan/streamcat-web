@@ -56,7 +56,7 @@ const MultiInspector = (props: Props) => {
                 cnt++;
             } else if (node instanceof SubFlowStepModel) {
                 hasMixedCommand = true;
-            } else if (node instanceof CommandStepModel) {
+            } else if (node.type === 'command') {
                 hasMixedCommand = true;
             }
         });

@@ -96,78 +96,77 @@ export const Inspector = (props:InspectorProps) => {
           commandSelectorHidden={commandSelectorHidden}
           baseInspectorDisabled={baseInspectorDisabled}
         />
-      } else {
-        if (selected_step.type === 'frame') {
-          property = <DataFrameInspector
-            nodes={flow.flow.nodes}
-            // selected_data_source_detail={selected_data_source_detail}
-            // updateDataFrameDetail={updateDataFrameDetail}
-            selectedFrameState={selectedFrameState}
-            runnables={runnables}
-            lockUUID={lockUUID}
-            deleteSteps={deleteSteps}
-            selectSteps={selectSteps}
-            addHistory={addHistory}
-            flow={flow}
-            updateFlow={updateFlow}
-            selectedStepIds={selectedStepIds}
-            deleteCache={deleteCache}
-            zoom={zoom}
-            addStep={addStep}
-            addDataSrcStep={addDataSrcStep}
-            addDataDstStep={addDataDstStep}
-            updateStep={updateStep}
-            refreshFlow={refreshFlow}
-            previewDisabled={previewDisabled}
-            commandSelectorHidden={commandSelectorHidden}
-            baseInspectorDisabled={baseInspectorDisabled}
-            updateLastSavedFlow={updateLastSavedFlow}
-          />
-        } else if (selected_step.flow && selected_step.classification == "data_source") {
-          property = <DataSrcInspector
-            nodes={nodes}
-            selectedStepIds={selectedStepIds}
-            baseInspectorDisabled={baseInspectorDisabled}
-            updateStep={updateStep}
-            addHistory={addHistory}
-            selectSteps={selectSteps}
-            deleteSteps={deleteSteps}
-            parentUUID={flow.folderUuid || undefined}
-          />
-        } else if (selected_step.flow && selected_step.classification == "data_dest") {
-          property = <DataDstInspector
-            nodes={nodes}
-            selectedStepIds={selectedStepIds}
-            baseInspectorDisabled={baseInspectorDisabled}
+      } else if (selected_step.type === 'frame') {
+        property = <DataFrameInspector
+          nodes={flow.flow.nodes}
+          // selected_data_source_detail={selected_data_source_detail}
+          // updateDataFrameDetail={updateDataFrameDetail}
+          selectedFrameState={selectedFrameState}
+          runnables={runnables}
+          lockUUID={lockUUID}
+          deleteSteps={deleteSteps}
+          selectSteps={selectSteps}
+          addHistory={addHistory}
+          flow={flow}
+          updateFlow={updateFlow}
+          selectedStepIds={selectedStepIds}
+          deleteCache={deleteCache}
+          zoom={zoom}
+          addStep={addStep}
+          addDataSrcStep={addDataSrcStep}
+          addDataDstStep={addDataDstStep}
+          updateStep={updateStep}
+          refreshFlow={refreshFlow}
+          previewDisabled={previewDisabled}
+          commandSelectorHidden={commandSelectorHidden}
+          baseInspectorDisabled={baseInspectorDisabled}
+          updateLastSavedFlow={updateLastSavedFlow}
+        />
+      } else if (selected_step.flow && selected_step.classification == "data_source") {
+        property = <DataSrcInspector
+          nodes={nodes}
+          selectedStepIds={selectedStepIds}
+          baseInspectorDisabled={baseInspectorDisabled}
+          updateStep={updateStep}
+          addHistory={addHistory}
+          selectSteps={selectSteps}
+          deleteSteps={deleteSteps}
+          parentUUID={flow.folderUuid || undefined}
+        />
+      } else if (selected_step.flow && selected_step.classification == "data_dest") {
+        property = <DataDstInspector
+          nodes={nodes}
+          selectedStepIds={selectedStepIds}
+          baseInspectorDisabled={baseInspectorDisabled}
 
-            updateStep={updateStep}
-            addHistory={addHistory}
-            selectSteps={selectSteps}
-            deleteSteps={deleteSteps}
-            parentUUID={flow.folderUuid || undefined}
-          />
-        } else if (selected_step instanceof CommandStepModel) {
-          property = <CommandInspector
-            selectedStepIds={selectedStepIds}
-            // runnables={runnables}
-            nodes={nodes}
-            updateStep={updateStep}
-            addHistory={addHistory}
-            selectSteps={selectSteps}
-            deleteSteps={deleteSteps}
-            baseInspectorDisabled={baseInspectorDisabled}
-          />
-        } else if (selected_step.type === 'note') {
-          property = <NoteInspector
-            selectedStepIds={selectedStepIds}
-            nodes={nodes}
-            addHistory={addHistory}
-            selectSteps={selectSteps}
-            updateStep={updateStep}
-            deleteSteps={deleteSteps}
-            baseInspectorDisabled={baseInspectorDisabled} />
-        }
+          updateStep={updateStep}
+          addHistory={addHistory}
+          selectSteps={selectSteps}
+          deleteSteps={deleteSteps}
+          parentUUID={flow.folderUuid || undefined}
+        />
+      } else if (selected_step.type === 'command' || selected_step.type === 'flow') {
+        property = <CommandInspector
+          selectedStepIds={selectedStepIds}
+          // runnables={runnables}
+          nodes={nodes}
+          updateStep={updateStep}
+          addHistory={addHistory}
+          selectSteps={selectSteps}
+          deleteSteps={deleteSteps}
+          baseInspectorDisabled={baseInspectorDisabled}
+        />
+      } else if (selected_step.type === 'note') {
+        property = <NoteInspector
+          selectedStepIds={selectedStepIds}
+          nodes={nodes}
+          addHistory={addHistory}
+          selectSteps={selectSteps}
+          updateStep={updateStep}
+          deleteSteps={deleteSteps}
+          baseInspectorDisabled={baseInspectorDisabled} />
       }
+
     } else if (!selectedStepIds.length) {
       property = <FlowSettingsInspector
         // nodes={flow.flow.nodes}

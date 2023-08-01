@@ -12,7 +12,7 @@ import {
     // dragEndAction,
     pasteStepsAction
 } from 'Modules/flowEditor';
-import { FrameNodeType } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FrameNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     canvasWidth: number;
@@ -22,7 +22,7 @@ type Props = {
     redo: Function;
     undo: Function;
     selectedStepIds: string[];
-    nodes: (CommandStepModel|FrameNodeType)[];
+    nodes: (CommandNodeType|FrameNodeType)[];
     zoom: number
     history: HistoryType;
     // drag: DragType | {};
@@ -65,7 +65,7 @@ const PaperScroller = (props: Props) => {
 
         if(selectedStepIds.length){
             const targetNode = GraphUtil.getNode(nodes, selectedStepIds[0]);
-            if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
+            if (targetNode instanceof SubFlowStepModel || targetNode.type === 'command') {
                 return true;
             }
         }

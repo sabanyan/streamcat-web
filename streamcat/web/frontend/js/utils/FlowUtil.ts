@@ -3,7 +3,7 @@ import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
-import { FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
+import { CommandNode, CommandNodeType, FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
 
 export default class FlowUtil {
 
@@ -89,25 +89,25 @@ export default class FlowUtil {
   //   return newNodeId
   // }
 
-  static removeNodeId (nodes: CommandStepModel[], node_ids: string[]) {
+  static removeNodeId (nodes: CommandNodeType[], node_ids: string[]) {
     node_ids.forEach((removeId) => {
       nodes.forEach((node) => {
         if (node.dsts) {
           Object.keys(node.dsts).forEach((from) => {
-            const to = node.dsts[from]
+            const to = node.dsts![from]
             //if (from === removeId || to === removeId)
             if (to === removeId)
             //node.dsts[from] = null;
-            delete node.dsts[from]
+            delete node.dsts![from]
           })
         }
         if (node.srcs) {
           Object.keys(node.srcs).forEach((from) => {
-            const to = node.srcs[from]
+            const to = node.srcs![from]
             //if (from === removeId || to === removeId)
             if (to === removeId)
               //node.srcs[from] = null;
-              delete node.srcs[from]
+              delete node.srcs![from]
           })
         }
       })
@@ -193,8 +193,17 @@ export default class FlowUtil {
   static setModelType (json: any): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
     if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
-      let node = new CommandStepModel(json)
-      node.loadArgs()
+      // let node = new CommandStepModel(json)
+      // node.loadArgs()
+
+      const node:CommandNodeType = new CommandNode(json.commandId, json.position);
+      (node as any).id = json.id;
+      node.label = json.label;
+      node.args = json.args;
+      node.srcs = json.srcs;
+      node.dsts = json.dsts;
+      node.srcsOrder = json.srcsOrder;
+
       return node
     }
     if (json['uuid'] !== undefined && json['dataSource'] !== undefined){

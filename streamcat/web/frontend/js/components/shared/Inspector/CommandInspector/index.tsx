@@ -122,7 +122,7 @@ const CommandInspector = (props: Props) => {
         //指定されたステップの元コマンドを取得
         const command: CommandModel = selected_step.getCommand();
         //選択されたステップのラベルを取得
-        label = selected_step.getLabel();
+        label = selected_step.label;
         //コマンドのラベルを取得
         subLabel = command.label;
         const params: CommandParamType[] = command.params;
