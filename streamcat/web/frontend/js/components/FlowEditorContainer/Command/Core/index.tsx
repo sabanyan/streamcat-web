@@ -1,19 +1,18 @@
 import React, { useState } from "react";
 import Constants from "Constants/index";
-import { CommandStepModel, DataFrameStepModel, SubflowCommandModel, SubFlowStepModel } from "Model/index";
 import style from "./style.scss";
 import classnames from "classnames";
 import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { CommandModelType, StepModelType } from "Types/index";
+import { StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
-import { InlineFlowCommand } from "Model/Library";
+import { FlowCommand, InlineFlowCommand } from "Model/Library";
 import { CommandNode, FlowNode, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
-    command: CommandModelType | SubflowCommandModel | InlineFlowCommand;
+    command: CommandModel | FlowCommand | InlineFlowCommand;
     selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
@@ -37,7 +36,7 @@ const Command = (props: Props) => {
         window.emitter.emit(Constants.event.MODAL_ON_CLICK_DONE + id, { id: id });
     };
 
-    const getNewStepWithArgs = (command: CommandModelType, args): CommandStepModelProps => {
+    const getNewStepWithArgs = (command: CommandModel | FlowCommand, args): CommandStepModelProps => {
         let node;
         let model: any = {
             id: null,
@@ -55,7 +54,8 @@ const Command = (props: Props) => {
             node.label = command.label;
             node.args = args;
 
-        } else if (command instanceof SubflowCommandModel) {
+        // } else if (command instanceof FlowCommand) {
+        } else if (command.hasOwnProperty('uuid')) {
             // (model as any).type = Constants.step.type.subflow;
             // (model as any).uuid = command.uuid;
             // node = new SubFlowStepModel((model as any));

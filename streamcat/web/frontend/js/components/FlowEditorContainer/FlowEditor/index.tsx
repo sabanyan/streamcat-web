@@ -11,7 +11,7 @@ import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
 import { DragType, RunnablesType, StepModelType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
-import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
+import { DataFrameStepModel, MessageModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
     addHistoryAction,
@@ -354,11 +354,11 @@ const FlowEditor = () => {
         // サブフローの一覧を取得する
         preRequest.push(
             Api.findSubflows().then(subflows => {
-                const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
-                window.subflows = subflowModels;
+                // const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
+                window.subflows = subflows;
                 // addMaster({ subflows: subflowModels });
                 return {
-                    subflows: subflowModels
+                    subflows: subflows
                 };
             })
         );

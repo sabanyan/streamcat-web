@@ -1,10 +1,9 @@
-import { Command, InlineFlowCommand } from 'Model/Library';
+import { Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 import {
     CommandModel,
     CommandStepModel,
     DataFrameStepModel,
     NoteStepModel,
-    SubflowCommandModel,
     SubFlowStepModel,
     VisualizeModel
 } from 'Model/index';
@@ -30,8 +29,6 @@ export type StepModelType = any;
 // };
 export type CommandParamType = any;
 
-export type CommandModelType = CommandModel | SubflowCommandModel;
-
 export type CommandPortType = {
     label: string;
     type: string;
@@ -40,7 +37,7 @@ export type CommandPortType = {
 export type RunnablesType =  {
     commands: CommandModel[];
     visualizers: VisualizeModel<Command>[];
-    subflows: SubflowCommandModel[];
+    subflows: FlowCommand[];
     datasrcs: InlineFlowCommand[];
     datadsts: InlineFlowCommand[];
 };

@@ -3,12 +3,12 @@ import {useAsyncResource} from 'use-async-resource';
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
-import {SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
 import {CommandParamType, RunnablesType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
+import { FlowCommand } from 'Model/Library';
 
 type Props = {
     selectedStepIds: string[];
@@ -133,7 +133,7 @@ const CommandInspector = (props: Props) => {
                                 onChange={(e, param, value) => onArgChange(e, param, value)} groups={command.groups} />;
 
     } else if (selected_step.type === Constants.step.type.subflow) {
-        const subflowCommand: SubflowCommandModel = selected_step.getCommand();
+        const subflowCommand: FlowCommand = selected_step.getCommand();
         label = selected_step.label;
         if (subflowCommand) {
             subLabel = subflowCommand.label;

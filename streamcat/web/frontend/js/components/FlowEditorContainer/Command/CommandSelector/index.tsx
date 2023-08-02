@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import style from "./style.scss";
 import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { CommandModelType, RunnablesType, StepModelType } from "Types/index";
+import { RunnablesType, StepModelType } from "Types/index";
 import { TextField } from "Shared/Input";
-import { CommandModel, SubflowCommandModel } from "Model/index";
-import { InlineFlowCommand } from "Model/Library";
+import { CommandModel } from "Model/index";
+import { FlowCommand, InlineFlowCommand } from "Model/Library";
 
 type Props = {
     runnables: RunnablesType;
@@ -92,7 +92,7 @@ const CommandSelector = (props: Props) => {
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });
     let operatorsContainer: React.ReactNode[] = [];
-    let beforeCommand: CommandModelType | SubflowCommandModel | InlineFlowCommand;
+    let beforeCommand: CommandModel | FlowCommand | InlineFlowCommand;
     operators.map((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             // 区切りを表示
