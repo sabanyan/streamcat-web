@@ -14,7 +14,8 @@ import {
     DocumentType,
     ActivityType,
     Port,
-    Flow,
+    FlowCommand,
+    InlineFlowCommand,
     Command
 } from 'Model/Library';
 import {
@@ -22,11 +23,14 @@ import {
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
-    CommandNodeType,
-    FrameNodeType,
     NodeType,
+    FrameNodeType,
+    CommandNodeType,
+    FlowNodeType,
+    InlineFlowNodeType,
     NoteNodeType,
-    calcSize
+    calcSize,
+    addInPort,
 } from 'Model/Step/NodeTypes';
 import {
     toJsonOrRaise,
@@ -337,16 +341,7 @@ const NodeArray = makeArrayCtor<NodeType>(node => {
                 c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
             }
         };
-        c.addInPort = (label:string, nodeId:string) => {
-            if(!c.srcs){
-                c.srcs = {};
-            }
-            c.srcs[label] = nodeId;
-            if(!c.srcsOrder){
-                c.srcsOrder = [];
-            }
-            c.srcsOrder.push(label);
-        };
+        c.addInPort = (label:string, nodeId:string) => addInPort(c, label, nodeId);
         c.getInPortIndex = () => {
             const srcKeys = Object.keys(c.srcs || {});
 
@@ -373,6 +368,20 @@ const NodeArray = makeArrayCtor<NodeType>(node => {
             const commands = (window as any).commands;
             return commands.find(command => command.id === c.commandId);
         };
+    }else if(node.type === 'flow'){
+        if(node.hasOwnProperty('uuid')){
+            const f = node as FlowNodeType;
+            f.getCommand = () => {
+                const subflows = (window as any).subflows;
+                return subflows.find(subflow => subflow.uuid === f.uuid);
+            };
+            f.addableInPort = () => false;
+        }else if(node.hasOwnProperty('flow')){
+            const f = node as InlineFlowNodeType;
+            f.addableInPort = () => false;
+        }else{
+            throw new Error('Flow node has not neither uuid nor flow property');
+        }
     }else if(node.type === 'note'){
         const n = node as NoteNodeType;
         n.setTitle = (title) => {
@@ -633,7 +642,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findSubflows: () => {
-        return get<Flow[]>('/api/v0/subflows');
+        return get<FlowCommand[]>('/api/v0/subflows');
     },
 
     /**
@@ -641,7 +650,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findDataSrcs: () => {
-        return get<Flow[]>('/api/v0/datasrcs');
+        return get<InlineFlowCommand[]>('/api/v0/datasrcs');
     },
 
     /**
@@ -649,7 +658,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findDataDsts: () => {
-        return get<Flow[]>('/api/v0/datadsts');
+        return get<InlineFlowCommand[]>('/api/v0/datadsts');
     },
 
     /**

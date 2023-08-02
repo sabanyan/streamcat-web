@@ -5,7 +5,7 @@ import Constants from "Constants/index";
 import { CommandModelType, RunnablesType, StepModelType } from "Types/index";
 import { TextField } from "Shared/Input";
 import { CommandModel, SubflowCommandModel } from "Model/index";
-import { Flow } from "Model/Library";
+import { InlineFlowCommand } from "Model/Library";
 
 type Props = {
     runnables: RunnablesType;
@@ -92,7 +92,7 @@ const CommandSelector = (props: Props) => {
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });
     let operatorsContainer: React.ReactNode[] = [];
-    let beforeCommand: CommandModelType | SubflowCommandModel | Flow;
+    let beforeCommand: CommandModelType | SubflowCommandModel | InlineFlowCommand;
     operators.map((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             // 区切りを表示

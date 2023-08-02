@@ -255,11 +255,11 @@ const Step = (props: Props) => {
     };
 
     const isDataFrame = (model): boolean => {
-        return (model.type === 'frame');
+        return model.type === 'frame';
     };
 
     const isSubFlow = (model): boolean => {
-        return (model instanceof SubFlowStepModel);
+        return model.type === 'flow';
     };
 
     const isNote = (model): boolean => {
@@ -330,9 +330,15 @@ const Step = (props: Props) => {
             {innerIcon}
         </Rect>;
     } else if (isSubFlow(step)) {
-        // サブフローノード
-        icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
-        stepLabel = step.getLabel();
+        if (step.flow && step.classification === "data_source") {
+            icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+        } else if (step.flow && step.classification === "data_dest") {
+            icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+        } else {
+            // サブフローノード
+            icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
+            stepLabel = step.label;
+        }
     } else if (isCommandStep(step)) {
         // コマンドノード
         let command;
@@ -348,10 +354,6 @@ const Step = (props: Props) => {
     } else if (isNote(step)) {
         icon = <NoteIcon hover={hover} selected={selected} model={step} />;
         stepLabel = step.label;
-    } else if (step.flow && step.classification === "data_source") {
-        icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
-    } else if (step.flow && step.classification === "data_dest") {
-        icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
     } else {
         icon = null;
     }

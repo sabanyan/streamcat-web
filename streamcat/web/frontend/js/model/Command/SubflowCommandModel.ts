@@ -8,7 +8,7 @@ type SubFlowCommandParamType = {
     creator?: string;
     description?: string;
     label?: string;
-    nodes: any[];
+    // nodes: any[];
     params: CommandParamType[];
     ports: [any, any];
     // projectId: number;
@@ -22,7 +22,7 @@ export default class SubflowCommandModel extends Model {
     creator: string | undefined = undefined;
     description: string | undefined = undefined;
     label: string | undefined = undefined;
-    nodes: [] = [];
+    // nodes: [] = [];
     params: CommandParamType[] = [];
     ports: [CommandPortType[], CommandPortType[]] = [[], []];
     // projectId: string | undefined = undefined;

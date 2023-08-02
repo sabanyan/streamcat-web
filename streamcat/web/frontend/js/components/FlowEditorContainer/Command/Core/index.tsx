@@ -8,12 +8,12 @@ import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandModelType, StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
-import { Flow } from "Model/Library";
-import { CommandNode, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
+import { InlineFlowCommand } from "Model/Library";
+import { CommandNode, FlowNode, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
-    command: CommandModelType | SubflowCommandModel | Flow;
+    command: CommandModelType | SubflowCommandModel | InlineFlowCommand;
     selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
@@ -56,9 +56,11 @@ const Command = (props: Props) => {
             node.args = args;
 
         } else if (command instanceof SubflowCommandModel) {
-            (model as any).type = Constants.step.type.subflow;
-            (model as any).uuid = command.uuid;
-            node = new SubFlowStepModel((model as any));
+            // (model as any).type = Constants.step.type.subflow;
+            // (model as any).uuid = command.uuid;
+            // node = new SubFlowStepModel((model as any));
+            node = new FlowNode(command.uuid!, {x:0, y:0})
+            node.label == command.label
         }
         return node;
 

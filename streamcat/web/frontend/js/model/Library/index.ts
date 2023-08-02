@@ -253,14 +253,35 @@ type PortArray = [] & {
 
 export type Flow = {
     label?: string;
-    classification?: string;
     description?: string;
-    creator?: string;
-    createdAt?: string;
-    projectId?: number;
     nodes: any[];
     params: Param[];
     ports: [PortArray,PortArray];
+};
+
+type BaseFlowCommand =  {
+    label: string;
+    // GET /subflowsはclassificationを返さない
+    classification?: string;
+    description: string;
+    params: Param[];
+    ports: [PortArray,PortArray];
+    creator: string;
+    createdAt: string;
+};
+
+// GET /subflows が返すデータ型
+export type FlowCommand = BaseFlowCommand & {
+    uuid: string;
+};
+
+// GET /datasrcs, GET /dtatdsts が返すデータ型
+export type InlineFlowCommand = BaseFlowCommand & {
+    // 
+    flow: Flow & {
+        creator: string;
+        createdAt: string;
+    };
 };
 
 export type Command = {

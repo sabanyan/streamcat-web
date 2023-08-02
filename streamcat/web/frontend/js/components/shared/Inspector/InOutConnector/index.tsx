@@ -24,10 +24,7 @@ export const InOutConnector = (props: Props) => {
     // 入力コネクタリストを作成する
     // 
     let portlabels: string[] = [];
-    if (selectedStep instanceof SubFlowStepModel || selectedStep.type === 'command') {
-        // サブフローまたはコマンドの場合
-        portlabels = selectedStep.srcsOrder;
-    } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
+    if (selectedStep.type === 'flow' && selectedStep.classification === 'data_dest') { // datadst
         // データデストの場合は何故かsrcsOrderに値が格納されていないので
         // srcsプロパティから入力ポートを取得する
         portlabels = Object.entries(selectedStep.srcs).map(src => {
@@ -39,6 +36,9 @@ export const InOutConnector = (props: Props) => {
                 return '';
             }
         });
+    } else if (selectedStep.type === 'flow' || selectedStep.type === 'command') {
+        // サブフローまたはコマンドの場合
+        portlabels = selectedStep.srcsOrder;
     }
 
     const inConnectors = portlabels.map((portLabel, index) =>
@@ -56,10 +56,24 @@ export const InOutConnector = (props: Props) => {
     // 出力コネクタリストを作成する
     // 
     let outConnectors: React.ReactNode[] = [];
-    if (selectedStep instanceof SubFlowStepModel) {
-        const subflow = selectedStep.getCommand();
+
+    if (selectedStep.type === 'flow' && selectedStep.classification === 'data_source') {
+        outConnectors = Object.keys(selectedStep.dsts).map((key, index) => {
+            let dataFrameId: string = selectedStep.dsts[key]
+            const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+            return <div key={index} className={style.outPort_}>
+                <div className={style.outPort_Port}>
+                    {key}
+                </div>
+                <div className={style.outPort_Node}>
+                    {node.label}
+                </div>
+            </div>;
+        });
+    } else if (selectedStep.type === 'flow') {
+        const subflow = selectedStep.getCommand && selectedStep.getCommand();
         if (subflow) {
-            const subflowOutPorts = subflow.getOutPorts();
+            const subflowOutPorts = subflow.ports[1];
             outConnectors = Object.keys(selectedStep.dsts).map((key, index) => {
                 let dataFrameId: string;
                 dataFrameId = selectedStep.dsts[key];
@@ -84,19 +98,6 @@ export const InOutConnector = (props: Props) => {
             let dataFrameId: string;
             dataFrameId = commandStepDsts[key];
             const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
-            return <div key={index} className={style.outPort_}>
-                <div className={style.outPort_Port}>
-                    {key}
-                </div>
-                <div className={style.outPort_Node}>
-                    {node.label}
-                </div>
-            </div>;
-        });
-    } else if(selectedStep.dsts) {
-        outConnectors = Object.keys(selectedStep.dsts).map((key, index) => {
-            let dataFrameId: string = selectedStep.dsts[key]
-            const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
             return <div key={index} className={style.outPort_}>
                 <div className={style.outPort_Port}>
                     {key}

@@ -65,7 +65,7 @@ const PaperScroller = (props: Props) => {
 
         if(selectedStepIds.length){
             const targetNode = GraphUtil.getNode(nodes, selectedStepIds[0]);
-            if (targetNode instanceof SubFlowStepModel || targetNode.type === 'command') {
+            if (targetNode.type === 'flow' || targetNode.type === 'command') {
                 return true;
             }
         }

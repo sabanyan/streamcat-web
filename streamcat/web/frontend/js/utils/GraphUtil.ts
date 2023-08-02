@@ -1,10 +1,9 @@
 //@flow
 import dagre from 'dagre'
 import Constants from 'Constants/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import { State } from 'Modules/flowEditor'
-import { CommandNodeType, FrameNodeType, NoteNodeType, calcSize } from 'Model/Step/NodeTypes'
+import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType, addInPort, calcSize } from 'Model/Step/NodeTypes'
 import { Flow } from 'Model/Library'
 
 export const defaultNodeProps = {
@@ -257,7 +256,7 @@ class GraphUtil {
       }
     }
 
-    const connectEdge = (node:CommandNodeType) => {
+    const connectEdge = (node:CommandNodeType | FlowNodeType | BaseFlowNodeType) => {
       if (node.srcs) {
         Object.keys(node.srcs).forEach((portLabel) => {
           const src = node.srcs![portLabel]
@@ -278,7 +277,7 @@ class GraphUtil {
       }
     }
 
-    let newNodes: (FrameNodeType | CommandNodeType |  NoteNodeType)[] = [];
+    let newNodes: (FrameNodeType | CommandNodeType | BaseFlowNodeType |  NoteNodeType)[] = [];
     json.nodes.forEach((node) => {
       self.addNode(node.id)
       const type = node.type
@@ -330,16 +329,7 @@ class GraphUtil {
                   c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
               }
             },
-            addInPort : (label:string, nodeId:string) => {
-                if(!c.srcs){
-                    c.srcs = {};
-                }
-                c.srcs[label] = nodeId;
-                if(!c.srcsOrder){
-                    c.srcsOrder = [];
-                }
-                c.srcsOrder.push(label);
-            },
+            addInPort : (label:string, nodeId:string) => addInPort(c, label, nodeId),
             getInPortIndex : () => {
                 const srcKeys = Object.keys(c.srcs || {});
     
@@ -376,61 +366,56 @@ class GraphUtil {
           break;
 
         case Constants.step.type.subflow:
-          //コマンド
-          const step = node
-          let model = {
-            id: step.id,
-            name: step.name,
-            label: step.label,
-            type: step.type,
-            commandId: step.commandId,
-            uuid: step.uuid,
-            srcs: step.srcs,
-            dsts: step.dsts,
-            args: step.args,
-            position: step.position,
-            size: step.size,
-            masked: step.masked,
-            srcsOrder: step.srcsOrder,
-            getSrcsSteps: step.getSrcsSteps,
-            getDstsSteps: step.getDstsSteps,
-            getCommand: step.getCommand
-          }
-          if (step.flow && step.classification === "data_source") {
-            node = new DataSrcStepModel({ ...step })
-          } else if (step.flow && step.classification === "data_dest") {
-            node = new DataDstStepModel({ ...step })
-          } else if (type === Constants.step.type.subflow) {
-            model.type = Constants.step.type.subflow
-            model.uuid = step.uuid
-            node = new SubFlowStepModel(model);
-          } else {
+          let f:FlowNodeType|InlineFlowNodeType;
+          if(node.uuid){
+            f = {
+              id: node.id,
+              label: node.label,
+              type: 'flow',
+              position: node.position,
+              size: node.size,
+              error: node.error,
+              invalid: node.invalid,
+              classification: node.classification,
+              uuid: node.uuid,
+              args: node.args,
+              srcs: node.srcs,
+              dsts: node.dsts,
+              srcsOrder: node.srcsOrder,
+              masked: node.masked,
+              addInPort: (label:string, nodeId:string) => addInPort(f, label, nodeId),
+              getCommand: () => {
+                  const subflows = (window as any).subflows;
+                  return subflows.find(subflow => subflow.uuid === (f as FlowNodeType).uuid);
+              },
+              addableInPort: () => false,
+            }
+          }else if(node.flow){
+            f = {
+              id: node.id,
+              label: node.label,
+              type: 'flow',
+              position: node.position,
+              size: node.size,
+              error: node.error,
+              invalid: node.invalid,
+              classification: node.classification,
+              flow: node.flow,
+              args: node.args,
+              srcs: node.srcs,
+              dsts: node.dsts,
+              srcsOrder: node.srcsOrder,
+              masked: node.masked,
+              addInPort: (label:string, nodeId:string) => addInPort(f, label, nodeId),
+              addableInPort: () => false,
+            }
+          }else{
+            throw new Error('flow node has neither uuid nor flow property');
           }
 
-          newNodes.push(node)
-
-          const hasSrcs = (Object.keys(step.srcs).length)
-          const hasDsts = (Object.keys(step.dsts).length)
-
-          if (hasSrcs) {
-            Object.keys(step.srcs).forEach((portLabel) => {
-              const src = step.srcs[portLabel]
-              const from = src
-              const to = node.id
-              const label = GraphUtil.edgeName(from, to, portLabel)//src
-              self.addEdge(from, to, label)
-            })
-          }
-          if (hasDsts) {
-            Object.keys(step.dsts).forEach((portLabel) => {
-              const dst = step.dsts[portLabel]
-              const from = node.id
-              const to = dst
-              const label = GraphUtil.edgeName(from, to, portLabel)//dst
-              self.addEdge(from, to, label)
-            })
-          }
-          if (step.position && step.size) {
+          connectEdge(f)
+          newNodes.push(f)
+          if (f.position && f.size) {
             hasPosition = true
           }
           break

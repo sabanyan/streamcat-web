@@ -54,7 +54,7 @@ const MultiInspector = (props: Props) => {
             const node = GraphUtil.getNode(nodes, id);
             if (node.type === 'frame') {
                 cnt++;
-            } else if (node instanceof SubFlowStepModel) {
+            } else if (node.type === 'flow') {
                 hasMixedCommand = true;
             } else if (node.type === 'command') {
                 hasMixedCommand = true;

@@ -3,7 +3,7 @@ import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
-import { CommandNode, CommandNodeType, FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
+import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
 
 export default class FlowUtil {
 
@@ -191,7 +191,18 @@ export default class FlowUtil {
   }
 
   static setModelType (json: any): StepModelType {
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
+    if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) {
+
+      const node:FlowNodeType = new FlowNode(json.uuid, json.position);
+      (node as any).id = json.id;
+      node.label = json.label;
+      node.args = json.args;
+      node.srcs = json.srcs;
+      node.dsts = json.dsts;
+      node.srcsOrder = json.srcsOrder;
+
+      return node;
+    }
     if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
       // let node = new CommandStepModel(json)
       // node.loadArgs()
@@ -204,7 +215,7 @@ export default class FlowUtil {
       node.dsts = json.dsts;
       node.srcsOrder = json.srcsOrder;
 
-      return node
+      return node;
     }
     if (json['uuid'] !== undefined && json['dataSource'] !== undefined){
       const newNode:FrameNodeType = new FrameNode({x:0, y:0});

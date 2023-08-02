@@ -76,16 +76,7 @@ export const CommandNode = function(this: CommandNodeType, commandId:string, pos
             this.srcsOrder = this.srcsOrder.filter(srcLabel => srcLabel !== label);
         }
     };
-    this.addInPort = (label:string, nodeId:string) => {
-        if(!this.srcs){
-            this.srcs = {};
-        }
-        this.srcs[label] = nodeId;
-        if(!this.srcsOrder){
-            this.srcsOrder = [];
-        }
-        this.srcsOrder.push(label);
-    };
+    this.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
     this.getInPortIndex = () => {
         const srcKeys = Object.keys(this.srcs || {});
 
@@ -115,15 +106,69 @@ export const CommandNode = function(this: CommandNodeType, commandId:string, pos
 };
 
 export type BaseFlowNodeType = NodeType & {
+    classification?: string
+    args?: any;
+    srcs?: { [port:string]:string };
+    dsts?: { [port:string]:string };
+    srcsOrder?: string[];
     masked?: boolean;
+    addInPort: (label:string, nodeId:string) => void;
+    addableInPort: () => boolean;
 };
 
 export type FlowNodeType = BaseFlowNodeType & {
     uuid: string | null;
+    getCommand: () => Command;
 };
 
 export type InlineFlowNodeType = BaseFlowNodeType & {
-    flow: Flow;
+    flow: Flow & {
+        creator: string;
+        createdAt: string;
+    };
+};
+
+export const FlowNode = function(this: FlowNodeType, uuid:string, position:{x:number, y:number}) {
+    const newId = ModelUtil.getNewId('flow');
+    (this as any).id = newId;
+    (this as any).type = 'flow';
+    this.label = newId;
+    this.position = position;
+    this.size = {width:38, height:38};
+    this.error = {};
+    this.invalid = {};
+    this.uuid = uuid;
+    this.args = {};
+    this.srcs = {};
+    this.dsts = {};
+    this.srcsOrder = [];
+    this.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
+    this.getCommand = () => {
+        const subflows = (window as any).subflows;
+        return subflows.find(subflow => subflow.uuid === this.uuid);
+    };
+    this.addableInPort = () => false;
+};
+
+export const InlineFlowNode = function( this: InlineFlowNodeType,
+                                        classification: string,
+                                        flow:Flow & {creator:string; createdAt:string;},
+                                        position:{x:number, y:number}) {
+    const newId = ModelUtil.getNewId('flow');
+    (this as any).id = newId;
+    (this as any).type = 'flow';
+    this.classification = classification;
+    this.label = newId;
+    this.position = position;
+    this.size = {width:38, height:38};
+    this.error = {};
+    this.invalid = {};
+    this.flow = flow;
+    this.args = {};
+    this.srcs = {};
+    this.dsts = {};
+    this.srcsOrder = [];
+    this.addableInPort = () => false;
 };
 
 export type NoteNodeType = NodeType & {
@@ -133,6 +178,17 @@ export type NoteNodeType = NodeType & {
     color?: string;
     setTitle: (title:string) => void;
     setFontSize: (fontSize:number) => void;
+};
+
+export const addInPort = (self:any, label:string, nodeId:string) => {
+    if(!self.srcs){
+        self.srcs = {};
+    }
+    self.srcs[label] = nodeId;
+    if(!self.srcsOrder){
+        self.srcsOrder = [];
+    }
+    self.srcsOrder.push(label);
 };
 
 export const calcSize = (title:string, fontSize:number) => {

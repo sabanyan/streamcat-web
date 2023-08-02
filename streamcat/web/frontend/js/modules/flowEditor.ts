@@ -5,9 +5,9 @@ import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Mod
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, DragType, GraphType, StepModelType } from "../types";
 import _ from "lodash";
-import { FlowType, FrameType, Port } from "Model/Library";
+import { Flow, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { Action } from "redux";
-import { CommandNodeType, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
+import { CommandNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -236,8 +236,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //ノードの追加
       graph.addNode(add_step.id);
 
-      if (add_step.type === 'command' ||
-        add_step instanceof SubFlowStepModel) {
+      if (add_step.type === 'command' || add_step.type === 'flow') {
 
         let totalSX = 0;
         let totalSY = 0;
@@ -318,18 +317,18 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
           let isAddable = false;
           let command;
-          if (add_step instanceof SubFlowStepModel) {
+          if (add_step.type === 'flow') {
             command = add_step.getCommand();
           } else if (add_step.type === 'command') {
             command = add_step.getCommand();
             isAddable = command.isInPortsAddable();
           }
-          const inPorts: CommandPortType[] = command.getInPorts();
-          const outPorts: CommandPortType[] = command.getOutPorts();
+          const inPorts: CommandPortType[] = command.ports[0];
+          const outPorts: CommandPortType[] = command.ports[1];
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index];
             let portLabel = isAddable ? "*" + index : newPort.label;
-            if (add_step instanceof SubFlowStepModel) {
+            if (add_step.type === 'flow') {
               portLabel = newPort.label;
             }
 
@@ -350,7 +349,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           dst_step_ids.forEach((id, index) => {
             const newPort = outPorts[index];
             let portLabel = newPort.label;
-            if (add_step instanceof SubFlowStepModel) {
+            if (add_step.type === 'flow') {
               portLabel = newPort.label;
             }
             add_step.dsts[portLabel] = id;
@@ -422,7 +421,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
             const deleteTargetStepId = graph.g.inEdges(id)[0].v;
             const deleteTargetStep = GraphUtil.getNode(newState.nodes, deleteTargetStepId);
             if (deleteTargetStep.type === 'command' ||
-              deleteTargetStep instanceof SubFlowStepModel ||
+              deleteTargetStep.type === 'flow' ||
               (deleteTargetStep.flow && deleteTargetStep.classification === "data_source")) {
               //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
               const isSingleDsts = (Object.keys(deleteTargetStep.dsts).length === 1 && deleteTargetStep.dsts[Object.keys(deleteTargetStep.dsts)[0]] === id);
@@ -879,7 +878,8 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
 
     case ADD_DATADST_ACTION: {
-      const { dataDest, selctedDataNodeId } = action.payload;
+      const { selctedDataNodeId } = action.payload;
+      const dataDest:InlineFlowCommand = action.payload.dataDest;
 
       let srcNodeIds = [selctedDataNodeId];
 
@@ -951,7 +951,7 @@ const rebuildNodesEdges = (newState, action) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {
       if (node.type === 'command' ||
-        node instanceof SubFlowStepModel ||
+        node.type === 'flow' ||
         node.classification === "data_source" ||
         node.classification === "data_dest") {
         if (!_.isEqual(node.srcs, action.step.srcs)) {
@@ -1011,10 +1011,7 @@ const allRebuildNodesEdges = (newState) => {
   //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
   graph.removeAllEdges(newState.graph.edges);
   return newState.nodes.map((node, index) => {
-    if (node.type === 'command' ||
-        node instanceof SubFlowStepModel ||
-        node instanceof DataSrcStepModel ||
-        node instanceof DataDstStepModel) {
+    if (node.type === 'command' || node.type === 'flow') {
       // 入力Edgeを再生成する
       Object.keys(node.srcs).forEach(portLabel => {
         const id = node.srcs[portLabel];
@@ -1235,12 +1232,16 @@ export function newDataSrc(props: DataSrcProps) {
     args: args,
   }
 
-  return new DataSrcStepModel(dataSrcProps);
+  const flowNode = new InlineFlowNode(dataSrc.classification, dataSrc.flow, position);
+  flowNode.id = id;
+  flowNode.label = dataSrc.label;
+  flowNode.dsts = dsts;
+  flowNode.args = args;
+  return flowNode;
 }
 
 export type DataDestProps = {
   id: string
-  label: string
   position: { x: number, y: number }
   size: { width: number, height: number }
   srcNodeIds: string[]
@@ -1249,7 +1250,7 @@ export type DataDestProps = {
 }
 
 export function newDataDest(props: DataDestProps) {
-  const { id, label, position, size, srcNodeIds, dataDest, args } = props;
+  const { id, position, size, srcNodeIds, dataDest, args } = props;
 
   let srcs = {};
   const inPorts: any[] = dataDest.ports[0];
@@ -1270,7 +1271,12 @@ export function newDataDest(props: DataDestProps) {
     args: args
   }
 
-  return new DataDstStepModel(DataDstProps);
+  const flowNode = new InlineFlowNode(dataDest.classification, dataDest.flow, position);
+  flowNode.id = id;
+  flowNode.label = dataDest.label;
+  flowNode.srcs = srcs;
+  flowNode.args = args;
+  return flowNode;
 }
 
 /**

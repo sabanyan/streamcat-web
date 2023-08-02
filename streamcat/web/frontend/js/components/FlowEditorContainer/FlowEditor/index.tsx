@@ -43,7 +43,7 @@ import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
-import { Command, Flow, FlowType, FrameType } from 'Model/Library';
+import { Command, FlowType, FrameType } from 'Model/Library';
 
 const getLock = (targetUUID:string) => {
     return Api.createLock(targetUUID).catch(e => {

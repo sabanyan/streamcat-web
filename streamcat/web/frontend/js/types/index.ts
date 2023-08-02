@@ -1,4 +1,4 @@
-import { Command, Flow } from 'Model/Library';
+import { Command, InlineFlowCommand } from 'Model/Library';
 import {
     CommandModel,
     CommandStepModel,
@@ -41,8 +41,8 @@ export type RunnablesType =  {
     commands: CommandModel[];
     visualizers: VisualizeModel<Command>[];
     subflows: SubflowCommandModel[];
-    datasrcs: Flow[];
-    datadsts: Flow[];
+    datasrcs: InlineFlowCommand[];
+    datadsts: InlineFlowCommand[];
 };
 
 export type HistoryType = {

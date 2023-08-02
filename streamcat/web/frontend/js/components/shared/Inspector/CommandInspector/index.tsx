@@ -134,7 +134,7 @@ const CommandInspector = (props: Props) => {
 
     } else if (selected_step.type === Constants.step.type.subflow) {
         const subflowCommand: SubflowCommandModel = selected_step.getCommand();
-        label = selected_step.getLabel();
+        label = selected_step.label;
         if (subflowCommand) {
             subLabel = subflowCommand.label;
             const params: CommandParamType[] = subflowCommand.params;
