@@ -1,6 +1,7 @@
 //@flow
 import type { CommandParamType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
+import { Command } from 'Model/Library';
 
 export default class CommandUtil {
 
@@ -12,10 +13,10 @@ export default class CommandUtil {
       return null;
     }
     // idに一致するcommandを取得する
-    return commands.find(command => command.id === id) as CommandModel;
+    return commands.find(command => command.id === id) as Command;
   }
 
-  static getCommandParamLabel (command: CommandModel | null, name: string): string | null{
+  static getCommandParamLabel (command: Command | null, name: string): string | null{
     if(!command){
       return null;
     }

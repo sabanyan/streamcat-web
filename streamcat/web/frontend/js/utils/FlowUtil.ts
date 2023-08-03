@@ -4,6 +4,7 @@ import type { CommandParamType, StepModelType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
+import { Command } from 'Model/Library';
 
 export default class FlowUtil {
 
@@ -25,10 +26,10 @@ export default class FlowUtil {
     })
   }
 
-  static getCommandParam (paramName: string, command: CommandModel): (CommandParamType | {}) {
+  static getCommandParam (paramName: string, command: Command): (CommandParamType | {}) {
     let param = {}
-    if (command && command.getParams()) {
-      command.getParams().map((_param) => {
+    if (command && command.params) {
+      command.params.map((_param) => {
         if (_param.name === paramName) {
           param = _param
         }

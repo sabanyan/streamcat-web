@@ -5,7 +5,7 @@ import {StepModelType} from 'Types/index';
 import {DataFrameStepModel} from 'Model/index';
 import {DropDownList} from 'Shared/Input';
 import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
-import { FrameNodeType } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FrameNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     portLabel: string;
@@ -48,11 +48,23 @@ export const InConnector = (props: Props) => {
         }
     };
 
-    const deletePort = (step: StepModelType, portLabel: string) => {
+    const deletePort = (step:CommandNodeType, portLabel:string) => {
+        // FIXME:
+        // dispatch(updateStepAction(step, zoom)) の処理ではStateと入力Nodeのsrcsに差異がある場合に限りCanvasのエッジ描画に反映させる
+        // そのため、Stateが参照するNodeではなくこれを複製して、iPortを削除したものを渡す必要がある
+        // 複製したNodeのdeleteinPort関数は複製元のiPortを削除するので、複製したNodeのinPortを削除するためのdeleteInPort関数を用意する
+        const deleteInPort = (step:CommandNodeType, label:string) => {
+            step.srcs && delete step.srcs[label];
+            if(step.srcsOrder){
+                step.srcsOrder = step.srcsOrder.filter(srcLabel => srcLabel !== label);
+            }
+        };
+
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const newStep = StateUtil.deepCopy(step);
-                newStep.deleteInPort(portLabel);
+                // const newStep:CommandNodeType = StateUtil.deepCopy(step);
+                const newStep:CommandNodeType = {...step, srcs:{...step.srcs}, srcsOrder:[...(step.srcsOrder || [])]};
+                deleteInPort(newStep, portLabel);
                 updateStep(newStep);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }

@@ -1,2 +1,2 @@
-export { Command } from './Core'
+export { CommandItem } from './Core'
 export { CommandSelector } from './CommandSelector'

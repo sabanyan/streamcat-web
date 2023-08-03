@@ -5,6 +5,7 @@ import {CommandStepModel, SubFlowStepModel} from "Model/index";
 import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
 import Constants from "Constants/index";
 import { InConnector } from '../inConnector';
+import { CommandNodeType, addInPort } from 'Model/Step/NodeTypes';
 
 type Props = {
     // TODO: 型指定をしたいがエラーになる箇所があるので保留する
@@ -109,13 +110,13 @@ export const InOutConnector = (props: Props) => {
         });
     }
 
-    const onClickAddEdge = (step) => {
-        const {updateStep} = props;
+    const onClickAddEdge = (step:CommandNodeType) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 const nextIndex = step.getInPortIndex() + 1;
-                const newStep = StateUtil.deepCopy(step);
-                newStep.addInPort("*" + nextIndex);
+                // const newStep:CommandNodeType = StateUtil.deepCopy(step);
+                const newStep:CommandNodeType = {...step, srcs:{...step.srcs}, srcsOrder:[...(step.srcsOrder || [])]};
+                addInPort(newStep, '*' + nextIndex, '');
                 updateStep(newStep);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }

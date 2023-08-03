@@ -5,6 +5,7 @@ import { CommandParamType } from 'Types/index';
 import Constants from 'Constants/index';
 import classnames from 'classnames';
 import style from './style.scss';
+import { Command } from 'Model/Library';
 // import { param } from 'jquery'
 
 
@@ -52,7 +53,7 @@ type Props = {
     args: {};
     // Validationチェック内容
     invalids: {};
-    command?: CommandModel;
+    command?: Command;
     //カラム情報
     headers?: string[];
     // フローの親フォルダ
@@ -99,7 +100,7 @@ export class ParamsForm extends React.Component<Props, State> {
      * @param param
      * @returns {boolean}
      */
-    isPresence(command: CommandModel, param: CommandParamType) {
+    isPresence(command: Command, param: CommandParamType) {
         let isPresence = false;
         if (command) {
             if (command.rules &&

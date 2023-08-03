@@ -7,12 +7,12 @@ import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
-import { FlowCommand, InlineFlowCommand } from "Model/Library";
+import { Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { CommandNode, FlowNode, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
-    command: CommandModel | FlowCommand | InlineFlowCommand;
+    command: Command | FlowCommand | InlineFlowCommand;
     selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
@@ -20,8 +20,9 @@ type Props = {
     addHistory: Function;
     addDataDstStep: Function;
     addDataSrcStep: Function;
-}
-const Command = (props: Props) => {
+};
+
+export const CommandItem = (props: Props) => {
 
     const [inputRefs, setInputRefs] = useState<any[]>([]);
 
@@ -36,7 +37,7 @@ const Command = (props: Props) => {
         window.emitter.emit(Constants.event.MODAL_ON_CLICK_DONE + id, { id: id });
     };
 
-    const getNewStepWithArgs = (command: CommandModel | FlowCommand, args): CommandStepModelProps => {
+    const getNewStepWithArgs = (command: Command | FlowCommand, args): CommandStepModelProps => {
         let node;
         let model: any = {
             id: null,
@@ -45,12 +46,13 @@ const Command = (props: Props) => {
             args: args
         };
 
-        if (command instanceof CommandModel) {
+        // if (command instanceof CommandModel) {
+        if (command.hasOwnProperty('id')) {
             // (model as any).type = Constants.step.type.command;
             // (model as any).commandId = command.id;
             // node = new CommandStepModel((model as any));
             // node.initArgs();
-            node = new CommandNode(command.id || '', {x:0, y:0});
+            node = new CommandNode((command as Command).id || '', {x:0, y:0});
             node.label = command.label;
             node.args = args;
 
@@ -59,7 +61,7 @@ const Command = (props: Props) => {
             // (model as any).type = Constants.step.type.subflow;
             // (model as any).uuid = command.uuid;
             // node = new SubFlowStepModel((model as any));
-            node = new FlowNode(command.uuid!, {x:0, y:0})
+            node = new FlowNode((command as FlowCommand).uuid, {x:0, y:0})
             node.label == command.label
         }
         return node;
@@ -125,8 +127,8 @@ const Command = (props: Props) => {
     }
 
     let icon: React.ReactNode;
-    if(command instanceof CommandModel){
-        icon = <CommandIcon command={command} />;
+    if(command.hasOwnProperty('id')){
+        icon = <CommandIcon command={command as Command} />;
     } else if(command.classification === "data_source") {
         icon = <DataSrcIcon />;
     } else if (command.classification === "data_dest") {
@@ -149,5 +151,3 @@ const Command = (props: Props) => {
         </div>
     </div>;
 };
-
-export { Command }

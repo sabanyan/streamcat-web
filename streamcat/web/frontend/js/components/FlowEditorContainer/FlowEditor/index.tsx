@@ -386,11 +386,11 @@ const FlowEditor = () => {
         // Commandの一覧を取得する
         preRequest.push(
             Api.findCommands().then(commands => {
-                const commandModels = commands.map(command => new CommandModel(command as any));
-                window.commands = commandModels;
+                // const commandModels = commands.map(command => new CommandModel(command as any));
+                window.commands = commands;
                 // addMaster({ commands: commandModels });
                 return {
-                    commands: commandModels
+                    commands: commands
                 };
             })
         );

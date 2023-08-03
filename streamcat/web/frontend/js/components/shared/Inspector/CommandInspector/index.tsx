@@ -8,7 +8,7 @@ import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
 import {CommandParamType, RunnablesType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
-import { FlowCommand } from 'Model/Library';
+import { Command, FlowCommand } from 'Model/Library';
 
 type Props = {
     selectedStepIds: string[];
@@ -120,7 +120,7 @@ const CommandInspector = (props: Props) => {
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
         //指定されたステップの元コマンドを取得
-        const command: CommandModel = selected_step.getCommand();
+        const command: Command = selected_step.getCommand();
         //選択されたステップのラベルを取得
         label = selected_step.label;
         //コマンドのラベルを取得

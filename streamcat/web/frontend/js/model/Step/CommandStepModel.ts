@@ -4,6 +4,7 @@ import CommandModel from "Model/Command/CommandModel";
 import validateJS from "validate.js";
 import {arrayMoveImmutable} from "array-move";
 import {BaseModelProps} from "Model/Step/BaseStepModel";
+import { Command } from "Model/Library";
 
 export interface CommandStepModelProps extends BaseModelProps {
     srcs: {};
@@ -204,16 +205,14 @@ export default class CommandStepModel extends BaseStepModel {
     validate() {
         this.invalid = {};
         //必須バリデーション
-        let command: CommandModel = this.getCommand();
+        let command: Command = this.getCommand();
         // commandが存在しない場合、フローが見えない事象があるため、
         // commandが存在しなくても処理が止まらないように
         if (!command) {
             return;
         }
 
-        Object.keys(command.getParams()).map(key => {
-            const param: CommandParamType = command.getParam(key);
-            const value = this.args[key];
+        Object.keys(command.params).map(key => {
             //TODO:param.optionalはrulesに移行予定
             // if(!param.optional){
             //   if(value === "" || value === null){

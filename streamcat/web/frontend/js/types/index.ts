@@ -35,7 +35,7 @@ export type CommandPortType = {
 };
 
 export type RunnablesType =  {
-    commands: CommandModel[];
+    commands: Command[];
     visualizers: VisualizeModel<Command>[];
     subflows: FlowCommand[];
     datasrcs: InlineFlowCommand[];

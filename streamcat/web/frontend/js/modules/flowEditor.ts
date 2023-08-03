@@ -5,7 +5,7 @@ import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Mod
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, DragType, GraphType, StepModelType } from "../types";
 import _ from "lodash";
-import { Flow, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
+import { Command, Flow, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { Action } from "redux";
 import { CommandNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
 
@@ -321,7 +321,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
             command = add_step.getCommand();
           } else if (add_step.type === 'command') {
             command = add_step.getCommand();
-            isAddable = command.isInPortsAddable();
+            isAddable = (command as Command).ports[0].length > 0 && (command as Command).ports[0][0].label === '*';
           }
           const inPorts: CommandPortType[] = command.ports[0];
           const outPorts: CommandPortType[] = command.ports[1];
@@ -390,7 +390,6 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
     case UPDATE_STEP_ACTION: {
-
       newState.nodes = rebuildNodesEdges(newState, action);
       newState.flow!.flow.nodes = newState.nodes;
 
@@ -946,7 +945,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-const rebuildNodesEdges = (newState, action) => {
+const rebuildNodesEdges = (newState:State, action:{step:any}) => {
   return newState.nodes.map((node: any, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import style from "./style.scss";
-import { Command } from "FlowEditorContainer/Command";
+import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
 import { RunnablesType, StepModelType } from "Types/index";
 import { TextField } from "Shared/Input";
 import { CommandModel } from "Model/index";
-import { FlowCommand, InlineFlowCommand } from "Model/Library";
+import { Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 
 type Props = {
     runnables: RunnablesType;
@@ -87,12 +87,12 @@ const CommandSelector = (props: Props) => {
         }
         const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1);
         const foundDescriptionWithKeyword = (command.description && command.description.indexOf(keyword) != -1);
-        const foundCommandIdWithKeyword = (command instanceof CommandModel && command.id && command.id.indexOf(keyword) != -1);
+        const foundCommandIdWithKeyword = ((command as Command).id && (command as Command).id.indexOf(keyword) != -1);
 
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });
     let operatorsContainer: React.ReactNode[] = [];
-    let beforeCommand: CommandModel | FlowCommand | InlineFlowCommand;
+    let beforeCommand: Command | FlowCommand | InlineFlowCommand;
     operators.map((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             // 区切りを表示
@@ -101,7 +101,7 @@ const CommandSelector = (props: Props) => {
             if (!label) label = command.classification;
             operatorsContainer.push(<div key={command.classification || '' + index} className={style.command_separator}>{label}</div>);
         }
-        operatorsContainer.push(<Command
+        operatorsContainer.push(<CommandItem
             // nodes={nodes}
             key={index}
             command={command}
