@@ -4,8 +4,9 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
-import { HistoryType, StepModelType } from 'Types/index';
+import { HistoryType } from 'Types/index';
 import { refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
+import { AllNodeType } from 'Model/Library';
 
 type ToolBarProps = {
     nodes: any[];
@@ -18,7 +19,7 @@ type ToolBarProps = {
     notifyError: (title: string, message: string) => string;
     notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
     dismissNotify: (id:string) => void;
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addHistory: Function;
     undo: Function;
     redo: Function;

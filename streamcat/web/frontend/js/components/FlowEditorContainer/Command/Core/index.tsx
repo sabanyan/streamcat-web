@@ -5,17 +5,16 @@ import classnames from "classnames";
 import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { StepModelType } from "Types/index";
 import { WebUtil } from "Utils/index";
-import { Command, FlowCommand, InlineFlowCommand } from "Model/Library";
-import { CommandNode, FlowNode, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
+import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
+import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
     command: Command | FlowCommand | InlineFlowCommand;
     selectedStepIds: string[];
     zoom: number;
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     addDataDstStep: Function;
@@ -37,8 +36,8 @@ export const CommandItem = (props: Props) => {
         window.emitter.emit(Constants.event.MODAL_ON_CLICK_DONE + id, { id: id });
     };
 
-    const getNewStepWithArgs = (command: Command | FlowCommand, args): CommandStepModelProps => {
-        let node;
+    const getNewStepWithArgs = (command: Command | FlowCommand, args) => {
+        let node:CommandNodeType | FlowNodeType ;
         let model: any = {
             id: null,
             name: command.label,
@@ -63,9 +62,10 @@ export const CommandItem = (props: Props) => {
             // node = new SubFlowStepModel((model as any));
             node = new FlowNode((command as FlowCommand).uuid, {x:0, y:0})
             node.label == command.label
+        } else {
+            throw Error('command or flow node type only!');
         }
         return node;
-
     };
 
     const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: any) => {
@@ -77,7 +77,7 @@ export const CommandItem = (props: Props) => {
             addDataDstStep(command, selectedStepIds[0]);
         } else {
             const args = {};
-            const added_command_step: CommandStepModelProps = getNewStepWithArgs(command, args);
+            const added_command_step = getNewStepWithArgs(command, args);
 
             const output_steps = command.ports[1].map(() => {
                 // const output_step = new DataFrameStepModel({

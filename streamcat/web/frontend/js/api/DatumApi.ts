@@ -16,14 +16,14 @@ import {
     Port,
     FlowCommand,
     InlineFlowCommand,
-    Command
+    Command,
+    AllNodeType
 } from 'Model/Library';
 import {
     ConnectivityType,
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
-    NodeType,
     FrameNodeType,
     CommandNodeType,
     FlowNodeType,
@@ -324,7 +324,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
 /**
  * NodeArrayのコンストラクタ関数を作成する
  */
-const NodeArray = makeArrayCtor<NodeType>(node => {
+const NodeArray = makeArrayCtor<AllNodeType>(node => {
     if(node.type === 'frame'){
         const n = node as FrameNodeType;
         n.hasData = () => !!n.uuid;

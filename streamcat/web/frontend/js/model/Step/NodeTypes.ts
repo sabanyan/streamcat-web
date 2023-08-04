@@ -1,4 +1,4 @@
-import { Command, Flow } from 'Model/Library';
+import { Command, Flow, FlowCommand } from 'Model/Library';
 import { ModelUtil, StringUtil } from 'Utils/index';
 
 export type NodeType = {
@@ -45,7 +45,7 @@ export const FrameNode = function(this: FrameNodeType, position:{x:number, y:num
 
 export type CommandNodeType = NodeType & {
     commandId: string;
-    args?: any;
+    args?: { [name:string]:any };
     srcs?: { [port:string]:string };
     dsts?: { [port:string]:string };
     srcsOrder?: string[];
@@ -118,7 +118,7 @@ export type BaseFlowNodeType = NodeType & {
 
 export type FlowNodeType = BaseFlowNodeType & {
     uuid: string | null;
-    getCommand: () => Command;
+    getCommand: () => FlowCommand;
 };
 
 export type InlineFlowNodeType = BaseFlowNodeType & {
@@ -178,6 +178,28 @@ export type NoteNodeType = NodeType & {
     color?: string;
     setTitle: (title:string) => void;
     setFontSize: (fontSize:number) => void;
+};
+
+export const NoteNode = function(this:NoteNodeType, position:{x:number, y:number}){
+    (this as any).id = ModelUtil.getNewId('note');
+    (this as any).type = 'note';
+    this.label = '';
+    this.position = position;
+    this.size = {width:200, height:40};
+    this.error = {};
+    this.invalid = {};
+    this.title = '新しいメモ';
+    this.content = '';
+    this.fontSize = 16;
+    this.color = 'green';
+    this.setTitle = (title:string) => {
+        this.title = title;
+        this.size = calcSize(title, this.fontSize || 16);
+    };
+    this.setFontSize = (fontSize:number) => {
+        this.fontSize = fontSize;
+        this.size = calcSize(this.title, fontSize);
+    };
 };
 
 export const addInPort = (self:any, label:string, nodeId:string) => {

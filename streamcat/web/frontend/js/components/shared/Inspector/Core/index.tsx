@@ -13,8 +13,8 @@ import {
 } from 'Shared/Inspector'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import { RunnablesType, StepModelType } from "Types/index";
-import { FlowType, FrameType } from 'Model/Library';
+import { RunnablesType } from "Types/index";
+import { AllNodeType, FlowType, FrameType } from 'Model/Library';
 import {
   addDataDstStepAction,
   addDataSrcStepAction,
@@ -34,7 +34,7 @@ type InspectorProps = {
   lockUUID: string | undefined;
   // updateDataFrameDetail: Function
   zoom: number
-  addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+  addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
   selectSteps: (selected_steps: any[]) => void;
   refreshFlow: Function;
   deleteSteps: (step_ids: string[]) => void;

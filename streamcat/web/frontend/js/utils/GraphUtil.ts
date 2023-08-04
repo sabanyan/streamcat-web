@@ -4,7 +4,7 @@ import Constants from 'Constants/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import { State } from 'Modules/flowEditor'
 import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType, addInPort, calcSize } from 'Model/Step/NodeTypes'
-import { Flow } from 'Model/Library'
+import { AllNodeType, Flow } from 'Model/Library'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -134,7 +134,7 @@ class GraphUtil {
    * @returns {{width, height}}
    */
 
-  getGraph(nodes:(CommandNodeType | FrameNodeType)[], zoom:number) {
+  getGraph(nodes:AllNodeType[], zoom:number) {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
@@ -243,7 +243,6 @@ class GraphUtil {
    */
   load(json: Flow) {
     const self = this
-    let hasPosition = false
 
     // if (!json || !json.nodes) return new FlowModel()
     if (!json || !json.nodes) {
@@ -256,7 +255,7 @@ class GraphUtil {
       }
     }
 
-    const connectEdge = (node:CommandNodeType | FlowNodeType | BaseFlowNodeType) => {
+    const connectEdge = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
       if (node.srcs) {
         Object.keys(node.srcs).forEach((portLabel) => {
           const src = node.srcs![portLabel]
@@ -277,180 +276,14 @@ class GraphUtil {
       }
     }
 
-    let newNodes: (FrameNodeType | CommandNodeType | BaseFlowNodeType |  NoteNodeType)[] = [];
-    json.nodes.forEach((node) => {
-      self.addNode(node.id)
-      const type = node.type
-      switch (type) {
-        //データフレーム
-        case Constants.step.type.frame:
-          const frame:FrameNodeType = {
-            id: node.id,
-            label: node.label,
-            type: 'frame',
-            position: node.position,
-            size: node.size,
-            error: node.error,
-            invalid: node.invalid,
-            uuid: node.uuid,
-            value: node.value,
-            makeCache: node.makeCache,
-            dataSource: node.dataSource,
-            cacheCreatedAt: node.cacheCreatedAt,
-            hasData: () => !!frame.uuid,
-            isCached: () => !!frame.cacheCreatedAt,
-            deleteCache: () => {
-              frame.cacheCreatedAt = null;
-              frame.uuid = null;
-            },
-          };
-          newNodes.push(frame);
-          if (frame.position && frame.size) {
-            hasPosition = true
-          }
-          break
-        case Constants.step.type.command:
-          const c:CommandNodeType = {
-            id: node.id,
-            label: node.label,
-            type: 'command',
-            position: node.position,
-            size: node.size,
-            error: node.error,
-            invalid: node.invalid,
-            commandId: node.commandId,
-            args: node.args,
-            srcs: node.srcs,
-            dsts: node.dsts,
-            srcsOrder: node.srcsOrder,
-            deleteInPort : (label:string) => {
-              c.srcs && delete c.srcs[label];
-              if(c.srcsOrder){
-                  c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
-              }
-            },
-            addInPort : (label:string, nodeId:string) => addInPort(c, label, nodeId),
-            getInPortIndex : () => {
-                const srcKeys = Object.keys(c.srcs || {});
-    
-                const filterKeys = srcKeys.filter((key) => {
-                    return (key.indexOf("*") != -1);
-                });
-        
-                let max = 0;
-                filterKeys.forEach((key) => {
-                    const value = key.replace("*", "");
-                    max = (parseInt(value) > max) ? parseInt(value) : max;
-                });
-        
-                return max;
-            },
-            addableInPort : () => {
-                // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
-                const filterKeys = c.getCommand().ports[0].filter((inPort) => {
-                    return (inPort.label.indexOf("*") >= 0);
-                });
-                return filterKeys.length > 0;
-            },
-            getCommand : () => {
-                const commands = (window as any).commands;
-                return commands.find(command => command.id === c.commandId);
-            },
-          };
-
-          connectEdge(c)
-          newNodes.push(c);
-          if (c.position && c.size) {
-            hasPosition = true
-          }
-          break;
-
-        case Constants.step.type.subflow:
-          let f:FlowNodeType|InlineFlowNodeType;
-          if(node.uuid){
-            f = {
-              id: node.id,
-              label: node.label,
-              type: 'flow',
-              position: node.position,
-              size: node.size,
-              error: node.error,
-              invalid: node.invalid,
-              classification: node.classification,
-              uuid: node.uuid,
-              args: node.args,
-              srcs: node.srcs,
-              dsts: node.dsts,
-              srcsOrder: node.srcsOrder,
-              masked: node.masked,
-              addInPort: (label:string, nodeId:string) => addInPort(f, label, nodeId),
-              getCommand: () => {
-                  const subflows = (window as any).subflows;
-                  return subflows.find(subflow => subflow.uuid === (f as FlowNodeType).uuid);
-              },
-              addableInPort: () => false,
-            }
-          }else if(node.flow){
-            f = {
-              id: node.id,
-              label: node.label,
-              type: 'flow',
-              position: node.position,
-              size: node.size,
-              error: node.error,
-              invalid: node.invalid,
-              classification: node.classification,
-              flow: node.flow,
-              args: node.args,
-              srcs: node.srcs,
-              dsts: node.dsts,
-              srcsOrder: node.srcsOrder,
-              masked: node.masked,
-              addInPort: (label:string, nodeId:string) => addInPort(f, label, nodeId),
-              addableInPort: () => false,
-            }
-          }else{
-            throw new Error('flow node has neither uuid nor flow property');
-          }
-
-          connectEdge(f)
-          newNodes.push(f)
-          if (f.position && f.size) {
-            hasPosition = true
-          }
-          break
-        case Constants.step.type.note:
-          const note:NoteNodeType = {
-            id: node.id,
-            label: node.label,
-            type: 'note',
-            position: node.position,
-            size: node.size,
-            error: node.error,
-            invalid: node.invalid,
-            title: node.title,
-            content: node.content,
-            fontSize: node.fontSize,
-            color: node.color,
-            setTitle: (title:string) => {
-              note.title = title;
-              note.size = calcSize(title, note.fontSize || 16);
-            },
-            setFontSize: (fontSize:number) => {
-                note.fontSize = fontSize;
-                note.size = calcSize(note.title, fontSize);
-            },
-          };
-          newNodes.push(note);
-
-          break
-
-        default:
+    json.nodes = json.nodes.map(node => {
+      if(node.type === 'command' || node.type === 'flow'){
+        connectEdge(node as CommandNodeType | FlowNodeType | InlineFlowNodeType);
       }
-    })
+      return node;
+    });
 
-    json.nodes = newNodes
-    if (!hasPosition) this.refreshPosition(json.nodes)
+    this.refreshPosition(json.nodes)
 
     return json
 

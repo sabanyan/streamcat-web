@@ -9,7 +9,7 @@ import { Api } from 'Api';
 import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DragType, RunnablesType, StepModelType } from 'Types/index';
+import { DragType, RunnablesType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
@@ -43,7 +43,7 @@ import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
-import { Command, FlowType, FrameType } from 'Model/Library';
+import { AllNodeType, Command, FlowType, FrameType } from 'Model/Library';
 
 const getLock = (targetUUID:string) => {
     return Api.createLock(targetUUID).catch(e => {
@@ -123,16 +123,16 @@ const FlowEditor = () => {
     // Canvasの横幅
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 
-    const loadFlowJSON = (context: {}) => {
+    const loadFlowJSON = (context: FlowType) => {
         return dispatch(loadFlowJSONAction(context, zoom));
     };
     // const addMaster = (context: {}) => {
     //     dispatch(addMasterAction(context));
     // };
-    const addStep = (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
+    const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
         dispatch(addStepAction(add_step, src_step_ids, dst_step_ids, zoom));
     };
-    const updateStep = (step: StepModelType) => {
+    const updateStep = (step: AllNodeType) => {
         dispatch(updateStepAction(step, zoom));
     };
     const selectSteps = (selected_steps: any[]) => {
@@ -628,7 +628,7 @@ const FlowEditor = () => {
     const renderSteps = useCallback(() => {
         let steps: any = [];
         if (Array.isArray(nodes)) {
-            steps = nodes.map((step: StepModelType) => {
+            steps = nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
                 return <Step
@@ -637,7 +637,6 @@ const FlowEditor = () => {
                     position={step.position}
                     type={step.type}
                     selected={selected}
-                    text={step.text}
                     invalid={step.invalid}
                     error={step.error}
                     runnables={runnables}

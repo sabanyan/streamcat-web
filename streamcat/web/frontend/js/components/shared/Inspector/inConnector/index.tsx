@@ -1,7 +1,6 @@
 import React from 'react';
 import style from '../style.scss';
 import Constants from 'Constants/index';
-import {StepModelType} from 'Types/index';
 import {DataFrameStepModel} from 'Model/index';
 import {DropDownList} from 'Shared/Input';
 import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
@@ -28,7 +27,7 @@ export const InConnector = (props: Props) => {
 
     const dataSourceOptions = FlowUtil.getAllDataFrame(nodes).map(dataFrame => ({
         value: dataFrame.id,
-        label: dataFrame.label,
+        label: dataFrame.label || '',
         object: dataFrame
     }));
 

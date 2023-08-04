@@ -3,11 +3,11 @@ import Constants from "Constants/index";
 import { FlowUtil, GraphUtil, ModelUtil, StateUtil, ZoomUtil } from "Utils/index";
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
-import { CommandPortType, DragType, GraphType, StepModelType } from "../types";
+import { CommandPortType, DragType, GraphType } from "../types";
 import _ from "lodash";
-import { Command, Flow, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { Action } from "redux";
-import { CommandNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
+import { CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -54,10 +54,10 @@ export type State = {
   // selected_step_ids: string[],
   graph: GraphType,
   // zoom: number,
-  nodes: (CommandNodeType | FrameNodeType)[],
+  nodes: AllNodeType[],
   history: {
     current: number,
-    nodes: (CommandNodeType | FrameNodeType)[][]
+    nodes: AllNodeType[][]
   },
   // mast: {
   //   commands: any[],
@@ -155,7 +155,7 @@ type FlowEditorAction = Action & {
   // value: number;
   detail: any;
   payload: any;
-  step: any;
+  step: AllNodeType;
   // width: number;
   // executeMode: FlowExecuteModeValue;
   // editMode: FlowEditModeValue;
@@ -242,7 +242,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         let totalSY = 0;
 
         src_step_ids.forEach((id: string) => {
-          const target: StepModelType = GraphUtil.getNode(state.nodes, id);
+          const target: AllNodeType = GraphUtil.getNode(state.nodes, id);
           totalSX = totalSX + target.position.x;
           totalSY = totalSY + target.position.y;
         });
@@ -496,48 +496,53 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         let label = (json.label) ? json.label : cacheId;
         json.id = null;
         json.label = "コピー " + label;
-        let newNode: StepModelType = FlowUtil.setModelType(json);
+        let newNode: AllNodeType = FlowUtil.setModelType(json);
 
         //ノード本体をコピー
         graph.addNode(newNode.id);
         //newState.selected_step_ids.push(newNode.id);
 
         //入力値をコピー
-        newNode = FlowUtil.copySrcs(newNode);
         newNode = FlowUtil.copyPositionWithOffsetX(newNode);
-        let newDsts = {};
-        Object.keys(newNode.dsts).forEach((key) => {
-          //出力先を作成し、接続先を変更する
-          const copiedStep:FrameNodeType = FlowUtil.getNodeFromID(newState.nodes as [any], newNode.dsts[key]);
-          // const props: any = {
-          //   id: null,
-          //   type: Constants.step.type.frame,
-          //   uuid: null,
-          //   label: "コピー " + copiedStep.label,
-          //   dataSource: copiedStep.dataSource,
-          //   // srcs: newNode.id,
-          //   // dsts: [],
-          //   position: copiedStep.position
-          // };
-          // let add_step = new DataFrameStepModel(props);
-          let add_node:FrameNodeType = new FrameNode(copiedStep.position);
-          add_node.label = 'コピー ' + copiedStep.label;
-          add_node = FlowUtil.copyPositionWithOffsetX(add_node);
-          newState.nodes.push(add_node);
-          //ノード本体をコピー
-          graph.addNode(add_node.id);
-          //newState.selected_step_ids.push(add_step.id);
-          newDsts[key] = add_node.id;
-        });
-        //convertMap[cacheId] = newNode.id
-        newNode.dsts = {};
-        newState.nodes.push(newNode);
 
-        const action_step = _.cloneDeep(newNode);
-        action_step.dsts = newDsts;
+        if(newNode.type === 'command' || newNode.type === 'flow'){
+          let commandOrFlowNode = newNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
+          commandOrFlowNode = FlowUtil.copySrcs(commandOrFlowNode);
+          let newDsts = {};
+          commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
+            //出力先を作成し、接続先を変更する
+            const copiedStep = FlowUtil.getNodeFromID(newState.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
+            // const props: any = {
+            //   id: null,
+            //   type: Constants.step.type.frame,
+            //   uuid: null,
+            //   label: "コピー " + copiedStep.label,
+            //   dataSource: copiedStep.dataSource,
+            //   // srcs: newNode.id,
+            //   // dsts: [],
+            //   position: copiedStep.position
+            // };
+            // let add_step = new DataFrameStepModel(props);
+            let add_node:FrameNodeType = new FrameNode(copiedStep.position);
+            add_node.label = 'コピー ' + copiedStep.label;
+            add_node = FlowUtil.copyPositionWithOffsetX(add_node) as FrameNodeType;
+            newState.nodes.push(add_node);
+            //ノード本体をコピー
+            graph.addNode(add_node.id);
+            //newState.selected_step_ids.push(add_step.id);
+            newDsts[key] = add_node.id;
+          });
+          //convertMap[cacheId] = newNode.id
+          commandOrFlowNode.dsts = {};
 
-        newState.nodes = rebuildNodesEdges(newState, { step: action_step });
-        newState.flow!.flow.nodes = newState.nodes;
+          newState.nodes.push(commandOrFlowNode);
+
+          const action_step = _.cloneDeep(commandOrFlowNode);
+          action_step.dsts = newDsts;
+        
+          newState.nodes = rebuildNodesEdges(newState, { step: action_step });
+          newState.flow!.flow.nodes = newState.nodes;
+        }
       });
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
@@ -893,7 +898,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // データデストの入力ノードをフロー出力Portに設定する
       srcNodes.forEach(srcNode => {
         const port = {
-          label: srcNode.label,
+          label: srcNode.label || '',
           nodeId: srcNode.id,
           type: srcNode.type
         };
@@ -1283,7 +1288,7 @@ export function newDataDest(props: DataDestProps) {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const addStepAction = (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
+export const addStepAction = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
   return {
     type: ADD_STEP_ACTION,
     add_step: add_step,
@@ -1298,7 +1303,7 @@ export const addStepAction = (add_step:StepModelType, src_step_ids:string[], dst
  * @param context
  * @returns {{type: string, context: *}}
  */
-export function loadFlowJSONAction(context: {}, zoom:number) {
+export function loadFlowJSONAction(context: FlowType, zoom:number) {
   return {
     type: LOAD_FLOW_JSON_ACTION,
     context: context,
@@ -1323,7 +1328,7 @@ export function loadFlowJSONAction(context: {}, zoom:number) {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const updateStepAction = (step: StepModelType, zoom:number) => {
+export const updateStepAction = (step: AllNodeType, zoom:number) => {
   return {
     type: UPDATE_STEP_ACTION,
     step: step,

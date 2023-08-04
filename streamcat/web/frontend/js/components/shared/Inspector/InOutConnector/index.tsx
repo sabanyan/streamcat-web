@@ -62,6 +62,9 @@ export const InOutConnector = (props: Props) => {
         outConnectors = Object.keys(selectedStep.dsts).map((key, index) => {
             let dataFrameId: string = selectedStep.dsts[key]
             const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+            if(!node){
+                return <></>;
+            }
             return <div key={index} className={style.outPort_}>
                 <div className={style.outPort_Port}>
                     {key}
@@ -82,6 +85,9 @@ export const InOutConnector = (props: Props) => {
                 const subflowOutPort = subflowOutPorts.find((outPort) => {
                     return (outPort.label == key);
                 });
+                if(!node){
+                    return <></>;
+                }
                 return <div key={index} className={style.outPort_}>
                     <div className={style.outPort_Port}>
                         {(subflowOutPort) ? subflowOutPort.label : null}
@@ -99,6 +105,9 @@ export const InOutConnector = (props: Props) => {
             let dataFrameId: string;
             dataFrameId = commandStepDsts[key];
             const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
+            if(!node){
+                return <></>;
+            }
             return <div key={index} className={style.outPort_}>
                 <div className={style.outPort_Port}>
                     {key}

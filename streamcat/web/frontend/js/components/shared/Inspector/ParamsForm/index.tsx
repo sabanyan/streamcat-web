@@ -50,9 +50,9 @@ type Props = {
     //パラメータのグルプ定義
     groups?: string[];
     //入力値
-    args: {};
+    args?: { [name:string]:any };
     // Validationチェック内容
-    invalids: {};
+    invalids?: {};
     command?: Command;
     //カラム情報
     headers?: string[];
@@ -90,8 +90,8 @@ export class ParamsForm extends React.Component<Props, State> {
      * @param param
      * @returns {*}
      */
-    getDefaultValueOrArgsValue(args: {} | [], param: CommandParamType) {
-        return args[param.name];
+    getDefaultValueOrArgsValue(args: { [name:string]:any } | undefined, param: CommandParamType) {
+        return args? args[param.name]: param.default || '' ;
     }
 
     /**
@@ -163,7 +163,7 @@ export class ParamsForm extends React.Component<Props, State> {
                     paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />;
                     break;
                 case Constants.param.type.list:
-                    paramElement = <ParamList label={label} param={param} disabled={disabled} value={value}
+                    paramElement = <ParamList param={param} value={value || []}
                         helperTargetedInput={this.state.helperTargetedInput} headers={headers}
                         helper={param.helper}
                         setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange ? onChange : () => { }} />;
@@ -212,7 +212,7 @@ export class ParamsForm extends React.Component<Props, State> {
         let isPresence = (command) ? this.isPresence(command, param) : false;
         const value = this.getDefaultValueOrArgsValue(args, param);
         const paramElement = this.getParamElement(param, disabled, parentUUID, param.label, value, onChange, headers);
-        const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name]);
+        const invalidMessageEelement = invalids && this.getInvalidMessageElement(invalids[param.name]);
 
         return <div key={key} className={classnames('mb-12px', {
             [style.presence]: isPresence,

@@ -13,6 +13,7 @@ import {
     pasteStepsAction
 } from 'Modules/flowEditor';
 import { CommandNodeType, FrameNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
 
 type Props = {
     canvasWidth: number;
@@ -22,7 +23,7 @@ type Props = {
     redo: Function;
     undo: Function;
     selectedStepIds: string[];
-    nodes: (CommandNodeType|FrameNodeType)[];
+    nodes: AllNodeType[];
     zoom: number
     history: HistoryType;
     // drag: DragType | {};

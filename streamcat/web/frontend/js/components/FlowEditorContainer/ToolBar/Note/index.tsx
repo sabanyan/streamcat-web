@@ -4,13 +4,13 @@ import Constants from 'Constants/index';
 import { NoteStepModel } from 'Model/index';
 import { FlowUtil, ModelUtil, PositionUtil, ZoomUtil } from 'Utils/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
-import { StepModelType } from 'Types/index';
-import { NoteNodeType, calcSize } from 'Model/Step/NodeTypes';
+import { NoteNode, NoteNodeType, calcSize } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
 
 type Props = {
     zoom: number;
     nodes: any[];
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addHistory: Function;
     children: React.ReactNode;
     disabled: boolean;
@@ -40,29 +40,7 @@ export const Note = (props: Props) => {
         //     title: '新しいメモ',
         //     content: ''
         // });
-        const note = {
-            id: ModelUtil.getNewId('note'),
-            label: '',
-            type: 'note',
-            position: notOverlapNodePosition,
-            size: {width:200, height:40},
-            error: {},
-            invalid: {},
-            title: '新しいメモ',
-            content: '',
-            fontSize: 16,
-            color: 'green',
-            // setTitle: (title:string) => {},
-            // setFontSize: (fontSize:number) => {}
-            setTitle: (title:string) => {
-                note.title = title;
-                note.size = calcSize(title, note.fontSize || 16);
-            },
-            setFontSize: (fontSize:number) => {
-                note.fontSize = fontSize;
-                note.size = calcSize(note.title, fontSize);
-            },
-        };
+        const note = new NoteNode(notOverlapNodePosition)
 
         addStep(note, [], [], zoom);
         addHistory();

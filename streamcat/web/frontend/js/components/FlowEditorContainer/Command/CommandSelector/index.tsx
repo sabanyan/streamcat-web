@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import style from "./style.scss";
 import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { RunnablesType, StepModelType } from "Types/index";
+import { RunnablesType } from "Types/index";
 import { TextField } from "Shared/Input";
 import { CommandModel } from "Model/index";
-import { Command, FlowCommand, InlineFlowCommand } from "Model/Library";
+import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 
 type Props = {
     runnables: RunnablesType;
@@ -13,7 +13,7 @@ type Props = {
     numberOfInput: number;
     selectedStepIds: string[];
     zoom: number;
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     disabled?: boolean;

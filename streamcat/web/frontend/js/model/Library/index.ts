@@ -1,3 +1,11 @@
+import {
+    CommandNodeType,
+    FlowNodeType,
+    FrameNodeType,
+    InlineFlowNodeType,
+    NoteNodeType
+} from 'Model/Step/NodeTypes';
+
 /**
  * Datumの種別
  */
@@ -251,10 +259,12 @@ type PortArray = [] & {
     toJSON: () => string;
 };
 
+export type AllNodeType = FrameNodeType | CommandNodeType | FlowNodeType | InlineFlowNodeType | NoteNodeType;
+
 export type Flow = {
     label?: string;
     description?: string;
-    nodes: any[];
+    nodes: AllNodeType[];
     params: Param[];
     ports: [PortArray,PortArray];
 };

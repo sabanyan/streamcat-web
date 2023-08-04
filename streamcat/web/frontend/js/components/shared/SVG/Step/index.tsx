@@ -5,20 +5,20 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel }
 import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
-import { DragType, RunnablesType, StepModelType } from "Types/index";
-import { FlowType, FrameType } from "Model/Library";
+import { DragType, RunnablesType } from "Types/index";
+import { AllNodeType, FlowType, FrameType } from "Model/Library";
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
 
 let mouseMoveEvent;
 let mouseUpEvent;
 
 interface Props {
-    model: StepModelType;
+    model: AllNodeType;
     position: { x: number, y: number };
     type: string;
     selected: boolean;
-    text: string;
-    invalid: {};
-    error: {};
+    invalid?: {};
+    error?: {};
     runnables: RunnablesType;
     flow: FlowType;
     selectedStepIds: string[];
@@ -98,11 +98,12 @@ const Step = (props: Props) => {
             selectSteps([step]);
 
             //データフレームの詳細を取得する
-            const selected_step: StepModelType = step;//this.getSelectedStep()
+            const selected_step: AllNodeType = step;//this.getSelectedStep()
             if (selected_step.type === 'frame') {
-                if (selected_step.hasData() && selected_step.uuid) {
+                const frameNode = selected_step as FrameNodeType;
+                if (frameNode.hasData() && frameNode.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
-                    Api.findFrame(selected_step.uuid).then(frame => {
+                    Api.findFrame(frameNode.uuid).then(frame => {
                         selectFrame(frame);
                     });
                 } else {
@@ -290,7 +291,7 @@ const Step = (props: Props) => {
     const { x, y } = position;
     let icon: JSX.Element | null;
 
-    let step: StepModelType = model;
+    let step: AllNodeType = model;
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -306,6 +307,7 @@ const Step = (props: Props) => {
     let stepLabel = step.label;
 
     if (isDataFrame(step)) {
+        const frameNode = step as FrameNodeType;
         // データノード
         let innerIcon: JSX.Element;
         if (flowIn || flowOut) {
@@ -318,7 +320,7 @@ const Step = (props: Props) => {
                                    fill={"#CCCCCC"} />;
         } else {
             // IN、OUT指定のない場合
-            innerIcon = <FileIcon fillColor={(step.hasData()) ? "#63CFFD" : "#CCCCCC"}
+            innerIcon = <FileIcon fillColor={(frameNode.hasData()) ? "#63CFFD" : "#CCCCCC"}
                                   width={16}
                                   height={20} />;
         }
@@ -330,37 +332,40 @@ const Step = (props: Props) => {
             {innerIcon}
         </Rect>;
     } else if (isSubFlow(step)) {
-        if (step.flow && step.classification === "data_source") {
+        const flowNode = step as FlowNodeType | InlineFlowNodeType;
+        if (flowNode.hasOwnProperty('flow') && flowNode.classification === "data_source") {
             icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
-        } else if (step.flow && step.classification === "data_dest") {
+        } else if (flowNode.hasOwnProperty('flow') && flowNode.classification === "data_dest") {
             icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
         } else {
             // サブフローノード
             icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
-            stepLabel = step.label;
+            stepLabel = flowNode.label;
         }
     } else if (isCommandStep(step)) {
+        const commandNode = step as CommandNodeType;
         // コマンドノード
         let command;
         if (runnables.commands) {
             runnables.commands.forEach(c => {
-                if (c.id === step.commandId) command = c;
+                if (c.id === commandNode.commandId) command = c;
             });
             icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />;
         } else {
             icon = null;
         }
-        stepLabel = step.label;
+        stepLabel = commandNode.label;
     } else if (isNote(step)) {
-        icon = <NoteIcon hover={hover} selected={selected} model={step} />;
-        stepLabel = step.label;
+        const noteNode = step as NoteNodeType;
+        icon = <NoteIcon hover={hover} selected={selected} model={noteNode} />;
+        stepLabel = noteNode.label;
     } else {
         icon = null;
     }
 
 
-    const invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
-    const error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
+    const invalid_icon = (invalid && Object.keys(invalid).length) ? <ErrorIcon /> : null;
+    const error_icon = (error && Object.keys(error).length) ? <ErrorIcon /> : null;
     const label_text = (!!stepLabel) ? 
                         <g className={style.labelContainer}>
                             <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>

@@ -5,15 +5,15 @@ import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import { FlowType } from "Model/Library";
-import { RunnablesType, StepModelType } from 'Types/index';
+import { AllNodeType, FlowType } from "Model/Library";
+import { RunnablesType } from 'Types/index';
 
 type Props = {
     runnables: RunnablesType;
     selectedStepIds: string[];
     // nodes: any[];
     zoom: number;
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: Function;
     addDataDstStep: Function;
     selectSteps: (selected_steps: any[]) => void;

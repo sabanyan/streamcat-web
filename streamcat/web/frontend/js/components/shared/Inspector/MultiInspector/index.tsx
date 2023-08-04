@@ -6,7 +6,8 @@ import {CommandSelector} from 'FlowEditorContainer/Command';
 import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from 'Model/index';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
-import { RunnablesType, StepModelType } from 'Types/index';
+import { RunnablesType } from 'Types/index';
+import { AllNodeType } from 'Model/Library';
 
 type Props = {
     deleteSteps: (step_ids: string[]) => void;
@@ -15,7 +16,7 @@ type Props = {
     runnables: RunnablesType;
     selectedStepIds: string[];
     zoom: number;
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: Function;
     addDataDstStep: Function;
     addHistory: Function;

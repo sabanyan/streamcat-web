@@ -14,10 +14,10 @@ import classnames from 'classnames'
 type Props = {
     param: CommandParamType;
     value: Array<CommandParamType>;
-    label?: string;
+    // label?: string;
     headers?: string[];
     helperTargetedInput?: any;
-    disabled: boolean;
+    // disabled: boolean;
 
     helper: any;
     setHelperTargetedInput?: Function;
@@ -60,19 +60,19 @@ export class ParamList extends React.Component<Props, State>{
         });
     }
 
-    onSortEnd({oldIndex, newIndex, collection, isKeySorting}, e) {
-        try {
-            const {param, onChange} = this.props;
-            let newValue = arrayMoveImmutable(this.state.currentValue, oldIndex, newIndex);
-            this.setState({
-                currentValue: newValue
-            }, () => {
-                onChange(e, param, this.state.currentValue);
-            });
-        } catch (e) {
-            console.log(e);
-        }
-    }
+    // onSortEnd({oldIndex, newIndex, collection, isKeySorting}, e) {
+    //     try {
+    //         const {param, onChange} = this.props;
+    //         let newValue = arrayMoveImmutable(this.state.currentValue, oldIndex, newIndex);
+    //         this.setState({
+    //             currentValue: newValue
+    //         }, () => {
+    //             onChange(e, param, this.state.currentValue);
+    //         });
+    //     } catch (e) {
+    //         console.log(e);
+    //     }
+    // }
 
     onDeleteElement(e, param, argIndex) {
         try {
@@ -215,7 +215,7 @@ export class ParamList extends React.Component<Props, State>{
             return null;
         }
 
-        arg.forEach((element, index) => {
+        arg && arg.forEach((element, index) => {
             let paramElement = this.renderElement(param, index, arg);
             paramElements.push(<div key={index} className={style.elementContainer}>
                 {paramElement}
@@ -248,7 +248,7 @@ export class ParamList extends React.Component<Props, State>{
     }
 
     render() {
-        const {param, label, onChange} = this.props;
+        const {param} = this.props;
         const listElements = this.renderElements(param, this.state.currentValue);
         const addButton = (this.state.addable) ? this.addButton() : null;
 

@@ -7,9 +7,9 @@ import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
 import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import {RunnablesType, StepModelType} from "Types/index";
+import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { FlowType, FrameType, Port } from "Model/Library";
+import { AllNodeType, FlowType, FrameType, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { FrameNodeType } from "Model/Step/NodeTypes";
 
@@ -25,7 +25,7 @@ type Props = {
     deleteCache: Function;
     nodes: any[];
     zoom: number;
-    addStep: (add_step:StepModelType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: Function;
     addDataDstStep: Function;
     updateStep: Function;

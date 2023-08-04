@@ -10,7 +10,7 @@ import {
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
 // export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel;
-export type StepModelType = any;
+// export type StepModelType = any;
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
 // export type CommandParamType = {

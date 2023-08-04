@@ -6,9 +6,10 @@ import {Button} from "Shared/Input";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
-import {CommandParamType, RunnablesType, StepModelType} from "Types/index";
+import {CommandParamType, RunnablesType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
-import { Command, FlowCommand } from 'Model/Library';
+import { AllNodeType, Command, FlowCommand } from 'Model/Library';
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     selectedStepIds: string[];
@@ -39,7 +40,7 @@ const CommandInspector = (props: Props) => {
     };
 
     // 選択中のステップを取得する
-    const selected_step: StepModelType = getSelectedStep();
+    const selected_step: AllNodeType = getSelectedStep();
 
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, (selected_step as any).uuid);
@@ -119,31 +120,33 @@ const CommandInspector = (props: Props) => {
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
+        const commandNode = selected_step as CommandNodeType;
         //指定されたステップの元コマンドを取得
-        const command: Command = selected_step.getCommand();
+        const command = commandNode.getCommand();
         //選択されたステップのラベルを取得
-        label = selected_step.label;
+        label = commandNode.label;
         //コマンドのラベルを取得
         subLabel = command.label;
-        const params: CommandParamType[] = command.params;
-        const args: {} = selected_step.args;
-        const invalids: {} = selected_step.invalid;
+        const params = command.params;
+        const args = commandNode.args;
+        const invalids = commandNode.invalid;
 
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command}
                                 onChange={(e, param, value) => onArgChange(e, param, value)} groups={command.groups} />;
 
     } else if (selected_step.type === Constants.step.type.subflow) {
-        const subflowCommand: FlowCommand = selected_step.getCommand();
         label = selected_step.label;
-        if (subflowCommand) {
+        if (selected_step.hasOwnProperty('uuid')) {
+            const flowNode = selected_step as FlowNodeType;
+            const subflowCommand = flowNode.getCommand();
             subLabel = subflowCommand.label;
-            const params: CommandParamType[] = subflowCommand.params;
-            const args: {} = selected_step.args;
-            const invalids: {} = selected_step.invalid;
+            const params = subflowCommand.params;
+            const args = flowNode.args;
+            const invalids = flowNode.invalid;
 
             inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids}
                                     onChange={(e, param, value) => onArgChange(e, param, value)}/>;
-            subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>;
+            subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, flowNode.uuid)}>フローを開く</Button>;
 
             // サブフローがライブラリに存在する場合(リテラルでない場合)はそのサブフローの格納フォルダへのリンクを表示する
             const flow = flowReader();

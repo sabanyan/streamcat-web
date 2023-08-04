@@ -1,14 +1,14 @@
 //@flow
 import Constants from 'Constants/index'
-import type { CommandParamType, StepModelType } from 'Types/index'
+import type { CommandParamType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
-import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType } from 'Model/Step/NodeTypes';
-import { Command } from 'Model/Library';
+import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType, Command } from 'Model/Library';
 
 export default class FlowUtil {
 
-  static getAllDataFrame (nodes: StepModelType[]) {
+  static getAllDataFrame (nodes: AllNodeType[]) {
     return nodes.filter((node) => {
       if (node.type === 'frame') {
         return true
@@ -17,7 +17,7 @@ export default class FlowUtil {
     })
   }
 
-  static getNodeFromID (nodes: StepModelType[], id: string) {
+  static getNodeFromID (nodes: AllNodeType[], id: string) {
     return nodes.find((node) => {
       if (node.type === 'frame') {
         return (node.id === id)
@@ -174,10 +174,12 @@ export default class FlowUtil {
   /**
    * Srcsをコピーする
    */
-  static copySrcs (step: StepModelType): StepModelType {
-    Object.keys(step.srcs).forEach((key) => {
-      //入力はポートは残して、接続先を空にする
-      step.srcs[key] = null
+  static copySrcs (step: CommandNodeType | FlowNodeType | InlineFlowNodeType): CommandNodeType | FlowNodeType | InlineFlowNodeType {
+    step.srcs && Object.keys(step.srcs).forEach((key) => {
+      if(step.srcs){
+        //入力はポートは残して、接続先を空にする
+        step.srcs[key] = ''
+      }
     })
     return step
   }
@@ -185,13 +187,13 @@ export default class FlowUtil {
   /**
    * Positionを少しずらしてコピーする
    */
-  static copyPositionWithOffsetX (step: StepModelType): StepModelType {
+  static copyPositionWithOffsetX (step: AllNodeType): AllNodeType {
     step.position.x = step.position.x + Constants.default.graph.nodeSeparator
     step.position.y = step.position.y + Constants.default.graph.rankSeparator
     return step
   }
 
-  static setModelType (json: any): StepModelType {
+  static setModelType (json: any): AllNodeType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) {
 
       const node:FlowNodeType = new FlowNode(json.uuid, json.position);
