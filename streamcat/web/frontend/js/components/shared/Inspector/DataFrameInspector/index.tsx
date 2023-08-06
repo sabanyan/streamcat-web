@@ -193,9 +193,9 @@ const DataFrameInspector = (props: Props) => {
     };
 
 
-    const getSelectedStep = (): FrameNodeType => {
+    const getSelectedStep = () => {
         let {selectedStepIds, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedStepIds[0]);
+        return GraphUtil.getNode(nodes, selectedStepIds[0]) as FrameNodeType;
     };
 
     const onChangeCacheCheck = () => {

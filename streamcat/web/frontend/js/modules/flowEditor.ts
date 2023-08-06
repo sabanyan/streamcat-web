@@ -416,13 +416,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //削除対象がデータフレームの場合、srcも削除対象とする
       //ただしsrcが別のデータフレームを複数出力している場合があるので、
       //一つでもデータフレームが残っていると削除は行わない
-      action.step_ids.forEach((id) => {
-        const step = GraphUtil.getNode(newState.nodes, id);
+      action.step_ids.forEach(id => {
+        const step = GraphUtil.getNode(newState.nodes, id) as any;
         if (GraphUtil.getNode(newState.nodes, id).type === 'frame') {
           //削除対象のノードの親がある場合、親を調べる
           if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v;
-            const deleteTargetStep = GraphUtil.getNode(newState.nodes, deleteTargetStepId);
+            const deleteTargetStep = GraphUtil.getNode(newState.nodes, deleteTargetStepId) as any;
             if (deleteTargetStep.type === 'command' ||
               deleteTargetStep.type === 'flow' ||
               (deleteTargetStep.flow && deleteTargetStep.classification === "data_source")) {
@@ -648,7 +648,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       const id = action.selected_step_id;
       let node = GraphUtil.getNode(state.nodes, id);
       if (node.type === 'frame') {
-        node.deleteCache();
+        (node as FrameNodeType).deleteCache();
       }
 
       newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, id: id, new_node: node });

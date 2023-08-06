@@ -75,7 +75,10 @@ export const Inspector = (props:InspectorProps) => {
 
     let property
 
-    const selected_step = GraphUtil.getNode(nodes, selectedStepIds[0])
+    let selected_step;
+    if(selectedStepIds.length > 0){
+      selected_step = GraphUtil.getNode(nodes, selectedStepIds[0]) as any;
+    }
 
 
     if (selectedStepIds.length === 1) {

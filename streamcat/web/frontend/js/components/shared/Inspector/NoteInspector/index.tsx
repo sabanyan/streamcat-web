@@ -24,10 +24,10 @@ const NoteInspector = (props: Props) => {
         if (element) element.focus();
     }, []);
 
-    const getSelectedStep = (): NoteNodeType | null => {
+    const getSelectedStep = () => {
         const {selectedStepIds, nodes} = props;
         if (Array.isArray(selectedStepIds) && selectedStepIds.length > 0) {
-            return GraphUtil.getNode(nodes, selectedStepIds[0]);
+            return GraphUtil.getNode(nodes, selectedStepIds[0]) as NoteNodeType;
         }
         return null;
     };

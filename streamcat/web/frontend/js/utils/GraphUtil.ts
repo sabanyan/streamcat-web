@@ -113,7 +113,7 @@ class GraphUtil {
    * 全エッジの削除
    * @param edges
    */
-  removeAllEdges(edges: any[]) {
+  removeAllEdges(edges: {v:string, w:string, name:string}[]) {
     edges.forEach((edge) => {
       const from = edge.v
       const to = edge.w
@@ -196,16 +196,17 @@ class GraphUtil {
    * @param id
    * @returns {*}
    */
-  static getNode(nodes: any[], id: string) {
-    let node = nodes.find((node) => {
-      return node.id === id
-    })
-    return node
+  static getNode(nodes: AllNodeType[], id: string) {
+    const node = nodes.find(node => node.id === id);
+    if(!node){
+      throw new Error(`${id} is not found in nodes`);
+    }
+    return node;
   }
 
   /**
    * ノードの置き換え
-   * @returns {any[]}
+   * @returns {AllNodeType[]}
    * @param parameters
    */
   static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
