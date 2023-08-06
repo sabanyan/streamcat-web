@@ -14,7 +14,7 @@ import {
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { RunnablesType } from "Types/index";
-import { AllNodeType, FlowType, FrameType } from 'Model/Library';
+import { AllNodeType, Command, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';
 import {
   addDataDstStepAction,
   addDataSrcStepAction,
@@ -51,13 +51,13 @@ export const Inspector = (props:InspectorProps) => {
 
     const dispatch = useDispatch();
 
-    const addDataDstStep = (dataDst: any, selectedDataNodeId: string) => {
+    const addDataDstStep = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
         dispatch(addDataDstStepAction(dataDst, selectedDataNodeId, zoom));
     };
-    const addDataSrcStep = (dataSrc: any) => {
+    const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
         dispatch(addDataSrcStepAction(dataSrc, zoom));
     };
-    const updateFlow = (flow) => {
+    const updateFlow = (flow:FlowType) => {
         dispatch(updateFlowAction(flow));
     };
     const deleteCache = (selected_step_id: string) => {

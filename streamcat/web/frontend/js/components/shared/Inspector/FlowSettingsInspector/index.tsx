@@ -5,7 +5,7 @@ import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import { AllNodeType, FlowType } from "Model/Library";
+import { AllNodeType, Command, FlowCommand, FlowType, InlineFlowCommand } from "Model/Library";
 import { RunnablesType } from 'Types/index';
 
 type Props = {
@@ -14,8 +14,8 @@ type Props = {
     // nodes: any[];
     zoom: number;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: Function;
-    addDataDstStep: Function;
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
     selectSteps: (selected_steps: any[]) => void;
     flow: FlowType;
     updateFlow: Function;

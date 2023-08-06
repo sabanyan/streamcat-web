@@ -5,7 +5,7 @@ import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Mod
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, DragType, GraphType } from "../types";
 import _ from "lodash";
-import { AllNodeType, Command, Flow, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { Action } from "redux";
 import { CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
 
@@ -146,15 +146,19 @@ type FlowEditorAction = Action & {
   flow: FlowType;
   step_ids: string[];
   paste_nodes: any;
-  selected_steps: any[];
+  // selected_steps: any[];
   selected_step_id: string;
   selected_tab_id: number;
   x: number;
   y: number;
   // offset: number;
   // value: number;
-  detail: any;
-  payload: any;
+  // detail: any;
+  payload: {
+    dataSrc: Command | FlowCommand | InlineFlowCommand,
+    dataDest: Command | FlowCommand | InlineFlowCommand,
+    selctedDataNodeId: string,
+  };
   step: AllNodeType;
   // width: number;
   // executeMode: FlowExecuteModeValue;
@@ -310,7 +314,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
               y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
             };
             new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
-            newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, key: id, new_node: new_node });
+            newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, id: id, new_node: new_node });
           });
           //出力先ステップの位置調整
 
@@ -647,7 +651,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         node.deleteCache();
       }
 
-      newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, key: id, new_node: node });
+      newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, id: id, new_node: node });
       newState.flow!.flow.nodes = newState.nodes;
       break;
     }
@@ -825,13 +829,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     case ADD_DATASRC_ACTION: {
       const { dataSrc } = action.payload;
       const id = newNodeId('i', newState.flow!.flow.nodes, 1)[0];
-      const outPorts: Port[] = dataSrc.ports[1];
+      const outPorts = dataSrc.ports[1];
 
       const dstNodeIds = newNodeId('d', newState.flow!.flow.nodes, outPorts.length);
-      const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, [], dstNodeIds);
+      const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(newState.flow!.flow.nodes, [], dstNodeIds);
       let args = {};
       // default value
-      dataSrc.params.map((param: any) => {
+      dataSrc.params.map(param => {
         // default値の適用
         if (param.default) args[param.name] = param.default;
       });
@@ -869,7 +873,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         newState.flow!.flow.ports[0].upsert(port);
       });
 
-      let nodes: any[] = newState.flow!.flow.nodes;
+      let nodes = newState.flow!.flow.nodes;
       nodes.push(newNode);
       dstNodes.forEach((dstNode) => {
         nodes.push(dstNode);
@@ -883,13 +887,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
     case ADD_DATADST_ACTION: {
       const { selctedDataNodeId } = action.payload;
-      const dataDest:InlineFlowCommand = action.payload.dataDest;
+      const dataDest = action.payload.dataDest;
 
       let srcNodeIds = [selctedDataNodeId];
 
       const id = newNodeId('o', newState.flow!.flow.nodes, 1)[0];
 
-      const { newNodePositionAndSize } = newNodesPositionAndSize(graph, newState.flow!.flow.nodes, srcNodeIds, []);
+      const { newNodePositionAndSize } = newNodesPositionAndSize(newState.flow!.flow.nodes, srcNodeIds, []);
 
       const srcNodes = newState.flow!.flow.nodes.filter(
         node => srcNodeIds.includes(node.id)
@@ -924,7 +928,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       }
 
       const newNode = newDataDest(props);
-      let nodes: any[] = newState.flow!.flow.nodes;
+      let nodes = newState.flow!.flow.nodes;
       nodes.push(newNode);
       newState.flow!.flow.nodes = [...nodes];
       newState.nodes = [...nodes]
@@ -1011,24 +1015,25 @@ const rebuildNodesEdges = (newState:State, action:{step:any}) => {
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-const allRebuildNodesEdges = (newState) => {
+const allRebuildNodesEdges = (newState:State) => {
   //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
   graph.removeAllEdges(newState.graph.edges);
-  return newState.nodes.map((node, index) => {
+  return newState.nodes.map(node => {
     if (node.type === 'command' || node.type === 'flow') {
+      const runnableNode = node as CommandNodeType | FlowNodeType | InlineFlowNodeType;
       // 入力Edgeを再生成する
-      Object.keys(node.srcs).forEach(portLabel => {
-        const id = node.srcs[portLabel];
+      runnableNode.srcs && Object.keys(runnableNode.srcs).forEach(portLabel => {
+        const id = runnableNode.srcs![portLabel];
         const from = id;
-        const to = node.id;
+        const to = runnableNode.id;
         if (GraphUtil.getNode(newState.nodes, id)) {
           graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
         }
       });
       // 出力Edgeを再生成する
-      Object.keys(node.dsts).forEach(portLabel => {
-        const id = node.dsts[portLabel];
-        const from = node.id;
+      runnableNode.dsts && Object.keys(runnableNode.dsts).forEach(portLabel => {
+        const id = runnableNode.dsts![portLabel];
+        const from = runnableNode.id;
         const to = id;
         if (GraphUtil.getNode(newState.nodes, id)) {
           graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
@@ -1039,7 +1044,7 @@ const allRebuildNodesEdges = (newState) => {
   });
 };
 
-export function newNodeId(prefix: string, nodes: any[], count: number = 1) {
+export function newNodeId(prefix: string, nodes: AllNodeType[], count: number = 1) {
   let idNumber: string = "";
   let result: string[] = [];
   let tempId = prefix + idNumber;
@@ -1062,22 +1067,6 @@ export function newNodeId(prefix: string, nodes: any[], count: number = 1) {
 }
 
 
-function getNotOverlapNodePosition(nodes: any[], position: { x: number, y: number },) {
-  const { x, y } = position;
-  let result = { x: x, y: y }
-  const threshold = 3
-  nodes.forEach((node) => {
-    //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
-    if (parseInt(node.position.x) >= x - threshold &&
-      parseInt(node.position.x) <= y + threshold &&
-      parseInt(node.position.y) >= y - threshold &&
-      parseInt(node.position.y) <= y + threshold) {
-      //合致していた場合新しい座標を計算
-      result = getNotOverlapNodePosition(nodes, { x: x + 10, y: y + 10 });
-    }
-  })
-  return result
-}
 
 type PositionAndSize = {
   position: {
@@ -1103,7 +1092,7 @@ function defaultNodePositionAndSize(): PositionAndSize {
   }
 }
 
-function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: string[] = [], dstNodeIds: string[] = []) {
+function newNodesPositionAndSize(nodes: AllNodeType[], srcNodeIds: string[] = [], dstNodeIds: string[] = []) {
   let result = {
     newNodePositionAndSize: defaultNodePositionAndSize(),
     dstNodesPositionAndSize: {}
@@ -1133,7 +1122,7 @@ function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: str
     }
   }
   //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
-  const notOverlapNodePosition = getNotOverlapNodePosition(nodes, result.newNodePositionAndSize.position);
+  const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition(result.newNodePositionAndSize.position, nodes);
   const notOverlapOffsetX = notOverlapNodePosition.x - result.newNodePositionAndSize.position.x;
   const notOverlapOffsetY = notOverlapNodePosition.y - result.newNodePositionAndSize.position.y;
   if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) result.newNodePositionAndSize.position = notOverlapNodePosition;
@@ -1164,7 +1153,7 @@ function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: str
 }
 
 
-function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: Object, props: any) {
+function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: {}, props: any) {
   let result: any[] = [];
 
   dstNodeIds.forEach((key: string, index) => {
@@ -1184,19 +1173,19 @@ function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: Object, prop
   return result;
 }
 
-function addToGraph(graph: GraphUtil, node: any) {
+function addToGraph(graph: GraphUtil, node: InlineFlowNodeType) {
   // node
   graph.addNode(node.id);
   // src edges
-  Object.keys(node.srcs).forEach((key) => {
-    const from = node.srcs[key];
+  node.srcs && Object.keys(node.srcs).forEach((key) => {
+    const from = node.srcs![key];
     const to = node.id;
     const portLabel = key;
     graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
   })
   // dst edges
-  Object.keys(node.dsts).forEach((key) => {
-    const to = node.dsts[key];
+  node.dsts && Object.keys(node.dsts).forEach((key) => {
+    const to = node.dsts![key];
     const from = node.id;
     const portLabel = key;
     graph.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
@@ -1236,8 +1225,8 @@ export function newDataSrc(props: DataSrcProps) {
     args: args,
   }
 
-  const flowNode = new InlineFlowNode(dataSrc.classification, dataSrc.flow, position);
-  flowNode.id = id;
+  const flowNode = new InlineFlowNode(dataSrc.classification, dataSrc.flow, position) as InlineFlowNodeType;
+  (flowNode as any).id = id;
   flowNode.label = dataSrc.label;
   flowNode.dsts = dsts;
   flowNode.args = args;
@@ -1275,8 +1264,8 @@ export function newDataDest(props: DataDestProps) {
     args: args
   }
 
-  const flowNode = new InlineFlowNode(dataDest.classification, dataDest.flow, position);
-  flowNode.id = id;
+  const flowNode = new InlineFlowNode(dataDest.classification, dataDest.flow, position) as InlineFlowNodeType;
+  (flowNode as any).id = id;
   flowNode.label = dataDest.label;
   flowNode.srcs = srcs;
   flowNode.args = args;
@@ -1341,7 +1330,7 @@ export const updateStepAction = (step: AllNodeType, zoom:number) => {
  * @param flow
  * @returns {{type: string, flow: *}}
  */
-export const updateFlowAction = flow => {
+export const updateFlowAction = (flow:FlowType) => {
   return {
     type: UPDATE_FLOW_ACTION,
     flow: flow
@@ -1547,7 +1536,7 @@ export const addNoteAction = (x: number, y: number) => {
 //   };
 // };
 
-export const moveStepsAction = (x: number, y: number, step:any, selectedStepIds:string[], zoom:number) => {
+export const moveStepsAction = (x: number, y: number, step:AllNodeType, selectedStepIds:string[], zoom:number) => {
   return {
     type: MOVE_STEPS_ACTION,
     x: x,
@@ -1592,7 +1581,7 @@ export const moveStepsAction = (x: number, y: number, step:any, selectedStepIds:
 //   };
 // };
 
-export const refreshFlowAction = (context: {}, zoom:number) => {
+export const refreshFlowAction = (context: FlowType, zoom:number) => {
   return {
     type: REFRESH_FLOW_ACTION,
     context: context,
@@ -1606,7 +1595,7 @@ export const updateLastSavedFlowAction = () => {
   }
 }
 
-export const addDataSrcStepAction = (dataSrc: any, zoom:number) => {
+export const addDataSrcStepAction = (dataSrc: Command | FlowCommand | InlineFlowCommand, zoom:number) => {
   return {
     type: ADD_DATASRC_ACTION,
     payload: {
@@ -1616,7 +1605,7 @@ export const addDataSrcStepAction = (dataSrc: any, zoom:number) => {
   }
 }
 
-export const addDataDstStepAction = (dataDst: any, selectedDataNodeId: string, zoom:number) => {
+export const addDataDstStepAction = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string, zoom:number) => {
   return {
     type: ADD_DATADST_ACTION,
     payload: {

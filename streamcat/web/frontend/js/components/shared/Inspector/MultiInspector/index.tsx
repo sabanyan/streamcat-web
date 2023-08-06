@@ -7,7 +7,7 @@ import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from 'Model/inde
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { RunnablesType } from 'Types/index';
-import { AllNodeType } from 'Model/Library';
+import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 
 type Props = {
     deleteSteps: (step_ids: string[]) => void;
@@ -17,8 +17,8 @@ type Props = {
     selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: Function;
-    addDataDstStep: Function;
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
     addHistory: Function;
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;

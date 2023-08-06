@@ -107,7 +107,7 @@ export const CommandNode = function(this: CommandNodeType, commandId:string, pos
 
 export type BaseFlowNodeType = NodeType & {
     classification?: string
-    args?: any;
+    args?: { [name:string]:any };
     srcs?: { [port:string]:string };
     dsts?: { [port:string]:string };
     srcsOrder?: string[];

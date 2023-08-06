@@ -7,7 +7,7 @@ import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { WebUtil } from "Utils/index";
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
-import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType } from "Model/Step/NodeTypes";
+import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
     // nodes: any[];
@@ -17,8 +17,8 @@ type Props = {
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
-    addDataDstStep: Function;
-    addDataSrcStep: Function;
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
 };
 
 export const CommandItem = (props: Props) => {
@@ -68,16 +68,16 @@ export const CommandItem = (props: Props) => {
         return node;
     };
 
-    const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: any) => {
+    const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: Command | FlowCommand | InlineFlowCommand) => {
         const { selectedStepIds, zoom, addStep, selectSteps, addHistory, addDataDstStep, addDataSrcStep } = props;
 
-        if (command.flow && command.classification === "data_source") {
+        if (command.hasOwnProperty('flow') && command.classification === "data_source") {
             addDataSrcStep(command);
-        } else if (command.flow && command.classification === "data_dest") {
+        } else if (command.hasOwnProperty('flow') && command.classification === "data_dest") {
             addDataDstStep(command, selectedStepIds[0]);
         } else {
             const args = {};
-            const added_command_step = getNewStepWithArgs(command, args);
+            const added_command_step = getNewStepWithArgs(command as Command|FlowCommand, args);
 
             const output_steps = command.ports[1].map(() => {
                 // const output_step = new DataFrameStepModel({

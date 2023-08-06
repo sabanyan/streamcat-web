@@ -9,7 +9,7 @@ import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { AllNodeType, FlowType, FrameType, Port } from "Model/Library";
+import { AllNodeType, Command, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { FrameNodeType } from "Model/Step/NodeTypes";
 
@@ -26,8 +26,8 @@ type Props = {
     nodes: any[];
     zoom: number;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: Function;
-    addDataDstStep: Function;
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
     updateStep: Function;
     updateFlow: Function;
     updateLastSavedFlow: Function;

@@ -138,9 +138,19 @@ class GraphUtil {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
-    if (nodes) {
-      const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
-      const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
+    if (nodes.length > 0) {
+      const width = nodes.map(node =>
+        node.position.x + node.size!.width || 0
+      ).reduce((prevX, x) =>
+        Math.max(prevX,x)
+      );
+
+      const height = nodes.map(node =>
+        node.position.y + node.size!.height || 0
+      ).reduce((prevY, y) =>
+        Math.max(prevY,y)
+      );
+
       return { width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges }
     }
 
@@ -157,14 +167,14 @@ class GraphUtil {
    * @param nodes
    * @returns {*}
    */
-  refreshPosition(nodes: any[]) {
+  refreshPosition(nodes: AllNodeType[]) {
     const self = this
     this.layout()
     this.g.nodes().forEach((v) => {
       let graph_node = self.g.node(v)
       if (graph_node) {
-        const key = graph_node.label //グラフ構造のlabelにidを設定しています
-        let node = GraphUtil.getNode(nodes, key)
+        const id = graph_node.label //グラフ構造のlabelにidを設定しています
+        let node = GraphUtil.getNode(nodes, id)
         if (node) {
           // node.setFrame({
           //   x: graph_node.x,
@@ -183,12 +193,12 @@ class GraphUtil {
   /**
    * ノードの取得
    * @param nodes
-   * @param key
+   * @param id
    * @returns {*}
    */
-  static getNode(nodes: any[], key: string) {
+  static getNode(nodes: any[], id: string) {
     let node = nodes.find((node) => {
-      return node.id === key
+      return node.id === id
     })
     return node
   }
@@ -198,10 +208,10 @@ class GraphUtil {
    * @returns {any[]}
    * @param parameters
    */
-  static updateNode(parameters: { nodes: any[], key: string, new_node: any }) {
-    let { nodes, key, new_node } = parameters
-    let new_nodes = nodes.map((node: any) => {
-      if (node.id === key) {
+  static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
+    let { nodes, id, new_node } = parameters
+    let new_nodes = nodes.map(node => {
+      if (node.id === id) {
         return new_node
       } else {
         return node
@@ -213,25 +223,12 @@ class GraphUtil {
   /**
    * ノードの取得
    * @param nodes
-   * @param keySet
+   * @param idSet
    * @returns {*}
    */
-  static getNewNodesWithIncludeKeys(nodes: any[], keySet: Set<string>) {
+  static getNewNodesWithExculudeKeys(nodes: AllNodeType[], idSet: Set<string>) {
     let node = nodes.filter((node) => {
-      return (keySet.has(node.id))
-    })
-    return node
-  }
-
-  /**
-   * ノードの取得
-   * @param nodes
-   * @param keySet
-   * @returns {*}
-   */
-  static getNewNodesWithExculudeKeys(nodes: any[], keySet: Set<string>) {
-    let node = nodes.filter((node) => {
-      return !(keySet.has(node.id))
+      return !(idSet.has(node.id))
     })
     return node
   }

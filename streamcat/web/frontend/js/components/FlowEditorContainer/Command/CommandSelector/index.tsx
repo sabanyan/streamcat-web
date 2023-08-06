@@ -17,8 +17,8 @@ type Props = {
     selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
     disabled?: boolean;
-    addDataDstStep: Function
-    addDataSrcStep: Function
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
 };
 
 const CommandSelector = (props: Props) => {

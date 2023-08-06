@@ -6,7 +6,7 @@ import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
 import { HistoryType } from 'Types/index';
 import { refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
-import { AllNodeType } from 'Model/Library';
+import { AllNodeType, FlowType } from 'Model/Library';
 
 type ToolBarProps = {
     nodes: any[];
@@ -60,7 +60,7 @@ export const ToolBar = (props: ToolBarProps) => {
     const redoDisabled = !(current + 1 < max);
     const undoDisabled = !(current - 1 >= 0);
 
-    const refreshFlow = (context) => {
+    const refreshFlow = (context:FlowType) => {
         dispatch(refreshFlowAction(context, zoom));
     };
     // const setZoom = ({ offset, value }) => {

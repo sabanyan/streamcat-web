@@ -178,7 +178,7 @@ const FlowEditor = () => {
     // const addNote = (x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // };
-    const moveSteps = (x: number, y: number, step:any, selectedStepIds:string[]) => {
+    const moveSteps = (x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
         dispatch(moveStepsAction(x, y, step, selectedStepIds, zoom));
     };
     // const setExecuteMode = (mode: FlowExecuteModeValue) => {
