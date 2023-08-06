@@ -43,7 +43,7 @@ import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
-import { AllNodeType, Command, FlowType, FrameType } from 'Model/Library';
+import { AllNodeType, Command, Flow, FlowType, FrameType } from 'Model/Library';
 
 const getLock = (targetUUID:string) => {
     return Api.createLock(targetUUID).catch(e => {
@@ -62,9 +62,9 @@ const getLock = (targetUUID:string) => {
 const FlowEditor = () => {
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector((state:State) => state.flow && state.flow.folderUuid);
+    const folderUuid = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.folderUuid);
 
-    const _modifiedAt = useSelector((state:State) => state.flow && state.flow.modifiedAt);
+    const _modifiedAt = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
@@ -190,8 +190,8 @@ const FlowEditor = () => {
     // const refreshCanvasSize = () => {
     //     dispatch(refreshCanvasSizeAction());
     // };
-    const updateLastSavedFlow = () => {
-        dispatch(updateLastSavedFlowAction());
+    const updateLastSavedFlow = (lastSavedFlow:FlowType) => {
+        dispatch(updateLastSavedFlowAction(lastSavedFlow));
     };
 
     const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
@@ -221,7 +221,7 @@ const FlowEditor = () => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
-                            const targetFlow = flow as FlowType;
+                            const targetFlow = flow as Flow;
                             targetFlow.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
                             Api.createLock(anotherFlow.uuid).then(lock => {
@@ -501,11 +501,12 @@ const FlowEditor = () => {
                 }));
             } else {
                 // フロー保存
-                return await targetFlow.update(flow!.flow, lock.uuid).then(flow => {
-                    updateLastSavedFlow();
+                return await targetFlow.update(flow!, lock.uuid).then(result => {
+                    // FIXME: PUT /flow の戻り値にflow属性が含まれていない
+                    updateLastSavedFlow({...result, flow:flow!});
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
-                    reslove(flow);
-                    return flow;
+                    reslove(result);
+                    return result;
                 }).catch(e => {
                     reject(new MessageModel({
                         title: "フロー保存エラー",
@@ -522,17 +523,18 @@ const FlowEditor = () => {
         });
     };
 
-    const saveAnotherFlowPromise = (targetFlow:FlowType, anotherFlow:FlowType, newLockUUID:string) => {
+    const saveAnotherFlowPromise = (targetFlow:Flow, anotherFlow:FlowType, newLockUUID:string) => {
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.flow.nodes = nodes;
+        targetFlow.nodes = nodes;
 
         return new Promise(async (reslove, reject) => {
             // フロー保存
-            anotherFlow.update(flow!.flow, newLockUUID).then(flow => {
-                updateLastSavedFlow();
+            anotherFlow.update(flow!, newLockUUID).then(result => {
+                // FIXME: PUT /flow の戻り値にflow属性が含まれていない
+                updateLastSavedFlow({...result, flow:flow!});
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
-                reslove(flow);
-                return flow;
+                reslove(result);
+                return result;
             }).catch(e => {
                 reject(new MessageModel({
                     title: "フロー保存エラー",
@@ -549,7 +551,7 @@ const FlowEditor = () => {
     };
 
     const onClickSaveFlow = () => {
-        const targetFlow = flow as FlowType;
+        const targetFlow = lastSavedFlow as FlowType;
         return saveFlowPromise(targetFlow).then(flow => {
             if(!flow){
                 return flow;
@@ -803,6 +805,7 @@ const FlowEditor = () => {
                 addStep={addStep}
                 selectSteps={selectSteps}
                 flow={flow!}
+                lastSavedFlow={lastSavedFlow}
                 lockUUID={lockUUID}
                 inspectorWidthState={[inspectorWidth, setInspectorWidth]}
                 // selected_data_source_detail={selected_data_source_detail!}

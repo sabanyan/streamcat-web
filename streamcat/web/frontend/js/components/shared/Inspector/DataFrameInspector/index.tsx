@@ -9,7 +9,7 @@ import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { AllNodeType, Command, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { FrameNodeType } from "Model/Step/NodeTypes";
 
@@ -19,18 +19,20 @@ type Props = {
     deleteSteps: (step_ids: string[]) => void;
     selectSteps: (selected_steps: any[]) => void;
     addHistory: Function;
-    flow: FlowType;
+    flow: Flow;
+    // Flowの更新に用いる
+    lastSavedFlow?: FlowType;
     selectedStepIds: string[];
     selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
-    nodes: any[];
+    nodes: AllNodeType[];
     zoom: number;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
     updateStep: Function;
-    updateFlow: Function;
-    updateLastSavedFlow: Function;
+    updateFlow: (flow:Flow, zoom:number) => void;
+    updateLastSavedFlow: (lastSavedFlow:FlowType) => void;
     previewDisabled: boolean;
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;
@@ -76,12 +78,13 @@ const DataFrameInspector = (props: Props) => {
     }, []);
 
     const saveFlow = () => {
-        const {flow, lockUUID, updateLastSavedFlow} = props;
+        const {flow, lastSavedFlow, lockUUID, updateLastSavedFlow} = props;
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
 
-        return flow.update(flow.flow, lockUUID).then(flow => {
+        return lastSavedFlow && lastSavedFlow.update(flow, lockUUID).then(result => {
             dismissNotify(notificationId);
-            updateLastSavedFlow();
+            // FIXME: PUT /flow の戻り値にflow属性が含まれていない
+            updateLastSavedFlow({...result, flow:flow});
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
             notifyError('フロー保存エラー', e.message);
@@ -105,7 +108,7 @@ const DataFrameInspector = (props: Props) => {
 
         visualizers = SortUtil.getSortedContents(visualizers);
 
-        saveFlow().then(() => {
+        saveFlow()?.then(() => {
             // preview
             if (selected_step.uuid) {
                 // uuidだけでプレビュー
@@ -175,21 +178,21 @@ const DataFrameInspector = (props: Props) => {
             if(!port.label || !port.nodeId || !port.type) {
                 throw new Error("port is not set");
             }
-            flow.flow.ports[0].upsert(port as Port);
+            flow.ports[0].upsert(port as Port);
         } else {
-            selected_step.id && flow.flow.ports[0].removeByNodeId(selected_step.id);
+            selected_step.id && flow.ports[0].removeByNodeId(selected_step.id);
         }
 
         if (flowOutChecked) {
             if(!port.label || !port.nodeId || !port.type) {
                 throw new Error("port is not set");
             }
-            flow.flow.ports[1].upsert(port as Port);
+            flow.ports[1].upsert(port as Port);
         } else {
-            selected_step.id && flow.flow.ports[1].removeByNodeId(selected_step.id);
+            selected_step.id && flow.ports[1].removeByNodeId(selected_step.id);
         }
 
-        updateFlow(flow);
+        updateFlow(flow, zoom);
     };
 
 
@@ -206,7 +209,7 @@ const DataFrameInspector = (props: Props) => {
         } else {
             selected_step.makeCache = true;
         }
-        updateFlow(flow);
+        updateFlow(flow, zoom);
     };
 
     const onClickDeleteCache = () => {
@@ -229,12 +232,12 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const deleteCache = () => {
-        const {flow, selectedStepIds, deleteCache} = props;
+        const {lastSavedFlow, selectedStepIds, deleteCache} = props;
         const [, setSelectedFrame] = props.selectedFrameState;
         const id = selectedStepIds[0];
 
         // キャッシュを削除する
-        flow.deleteCache(id).then(() => {
+        lastSavedFlow && lastSavedFlow.deleteCache(id).then(() => {
             deleteCache(id);
             setSelectedFrame(undefined);
         });
@@ -291,13 +294,13 @@ const DataFrameInspector = (props: Props) => {
     const {flow} = props;
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[0].exists(selected_step.id)} ref={flowIn}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.ports[0].exists(selected_step.id)} ref={flowIn}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;入力
             </label>
         </div>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flow.flow.ports[1].exists(selected_step.id)}
+            <label><input type="checkbox" checked={!!selected_step.id && flow.ports[1].exists(selected_step.id)}
                 ref={flowOut}
                 onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;出力

@@ -6,7 +6,7 @@ import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
 import { DragType, RunnablesType } from "Types/index";
-import { AllNodeType, FlowType, FrameType } from "Model/Library";
+import { AllNodeType, Flow, FlowType, FrameType } from "Model/Library";
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
 
 let mouseMoveEvent;
@@ -20,7 +20,7 @@ interface Props {
     invalid?: {};
     error?: {};
     runnables: RunnablesType;
-    flow: FlowType;
+    flow: Flow;
     selectedStepIds: string[];
     zoom: number;
     dragRange: DragType | null;
@@ -301,8 +301,8 @@ const Step = (props: Props) => {
 
     const selected = selectorIntersect();
 
-    const flowIn = flow.flow.ports[0].exists(step.id);
-    const flowOut = flow.flow.ports[1].exists(step.id);
+    const flowIn = flow.ports[0].exists(step.id);
+    const flowOut = flow.ports[1].exists(step.id);
 
     let stepLabel = step.label;
 

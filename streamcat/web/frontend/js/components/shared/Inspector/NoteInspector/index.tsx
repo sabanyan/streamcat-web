@@ -7,12 +7,13 @@ import {NoteStepModel} from 'Model/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
 import { NoteNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType, Flow } from 'Model/Library';
 
 interface Props {
     selectedStepIds: string[];
-    nodes: any[];
+    nodes: AllNodeType[];
     selectSteps: (selected_steps: any[]) => void;
-    updateStep: Function;
+    updateStep: (node:NoteNodeType) => void;
     deleteSteps: (step_ids: string[]) => void;
     baseInspectorDisabled: boolean;
     addHistory: Function;

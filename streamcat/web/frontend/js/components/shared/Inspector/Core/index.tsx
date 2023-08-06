@@ -14,7 +14,7 @@ import {
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { RunnablesType } from "Types/index";
-import { AllNodeType, Command, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';
 import {
   addDataDstStepAction,
   addDataSrcStepAction,
@@ -25,9 +25,10 @@ import {
 
 type InspectorProps = {
   inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];
-  flow: FlowType;
+  flow: Flow;
+  lastSavedFlow?: FlowType;
   selectedStepIds: string[];
-  nodes: any[];
+  nodes: AllNodeType[];
   runnables: RunnablesType;
   // selected_data_source_detail: FrameType;
   selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
@@ -39,8 +40,8 @@ type InspectorProps = {
   refreshFlow: Function;
   deleteSteps: (step_ids: string[]) => void;
   addHistory: Function;
-  updateStep: Function;
-  updateLastSavedFlow: Function;
+  updateStep: (node:AllNodeType) => void;
+  updateLastSavedFlow: (lastSavedFlow:FlowType) => void;
   addFlowVariableHidden: boolean;
   previewDisabled: boolean;
   commandSelectorHidden: boolean;
@@ -57,8 +58,8 @@ export const Inspector = (props:InspectorProps) => {
     const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
         dispatch(addDataSrcStepAction(dataSrc, zoom));
     };
-    const updateFlow = (flow:FlowType) => {
-        dispatch(updateFlowAction(flow));
+    const updateFlow = (flow:Flow, zoom:number) => {
+        dispatch(updateFlowAction(flow, zoom));
     };
     const deleteCache = (selected_step_id: string) => {
         dispatch(deleteCacheAction(selected_step_id));
@@ -68,7 +69,7 @@ export const Inspector = (props:InspectorProps) => {
     // };
 
 
-    const { selectedStepIds, lockUUID, nodes, runnables, flow,
+    const { selectedStepIds, lockUUID, nodes, runnables, flow, lastSavedFlow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, zoom, addStep,updateStep,selectSteps,addHistory,
       selectedFrameState, deleteSteps,refreshFlow,updateLastSavedFlow } = props
@@ -93,6 +94,7 @@ export const Inspector = (props:InspectorProps) => {
           addDataDstStep={addDataDstStep}
           selectSteps={selectSteps}
           flow={flow}
+          flowUuid={lastSavedFlow?.uuid || ''}
           updateFlow={updateFlow}
           addHistory={addHistory}
           addFlowVariableHidden={addFlowVariableHidden}
@@ -101,7 +103,7 @@ export const Inspector = (props:InspectorProps) => {
         />
       } else if (selected_step.type === 'frame') {
         property = <DataFrameInspector
-          nodes={flow.flow.nodes}
+          nodes={flow.nodes}
           // selected_data_source_detail={selected_data_source_detail}
           // updateDataFrameDetail={updateDataFrameDetail}
           selectedFrameState={selectedFrameState}
@@ -111,6 +113,7 @@ export const Inspector = (props:InspectorProps) => {
           selectSteps={selectSteps}
           addHistory={addHistory}
           flow={flow}
+          lastSavedFlow={lastSavedFlow}
           updateFlow={updateFlow}
           selectedStepIds={selectedStepIds}
           deleteCache={deleteCache}
@@ -134,7 +137,7 @@ export const Inspector = (props:InspectorProps) => {
           addHistory={addHistory}
           selectSteps={selectSteps}
           deleteSteps={deleteSteps}
-          parentUUID={flow.folderUuid || undefined}
+          parentUUID={lastSavedFlow?.folderUuid || undefined}
         />
       } else if (selected_step.flow && selected_step.classification == "data_dest") {
         property = <DataDstInspector
@@ -146,7 +149,7 @@ export const Inspector = (props:InspectorProps) => {
           addHistory={addHistory}
           selectSteps={selectSteps}
           deleteSteps={deleteSteps}
-          parentUUID={flow.folderUuid || undefined}
+          parentUUID={lastSavedFlow?.folderUuid || undefined}
         />
       } else if (selected_step.type === 'command' || selected_step.type === 'flow') {
         property = <CommandInspector
@@ -181,6 +184,7 @@ export const Inspector = (props:InspectorProps) => {
         addDataDstStep={addDataDstStep}
         selectSteps={selectSteps}
         flow={flow}
+        flowUuid={lastSavedFlow?.uuid || ''}
         updateFlow={updateFlow}
         addHistory={addHistory}
         addFlowVariableHidden={addFlowVariableHidden}
@@ -191,7 +195,7 @@ export const Inspector = (props:InspectorProps) => {
       property = <MultiInspector
         deleteSteps={deleteSteps}
         selectSteps={selectSteps}
-        nodes={flow.flow.nodes}
+        nodes={flow.nodes}
         runnables={runnables}
         selectedStepIds={selectedStepIds}
         zoom={zoom}

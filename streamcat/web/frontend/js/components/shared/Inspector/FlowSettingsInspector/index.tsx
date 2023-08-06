@@ -5,7 +5,7 @@ import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import { AllNodeType, Command, FlowCommand, FlowType, InlineFlowCommand } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand } from "Model/Library";
 import { RunnablesType } from 'Types/index';
 
 type Props = {
@@ -17,8 +17,9 @@ type Props = {
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
     selectSteps: (selected_steps: any[]) => void;
-    flow: FlowType;
-    updateFlow: Function;
+    flow: Flow;
+    flowUuid: string;
+    updateFlow: (flow:Flow, zoom:number) => void;
     addHistory: Function;
     addFlowVariableHidden: boolean;
     commandSelectorHidden: boolean;
@@ -33,22 +34,22 @@ const FlowSettingsInspector = (props: Props) => {
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     const onBlurTitle = (e: React.SyntheticEvent<HTMLInputElement>) => {
-        let {flow} = props;
+        const {flow} = props;
         flow.label = e.currentTarget.value;
-        props.updateFlow(flow);
+        props.updateFlow(flow, zoom);
     };
 
     const onClickAddFlowParam = () => {
-        let {flow, updateFlow} = props;
+        const {flow, updateFlow} = props;
         const name = setNewParamName("new_param", 1);
-        flow.flow.params.push({label:name, name:name, type:'string'});
-        updateFlow(flow);
+        flow.params.push({label:name, name:name, type:'string'});
+        updateFlow(flow, zoom);
     };
 
     const setNewParamName = (name: string, cnt: number): string => {
-        let {flow} = props;
+        const flow = props.flow;
 
-        const findResult = flow.flow.params.find(param => {
+        const findResult = flow.params.find(param => {
             return param.name === (name + cnt);
         });
         if (findResult) {
@@ -58,29 +59,27 @@ const FlowSettingsInspector = (props: Props) => {
     };
 
     const onDeleteParam = (index) => {
-        let {flow, updateFlow} = props;
-        const newParams = flow.flow.params.filter((param, paramIndex) => {
-            return (paramIndex !== index);
+        const {flow, updateFlow} = props;
+        flow.params = flow.params.filter((param, paramIndex) => {
+            return paramIndex !== index;
         });
-
-        flow.flow.params = newParams;
-        updateFlow(flow);
+        updateFlow(flow, zoom);
     };
 
     const onDescriptionChange = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-        let {flow, updateFlow} = props;
-        flow.flow.description = e.currentTarget.value;
-        updateFlow(flow);
+        const {flow, updateFlow} = props;
+        flow.description = e.currentTarget.value;
+        updateFlow(flow, zoom);
     };
 
     const onParamChange = (e: React.SyntheticEvent<HTMLInputElement>, index: number) => {
-        let {flow, updateFlow} = props;
-        flow.flow.params[index].name = e.currentTarget.value;
-        flow.flow.params[index].label = e.currentTarget.value;
-        updateFlow(flow);
+        const {flow, updateFlow} = props;
+        flow.params[index].name = e.currentTarget.value;
+        flow.params[index].label = e.currentTarget.value;
+        updateFlow(flow, zoom);
     };
 
-    const onClickDeleteParam = (e: React.SyntheticEvent<HTMLInputElement>, index: number) => {
+    const onClickDeleteParam = (e: React.MouseEvent, index: number) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 onDeleteParam(index);
@@ -98,24 +97,22 @@ const FlowSettingsInspector = (props: Props) => {
         });
     };
 
-    const { flow, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
+    const { flow, flowUuid, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
             selectSteps, selectedStepIds, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
     if (!flow) return null;
 
-    const {params} = flow.flow;
+    let inputParamsContainer, addFlowParams;
 
-    let inputParams, inputParamsContainer, addFlowParams;
-
-    inputParams = params && params.map((param: any, index) => {
+    const inputParams = flow.params.map((param, index) => {
         return <div className={style.flow_param}>
             <div className={style.left}>
                 <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
                        onChange={(e) => {onParamChange(e, index)}} />
             </div>
             <div className={style.right}>
-                <Button danger={true} disabled={baseInspectorDisabled} onClick={() => onClickDeleteParam(param, index)}>削除</Button>
+                <Button danger={true} disabled={baseInspectorDisabled} onClick={e => onClickDeleteParam(e, index)}>削除</Button>
             </div>
         </div>;
     });
@@ -144,11 +141,11 @@ const FlowSettingsInspector = (props: Props) => {
         addFlowParams = <AddButton onClick={() => onClickAddFlowParam()}>フロー変数を追加する</AddButton>;
     }
 
-    return <BaseInspector key={flow.uuid} header={""} label={flow.label}
+    return <BaseInspector key={flowUuid} header={""} label={flow.label}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}
-                  defaultValue={flow.flow.description} rows={8}
+                  defaultValue={flow.description} rows={8}
                   onChange={(e) => onDescriptionChange(e)} disabled={(baseInspectorDisabled)} />
         {inputParamsContainer}
         {addFlowParams}
