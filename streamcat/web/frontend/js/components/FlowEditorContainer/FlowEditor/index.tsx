@@ -6,7 +6,7 @@ import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
 import { Api } from 'Api';
-import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
+import { GraphUtil, ZoomUtil, ModalUtil, StateUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
 import { DragType, RunnablesType } from 'Types/index';
@@ -30,7 +30,7 @@ import {
     updateStepAction,
     // refreshCanvasSizeAction,
     refreshFlowAction,
-    updateLastSavedFlowAction,
+    // updateLastSavedFlowAction,
     State
 } from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
@@ -136,17 +136,17 @@ const FlowEditor = () => {
     const [flowReader] = useAsyncResource(getFlow, []);
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.folderUuid);
+    // const folderUuid = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.folderUuid);
 
-    const _modifiedAt = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.modifiedAt);
-    useEffect(() => {
-        if (_modifiedAt) {
-            // modifiedAt が reducer 経由での取得になる
-            // 取得タイミングに差があるため取得ができ次第 State にセットする
-            setModifiedAt(_modifiedAt);
-        }
-    }, [_modifiedAt])
-    const [modifiedAt, setModifiedAt] = useState<string>();
+    // const _modifiedAt = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.modifiedAt);
+    // useEffect(() => {
+    //     if (_modifiedAt) {
+    //         // modifiedAt が reducer 経由での取得になる
+    //         // 取得タイミングに差があるため取得ができ次第 State にセットする
+    //         setModifiedAt(_modifiedAt);
+    //     }
+    // }, [_modifiedAt])
+    // const [modifiedAt, setModifiedAt] = useState<string>();
     const flow = useSelector((state:State) => state.flow);
     // const drag = useSelector((state:State) => state.drag);
     // const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
@@ -161,10 +161,13 @@ const FlowEditor = () => {
     // const editMode = useSelector((state:State) => state.editMode);
     // const executeMode = useSelector((state:State) => state.executeMode);
     // const networkStatus = useSelector((state:State) => state.networkStatus);
-    const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
+    // const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
 
     // runnable: FlowまたはCommandを表す
     const [runnables, setRunnables] = useState<RunnablesType>(runnablesReader);
+
+    // 直近で保存したFlow
+    const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
 
     // 選択中のStepのId
     const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
@@ -258,9 +261,9 @@ const FlowEditor = () => {
     // const refreshCanvasSize = () => {
     //     dispatch(refreshCanvasSizeAction());
     // };
-    const updateLastSavedFlow = (lastSavedFlow:FlowType) => {
-        dispatch(updateLastSavedFlowAction(lastSavedFlow));
-    };
+    // const updateLastSavedFlow = (lastSavedFlow:FlowType) => {
+    //     dispatch(updateLastSavedFlowAction(lastSavedFlow));
+    // };
 
     const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
     const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
@@ -285,7 +288,7 @@ const FlowEditor = () => {
                     alert("フロー名を指定してください")
                 } else {
                     // フローを別名保存する
-                    Api.findFolder(folderUuid as string).then(folder => {
+                    Api.findFolder(lastSavedFlow.folderUuid as string).then(folder => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
@@ -379,7 +382,7 @@ const FlowEditor = () => {
         const handleLeavePage = (e) => {
             e.preventDefault();
             let dialogText
-            let isSame = _.isEqual(flow, lastSavedFlow)
+            let isSame = _.isEqual(flow, lastSavedFlow.flow)
             if (!isSame) {
                 dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
                 e.returnValue = dialogText;
@@ -425,6 +428,8 @@ const FlowEditor = () => {
             document.title = "📐" + flow.label;
             // フローJSONを解析する
             loadFlowJSON(flow);
+            // 直近で保存したFlowを保持する
+            setLastSavedFlow(StateUtil.deepCopy(flow));
             // 編集ロックされたフローの場合は通知する
             if (flow.editLock) {
                 notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
@@ -502,7 +507,7 @@ const FlowEditor = () => {
                 // フロー保存
                 return await targetFlow.update(flow!, lock.uuid).then(result => {
                     // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-                    updateLastSavedFlow({...result, flow:flow!});
+                    setLastSavedFlow({...result, flow:flow!});
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                     reslove(result);
                     return result;
@@ -530,7 +535,7 @@ const FlowEditor = () => {
             // フロー保存
             anotherFlow.update(flow!, newLockUUID).then(result => {
                 // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-                updateLastSavedFlow({...result, flow:flow!});
+                setLastSavedFlow({...result, flow:flow!});
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                 reslove(result);
                 return result;
@@ -555,7 +560,7 @@ const FlowEditor = () => {
             if(!flow){
                 return flow;
             }
-            setModifiedAt(flow.modifiedAt);
+            // setModifiedAt(flow.modifiedAt);
             return flow;
         });
     }
@@ -586,7 +591,7 @@ const FlowEditor = () => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        Api.createLock(inject_flow_uuid, modifiedAt).then(lock => {
+        Api.createLock(inject_flow_uuid, lastSavedFlow.modifiedAt).then(lock => {
                 setLock(lock);
                 // モードは変更せずに ReadOnly だけオフにする
                 setReadOnly(false);
@@ -818,7 +823,7 @@ const FlowEditor = () => {
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}
                 baseInspectorDisabled={baseInspectorDisabled}
-                updateLastSavedFlow={updateLastSavedFlow}
+                updateLastSavedFlow={lastSavedFlow => setLastSavedFlow(lastSavedFlow)}
             />
             <NotificationManager />
         </div>

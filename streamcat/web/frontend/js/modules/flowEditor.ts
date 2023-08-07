@@ -87,7 +87,7 @@ export type State = {
   // folderUuid: string | null,
   // modifiedAt: string | null,
   // networkStatus: NetworkStatusValue,
-  lastSavedFlow?: FlowType,
+  // lastSavedFlow?: FlowType,
   flow?: Flow,
   // originalFlow?: {}
   // executeMode: FlowExecuteModeValue | null,
@@ -132,7 +132,7 @@ let flowEditorReducerInitialState: State = {
   // folderUuid: null,
   // modifiedAt: null,
   // networkStatus: NetworkStatusValue.UnKnown,
-  lastSavedFlow: undefined,
+  // lastSavedFlow: undefined,
   flow: undefined,
   // executeMode: null,
   // editMode: null
@@ -144,7 +144,7 @@ type FlowEditorAction = Action & {
   src_step_ids: string[];
   dst_step_ids: string[];
   flow: Flow;
-  lastSavedFlow: FlowType;
+  // lastSavedFlow: FlowType;
   step_ids: string[];
   paste_nodes: any;
   // selected_steps: any[];
@@ -183,7 +183,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       context.flow.label = context.label;
       // newState.flow = new FlowModel(context);
       newState.flow = context.flow;
-      newState.lastSavedFlow = StateUtil.deepCopy(context);
+      // newState.lastSavedFlow = StateUtil.deepCopy(context);
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState.nodes, action.zoom);
       newState.history.current = 0;
@@ -824,13 +824,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     //   break;
     // }
 
-    case UPDATE_LAST_SAVED_FLOW_ACTION: {
-      newState = {
-        ...newState,
-        lastSavedFlow: action.lastSavedFlow
-      };
-      break;
-    }
+    // case UPDATE_LAST_SAVED_FLOW_ACTION: {
+    //   newState = {
+    //     ...newState,
+    //     lastSavedFlow: action.lastSavedFlow
+    //   };
+    //   break;
+    // }
 
     case ADD_DATASRC_ACTION: {
       const { dataSrc } = action.payload;
@@ -1596,12 +1596,12 @@ export const refreshFlowAction = (context: FlowType, zoom:number) => {
   };
 };
 
-export const updateLastSavedFlowAction = (lastSavedFlow:FlowType) => {
-  return {
-    type: UPDATE_LAST_SAVED_FLOW_ACTION,
-    lastSavedFlow: lastSavedFlow
-  }
-}
+// export const updateLastSavedFlowAction = (lastSavedFlow:FlowType) => {
+//   return {
+//     type: UPDATE_LAST_SAVED_FLOW_ACTION,
+//     lastSavedFlow: lastSavedFlow
+//   }
+// }
 
 export const addDataSrcStepAction = (dataSrc: Command | FlowCommand | InlineFlowCommand, zoom:number) => {
   return {
