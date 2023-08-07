@@ -1,6 +1,6 @@
 //@flow
 import Constants from 'Constants/index'
-import type { CommandParamType } from 'Types/index'
+import type { CommandParamType, HistoryType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
@@ -26,26 +26,26 @@ export default class FlowUtil {
     })
   }
 
-  static getCommandParam (paramName: string, command: Command): (CommandParamType | {}) {
-    let param = {}
-    if (command && command.params) {
-      command.params.map((_param) => {
-        if (_param.name === paramName) {
-          param = _param
-        }
-      })
-    }
-    return param
-  }
+  // static getCommandParam (paramName: string, command: Command): (CommandParamType | {}) {
+  //   let param = {}
+  //   if (command && command.params) {
+  //     command.params.map((_param) => {
+  //       if (_param.name === paramName) {
+  //         param = _param
+  //       }
+  //     })
+  //   }
+  //   return param
+  // }
 
-  static getFlowJson (nodes: BaseStepModel[], projectId: string, projectName: string): {} {
-    const flow_json = {
-      projectId: projectId,
-      name: projectName,
-      nodes: nodes,
-    }
-    return flow_json
-  }
+  // static getFlowJson (nodes: BaseStepModel[], projectId: string, projectName: string): {} {
+  //   const flow_json = {
+  //     projectId: projectId,
+  //     name: projectName,
+  //     nodes: nodes,
+  //   }
+  //   return flow_json
+  // }
 
   /**
    * ノードのdsts,srcsのNodeIdをすべて書き換える
@@ -237,9 +237,9 @@ export default class FlowUtil {
    * @param flowB
    * @returns {boolean}
    */
-  static isSameFlow (flowA: {}, flowB: {}) {
-    return JSON.stringify(flowA) === JSON.stringify(flowB)
-  }
+  // static isSameFlow (flowA: {}, flowB: {}) {
+  //   return JSON.stringify(flowA) === JSON.stringify(flowB)
+  // }
 
   /**
    * ノードの集合体の比較
@@ -247,9 +247,9 @@ export default class FlowUtil {
    * @param nodesB
    * @returns {boolean}
    */
-  static isSameNodes (nodesA: [], nodesB: []) {
-    return JSON.stringify(nodesA) === JSON.stringify(nodesB)
-  }
+  // static isSameNodes (nodesA: [], nodesB: []) {
+  //   return JSON.stringify(nodesA) === JSON.stringify(nodesB)
+  // }
 
   /**
    * 現在のノードと履歴の一つ前のノードが一緒かどうか
@@ -257,10 +257,10 @@ export default class FlowUtil {
    * @param currentNodes
    * @returns {boolean}
    */
-  static isSameCurrentNodesToBeforeHistoryNodes (history, currentNodes) {
+  static isSameCurrentNodesToBeforeHistoryNodes (history:HistoryType, currentNodes:AllNodeType[]) {
     if (!history) return false
-    if (history.nodes[history.current].length !== currentNodes.length) return false
-    return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)
+    if (history.flows[history.current].length !== currentNodes.length) return false
+    return JSON.stringify(history.flows[history.current]) === JSON.stringify(currentNodes)
   }
 
 }

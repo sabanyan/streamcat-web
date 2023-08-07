@@ -55,7 +55,7 @@ export const ToolBar = (props: ToolBarProps) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const current = history.current;
-    const max = history.nodes.length;
+    const max = history.flows.length;
 
     const redoDisabled = !(current + 1 < max);
     const undoDisabled = !(current - 1 >= 0);

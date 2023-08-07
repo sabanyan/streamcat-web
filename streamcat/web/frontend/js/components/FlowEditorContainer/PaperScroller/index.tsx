@@ -99,7 +99,7 @@ const PaperScroller = (props: Props) => {
     const onKeyDown = (e: React.KeyboardEvent) => {
         const {history, redo, undo} = props;
         const current = history.current;
-        const max = history.nodes.length;
+        const max = history.flows.length;
 
         const redoDisabled = !(current + 1 < max);
         const undoDisabled = !(current - 1 >= 0);
