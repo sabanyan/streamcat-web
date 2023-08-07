@@ -150,7 +150,7 @@ const FlowEditor = () => {
     const flow = useSelector((state:State) => state.flow);
     // const drag = useSelector((state:State) => state.drag);
     // const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
-    const nodes = useSelector((state:State) => state.nodes);
+    // const nodes = useSelector((state:State) => state.nodes);
     const history = useSelector((state:State) => state.history);
     // const mast = useSelector((state:State) => state.mast);
     // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
@@ -493,7 +493,7 @@ const FlowEditor = () => {
     const saveFlowPromise = (targetFlow: FlowType) => {
         // newLockUUIDがあれば、別名保存として判断する
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.flow.nodes = nodes;
+        // targetFlow.flow.nodes = nodes;
         
         return new Promise<FlowType>(async (reslove, reject) => {
             // 編集権限がないと、保存不可
@@ -529,7 +529,7 @@ const FlowEditor = () => {
 
     const saveAnotherFlowPromise = (targetFlow:Flow, anotherFlow:FlowType, newLockUUID:string) => {
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.nodes = nodes;
+        // targetFlow.nodes = nodes;
 
         return new Promise(async (reslove, reject) => {
             // フロー保存
@@ -633,8 +633,8 @@ const FlowEditor = () => {
 
     const renderSteps = useCallback(() => {
         let steps: any = [];
-        if (Array.isArray(nodes)) {
-            steps = nodes.map((step: AllNodeType) => {
+        if (Array.isArray(flow?.nodes)) {
+            steps = flow!.nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
                 return <Step
@@ -661,7 +661,7 @@ const FlowEditor = () => {
             });
         }
         return steps;
-    }, [nodes,
+    }, [ //nodes,
         selectedStepIds,
         runnables,
         flow,
@@ -677,8 +677,8 @@ const FlowEditor = () => {
         let edges: any = [];
         if (Array.isArray(graph.edges)) {
             graph.edges.forEach((edge, index) => {
-                const v_node = GraphUtil.getNode(nodes, edge.v); // 入力元ノード
-                const w_node = GraphUtil.getNode(nodes, edge.w); // 出力元ノード
+                const v_node = GraphUtil.getNode(flow?.nodes || [], edge.v); // 入力元ノード
+                const w_node = GraphUtil.getNode(flow?.nodes || [], edge.w); // 出力元ノード
 
                 if (v_node && w_node) {
                     const vx = v_node.position.x +
@@ -708,7 +708,7 @@ const FlowEditor = () => {
         }
         
         return edges;
-    }, [graph, nodes]);
+    }, [graph]);
 
     const renderSelector = useCallback(() => {
         let selector: any = null;
@@ -764,7 +764,7 @@ const FlowEditor = () => {
             <ToolBar
                 zoomState={[zoom, setZoom]}
                 lockUUID={lockUUID}
-                nodes={nodes}
+                nodes={flow?.nodes || []}
                 history={history}
                 notifyLoading={notifyLoading}
                 notifiWarning={notifyWarning}
@@ -790,7 +790,7 @@ const FlowEditor = () => {
                 redo={redo}
                 undo={undo}
                 selectedStepIds={selectedStepIds}
-                nodes={nodes}
+                nodes={flow?.nodes || []}
                 zoom={zoom}
                 history={history}
                 dragRangeState={[dragRange, setDragRange]}
@@ -803,7 +803,7 @@ const FlowEditor = () => {
             </PaperScroller>
             <Inspector
                 selectedStepIds={selectedStepIds}
-                nodes={nodes}
+                nodes={flow?.nodes || []}
                 runnables={runnables}
                 zoom={zoom}
                 addStep={addStep}
