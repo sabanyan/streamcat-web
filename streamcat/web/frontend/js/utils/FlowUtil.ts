@@ -4,7 +4,7 @@ import type { CommandParamType, HistoryType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
 import { Api } from 'Api';
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType, Command } from 'Model/Library';
+import { AllNodeType, Command, Flow } from 'Model/Library';
 
 export default class FlowUtil {
 
@@ -254,13 +254,13 @@ export default class FlowUtil {
   /**
    * 現在のノードと履歴の一つ前のノードが一緒かどうか
    * @param history
-   * @param currentNodes
+   * @param currentFlow
    * @returns {boolean}
    */
-  static isSameCurrentNodesToBeforeHistoryNodes (history:HistoryType, currentNodes:AllNodeType[]) {
-    if (!history) return false
-    if (history.flows[history.current].length !== currentNodes.length) return false
-    return JSON.stringify(history.flows[history.current]) === JSON.stringify(currentNodes)
+  static isSameCurrentNodesToBeforeHistoryNodes (history:HistoryType, currentFlow:Flow) {
+    if (!history) return false;
+    if (history.flows[history.current].nodes.length !== currentFlow.nodes.length) return false;
+    return JSON.stringify(history.flows[history.current]) === JSON.stringify(currentFlow)
   }
 
 }

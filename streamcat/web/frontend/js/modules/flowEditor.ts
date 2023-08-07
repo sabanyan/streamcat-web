@@ -58,7 +58,7 @@ export type State = {
   // nodes: AllNodeType[],
   history: {
     current: number,
-    flows: AllNodeType[][]
+    flows: Flow[]
   },
   // mast: {
   //   commands: any[],
@@ -188,7 +188,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(flowJson.nodes, action.zoom);
       newState.history.current = 0;
-      newState.history.flows = [[...flowJson.nodes]];
+      newState.history.flows = [flowJson];
       // newState.allowlist = flowJson.allowlist;
       // newState.folderPath = context.folderPath;
       // newState.folderUuid = context.folderUuid;
@@ -568,7 +568,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // 親・子関係のコマンド（c）、データフレーム（d）がある場合、n番目のヒストリで
       // dを削除したら、n-1番目のヒストリのcのdstもなくなる
       newState.history = StateUtil.deepCopy(newState.history);
-      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.flow!.nodes);
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.flow!);
 
       if (isSame) {
         return newState;
@@ -578,10 +578,10 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         //前に戻っている状態で履歴が追加された場合は、
         //current以降の履歴は消す
         newState.history.flows = newState.history.flows.slice(0, newState.history.current + 1);
-        newState.history.flows.push(newState.flow!.nodes);
+        newState.history.flows.push(newState.flow!);
         newState.history.current = newState.history.flows.length - 1;
       } else {
-        newState.history.flows.push(newState.flow!.nodes);
+        newState.history.flows.push(newState.flow!);
         newState.history.current = newState.history.flows.length - 1;
       }
 
@@ -592,7 +592,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       if (newState.history.current > 0) {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1;
-        newState.flow!.nodes = state.history.flows[newState.history.current];
+        newState.flow = state.history.flows[newState.history.current];
         // newState.flow!.nodes = newState.nodes;
         allRebuildNodesEdges(newState.flow!.nodes, newState.graph.edges);
         (window as any).nodes = newState.flow!.nodes;
@@ -607,7 +607,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       if (newState.history.current < max) {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current + 1;
-        newState.flow!.nodes = state.history.flows[newState.history.current];
+        newState.flow = state.history.flows[newState.history.current];
         // newState.flow!.nodes = newState.nodes;
         allRebuildNodesEdges(newState.flow!.nodes, newState.graph.edges);
         (window as any).nodes = newState.flow!.nodes;

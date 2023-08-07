@@ -1,4 +1,4 @@
-import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
+import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from 'Model/Library';
 import {
     CommandModel,
     CommandStepModel,
@@ -44,7 +44,7 @@ export type RunnablesType =  {
 
 export type HistoryType = {
     current: number;
-    flows: AllNodeType[][];
+    flows: Flow[];
 };
 
 export type DragType = {

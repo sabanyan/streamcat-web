@@ -242,15 +242,15 @@ class GraphUtil {
     const self = this
 
     // if (!json || !json.nodes) return new FlowModel()
-    if (!json || !json.nodes) {
-      return {
-        label: '',
-        nodes: [],
-        params:[],
-        ports: [[], []],
-        description: '',
-      }
-    }
+    // if (!json || !json.nodes) {
+    //   return {
+    //     label: '',
+    //     nodes: [],
+    //     params:[],
+    //     ports: [[], []],
+    //     description: '',
+    //   }
+    // }
 
     const connectEdge = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
       if (node.srcs) {

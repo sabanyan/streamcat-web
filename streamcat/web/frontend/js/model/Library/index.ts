@@ -252,7 +252,7 @@ export type Port = {
     type: string;
 };
 
-type PortArray = [] & {
+type PortArray = Port[] & {
     exists: (portId: string) => boolean;
     upsert: (port: Port) => void;
     removeByNodeId: (nodeId: string) => void;
