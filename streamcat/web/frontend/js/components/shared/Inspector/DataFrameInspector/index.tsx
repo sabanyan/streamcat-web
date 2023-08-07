@@ -18,7 +18,7 @@ type Props = {
     runnables: RunnablesType;
     deleteSteps: (step_ids: string[]) => void;
     selectSteps: (selected_steps: any[]) => void;
-    addHistory: Function;
+    addHistory: () => void;
     flow: Flow;
     // Flowの更新に用いる
     lastSavedFlow?: FlowType;

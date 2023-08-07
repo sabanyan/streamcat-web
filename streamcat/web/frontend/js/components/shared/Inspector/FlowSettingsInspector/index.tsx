@@ -20,7 +20,7 @@ type Props = {
     flow: Flow;
     flowUuid: string;
     updateFlow: (flow:Flow, zoom:number) => void;
-    addHistory: Function;
+    addHistory: () => void;
     addFlowVariableHidden: boolean;
     commandSelectorHidden: boolean;
     baseInspectorDisabled: boolean;

@@ -16,7 +16,7 @@ interface Props {
     updateStep: (node:NoteNodeType) => void;
     deleteSteps: (step_ids: string[]) => void;
     baseInspectorDisabled: boolean;
-    addHistory: Function;
+    addHistory: () => void;
 }
 
 const NoteInspector = (props: Props) => {

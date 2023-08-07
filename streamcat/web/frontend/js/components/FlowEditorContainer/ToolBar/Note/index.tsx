@@ -11,7 +11,7 @@ type Props = {
     zoom: number;
     nodes: any[];
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addHistory: Function;
+    addHistory: () => void;
     children: React.ReactNode;
     disabled: boolean;
 };

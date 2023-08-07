@@ -19,9 +19,9 @@ type Props = {
     canvasWidth: number;
     deleteSteps: (step_ids: string[]) => void;
     selectSteps: (selected_steps: any[]) => void;
-    addHistory: Function;
-    redo: Function;
-    undo: Function;
+    addHistory: () => void;
+    redo: () => void;
+    undo: () => void;
     selectedStepIds: string[];
     nodes: AllNodeType[];
     zoom: number

@@ -16,7 +16,7 @@ type Props = {
     // runnables: RunnablesType;
     nodes: any[];
     updateStep: Function;
-    addHistory: Function;
+    addHistory: () => void;
     selectSteps: (selected_steps: any[]) => void;
     deleteSteps: (step_ids: string[]) => void;
     // children?: React.ReactNode;

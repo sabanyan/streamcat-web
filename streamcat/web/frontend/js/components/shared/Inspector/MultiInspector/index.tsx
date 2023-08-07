@@ -19,7 +19,7 @@ type Props = {
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
-    addHistory: Function;
+    addHistory: () => void;
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;
 }

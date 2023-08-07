@@ -39,7 +39,7 @@ type InspectorProps = {
   selectSteps: (selected_steps: any[]) => void;
   refreshFlow: Function;
   deleteSteps: (step_ids: string[]) => void;
-  addHistory: Function;
+  addHistory: () => void;
   updateStep: (node:AllNodeType) => void;
   updateLastSavedFlow: (lastSavedFlow:FlowType) => void;
   addFlowVariableHidden: boolean;

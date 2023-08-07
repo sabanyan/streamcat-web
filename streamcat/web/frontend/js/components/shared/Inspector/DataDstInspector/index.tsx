@@ -21,7 +21,7 @@ type Props = {
   parentUUID?: string;
 
   updateStep: Function;
-  addHistory: Function;
+  addHistory: () => void;
   selectSteps: (selected_steps: any[]) => void;
   deleteSteps: (step_ids: string[]) => void;
 }

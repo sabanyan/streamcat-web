@@ -2,7 +2,7 @@ import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 
 type Props = {
-    addHistory: Function;
+    addHistory: () => void;
     sortFlow: Function;
     children: React.ReactNode;
     disabled: boolean;

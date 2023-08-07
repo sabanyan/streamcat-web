@@ -20,9 +20,9 @@ type ToolBarProps = {
     notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
     dismissNotify: (id:string) => void;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addHistory: Function;
-    undo: Function;
-    redo: Function;
+    addHistory: () => void;
+    undo: () => void;
+    redo: () => void;
     baseDisabled: boolean
     runDisabled: boolean;
     onClickSaveFlow: () => {};
