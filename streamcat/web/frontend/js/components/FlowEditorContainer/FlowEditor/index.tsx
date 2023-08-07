@@ -45,6 +45,75 @@ import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
 import { AllNodeType, Command, Flow, FlowType, FrameType } from 'Model/Library';
 
+
+const getRunnables = () => {
+    const preRequest :Promise<{}>[] = [];
+
+    // サブフローの一覧を取得する
+    preRequest.push(
+        Api.findSubflows().then(subflows => {
+            window.subflows = subflows;
+            return {
+                subflows: subflows
+            };
+        })
+    );
+
+    // データソースの一覧を取得する
+    preRequest.push(
+        Api.findDataSrcs().then(datasrcs => {
+            return {
+                datasrcs: datasrcs
+            };
+        })
+    );
+
+    // データデストの一覧を取得する
+    preRequest.push(
+        Api.findDataDsts().then(datadsts => {
+            return {
+                datadsts: datadsts
+            };
+        })
+    );
+
+    // Commandの一覧を取得する
+    preRequest.push(
+        Api.findCommands().then(commands => {
+            window.commands = commands;
+            return {
+                commands: commands
+            };
+        })
+    );
+
+    // VCommandの一覧を取得する
+    preRequest.push(
+        Api.findVCommands().then(visualizers => {
+            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
+            window.visualizers = visualizerModels;
+            return {
+                visualizers: visualizerModels
+            };
+        })
+    );
+
+    return Promise.all(preRequest).then((runnablesFragments) => {
+        // 全てのrunnableを取得した後に、RunnablesType型の値に統合して返す
+        return {
+            ...runnablesFragments[0],
+            ...runnablesFragments[1],
+            ...runnablesFragments[2],
+            ...runnablesFragments[3],
+            ...runnablesFragments[4],
+        } as RunnablesType;
+    });
+};
+
+const getFlow = () => {
+    return Api.findFlow(inject_flow_uuid);
+};
+
 const getLock = (targetUUID:string) => {
     return Api.createLock(targetUUID).catch(e => {
         if(e instanceof ErrorResponse){
@@ -60,6 +129,11 @@ const getLock = (targetUUID:string) => {
 };
 
 const FlowEditor = () => {
+
+    // ここでRunnableの取得を開始する
+    const [runnablesReader] = useAsyncResource(getRunnables, []);
+    // ここでFlowの取得を開始する
+    const [flowReader] = useAsyncResource(getFlow, []);
 
     const dispatch = useDispatch();
     const folderUuid = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.folderUuid);
@@ -90,13 +164,7 @@ const FlowEditor = () => {
     const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
 
     // runnable: FlowまたはCommandを表す
-    const [runnables, setRunnables] = useState<RunnablesType>({
-        commands: [],
-        visualizers: [],
-        subflows: [],
-        datasrcs: [],
-        datadsts: [],
-    });
+    const [runnables, setRunnables] = useState<RunnablesType>(runnablesReader);
 
     // 選択中のStepのId
     const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
@@ -349,88 +417,19 @@ const FlowEditor = () => {
     }, []);
 
     useEffect(() => {
-        const preRequest :Promise<{}>[] = [];
-
-        // サブフローの一覧を取得する
-        preRequest.push(
-            Api.findSubflows().then(subflows => {
-                // const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
-                window.subflows = subflows;
-                // addMaster({ subflows: subflowModels });
-                return {
-                    subflows: subflows
-                };
-            })
-        );
-
-        // データソースの一覧を取得する
-        preRequest.push(
-            Api.findDataSrcs().then(datasrcs => {
-                // addMaster({ datasrcs: datasrcs });
-                return {
-                    datasrcs: datasrcs
-                };
-            })
-        );
-
-        // データデストの一覧を取得する
-        preRequest.push(
-            Api.findDataDsts().then(datadsts => {
-                // addMaster({ datadsts: datadsts });
-                return {
-                    datadsts: datadsts
-                };
-            })
-        );
-
-        // Commandの一覧を取得する
-        preRequest.push(
-            Api.findCommands().then(commands => {
-                // const commandModels = commands.map(command => new CommandModel(command as any));
-                window.commands = commands;
-                // addMaster({ commands: commandModels });
-                return {
-                    commands: commands
-                };
-            })
-        );
-
-        // VCommandの一覧を取得する
-        preRequest.push(
-            Api.findVCommands().then(visualizers => {
-                const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
-                window.visualizers = visualizerModels;
-                // addMaster({ visualizers: visualizerModels });
-                return {
-                    visualizers: visualizerModels
-                };
-            })
-        );
-
-        Promise.all(preRequest).then((runnablesFragments) => {
-            // 全てのrunnableを取得した後に、状態変数runnablesにその取得結果を格納する
-            setRunnables({
-                ...runnables,
-                ...runnablesFragments[0],
-                ...runnablesFragments[1],
-                ...runnablesFragments[2],
-                ...runnablesFragments[3],
-                ...runnablesFragments[4],
-            });
-            // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
-            // これらを取得した後に、findFlowを実行する
-            return Api.findFlow(inject_flow_uuid).then(flow => {
-                // HTML headのtitleにフロー名を設定する
-                // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
-                document.title = "📐" + flow.label;
-                // フローJSONを解析する
-                loadFlowJSON(flow);
-                // 編集ロックされたフローの場合は通知する
-                if (flow.editLock) {
-                    notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
-                }
-                return flow.allowlist;
-            });
+        // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
+        // これらを取得した後に、findFlowを実行する
+        Api.findFlow(inject_flow_uuid).then(flow => {
+            // HTML headのtitleにフロー名を設定する
+            // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
+            document.title = "📐" + flow.label;
+            // フローJSONを解析する
+            loadFlowJSON(flow);
+            // 編集ロックされたフローの場合は通知する
+            if (flow.editLock) {
+                notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
+            }
+            return flow.allowlist;
         }).then(allowlist => {
             // 実行モードの設定
             const executeMode = (allowlist.execute) ? FlowExecuteModeValue.Executable : FlowExecuteModeValue.NotExecutable;
