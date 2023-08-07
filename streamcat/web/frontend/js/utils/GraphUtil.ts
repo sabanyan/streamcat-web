@@ -168,26 +168,25 @@ class GraphUtil {
    * @returns {*}
    */
   refreshPosition(nodes: AllNodeType[]) {
-    const self = this
-    this.layout()
+    const self = this;
+    this.layout();
     this.g.nodes().forEach((v) => {
-      let graph_node = self.g.node(v)
+      const graph_node = self.g.node(v);
       if (graph_node) {
-        const id = graph_node.label //グラフ構造のlabelにidを設定しています
-        let node = GraphUtil.getNode(nodes, id)
-        if (node) {
-          // node.setFrame({
-          //   x: graph_node.x,
-          //   y: graph_node.y,
-          //   width: graph_node.width,
-          //   height: graph_node.height,
-          // })
+        const id = graph_node.label; //グラフ構造のlabelにidを設定しています
+        if(GraphUtil.NodeExists(nodes, id)){
+          const node = GraphUtil.getNode(nodes, id);
           node.position = {x:graph_node.x, y:graph_node.y};
           node.size = {width:graph_node.width, height:graph_node.height};
         }
       }
     })
-    return nodes
+    return nodes;
+  }
+
+  // 指定したidのノードが存在する場合はtrue
+  static NodeExists(nodes:AllNodeType[], id:string){
+    return nodes.findIndex(node => node.id === id) >= 0;
   }
 
   /**
@@ -274,14 +273,24 @@ class GraphUtil {
       }
     }
 
+    // positionプロパティを持たないNodeが存在する場合はtrue
+    let noPosition = false;
+
     json.nodes = json.nodes.map(node => {
+      // 
+      self.addNode(node.id);
+      // 
+      if(!node.position){
+        noPosition = true;
+      }
       if(node.type === 'command' || node.type === 'flow'){
         connectEdge(node as CommandNodeType | FlowNodeType | InlineFlowNodeType);
       }
       return node;
     });
 
-    this.refreshPosition(json.nodes)
+    // positionプロパティを持たないNodeが存在する場合は全Nodeを整列する
+    noPosition && this.refreshPosition(json.nodes);
 
     return json
 
