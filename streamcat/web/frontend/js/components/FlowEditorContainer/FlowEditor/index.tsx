@@ -29,7 +29,7 @@ import {
     // updateDataFrameDetailAction,
     updateStepAction,
     // refreshCanvasSizeAction,
-    refreshFlowAction,
+    // refreshFlowAction,
     // updateLastSavedFlowAction,
     State
 } from 'Modules/flowEditor';
@@ -818,7 +818,7 @@ const FlowEditor = () => {
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}
                 updateStep={updateStep}
-                refreshFlow={refreshFlowAction}
+                // refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}

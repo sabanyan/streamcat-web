@@ -7,7 +7,7 @@ import { FlowType } from 'Model/Library';
 import style from '../Core/style.scss';
 
 type Props = {
-    refreshFlow: Function;
+    refreshFlow: (context: FlowType) => void;
     onClickRunFlowPromise: Function;
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
     notifyLoading: (title: string, message: string) => string;

@@ -38,7 +38,7 @@ type Props = {
     commandSelectorHidden: boolean;
     lockUUID: string | undefined;
     // updateDataFrameDetail: Function;
-    refreshFlow: Function;
+    // refreshFlow: (context: FlowType) => void;
 }
 
 type Content = {

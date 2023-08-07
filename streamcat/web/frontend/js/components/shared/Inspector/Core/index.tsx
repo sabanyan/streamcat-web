@@ -37,7 +37,7 @@ type InspectorProps = {
   zoom: number
   addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
   selectSteps: (selected_steps: any[]) => void;
-  refreshFlow: Function;
+  // refreshFlow: (context: FlowType) => void;
   deleteSteps: (step_ids: string[]) => void;
   addHistory: () => void;
   updateStep: (node:AllNodeType) => void;
@@ -72,7 +72,7 @@ export const Inspector = (props:InspectorProps) => {
     const { selectedStepIds, lockUUID, nodes, runnables, flow, lastSavedFlow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, zoom, addStep,updateStep,selectSteps,addHistory,
-      selectedFrameState, deleteSteps,refreshFlow,updateLastSavedFlow } = props
+      selectedFrameState, deleteSteps,updateLastSavedFlow } = props
 
     let property
 
@@ -122,7 +122,7 @@ export const Inspector = (props:InspectorProps) => {
           addDataSrcStep={addDataSrcStep}
           addDataDstStep={addDataDstStep}
           updateStep={updateStep}
-          refreshFlow={refreshFlow}
+          // refreshFlow={refreshFlow}
           previewDisabled={previewDisabled}
           commandSelectorHidden={commandSelectorHidden}
           baseInspectorDisabled={baseInspectorDisabled}
