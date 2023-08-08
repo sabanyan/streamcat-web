@@ -34,6 +34,21 @@ export const toJsonOrRaise = (res: Response) => {
     }
 };
 
+const JsonStringify = (body:{}) => {
+    // Ctor<AllNodeType>型はArray型ではないので、lengthプロパティがJSON文字列から除外されない
+    // これを除外するためのreplacer関数を用意する
+    const replacer = (key:string, value) => {
+        // 値に__isWrappedプロパティがあればCtor<AllNodeType>型と見做す
+        if(value && value.__isWrapped){
+            // __isWrapped, lengthプロパティをJSON文字列から除外する
+            return [...value];
+        }else{
+            return value;
+        }
+    };
+    return JSON.stringify(body, replacer);
+};
+
 /**
  * GET APIを発行する
  * @param url
@@ -67,7 +82,7 @@ export const postBase = <TDatumType>(url: string, body: {}) => {
         url,
         {
             method: 'POST',
-            body: JSON.stringify(body),
+            body: JsonStringify(body),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -88,7 +103,7 @@ export const putBase = <TDatumType>(url: string, body: {}) => {
         url,
         {
             method: 'PUT',
-            body: JSON.stringify(body),
+            body: JsonStringify(body),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -109,7 +124,7 @@ export const delBase = <TDatumType>(url: string, body={}) => {
         url,
         {
             method: 'DELETE',
-            body: JSON.stringify(body),
+            body: JsonStringify(body),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
