@@ -853,12 +853,12 @@ const FlowEditor = () => {
             </PaperScroller>
             <Inspector
                 selectedStepIds={selectedStepIds}
-                nodes={flow?.nodes || []}
+                // nodes={flow?.nodes || []}
                 runnables={runnables}
                 zoom={zoom}
                 addStep={addStep}
                 selectSteps={selectSteps}
-                flow={flow!}
+                flow={flow}
                 lastSavedFlow={lastSavedFlow}
                 lockUUID={lockUUID}
                 inspectorWidthState={[inspectorWidth, setInspectorWidth]}

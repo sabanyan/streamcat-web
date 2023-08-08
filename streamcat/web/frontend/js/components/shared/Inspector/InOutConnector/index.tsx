@@ -44,6 +44,7 @@ export const InOutConnector = (props: Props) => {
 
     const inConnectors = portlabels.map((portLabel, index) =>
         <InConnector
+            key={index}
             portLabel={portLabel}
             index={index}
             nodes={nodes}

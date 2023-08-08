@@ -99,7 +99,7 @@ const CommandSelector = (props: Props) => {
             // classificationがない場合はSubFlowのはず
             let label = Constants.lang.classification[command.classification || 'subflow'];
             if (!label) label = command.classification;
-            operatorsContainer.push(<div key={command.classification || '' + index} className={style.command_separator}>{label}</div>);
+            operatorsContainer.push(<div key={command.classification || 'separator' + index} className={style.command_separator}>{label}</div>);
         }
         operatorsContainer.push(<CommandItem
             // nodes={nodes}

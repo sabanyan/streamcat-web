@@ -25,7 +25,7 @@ type Props = {
     selectedStepIds: string[];
     selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
-    nodes: AllNodeType[];
+    // nodes: AllNodeType[];
     zoom: number;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
@@ -136,10 +136,10 @@ const DataFrameInspector = (props: Props) => {
 
     const onClickDelete = () => {
         const {deleteSteps, selectSteps, addHistory} = props;
-        let {selectedStepIds, nodes} = props;
+        let {selectedStepIds, flow} = props;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const selected_step = GraphUtil.getNode(nodes, selectedStepIds[0]);
+                const selected_step = GraphUtil.getNode(flow.nodes, selectedStepIds[0]);
                 deleteSteps([selected_step.id]);
                 selectSteps([]);
                 addHistory();
@@ -197,8 +197,8 @@ const DataFrameInspector = (props: Props) => {
 
 
     const getSelectedStep = () => {
-        let {selectedStepIds, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedStepIds[0]) as FrameNodeType;
+        let {selectedStepIds, flow} = props;
+        return GraphUtil.getNode(flow.nodes, selectedStepIds[0]) as FrameNodeType;
     };
 
     const onChangeCacheCheck = () => {

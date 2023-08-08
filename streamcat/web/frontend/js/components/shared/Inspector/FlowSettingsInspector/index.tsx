@@ -101,12 +101,12 @@ const FlowSettingsInspector = (props: Props) => {
             selectSteps, selectedStepIds, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
-    if (!flow) return null;
+    // if (!flow) return null;
 
     let inputParamsContainer, addFlowParams;
 
     const inputParams = flow.params.map((param, index) => {
-        return <div className={style.flow_param}>
+        return <div key={index} className={style.flow_param}>
             <div className={style.left}>
                 <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
                        onChange={(e) => {onParamChange(e, index)}} />
@@ -118,12 +118,12 @@ const FlowSettingsInspector = (props: Props) => {
     });
 
     if (inputParams && inputParams.length) {
-        inputParamsContainer = <div className={"mt-8px"}>
+        inputParamsContainer = <div key='params' className={"mt-8px"}>
             <label>フロー変数</label>
             {inputParams}
         </div>;
     } else if (baseInspectorDisabled) {
-        inputParamsContainer = <div className={"mt-8px"}>
+        inputParamsContainer = <div key='noParams0' className={"mt-8px"}>
             <label>フロー変数</label>
             <div className={"text-center"}>
                 <div className={style.label}>
@@ -132,7 +132,7 @@ const FlowSettingsInspector = (props: Props) => {
             </div>
         </div>;
     } else {
-        inputParamsContainer = <div className={"mt-8px"}>
+        inputParamsContainer = <div key='noParams1' className={"mt-8px"}>
             <label>フロー変数</label>
         </div>;
     }
