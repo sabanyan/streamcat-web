@@ -12,7 +12,7 @@ import { AllNodeType, Command, FlowCommand } from 'Model/Library';
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
-    selectedStepIds: string[];
+    selectedNodeId: string;
     // runnables: RunnablesType;
     nodes: any[];
     updateStep: Function;
@@ -35,8 +35,8 @@ const getFlow = (uuid: string) => {
 const CommandInspector = (props: Props) => {
 
     const getSelectedStep = () => {
-        let {selectedStepIds, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedStepIds[0]);
+        const {selectedNodeId, nodes} = props;
+        return GraphUtil.getNode(nodes, selectedNodeId);
     };
 
     // 選択中のステップを取得する

@@ -150,7 +150,7 @@ type FlowEditorAction = Action & {
   paste_nodes: any;
   // selected_steps: any[];
   selected_step_id: string;
-  selected_tab_id: number;
+  // selected_tab_id: number;
   x: number;
   y: number;
   // offset: number;

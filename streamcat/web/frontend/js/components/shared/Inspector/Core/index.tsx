@@ -22,6 +22,7 @@ import {
   // resizeInspectorAction,
   updateFlowAction
 } from 'Modules/flowEditor';
+import { InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
 type InspectorProps = {
   inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];
@@ -76,33 +77,50 @@ export const Inspector = (props:InspectorProps) => {
 
     let property
 
-    let selected_step;
-    if(selectedStepIds.length > 0){
-      selected_step = GraphUtil.getNode(nodes, selectedStepIds[0]) as any;
-    }
+    if(selectedStepIds.length === 0){
+      // Nodeを選択していない場合
+      property = <FlowSettingsInspector
+        key={lastSavedFlow?.uuid || ''}
+        // nodes={flow.flow.nodes}
+        runnables={runnables}
+        selectedStepIds={selectedStepIds}
+        zoom={zoom}
+        addStep={addStep}
+        addDataSrcStep={addDataSrcStep}
+        addDataDstStep={addDataDstStep}
+        selectSteps={selectSteps}
+        flow={flow}
+        flowUuid={lastSavedFlow?.uuid || ''}
+        updateFlow={updateFlow}
+        addHistory={addHistory}
+        addFlowVariableHidden={addFlowVariableHidden}
+        commandSelectorHidden={commandSelectorHidden}
+        baseInspectorDisabled={baseInspectorDisabled}
+      />
+    }else if(selectedStepIds.length > 1){
+      // 複数のNodeを選択している場合
+      property = <MultiInspector
+        key={selectedStepIds.join(',')}
+        deleteSteps={deleteSteps}
+        selectSteps={selectSteps}
+        nodes={flow.nodes}
+        runnables={runnables}
+        selectedStepIds={selectedStepIds}
+        zoom={zoom}
+        addStep={addStep}
+        addDataSrcStep={addDataSrcStep}
+        addDataDstStep={addDataDstStep}
+        addHistory={addHistory}
+        baseInspectorDisabled={baseInspectorDisabled}
+        commandSelectorHidden={commandSelectorHidden}
+      />
+    }else if(GraphUtil.NodeExists(nodes, selectedStepIds[0])){
+      // 一つのNodeを選択している場合
+      const selectedNode = GraphUtil.getNode(nodes, selectedStepIds[0]);
 
-
-    if (selectedStepIds.length === 1) {
-      if (selectedStepIds[0] === 'flow') {
-        property = <FlowSettingsInspector
-          runnables={runnables}
-          selectedStepIds={selectedStepIds}
-          // nodes={flow.flow.nodes}
-          zoom={zoom}
-          addStep={addStep}
-          addDataSrcStep={addDataSrcStep}
-          addDataDstStep={addDataDstStep}
-          selectSteps={selectSteps}
-          flow={flow}
-          flowUuid={lastSavedFlow?.uuid || ''}
-          updateFlow={updateFlow}
-          addHistory={addHistory}
-          addFlowVariableHidden={addFlowVariableHidden}
-          commandSelectorHidden={commandSelectorHidden}
-          baseInspectorDisabled={baseInspectorDisabled}
-        />
-      } else if (selected_step.type === 'frame') {
+      if(selectedNode.type === 'frame'){
         property = <DataFrameInspector
+          key={selectedNode.id}
           nodes={flow.nodes}
           // selected_data_source_detail={selected_data_source_detail}
           // updateDataFrameDetail={updateDataFrameDetail}
@@ -128,32 +146,36 @@ export const Inspector = (props:InspectorProps) => {
           baseInspectorDisabled={baseInspectorDisabled}
           updateLastSavedFlow={updateLastSavedFlow}
         />
-      } else if (selected_step.flow && selected_step.classification == "data_source") {
-        property = <DataSrcInspector
-          nodes={nodes}
-          selectedStepIds={selectedStepIds}
-          baseInspectorDisabled={baseInspectorDisabled}
-          updateStep={updateStep}
-          addHistory={addHistory}
-          selectSteps={selectSteps}
-          deleteSteps={deleteSteps}
-          parentUUID={lastSavedFlow?.folderUuid || undefined}
-        />
-      } else if (selected_step.flow && selected_step.classification == "data_dest") {
-        property = <DataDstInspector
-          nodes={nodes}
-          selectedStepIds={selectedStepIds}
-          baseInspectorDisabled={baseInspectorDisabled}
-
-          updateStep={updateStep}
-          addHistory={addHistory}
-          selectSteps={selectSteps}
-          deleteSteps={deleteSteps}
-          parentUUID={lastSavedFlow?.folderUuid || undefined}
-        />
-      } else if (selected_step.type === 'command' || selected_step.type === 'flow') {
+      }else if(selectedNode.hasOwnProperty('flow') &&
+              (selectedNode as InlineFlowNodeType).classification == 'data_source'){
+          property = <DataSrcInspector
+            key={selectedNode.id}
+            nodes={nodes}
+            selectedNodeId={selectedNode.id}
+            baseInspectorDisabled={baseInspectorDisabled}
+            updateStep={updateStep}
+            addHistory={addHistory}
+            selectSteps={selectSteps}
+            deleteSteps={deleteSteps}
+            parentUUID={lastSavedFlow?.folderUuid || undefined}
+          />
+      }else if(selectedNode.hasOwnProperty('flow') &&
+              (selectedNode as InlineFlowNodeType).classification == 'data_dest'){
+          property = <DataDstInspector
+            key={selectedNode.id}
+            nodes={nodes}
+            selectedNodeId={selectedNode.id}
+            baseInspectorDisabled={baseInspectorDisabled}
+            updateStep={updateStep}
+            addHistory={addHistory}
+            selectSteps={selectSteps}
+            deleteSteps={deleteSteps}
+            parentUUID={lastSavedFlow?.folderUuid || undefined}
+          />
+      }else if(selectedNode.type === 'command' || selectedNode.type === 'flow'){
         property = <CommandInspector
-          selectedStepIds={selectedStepIds}
+          key={selectedNode.id}
+          selectedNodeId={selectedNode.id}
           // runnables={runnables}
           nodes={nodes}
           updateStep={updateStep}
@@ -162,9 +184,10 @@ export const Inspector = (props:InspectorProps) => {
           deleteSteps={deleteSteps}
           baseInspectorDisabled={baseInspectorDisabled}
         />
-      } else if (selected_step.type === 'note') {
+      }else if(selectedNode.type === 'note'){
         property = <NoteInspector
-          selectedStepIds={selectedStepIds}
+          key={selectedNode.id}
+          selectedNodeId={selectedNode.id}
           nodes={nodes}
           addHistory={addHistory}
           selectSteps={selectSteps}
@@ -172,40 +195,10 @@ export const Inspector = (props:InspectorProps) => {
           deleteSteps={deleteSteps}
           baseInspectorDisabled={baseInspectorDisabled} />
       }
-
-    } else if (!selectedStepIds.length) {
-      property = <FlowSettingsInspector
-        // nodes={flow.flow.nodes}
-        runnables={runnables}
-        selectedStepIds={selectedStepIds}
-        zoom={zoom}
-        addStep={addStep}
-        addDataSrcStep={addDataSrcStep}
-        addDataDstStep={addDataDstStep}
-        selectSteps={selectSteps}
-        flow={flow}
-        flowUuid={lastSavedFlow?.uuid || ''}
-        updateFlow={updateFlow}
-        addHistory={addHistory}
-        addFlowVariableHidden={addFlowVariableHidden}
-        commandSelectorHidden={commandSelectorHidden}
-        baseInspectorDisabled={baseInspectorDisabled}
-      />
-    } else {
-      property = <MultiInspector
-        deleteSteps={deleteSteps}
-        selectSteps={selectSteps}
-        nodes={flow.nodes}
-        runnables={runnables}
-        selectedStepIds={selectedStepIds}
-        zoom={zoom}
-        addStep={addStep}
-        addDataSrcStep={addDataSrcStep}
-        addDataDstStep={addDataDstStep}
-        addHistory={addHistory}
-        baseInspectorDisabled={baseInspectorDisabled}
-        commandSelectorHidden={commandSelectorHidden}
-      />
+    }else{
+      // 選択中のNodeがCanvasにない場合
+      // NOTE: 履歴の戻る/進むで選択中のNodeがCanvasから無くなる場合があることに留意
+      return <></>;
     }
 
     const [inspectorWidth, setInspectorWidth] = props.inspectorWidthState;

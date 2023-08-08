@@ -10,7 +10,7 @@ import { NoteNodeType } from 'Model/Step/NodeTypes';
 import { AllNodeType, Flow } from 'Model/Library';
 
 interface Props {
-    selectedStepIds: string[];
+    selectedNodeId: string;
     nodes: AllNodeType[];
     selectSteps: (selected_steps: any[]) => void;
     updateStep: (node:NoteNodeType) => void;
@@ -26,19 +26,16 @@ const NoteInspector = (props: Props) => {
     }, []);
 
     const getSelectedStep = () => {
-        const {selectedStepIds, nodes} = props;
-        if (Array.isArray(selectedStepIds) && selectedStepIds.length > 0) {
-            return GraphUtil.getNode(nodes, selectedStepIds[0]) as NoteNodeType;
-        }
-        return null;
+        const {selectedNodeId, nodes} = props;
+        return GraphUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
     };
 
     const onClickDelete = () => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selectedStepIds, deleteSteps, selectSteps, addHistory} = props;
-                deleteSteps(selectedStepIds);
+                const {selectedNodeId, deleteSteps, selectSteps, addHistory} = props;
+                deleteSteps([selectedNodeId]);
                 selectSteps([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);

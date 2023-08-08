@@ -6,6 +6,7 @@ import { Loader } from 'Shared/Base'
 import Constants from 'Constants/index'
 
 import style from '../style.scss'
+import { AllNodeType } from 'Model/Library';
 
 
 type State = {
@@ -13,9 +14,9 @@ type State = {
 }
 
 type Props = {
-  nodes: any[];
+  nodes: AllNodeType[];
 
-  selectedStepIds: string[];
+  selectedNodeId: string;
   baseInspectorDisabled: boolean;
 
   parentUUID?: string;
@@ -38,13 +39,12 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   getSelectedStep(): any {
-    let { selectedStepIds, nodes } = this.props
-    return GraphUtil.getNode(nodes, selectedStepIds[0])
+    let { selectedNodeId, nodes } = this.props
+    return GraphUtil.getNode(nodes, selectedNodeId)
   }
 
   renderActions() {
     const { baseInspectorDisabled } = this.props;
-    let result = [];
 
     return <React.Fragment>
       <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
@@ -55,8 +55,8 @@ export class DataSrcInspector extends React.Component<Props, State> {
   onClickDelete(e: any) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        let { selectedStepIds, nodes } = this.props
-        const selected_step = GraphUtil.getNode(nodes, selectedStepIds[0])
+        let { selectedNodeId, nodes } = this.props
+        const selected_step = GraphUtil.getNode(nodes, selectedNodeId)
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps([])
         this.props.addHistory()
