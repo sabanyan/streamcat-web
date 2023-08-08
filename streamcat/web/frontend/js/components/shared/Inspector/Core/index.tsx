@@ -26,7 +26,7 @@ import { InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
 type InspectorProps = {
   inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];
-  flow?: Flow;
+  flowData?: Flow;
   lastSavedFlow?: FlowType;
   selectedStepIds: string[];
   // nodes: AllNodeType[];
@@ -59,8 +59,8 @@ export const Inspector = (props:InspectorProps) => {
     const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
         dispatch(addDataSrcStepAction(dataSrc, zoom));
     };
-    const updateFlow = (flow:Flow, zoom:number) => {
-        dispatch(updateFlowAction(flow, zoom));
+    const updateFlow = (flowData:Flow, zoom:number) => {
+        dispatch(updateFlowAction(flowData, zoom));
     };
     const deleteCache = (selected_step_id: string) => {
         dispatch(deleteCacheAction(selected_step_id));
@@ -70,14 +70,14 @@ export const Inspector = (props:InspectorProps) => {
     // };
 
 
-    const { selectedStepIds, lockUUID, runnables, flow, lastSavedFlow,
+    const { selectedStepIds, lockUUID, runnables, flowData, lastSavedFlow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, zoom, addStep,updateStep,selectSteps,addHistory,
       selectedFrameState, deleteSteps,updateLastSavedFlow } = props
 
     let property
 
-    if(!flow){
+    if(!flowData){
       // flowが読み込まれていない場合は何も表示しない
       return <></>;
     }else if(selectedStepIds.length === 0){
@@ -92,7 +92,7 @@ export const Inspector = (props:InspectorProps) => {
         addDataSrcStep={addDataSrcStep}
         addDataDstStep={addDataDstStep}
         selectSteps={selectSteps}
-        flow={flow}
+        flowData={flowData}
         flowUuid={lastSavedFlow?.uuid || ''}
         updateFlow={updateFlow}
         addHistory={addHistory}
@@ -106,7 +106,7 @@ export const Inspector = (props:InspectorProps) => {
         key={selectedStepIds.join(',')}
         deleteSteps={deleteSteps}
         selectSteps={selectSteps}
-        nodes={flow.nodes}
+        nodes={flowData.nodes}
         runnables={runnables}
         selectedStepIds={selectedStepIds}
         zoom={zoom}
@@ -117,9 +117,9 @@ export const Inspector = (props:InspectorProps) => {
         baseInspectorDisabled={baseInspectorDisabled}
         commandSelectorHidden={commandSelectorHidden}
       />
-    }else if(GraphUtil.NodeExists(flow.nodes, selectedStepIds[0])){
+    }else if(GraphUtil.NodeExists(flowData.nodes, selectedStepIds[0])){
       // 一つのNodeを選択している場合
-      const selectedNode = GraphUtil.getNode(flow.nodes, selectedStepIds[0]);
+      const selectedNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
 
       if(selectedNode.type === 'frame'){
         property = <DataFrameInspector
@@ -133,7 +133,7 @@ export const Inspector = (props:InspectorProps) => {
           deleteSteps={deleteSteps}
           selectSteps={selectSteps}
           addHistory={addHistory}
-          flow={flow}
+          flowData={flowData}
           lastSavedFlow={lastSavedFlow}
           updateFlow={updateFlow}
           selectedStepIds={selectedStepIds}
@@ -153,7 +153,7 @@ export const Inspector = (props:InspectorProps) => {
               (selectedNode as InlineFlowNodeType).classification == 'data_source'){
           property = <DataSrcInspector
             key={selectedNode.id}
-            nodes={flow.nodes}
+            nodes={flowData.nodes}
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
             updateStep={updateStep}
@@ -166,7 +166,7 @@ export const Inspector = (props:InspectorProps) => {
               (selectedNode as InlineFlowNodeType).classification == 'data_dest'){
           property = <DataDstInspector
             key={selectedNode.id}
-            nodes={flow.nodes}
+            nodes={flowData.nodes}
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
             updateStep={updateStep}
@@ -180,7 +180,7 @@ export const Inspector = (props:InspectorProps) => {
           key={selectedNode.id}
           selectedNodeId={selectedNode.id}
           // runnables={runnables}
-          nodes={flow.nodes}
+          nodes={flowData.nodes}
           updateStep={updateStep}
           addHistory={addHistory}
           selectSteps={selectSteps}
@@ -191,7 +191,7 @@ export const Inspector = (props:InspectorProps) => {
         property = <NoteInspector
           key={selectedNode.id}
           selectedNodeId={selectedNode.id}
-          nodes={flow.nodes}
+          nodes={flowData.nodes}
           addHistory={addHistory}
           selectSteps={selectSteps}
           updateStep={updateStep}

@@ -20,7 +20,7 @@ interface Props {
     invalid?: {};
     error?: {};
     runnables: RunnablesType;
-    flow: Flow;
+    flowData: Flow;
     selectedStepIds: string[];
     zoom: number;
     dragRange: DragType | null;
@@ -287,7 +287,7 @@ const Step = (props: Props) => {
         }
     });
 
-    const { position, runnables, flow, invalid, error, model } = props;
+    const { position, runnables, flowData, invalid, error, model } = props;
     const { x, y } = position;
     let icon: JSX.Element | null;
 
@@ -301,8 +301,8 @@ const Step = (props: Props) => {
 
     const selected = selectorIntersect();
 
-    const flowIn = flow.ports[0].exists(step.id);
-    const flowOut = flow.ports[1].exists(step.id);
+    const flowIn = flowData.ports[0].exists(step.id);
+    const flowOut = flowData.ports[1].exists(step.id);
 
     let stepLabel = step.label;
 

@@ -147,7 +147,7 @@ const FlowEditor = () => {
     //     }
     // }, [_modifiedAt])
     // const [modifiedAt, setModifiedAt] = useState<string>();
-    const flow = useSelector((state:State) => state.flow);
+    const flowData = useSelector((state:State) => state.flowData);
     // const drag = useSelector((state:State) => state.drag);
     // const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
     // const nodes = useSelector((state:State) => state.nodes);
@@ -200,16 +200,16 @@ const FlowEditor = () => {
     // Canvasの横幅
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 
-    const loadFlowJSON = (context: FlowType) => {
-        const newFlow = StateUtil.deepCopy(context.flow);
+    const loadFlowJSON = (flow: FlowType) => {
+        const newFlowData = StateUtil.deepCopy(flow.flow);
         setHistory({
             current: 0,
-            flows: [newFlow]
+            flows: [newFlowData]
         });
-        return dispatch(loadFlowJSONAction(context, zoom));
+        return dispatch(loadFlowJSONAction(flow, zoom));
     };
-    // const addMaster = (context: {}) => {
-    //     dispatch(addMasterAction(context));
+    // const addMaster = (flow: {}) => {
+    //     dispatch(addMasterAction(flow));
     // };
     const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
         dispatch(addStepAction(add_step, src_step_ids, dst_step_ids, zoom));
@@ -242,7 +242,7 @@ const FlowEditor = () => {
     //     dispatch(cutStepsAction(step_ids));
     // };
     const addHistory = () => {
-        const newFlow = StateUtil.deepCopy(flow!);
+        const newFlow = StateUtil.deepCopy(flowData!);
 
         if (FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history, newFlow)) {
             return;
@@ -270,23 +270,23 @@ const FlowEditor = () => {
     const undo = () => {
         if (history.current > 0) {
             //一つ前に巻き戻し
-            const prevFlow = history.flows[history.current - 1];
+            const prevFlowData = history.flows[history.current - 1];
             setHistory({
                 current: history.current - 1,
                 flows: history.flows
             });
-            dispatch(undoAction(prevFlow, zoom));
+            dispatch(undoAction(prevFlowData, zoom));
         }
     };
     const redo = () => {
         if (history.current < history.flows.length) {
             //一つ後に前送り
-            const nextFlow = history.flows[history.current + 1];
+            const nextFlowData = history.flows[history.current + 1];
             setHistory({
                 current: history.current + 1,
                 flows: history.flows
             });
-            dispatch(redoAction(nextFlow, zoom));
+            dispatch(redoAction(nextFlowData, zoom));
         }
     };
     // const executeFlow = (flowid: string) => {
@@ -342,12 +342,12 @@ const FlowEditor = () => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
-                            const targetFlow = flow as Flow;
-                            targetFlow.label = saveAsFlowName;
+                            const targetFlowData = flowData as Flow;
+                            targetFlowData.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
                             Api.createLock(anotherFlow.uuid).then(lock => {
                                 // 新規に作成した newFlow の uuid を設定して保存する
-                                saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
+                                saveAnotherFlowPromise(targetFlowData, anotherFlow, lock.uuid).then(() => {
                                     // 転移する前にnewFlowのロックは一度解除する
                                     lock.delete();
                                     // 保存後に作成したフローに遷移する
@@ -373,7 +373,7 @@ const FlowEditor = () => {
                     onChange={(e) => setSaveAsFlowName(e.target.value)} />
             </div>,
         })
-    }, [hasShowSaveAsFlowModal, saveAsFlowName, flow]);
+    }, [hasShowSaveAsFlowModal, saveAsFlowName, flowData]);
 
     useEffect(() => {
         if (!hasShowConfirmReloadFlowModal) return;
@@ -432,7 +432,7 @@ const FlowEditor = () => {
         const handleLeavePage = (e) => {
             e.preventDefault();
             let dialogText
-            let isSame = _.isEqual(flow, lastSavedFlow.flow)
+            let isSame = _.isEqual(flowData, lastSavedFlow.flow)
             if (!isSame) {
                 dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
                 e.returnValue = dialogText;
@@ -460,7 +460,7 @@ const FlowEditor = () => {
             window.removeEventListener("beforeunload", handleLeavePage);
             window.removeEventListener("unload", handleUnload);
         }
-    }, [lock, flow, lastSavedFlow]);
+    }, [lock, flowData, lastSavedFlow]);
 
     useEffect(() => {
         // 排他ロックが取得できなかった場合は警告メッセージを表示する
@@ -555,9 +555,9 @@ const FlowEditor = () => {
                 }));
             } else {
                 // フロー保存
-                return await targetFlow.update(flow!, lock.uuid).then(result => {
+                return await targetFlow.update(flowData!, lock.uuid).then(result => {
                     // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-                    setLastSavedFlow({...result, flow:flow!});
+                    setLastSavedFlow({...result, flow:flowData!});
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                     reslove(result);
                     return result;
@@ -583,9 +583,9 @@ const FlowEditor = () => {
 
         return new Promise(async (reslove, reject) => {
             // フロー保存
-            anotherFlow.update(flow!, newLockUUID).then(result => {
+            anotherFlow.update(flowData!, newLockUUID).then(result => {
                 // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-                setLastSavedFlow({...result, flow:flow!});
+                setLastSavedFlow({...result, flow:flowData!});
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                 reslove(result);
                 return result;
@@ -683,8 +683,8 @@ const FlowEditor = () => {
 
     const renderSteps = useCallback(() => {
         let steps: any = [];
-        if (flow?.nodes) {
-            steps = flow!.nodes.map((step: AllNodeType) => {
+        if (flowData?.nodes) {
+            steps = flowData!.nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
                 return <Step
@@ -696,7 +696,7 @@ const FlowEditor = () => {
                     invalid={step.invalid}
                     error={step.error}
                     runnables={runnables}
-                    flow={flow!}
+                    flowData={flowData!}
                     selectedStepIds={selectedStepIds}
                     zoom={zoom}
                     dragRange={dragRange}
@@ -714,7 +714,7 @@ const FlowEditor = () => {
     }, [ //nodes,
         selectedStepIds,
         runnables,
-        flow,
+        flowData,
         zoom,
         dragRange,
         addSelectStep,
@@ -727,8 +727,8 @@ const FlowEditor = () => {
         const edges:React.JSX.Element[] = [];
         if (Array.isArray(graph.edges)) {
             graph.edges.forEach((edge, index) => {
-                const v_node = GraphUtil.getNode(flow?.nodes || [], edge.v); // 入力元ノード
-                const w_node = GraphUtil.getNode(flow?.nodes || [], edge.w); // 出力元ノード
+                const v_node = GraphUtil.getNode(flowData?.nodes || [], edge.v); // 入力元ノード
+                const w_node = GraphUtil.getNode(flowData?.nodes || [], edge.w); // 出力元ノード
 
                 if (v_node && w_node) {
                     const vx = v_node.position.x +
@@ -814,7 +814,7 @@ const FlowEditor = () => {
             <ToolBar
                 zoomState={[zoom, setZoom]}
                 lockUUID={lockUUID}
-                nodes={flow?.nodes || []}
+                nodes={flowData?.nodes || []}
                 history={history}
                 notifyLoading={notifyLoading}
                 notifiWarning={notifyWarning}
@@ -840,7 +840,7 @@ const FlowEditor = () => {
                 redo={redo}
                 undo={undo}
                 selectedStepIds={selectedStepIds}
-                nodes={flow?.nodes || []}
+                nodes={flowData?.nodes || []}
                 zoom={zoom}
                 history={history}
                 dragRangeState={[dragRange, setDragRange]}
@@ -858,7 +858,7 @@ const FlowEditor = () => {
                 zoom={zoom}
                 addStep={addStep}
                 selectSteps={selectSteps}
-                flow={flow}
+                flowData={flowData}
                 lastSavedFlow={lastSavedFlow}
                 lockUUID={lockUUID}
                 inspectorWidthState={[inspectorWidth, setInspectorWidth]}

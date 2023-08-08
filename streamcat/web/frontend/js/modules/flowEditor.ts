@@ -89,7 +89,7 @@ export type State = {
   // modifiedAt: string | null,
   // networkStatus: NetworkStatusValue,
   // lastSavedFlow?: FlowType,
-  flow?: Flow,
+  flowData?: Flow,
   // originalFlow?: {}
   // executeMode: FlowExecuteModeValue | null,
   // editMode: FlowEditModeValue | null
@@ -134,7 +134,7 @@ let flowEditorReducerInitialState: State = {
   // modifiedAt: null,
   // networkStatus: NetworkStatusValue.UnKnown,
   // lastSavedFlow: undefined,
-  flow: undefined,
+  flowData: undefined,
   // executeMode: null,
   // editMode: null
 };
@@ -144,7 +144,7 @@ type FlowEditorAction = Action & {
   add_step: any;
   src_step_ids: string[];
   dst_step_ids: string[];
-  flow: Flow;
+  flowData: Flow;
   // lastSavedFlow: FlowType;
   step_ids: string[];
   paste_nodes: any;
@@ -183,7 +183,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;
       // newState.flow = new FlowModel(context);
-      newState.flow = context.flow;
+      newState.flowData = context.flow;
       // newState.lastSavedFlow = StateUtil.deepCopy(context);
       // newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(flowJson.nodes, action.zoom);
@@ -196,7 +196,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       // newState.history = StateUtil.deepCopy(newState.history);
-      newState.flow.nodes = flowJson.nodes;
+      newState.flowData.nodes = flowJson.nodes;
       break;
     }
     case REFRESH_FLOW_ACTION: {
@@ -204,7 +204,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       const flowJson = graph.load(context.flow);
       // newState.originalFlow = { ...flowJson };
       context.flow.label = context.label;
-      newState.flow = context.flow;
+      newState.flowData = context.flow;
       // newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(flowJson.nodes, action.zoom);
       // newState.allowlist = flowJson.allowlist;
@@ -218,10 +218,10 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //ValidatorUtil.isGraphModelSchema(newState);
       //ValidatorUtil.isNodesSchema(newState);
       //ValidatorUtil.nodesValidate(newState.nodes);
-      if(newState.flow){
-        newState.flow.nodes = flowJson.nodes;
+      if(newState.flowData){
+        newState.flowData.nodes = flowJson.nodes;
       }else{
-        console.log(`newState.flow is ${newState.flow}`);
+        console.log(`newState.flowData is ${newState.flowData}`);
       }
       break;
     }
@@ -248,7 +248,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         let totalSY = 0;
 
         src_step_ids.forEach((id: string) => {
-          const target: AllNodeType = GraphUtil.getNode(state.flow!.nodes, id);
+          const target: AllNodeType = GraphUtil.getNode(state.flowData!.nodes, id);
           totalSX = totalSX + target.position.x;
           totalSY = totalSY + target.position.y;
         });
@@ -299,7 +299,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
 
           //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
-          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...add_step.position }, newState.flow!.nodes);
+          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...add_step.position }, newState.flowData!.nodes);
           const notOverlapOffsetX = notOverlapNodePosition.x - add_step.position.x;
           const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y;
           if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) {
@@ -310,13 +310,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
           //先行して設置されている接続先のノードの位置調整
           dst_step_ids.map((id, index) => {
-            let new_node = GraphUtil.getNode(state.flow!.nodes, id);
+            let new_node = GraphUtil.getNode(state.flowData!.nodes, id);
             new_node.position = {
               x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
               y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
             };
             new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
-            newState.flow!.nodes = GraphUtil.updateNode({ nodes: state.flow!.nodes, id: id, new_node: new_node });
+            newState.flowData!.nodes = GraphUtil.updateNode({ nodes: state.flowData!.nodes, id: id, new_node: new_node });
           });
           //出力先ステップの位置調整
 
@@ -391,12 +391,12 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       }
 
       // newState.nodes.push(add_step);
-      newState.flow!.nodes.push(add_step);
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.flowData!.nodes.push(add_step);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
       break;
     }
     case UPDATE_STEP_ACTION: {
-      newState.flow!.nodes = rebuildNodesEdges(newState.flow!.nodes, action);
+      newState.flowData!.nodes = rebuildNodesEdges(newState.flowData!.nodes, action);
       // newState.flow!.nodes = newState.nodes;
 
       //選択されているEdgeも更新する
@@ -404,16 +404,16 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // newState.selected_out_edges = graph.g.outEdges(state.selected_step_ids[0]);
 
       //選択されているstepの値も更新する
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
       break;
     }
     case UPDATE_FLOW_ACTION: {
       // newState = { ...newState, flow: action.flow };
-      newState.flow = action.flow;
+      newState.flowData = action.flowData;
       // newState.nodes = action.flow.nodes;
       
       // newState.graphへの設定がないとFlowSettingInspectorの表示が更新されない
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
 
       break;
     }
@@ -424,12 +424,12 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //ただしsrcが別のデータフレームを複数出力している場合があるので、
       //一つでもデータフレームが残っていると削除は行わない
       action.step_ids.forEach(id => {
-        const step = GraphUtil.getNode(newState.flow!.nodes, id) as any;
-        if (GraphUtil.getNode(newState.flow!.nodes, id).type === 'frame') {
+        const step = GraphUtil.getNode(newState.flowData!.nodes, id) as any;
+        if (GraphUtil.getNode(newState.flowData!.nodes, id).type === 'frame') {
           //削除対象のノードの親がある場合、親を調べる
           if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v;
-            const deleteTargetStep = GraphUtil.getNode(newState.flow!.nodes, deleteTargetStepId) as any;
+            const deleteTargetStep = GraphUtil.getNode(newState.flowData!.nodes, deleteTargetStepId) as any;
             if (deleteTargetStep.type === 'command' ||
               deleteTargetStep.type === 'flow' ||
               (deleteTargetStep.flow && deleteTargetStep.classification === "data_source")) {
@@ -437,7 +437,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
               const isSingleDsts = (Object.keys(deleteTargetStep.dsts).length === 1 && deleteTargetStep.dsts[Object.keys(deleteTargetStep.dsts)[0]] === id);
               if (isSingleDsts) {
                 //親を削除
-                newState.flow!.nodes = graph.removeNode(newState.flow!.nodes, deleteTargetStepId);
+                newState.flowData!.nodes = graph.removeNode(newState.flowData!.nodes, deleteTargetStepId);
                 deleteKeySet.add(deleteTargetStepId);
               }
             }
@@ -446,13 +446,13 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           Object.keys(step.srcs).forEach((key) => {
             let srcId = step.srcs[key];
             // newState.flow.deleteOutPortWithId(srcId);
-            newState.flow!.ports[1].removeByNodeId(srcId);
+            newState.flowData!.ports[1].removeByNodeId(srcId);
           })
         } else if (step.flow && step.classification === "data_source") {// データソース削除時、InPortを解除する
           Object.keys(step.dsts).forEach((key) => {
             let dstId = step.dsts[key];
             // newState.flow.deleteInPortWithId(srcId);
-            newState.flow!.ports[0].removeByNodeId(dstId);
+            newState.flowData!.ports[0].removeByNodeId(dstId);
           })
         }
 
@@ -460,19 +460,19 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
         // newState.flow.deleteInPortWithId(id);
         // newState.flow.deleteOutPortWithId(id);
         if(step.type === Constants.step.type.frame){
-          newState.flow!.ports[0].removeByNodeId(id);
-          newState.flow!.ports[1].removeByNodeId(id);
+          newState.flowData!.ports[0].removeByNodeId(id);
+          newState.flowData!.ports[1].removeByNodeId(id);
         }
 
         //選択されたノードを削除
-        newState.flow!.nodes = graph.removeNode(newState.flow!.nodes, id);
+        newState.flowData!.nodes = graph.removeNode(newState.flowData!.nodes, id);
         // newState.flow!.nodes = newState.nodes;
         deleteKeySet.add(id);
       });
 
-      newState.flow!.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.flow!.nodes, deleteKeySet);
+      newState.flowData!.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.flowData!.nodes, deleteKeySet);
       // newState.flow!.nodes = newState.nodes;
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
 
       //削除後は非選択状態にする
       // newState.selected_step_ids = [];
@@ -522,7 +522,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           let newDsts = {};
           commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
             //出力先を作成し、接続先を変更する
-            const copiedStep = FlowUtil.getNodeFromID(newState.flow!.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
+            const copiedStep = FlowUtil.getNodeFromID(newState.flowData!.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
             // const props: any = {
             //   id: null,
             //   type: Constants.step.type.frame,
@@ -537,7 +537,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
             let add_node:FrameNodeType = new FrameNode(copiedStep.position);
             add_node.label = 'コピー ' + copiedStep.label;
             add_node = FlowUtil.copyPositionWithOffsetX(add_node) as FrameNodeType;
-            newState.flow!.nodes.push(add_node);
+            newState.flowData!.nodes.push(add_node);
             //ノード本体をコピー
             graph.addNode(add_node.id);
             //newState.selected_step_ids.push(add_step.id);
@@ -546,19 +546,19 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           //convertMap[cacheId] = newNode.id
           commandOrFlowNode.dsts = {};
 
-          newState.flow!.nodes.push(commandOrFlowNode);
+          newState.flowData!.nodes.push(commandOrFlowNode);
 
           const action_step = _.cloneDeep(commandOrFlowNode);
           action_step.dsts = newDsts;
         
-          newState.flow!.nodes = rebuildNodesEdges(newState.flow!.nodes, { step: action_step });
+          newState.flowData!.nodes = rebuildNodesEdges(newState.flowData!.nodes, { step: action_step });
           // newState.flow!.nodes = newState.nodes;
         }
       });
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
-      (window as any).nodes = newState.flow!.nodes;
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
+      (window as any).nodes = newState.flowData!.nodes;
 
       return newState;
     }
@@ -589,19 +589,19 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
     // }
     case UNDO_ACTION: {
       const newState: State = StateUtil.deepCopy(state);
-      const prevFlow = action.flow;
+      const prevFlow = action.flowData;
       allRebuildNodesEdges(prevFlow.nodes, newState.graph.edges);
       (window as any).nodes = prevFlow.nodes;
-      newState.flow = prevFlow;
+      newState.flowData = prevFlow;
       newState.graph = graph.getGraph(prevFlow.nodes, action.zoom);
       return newState;
     }
     case REDO_ACTION: {
       const newState: State = StateUtil.deepCopy(state);
-      const nextFlow = action.flow;
+      const nextFlow = action.flowData;
       allRebuildNodesEdges(nextFlow.nodes, newState.graph.edges);
       (window as any).nodes = nextFlow.nodes;
-      newState.flow = nextFlow;
+      newState.flowData = nextFlow;
       newState.graph = graph.getGraph(nextFlow.nodes, action.zoom);
       return newState;
     }
@@ -643,24 +643,24 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
     case DELETE_CACHE_ACTION: {
       const id = action.selected_step_id;
-      let node = GraphUtil.getNode(state.flow!.nodes, id);
+      let node = GraphUtil.getNode(state.flowData!.nodes, id);
       if (node.type === 'frame') {
         (node as FrameNodeType).deleteCache();
       }
 
-      newState.flow!.nodes = GraphUtil.updateNode({ nodes: state.flow!.nodes, id: id, new_node: node });
+      newState.flowData!.nodes = GraphUtil.updateNode({ nodes: state.flowData!.nodes, id: id, new_node: node });
       // newState.flow!.nodes = newState.nodes;
       break;
     }
 
     case SORT_FLOW_ACTION: {
       // memoはソート対象外にする
-      let targets = newState.flow!.nodes.filter((node) => {
+      let targets = newState.flowData!.nodes.filter((node) => {
         // return !(node instanceof NoteStepModel);
         return node.type !== 'note';
       });
       graph.refreshPosition(targets); //ノード位置を再計算
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
       break;
     }
     // case EXECUTE_FLOW_ACTION: {
@@ -728,7 +728,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       //   //差分
       //   newState = { ...state, zoom: state.zoom + offset };
       // }
-      newState.graph = graph.getGraph(state.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(state.flowData!.nodes, action.zoom);
       break;
     }
 
@@ -749,7 +749,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
     case MOVE_STEPS_ACTION: {
       const { x, y, step, selectedStepIds, zoom } = action;
-      const nodes = newState.flow!.nodes;
+      const nodes = newState.flowData!.nodes;
 
       if (selectedStepIds.length > 0 && step) {
         const dx = (step.position.x - x);
@@ -761,8 +761,8 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
             node.position.y = node.position.y - dy;
           }
         });
-        newState.flow!.nodes = newState.flow!.nodes;
-        newState.graph = graph.getGraph(newState.flow!.nodes, zoom);
+        newState.flowData!.nodes = newState.flowData!.nodes;
+        newState.graph = graph.getGraph(newState.flowData!.nodes, zoom);
       }
 
       break;
@@ -825,11 +825,11 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
     case ADD_DATASRC_ACTION: {
       const { dataSrc } = action.payload;
-      const id = newNodeId('i', newState.flow!.nodes, 1)[0];
+      const id = newNodeId('i', newState.flowData!.nodes, 1)[0];
       const outPorts = dataSrc.ports[1];
 
-      const dstNodeIds = newNodeId('d', newState.flow!.nodes, outPorts.length);
-      const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(newState.flow!.nodes, [], dstNodeIds);
+      const dstNodeIds = newNodeId('d', newState.flowData!.nodes, outPorts.length);
+      const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(newState.flowData!.nodes, [], dstNodeIds);
       let args = {};
       // default value
       dataSrc.params.map(param => {
@@ -867,18 +867,18 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           nodeId: dstNode.id,
           type: dstNode.type
         };
-        newState.flow!.ports[0].upsert(port);
+        newState.flowData!.ports[0].upsert(port);
       });
 
-      let nodes = newState.flow!.nodes;
+      let nodes = newState.flowData!.nodes;
       nodes.push(newNode);
       dstNodes.forEach((dstNode) => {
         nodes.push(dstNode);
       })
-      newState.flow!.nodes = [...nodes];
-      newState.flow!.nodes = [...nodes]
+      newState.flowData!.nodes = [...nodes];
+      newState.flowData!.nodes = [...nodes]
       addToGraph(graph, newNode);
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
     };
       break;
 
@@ -888,11 +888,11 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
       let srcNodeIds = [selctedDataNodeId];
 
-      const id = newNodeId('o', newState.flow!.nodes, 1)[0];
+      const id = newNodeId('o', newState.flowData!.nodes, 1)[0];
 
-      const { newNodePositionAndSize } = newNodesPositionAndSize(newState.flow!.nodes, srcNodeIds, []);
+      const { newNodePositionAndSize } = newNodesPositionAndSize(newState.flowData!.nodes, srcNodeIds, []);
 
-      const srcNodes = newState.flow!.nodes.filter(
+      const srcNodes = newState.flowData!.nodes.filter(
         node => srcNodeIds.includes(node.id)
       );
 
@@ -903,7 +903,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
           nodeId: srcNode.id,
           type: srcNode.type
         };
-        newState.flow!.ports[1].upsert(port);
+        newState.flowData!.ports[1].upsert(port);
       });
 
       let args = {};
@@ -925,22 +925,22 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       }
 
       const newNode = newDataDest(props);
-      let nodes = newState.flow!.nodes;
+      let nodes = newState.flowData!.nodes;
       nodes.push(newNode);
-      newState.flow!.nodes = [...nodes];
+      newState.flowData!.nodes = [...nodes];
       // newState.nodes = [...nodes]
       // graph
       addToGraph(graph, newNode);
-      newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
+      newState.graph = graph.getGraph(newState.flowData!.nodes, action.zoom);
     };
       break;
 
     default:
-      (window as any).nodes = state.flow?.nodes || [];
+      (window as any).nodes = state.flowData?.nodes || [];
       return state;
   }
 
-  (window as any).nodes = newState.flow?.nodes || [];
+  (window as any).nodes = newState.flowData?.nodes || [];
   return newState;
 
 };
@@ -1209,19 +1209,6 @@ export function newDataSrc(props: DataSrcProps) {
     dsts[outPort.label] = dstNodeIds[index];
   });
 
-  let dataSrcProps = {
-    label: dataSrc.label,
-    classification: dataSrc.classification,
-    flow: dataSrc.flow,
-    id: id,
-    type: Constants.step.type.subflow,
-    position: position,
-    srcs: {},
-    dsts: dsts,
-    size: size,
-    args: args,
-  }
-
   const flowNode = new InlineFlowNode(dataSrc.classification, dataSrc.flow, position) as InlineFlowNodeType;
   (flowNode as any).id = id;
   flowNode.label = dataSrc.label;
@@ -1247,19 +1234,6 @@ export function newDataDest(props: DataDestProps) {
   inPorts.forEach((inPort, index) => {
     srcs[inPort.label] = srcNodeIds[index];
   });
-
-  let DataDstProps = {
-    flow: dataDest.flow,
-    label: dataDest.label,
-    classification: dataDest.classification,
-    id: id,
-    type: Constants.step.type.subflow,
-    position: position,
-    srcs: srcs,
-    dsts: {},
-    size: size,
-    args: args
-  }
 
   const flowNode = new InlineFlowNode(dataDest.classification, dataDest.flow, position) as InlineFlowNodeType;
   (flowNode as any).id = id;
@@ -1324,13 +1298,13 @@ export const updateStepAction = (step: AllNodeType, zoom:number) => {
 
 /**
  * フローの更新
- * @param flow
+ * @param flowData
  * @returns {{type: string, flow: *}}
  */
-export const updateFlowAction = (flow:Flow, zoom:number) => {
+export const updateFlowAction = (flowData:Flow, zoom:number) => {
   return {
     type: UPDATE_FLOW_ACTION,
-    flow: flow,
+    flowData: flowData,
     zoom: zoom
   };
 };
@@ -1394,10 +1368,10 @@ export const pasteStepsAction = (paste_nodes: [], zoom:number) => {
  * アンドゥ
  * @returns {{type: string, step: *}}
  */
-export const undoAction = (prevFlow:Flow, zoom:number) => {
+export const undoAction = (prevFlowData:Flow, zoom:number) => {
   return {
     type: UNDO_ACTION,
-    flow: prevFlow,
+    flowData: prevFlowData,
     zoom: zoom
   };
 };
@@ -1405,10 +1379,10 @@ export const undoAction = (prevFlow:Flow, zoom:number) => {
  * リドゥ
  * @returns {{type: string, step: *}}
  */
-export const redoAction = (nextFlow:Flow, zoom:number) => {
+export const redoAction = (nextFlowData:Flow, zoom:number) => {
   return {
     type: REDO_ACTION,
-    flow: nextFlow,
+    flowData: nextFlowData,
     zoom: zoom
   };
 };

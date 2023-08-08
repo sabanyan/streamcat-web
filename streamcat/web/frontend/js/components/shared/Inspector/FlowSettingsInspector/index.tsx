@@ -17,9 +17,9 @@ type Props = {
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
     selectSteps: (selected_steps: any[]) => void;
-    flow: Flow;
+    flowData: Flow;
     flowUuid: string;
-    updateFlow: (flow:Flow, zoom:number) => void;
+    updateFlow: (flowData:Flow, zoom:number) => void;
     addHistory: () => void;
     addFlowVariableHidden: boolean;
     commandSelectorHidden: boolean;
@@ -30,26 +30,24 @@ type Props = {
   フローエディタで表示中のフローのInspector
 */
 const FlowSettingsInspector = (props: Props) => {
+    const {flowData} = props;
 
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     const onBlurTitle = (e: React.SyntheticEvent<HTMLInputElement>) => {
-        const {flow} = props;
-        flow.label = e.currentTarget.value;
-        props.updateFlow(flow, zoom);
+        flowData.label = e.currentTarget.value;
+        props.updateFlow(flowData, zoom);
     };
 
     const onClickAddFlowParam = () => {
-        const {flow, updateFlow} = props;
+        const {updateFlow} = props;
         const name = setNewParamName("new_param", 1);
-        flow.params.push({label:name, name:name, type:'string'});
-        updateFlow(flow, zoom);
+        flowData.params.push({label:name, name:name, type:'string'});
+        updateFlow(flowData, zoom);
     };
 
     const setNewParamName = (name: string, cnt: number): string => {
-        const flow = props.flow;
-
-        const findResult = flow.params.find(param => {
+        const findResult = flowData.params.find(param => {
             return param.name === (name + cnt);
         });
         if (findResult) {
@@ -59,24 +57,24 @@ const FlowSettingsInspector = (props: Props) => {
     };
 
     const onDeleteParam = (index) => {
-        const {flow, updateFlow} = props;
-        flow.params = flow.params.filter((param, paramIndex) => {
+        const {updateFlow} = props;
+        flowData.params = flowData.params.filter((param, paramIndex) => {
             return paramIndex !== index;
         });
-        updateFlow(flow, zoom);
+        updateFlow(flowData, zoom);
     };
 
     const onDescriptionChange = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-        const {flow, updateFlow} = props;
-        flow.description = e.currentTarget.value;
-        updateFlow(flow, zoom);
+        const {updateFlow} = props;
+        flowData.description = e.currentTarget.value;
+        updateFlow(flowData, zoom);
     };
 
     const onParamChange = (e: React.SyntheticEvent<HTMLInputElement>, index: number) => {
-        const {flow, updateFlow} = props;
-        flow.params[index].name = e.currentTarget.value;
-        flow.params[index].label = e.currentTarget.value;
-        updateFlow(flow, zoom);
+        const {updateFlow} = props;
+        flowData.params[index].name = e.currentTarget.value;
+        flowData.params[index].label = e.currentTarget.value;
+        updateFlow(flowData, zoom);
     };
 
     const onClickDeleteParam = (e: React.MouseEvent, index: number) => {
@@ -97,15 +95,13 @@ const FlowSettingsInspector = (props: Props) => {
         });
     };
 
-    const { flow, flowUuid, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
+    const { flowUuid, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
             selectSteps, selectedStepIds, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
-    // if (!flow) return null;
-
     let inputParamsContainer, addFlowParams;
 
-    const inputParams = flow.params.map((param, index) => {
+    const inputParams = flowData.params.map((param, index) => {
         return <div key={index} className={style.flow_param}>
             <div className={style.left}>
                 <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
@@ -141,11 +137,11 @@ const FlowSettingsInspector = (props: Props) => {
         addFlowParams = <AddButton onClick={() => onClickAddFlowParam()}>フロー変数を追加する</AddButton>;
     }
 
-    return <BaseInspector key={flowUuid} header={""} label={flow.label}
+    return <BaseInspector key={flowUuid} header={""} label={flowData.label}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}
-                  defaultValue={flow.description} rows={8}
+                  defaultValue={flowData.description} rows={8}
                   onChange={(e) => onDescriptionChange(e)} disabled={(baseInspectorDisabled)} />
         {inputParamsContainer}
         {addFlowParams}
