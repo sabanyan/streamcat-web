@@ -60,8 +60,8 @@ export const ToolBar = (props: ToolBarProps) => {
     const redoDisabled = !(current + 1 < max);
     const undoDisabled = !(current - 1 >= 0);
 
-    const refreshFlow = (context:FlowType) => {
-        dispatch(refreshFlowAction(context, zoom));
+    const refreshFlow = (flow:FlowType) => {
+        dispatch(refreshFlowAction(flow, zoom));
     };
     // const setZoom = ({ offset, value }) => {
     //     dispatch(setZoomAction({ offset, value }));

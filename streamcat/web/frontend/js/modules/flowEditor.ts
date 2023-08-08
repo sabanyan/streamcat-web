@@ -140,7 +140,7 @@ let flowEditorReducerInitialState: State = {
 };
 
 type FlowEditorAction = Action & {
-  context: FlowType;
+  flow: FlowType;
   add_step: any;
   src_step_ids: string[];
   dst_step_ids: string[];
@@ -178,12 +178,12 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
   let newState = {...state};
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
-      let { context } = action;
-      const flowJson = graph.load(context.flow);
+      let { flow } = action;
+      const flowJson = graph.load(flow.flow);
       // newState.originalFlow = { ...flowJson };
-      context.flow.label = context.label;
+      flow.flow.label = flow.label;
       // newState.flow = new FlowModel(context);
-      newState.flowData = context.flow;
+      newState.flowData = flow.flow;
       // newState.lastSavedFlow = StateUtil.deepCopy(context);
       // newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(flowJson.nodes, action.zoom);
@@ -200,11 +200,11 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       break;
     }
     case REFRESH_FLOW_ACTION: {
-      let { context } = action;
-      const flowJson = graph.load(context.flow);
+      let { flow } = action;
+      const flowJson = graph.load(flow.flow);
       // newState.originalFlow = { ...flowJson };
-      context.flow.label = context.label;
-      newState.flowData = context.flow;
+      flow.flow.label = flow.label;
+      newState.flowData = flow.flow;
       // newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(flowJson.nodes, action.zoom);
       // newState.allowlist = flowJson.allowlist;
@@ -1260,13 +1260,13 @@ export const addStepAction = (add_step:AllNodeType, src_step_ids:string[], dst_s
 
 /**
  * JSONの読み込み
- * @param context
- * @returns {{type: string, context: *}}
+ * @param flow
+ * @returns {{type: string, flow: *}}
  */
-export function loadFlowJSONAction(context: FlowType, zoom:number) {
+export function loadFlowJSONAction(flow: FlowType, zoom:number) {
   return {
     type: LOAD_FLOW_JSON_ACTION,
-    context: context,
+    flow: flow,
     zoom: zoom
   };
 }
@@ -1555,10 +1555,10 @@ export const moveStepsAction = (x: number, y: number, step:AllNodeType, selected
 //   };
 // };
 
-export const refreshFlowAction = (context: FlowType, zoom:number) => {
+export const refreshFlowAction = (flow: FlowType, zoom:number) => {
   return {
     type: REFRESH_FLOW_ACTION,
-    context: context,
+    flow: flow,
     zoom: zoom
   };
 };
