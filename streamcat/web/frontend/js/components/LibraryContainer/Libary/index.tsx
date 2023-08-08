@@ -168,7 +168,7 @@ export const Library = () => {
     };
 
     const renderAll = () => {
-        const isEmptyLibraryList = !Array.isArray(parentFolder.children) || parentFolder.children.length === 0;
+        const isEmptyLibraryList = parentFolder.children.length === 0;
 
         if (isEmptyLibraryList && mode === Constants.library.mode.dialog){
             return renderEmptyState();

@@ -56,10 +56,10 @@ export type State = {
   graph: GraphType,
   // zoom: number,
   // nodes: AllNodeType[],
-  history: {
-    current: number,
-    flows: Flow[]
-  },
+  // history: {
+  //   current: number,
+  //   flows: Flow[]
+  // },
   // mast: {
   //   commands: any[],
   //   visualizers: any[],
@@ -101,10 +101,10 @@ let flowEditorReducerInitialState: State = {
   graph: graph.getGraph([], 100),
   // zoom: 100,
   // nodes: [],
-  history: {
-    current: 0,
-    flows: []
-  },
+  // history: {
+  //   current: 0,
+  //   flows: []
+  // },
   // mast: {
   //   commands: [],
   //   visualizers: [],
@@ -187,15 +187,15 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // newState.lastSavedFlow = StateUtil.deepCopy(context);
       // newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(flowJson.nodes, action.zoom);
-      newState.history.current = 0;
-      newState.history.flows = [flowJson];
+      // newState.history.current = 0;
+      // newState.history.flows = [flowJson];
       // newState.allowlist = flowJson.allowlist;
       // newState.folderPath = context.folderPath;
       // newState.folderUuid = context.folderUuid;
       // newState.modifiedAt = context.modifiedAt;
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
-      newState.history = StateUtil.deepCopy(newState.history);
+      // newState.history = StateUtil.deepCopy(newState.history);
       newState.flow.nodes = flowJson.nodes;
       break;
     }
@@ -212,7 +212,7 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
       // newState.folderUuid = context.folderUuid;
       // newState.modifiedAt = context.modifiedAt;
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
-      newState.history = StateUtil.deepCopy(newState.history);
+      // newState.history = StateUtil.deepCopy(newState.history);
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
       //ValidatorUtil.isFlowModelSchema(newState);
       //ValidatorUtil.isGraphModelSchema(newState);
@@ -562,57 +562,47 @@ export const FlowEditorReducer = (state:State = flowEditorReducerInitialState, a
 
       return newState;
     }
-    case ADD_HISTORY_ACTION: {
-      //let newState = StateUtil.deepCopy(state)
-      // #issue 188の対応
-      // 親・子関係のコマンド（c）、データフレーム（d）がある場合、n番目のヒストリで
-      // dを削除したら、n-1番目のヒストリのcのdstもなくなる
-      newState.history = StateUtil.deepCopy(newState.history);
-      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.flow!);
+    // case ADD_HISTORY_ACTION: {
+    //   //let newState = StateUtil.deepCopy(state)
+    //   // #issue 188の対応
+    //   // 親・子関係のコマンド（c）、データフレーム（d）がある場合、n番目のヒストリで
+    //   // dを削除したら、n-1番目のヒストリのcのdstもなくなる
+    //   newState.history = StateUtil.deepCopy(newState.history);
+    //   const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.flow!);
 
-      if (isSame) {
-        return newState;
-      }
+    //   if (isSame) {
+    //     return newState;
+    //   }
 
-      if (newState.history.current != newState.history.flows.length - 1) {
-        //前に戻っている状態で履歴が追加された場合は、
-        //current以降の履歴は消す
-        newState.history.flows = newState.history.flows.slice(0, newState.history.current + 1);
-        newState.history.flows.push(newState.flow!);
-        newState.history.current = newState.history.flows.length - 1;
-      } else {
-        newState.history.flows.push(newState.flow!);
-        newState.history.current = newState.history.flows.length - 1;
-      }
+    //   if (newState.history.current != newState.history.flows.length - 1) {
+    //     //前に戻っている状態で履歴が追加された場合は、
+    //     //current以降の履歴は消す
+    //     newState.history.flows = newState.history.flows.slice(0, newState.history.current + 1);
+    //     newState.history.flows.push(newState.flow!);
+    //     newState.history.current = newState.history.flows.length - 1;
+    //   } else {
+    //     newState.history.flows.push(newState.flow!);
+    //     newState.history.current = newState.history.flows.length - 1;
+    //   }
 
-      return newState;
-    }
+    //   return newState;
+    // }
     case UNDO_ACTION: {
-      let newState: State = StateUtil.deepCopy(state);
-      if (newState.history.current > 0) {
-        //一つ前に巻き戻し
-        newState.history.current = newState.history.current - 1;
-        newState.flow = state.history.flows[newState.history.current];
-        // newState.flow!.nodes = newState.nodes;
-        allRebuildNodesEdges(newState.flow!.nodes, newState.graph.edges);
-        (window as any).nodes = newState.flow!.nodes;
-
-        newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
-      }
+      const newState: State = StateUtil.deepCopy(state);
+      const prevFlow = action.flow;
+      allRebuildNodesEdges(prevFlow.nodes, newState.graph.edges);
+      (window as any).nodes = prevFlow.nodes;
+      newState.flow = prevFlow;
+      newState.graph = graph.getGraph(prevFlow.nodes, action.zoom);
       return newState;
     }
     case REDO_ACTION: {
-      let newState: State = StateUtil.deepCopy(state);
-      const max = newState.history.flows.length;
-      if (newState.history.current < max) {
-        //一つ前に巻き戻し
-        newState.history.current = newState.history.current + 1;
-        newState.flow = state.history.flows[newState.history.current];
-        // newState.flow!.nodes = newState.nodes;
-        allRebuildNodesEdges(newState.flow!.nodes, newState.graph.edges);
-        (window as any).nodes = newState.flow!.nodes;
-        newState.graph = graph.getGraph(newState.flow!.nodes, action.zoom);
-      }
+      const newState: State = StateUtil.deepCopy(state);
+      const nextFlow = action.flow;
+      allRebuildNodesEdges(nextFlow.nodes, newState.graph.edges);
+      (window as any).nodes = nextFlow.nodes;
+      newState.flow = nextFlow;
+      newState.graph = graph.getGraph(nextFlow.nodes, action.zoom);
       return newState;
     }
     // case SELECT_STEPS_ACTION: {
@@ -1395,18 +1385,19 @@ export const pasteStepsAction = (paste_nodes: [], zoom:number) => {
  * 履歴の追加
  * @returns {{type: string, step: *}}
  */
-export const addHistoryAction = () => {
-  return {
-    type: ADD_HISTORY_ACTION
-  };
-};
+// export const addHistoryAction = () => {
+//   return {
+//     type: ADD_HISTORY_ACTION
+//   };
+// };
 /**
  * アンドゥ
  * @returns {{type: string, step: *}}
  */
-export const undoAction = (zoom:number) => {
+export const undoAction = (prevFlow:Flow, zoom:number) => {
   return {
     type: UNDO_ACTION,
+    flow: prevFlow,
     zoom: zoom
   };
 };
@@ -1414,9 +1405,10 @@ export const undoAction = (zoom:number) => {
  * リドゥ
  * @returns {{type: string, step: *}}
  */
-export const redoAction = (zoom:number) => {
+export const redoAction = (nextFlow:Flow, zoom:number) => {
   return {
     type: REDO_ACTION,
+    flow: nextFlow,
     zoom: zoom
   };
 };

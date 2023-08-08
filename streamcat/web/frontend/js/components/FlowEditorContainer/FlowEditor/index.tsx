@@ -6,15 +6,15 @@ import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
 import { Api } from 'Api';
-import { GraphUtil, ZoomUtil, ModalUtil, StateUtil} from 'Utils/index';
+import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, FlowUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DragType, RunnablesType } from 'Types/index';
+import { DragType, HistoryType, RunnablesType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
-    addHistoryAction,
+    // addHistoryAction,
     // addSelectStepAction,
     addStepAction,
     // deleteSelectStepAction,
@@ -151,7 +151,7 @@ const FlowEditor = () => {
     // const drag = useSelector((state:State) => state.drag);
     // const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
     // const nodes = useSelector((state:State) => state.nodes);
-    const history = useSelector((state:State) => state.history);
+    // const history = useSelector((state:State) => state.history);
     // const mast = useSelector((state:State) => state.mast);
     // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
     const graph = useSelector((state:State) => state.graph);
@@ -168,6 +168,12 @@ const FlowEditor = () => {
 
     // 直近で保存したFlow
     const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
+
+    // 変更履歴
+    const [history, setHistory] = useState<HistoryType>({
+        current: -1,
+        flows: []
+    });
 
     // 選択中のStepのId
     const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
@@ -195,6 +201,11 @@ const FlowEditor = () => {
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 
     const loadFlowJSON = (context: FlowType) => {
+        const newFlow = StateUtil.deepCopy(context.flow);
+        setHistory({
+            current: 0,
+            flows: [newFlow]
+        });
         return dispatch(loadFlowJSONAction(context, zoom));
     };
     // const addMaster = (context: {}) => {
@@ -231,13 +242,52 @@ const FlowEditor = () => {
     //     dispatch(cutStepsAction(step_ids));
     // };
     const addHistory = () => {
-        dispatch(addHistoryAction());
+        const newFlow = StateUtil.deepCopy(flow!);
+
+        if (FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history, newFlow)) {
+            return;
+        }
+
+        if (history.current === history.flows.length - 1) {
+            // newState.history.flows.push(flow);
+            // newState.history.current = history.flows.length - 1;
+            setHistory({
+                current: history.flows.length,
+                flows: [...history.flows, newFlow]
+            });
+        } else {
+            //前に戻っている状態で履歴が追加された場合は、
+            //current以降の履歴は消す
+            // newState.history.flows = history.flows.slice(0, history.current + 1);
+            // newState.history.flows.push(flow);
+            // newState.history.current = history.flows.length - 1;
+            setHistory({
+                current: history.current + 1,
+                flows: [...history.flows.slice(0, history.current + 1), newFlow]
+            });
+        }
     };
     const undo = () => {
-        dispatch(undoAction(zoom));
+        if (history.current > 0) {
+            //一つ前に巻き戻し
+            const prevFlow = history.flows[history.current - 1];
+            setHistory({
+                current: history.current - 1,
+                flows: history.flows
+            });
+            dispatch(undoAction(prevFlow, zoom));
+        }
     };
     const redo = () => {
-        dispatch(redoAction(zoom));
+        if (history.current < history.flows.length) {
+            //一つ後に前送り
+            const nextFlow = history.flows[history.current + 1];
+            setHistory({
+                current: history.current + 1,
+                flows: history.flows
+            });
+            dispatch(redoAction(nextFlow, zoom));
+        }
     };
     // const executeFlow = (flowid: string) => {
     //     // flowidは未使用
@@ -633,7 +683,7 @@ const FlowEditor = () => {
 
     const renderSteps = useCallback(() => {
         let steps: any = [];
-        if (Array.isArray(flow?.nodes)) {
+        if (flow?.nodes) {
             steps = flow!.nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
@@ -674,7 +724,7 @@ const FlowEditor = () => {
         moveSteps]);
 
     const renderEdges = useCallback(() => {
-        let edges: any = [];
+        const edges:React.JSX.Element[] = [];
         if (Array.isArray(graph.edges)) {
             graph.edges.forEach((edge, index) => {
                 const v_node = GraphUtil.getNode(flow?.nodes || [], edge.v); // 入力元ノード
@@ -700,7 +750,7 @@ const FlowEditor = () => {
                         inPortLabel = JSON.parse(edge.name).port_name;
                     }
 
-                    let e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy}
+                    const e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy}
                         key={index} />;
                     edges.push(e);
                 }
