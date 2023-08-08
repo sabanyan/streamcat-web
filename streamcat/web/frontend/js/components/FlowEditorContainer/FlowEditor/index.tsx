@@ -169,6 +169,9 @@ const FlowEditor = () => {
     // 直近で保存したFlow
     const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
 
+    // Canvasに表示するFlow
+    const [flow, setFlow] = useState<FlowType>(flowReader);
+
     // 変更履歴
     const [history, setHistory] = useState<HistoryType>({
         current: -1,
@@ -470,43 +473,40 @@ const FlowEditor = () => {
     }, []);
 
     useEffect(() => {
+        // 
         // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
         // これらを取得した後に、findFlowを実行する
-        Api.findFlow(inject_flow_uuid).then(flow => {
-            // HTML headのtitleにフロー名を設定する
-            // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
-            document.title = "📐" + flow.label;
-            // フローJSONを解析する
-            loadFlowJSON(flow);
-            // 直近で保存したFlowを保持する
-            setLastSavedFlow(StateUtil.deepCopy(flow));
-            // 編集ロックされたフローの場合は通知する
-            if (flow.editLock) {
-                notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
-            }
-            return flow.allowlist;
-        }).then(allowlist => {
-            // 実行モードの設定
-            const executeMode = (allowlist.execute) ? FlowExecuteModeValue.Executable : FlowExecuteModeValue.NotExecutable;
-            setExecuteMode(executeMode);
-            // 編集モードの設定
-            if (!allowlist.read) {
-                // read が無効な場合は NotAllowed に飛ばす
-                setEditMode(FlowEditModeValue.NotAllowed)
-                setIsLoading(false);
-                return;
-            }
-            if (!allowlist.update) {
-                // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
-                setEditMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
-                setIsLoading(false);
-                return;
-            }
-            // update が有効な場合は、排他ロックを取得する
-            getNewLockUUID();
-        }).catch((error) => {
-            console.log(error);
-        });
+        // 
+        // HTML headのtitleにフロー名を設定する
+        // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
+        document.title = "📐" + flow.label;
+        // フローJSONを解析する
+        loadFlowJSON(flow);
+        // 直近で保存したFlowを保持する
+        setLastSavedFlow(StateUtil.deepCopy(flow));
+        // 編集ロックされたフローの場合は通知する
+        if (flow.editLock) {
+            notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
+        }
+            
+        // 実行モードの設定
+        const executeMode = (flow.allowlist.execute) ? FlowExecuteModeValue.Executable : FlowExecuteModeValue.NotExecutable;
+        setExecuteMode(executeMode);
+        // 編集モードの設定
+        if (!flow.allowlist.read) {
+            // read が無効な場合は NotAllowed に飛ばす
+            setEditMode(FlowEditModeValue.NotAllowed)
+            setIsLoading(false);
+            return;
+        }
+        if (!flow.allowlist.update) {
+            // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
+            setEditMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
+            setIsLoading(false);
+            return;
+        }
+        // update が有効な場合は、排他ロックを取得する
+        getNewLockUUID();
 
         // ブラウザバックによってブラウザタブを閉じれるように設定する
         WebUtil.setCloseWindowOnBack();
