@@ -13,21 +13,23 @@ import {
 } from 'Shared/Inspector'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import { RunnablesType } from "Types/index";
+import { GraphType, RunnablesType } from "Types/index";
 import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';
 import {
   addDataDstStepAction,
   addDataSrcStepAction,
   deleteCacheAction,
+  graphUtil,
   // resizeInspectorAction,
   updateFlowAction
 } from 'Modules/flowEditor';
-import { InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
 type InspectorProps = {
   inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];
   flowData: Flow;
   flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+  graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
   lastSavedFlow?: FlowType;
   selectedStepIds: string[];
   // nodes: AllNodeType[];
@@ -54,22 +56,31 @@ export const Inspector = (props:InspectorProps) => {
     const {flowData} = props;
 
     const [flow, setFlow] = props.flowState;
+    const [graph, setGraph] = props.graphState;
 
     const dispatch = useDispatch();
 
     const addDataDstStep = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
         dispatch(addDataDstStepAction(flowData, dataDst, selectedDataNodeId, zoom));
         setFlow({...flow});
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
         dispatch(addDataSrcStepAction(flowData, dataSrc, zoom));
         setFlow({...flow});
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const updateFlow = (flowData:Flow, zoom:number) => {
-        dispatch(updateFlowAction(flowData, zoom));
+        // dispatch(updateFlowAction(flowData, zoom));
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const deleteCache = (selected_step_id: string) => {
-        dispatch(deleteCacheAction(flowData, selected_step_id));
+        // dispatch(deleteCacheAction(flowData, selected_step_id));
+        const node = GraphUtil.getNode(flowData.nodes, selected_step_id);
+        if (node.type === 'frame') {
+          (node as FrameNodeType).deleteCache();
+        }
+        flowData.nodes = GraphUtil.updateNode({ nodes: flowData.nodes, id: selected_step_id, new_node: node });
         setFlow({...flow});
     };
     // const resizeInspector = (width: number) => {

@@ -9,7 +9,7 @@ import { Api } from 'Api';
 import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, FlowUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
-import { DragType, HistoryType, RunnablesType } from 'Types/index';
+import { DragType, GraphType, HistoryType, RunnablesType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { DataFrameStepModel, MessageModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
@@ -31,7 +31,10 @@ import {
     // refreshCanvasSizeAction,
     // refreshFlowAction,
     // updateLastSavedFlowAction,
-    State
+    State,
+    graphUtil,
+    rebuildNodesEdges,
+    allRebuildNodesEdges
 } from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
@@ -154,7 +157,7 @@ const FlowEditor = () => {
     // const history = useSelector((state:State) => state.history);
     // const mast = useSelector((state:State) => state.mast);
     // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
-    const graph = useSelector((state:State) => state.graph);
+    // const graph = useSelector((state:State) => state.graph);
     // const zoom = useSelector((state:State) => state.zoom);
     // const inspector = useSelector((state:State) => state.inspector);
     // const editor = useSelector((state:State) => state.editor);
@@ -177,6 +180,8 @@ const FlowEditor = () => {
         current: -1,
         flows: []
     });
+
+    const [graph, setGraph] = useState<GraphType>(graphUtil.getGraph(flow.flow.nodes, 100))
 
     // 選択中のStepのId
     const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
@@ -209,8 +214,10 @@ const FlowEditor = () => {
             current: 0,
             flows: [newFlowData]
         });
-        const {flow:newFlow} = dispatch(loadFlowJSONAction(flow, zoom));
-        setFlow({...newFlow});
+        // const {flow:newFlow} = dispatch(loadFlowJSONAction(flow, zoom));
+        const flowData = graphUtil.load(flow.flow);
+        setFlow({...flow, flow:flowData});
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     // const addMaster = (flow: {}) => {
     //     dispatch(addMasterAction(flow));
@@ -218,10 +225,13 @@ const FlowEditor = () => {
     const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
         dispatch(addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, zoom));
         setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
     const updateStep = (step: AllNodeType) => {
-        dispatch(updateStepAction(flow.flow, step, zoom));
+        // dispatch(updateStepAction(flow.flow, step, zoom));
+        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, {step:step});
         setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
     const selectSteps = (selected_steps: any[]) => {
         // dispatch(selectStepsAction(selected_steps));
@@ -242,6 +252,7 @@ const FlowEditor = () => {
     const deleteSteps = (step_ids: string[]) => {
         dispatch(deleteStepsAction(flow.flow, step_ids, zoom));
         setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
         //削除後は非選択状態にする
         setSelectedStepIds([]);
     };
@@ -282,7 +293,10 @@ const FlowEditor = () => {
                 current: history.current - 1,
                 flows: history.flows
             });
-            dispatch(undoAction(prevFlowData, zoom));
+            // dispatch(undoAction(prevFlowData, zoom));
+            allRebuildNodesEdges(prevFlowData.nodes, graph.edges);
+            (window as any).nodes = prevFlowData.nodes;
+            setGraph(graphUtil.getGraph(prevFlowData.nodes, zoom));
             setFlow({...flow, flow:prevFlowData});
         }
     };
@@ -294,7 +308,10 @@ const FlowEditor = () => {
                 current: history.current + 1,
                 flows: history.flows
             });
-            dispatch(redoAction(nextFlowData, zoom));
+            // dispatch(redoAction(nextFlowData, zoom));
+            allRebuildNodesEdges(nextFlowData.nodes, graph.edges);
+            (window as any).nodes = nextFlowData.nodes;
+            setGraph(graphUtil.getGraph(nextFlowData.nodes, zoom));
             setFlow({...flow, flow:nextFlowData});
         }
     };
@@ -309,7 +326,19 @@ const FlowEditor = () => {
     //     dispatch(addNoteAction(x, y));
     // };
     const moveSteps = (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
-        dispatch(moveStepsAction(flowData, x, y, step, selectedStepIds, zoom));
+        // dispatch(moveStepsAction(flowData, x, y, step, selectedStepIds, zoom));
+        if (selectedStepIds.length > 0 && step) {
+            const dx = (step.position.x - x);
+            const dy = (step.position.y - y);
+    
+            flowData.nodes.map((node, index) => {
+              if (selectedStepIds.includes(node.id)) {
+                node.position.x = node.position.x - dx;
+                node.position.y = node.position.y - dy;
+              }
+            });
+            setGraph(graphUtil.getGraph(flowData.nodes, zoom));
+        }
     };
     // const setExecuteMode = (mode: FlowExecuteModeValue) => {
     //     dispatch(setExecuteModeAction(mode));
@@ -821,6 +850,7 @@ const FlowEditor = () => {
                 zoomState={[zoom, setZoom]}
                 lockUUID={lockUUID}
                 flowState={[flow, setFlow]}
+                graphState={[graph, setGraph]}
                 flowData={flow.flow}
                 history={history}
                 notifyLoading={notifyLoading}
@@ -848,6 +878,7 @@ const FlowEditor = () => {
                 undo={undo}
                 selectedStepIds={selectedStepIds}
                 flowState={[flow, setFlow]}
+                graphState={[graph, setGraph]}
                 flowData={flow.flow}
                 zoom={zoom}
                 history={history}
@@ -867,6 +898,7 @@ const FlowEditor = () => {
                 addStep={addStep}
                 selectSteps={selectSteps}
                 flowState={[flow, setFlow]}
+                graphState={[graph, setGraph]}
                 flowData={flow.flow}
                 lastSavedFlow={lastSavedFlow}
                 lockUUID={lockUUID}

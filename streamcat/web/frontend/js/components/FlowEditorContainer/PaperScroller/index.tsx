@@ -4,11 +4,12 @@ import { useDispatch } from 'react-redux';
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
 import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/index";
-import {DragType, HistoryType} from "Types/index";
+import {DragType, GraphType, HistoryType} from "Types/index";
 import {
     copyStepsAction,
     dragStartAction,
     draggingAction,
+    graphUtil,
     // dragEndAction,
     pasteStepsAction
 } from 'Modules/flowEditor';
@@ -29,6 +30,7 @@ type Props = {
     history: HistoryType;
     // drag: DragType | {};
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     children: React.ReactNode;
 }
@@ -36,6 +38,7 @@ type Props = {
 const PaperScroller = (props: Props) => {
     const dispatch = useDispatch();
 
+    const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
 
     // const [coords, setCoords] = useState<{x:number, y:number}>();
@@ -44,6 +47,7 @@ const PaperScroller = (props: Props) => {
         const [flow, setFlow] = props.flowState;
         const pasteSteps = (paste_nodes: []) => {
             dispatch(pasteStepsAction(flowData, paste_nodes, props.zoom));
+            setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
             setFlow({...flow});
         };
         navigator.clipboard.readText().then((data: any) => {
@@ -153,7 +157,12 @@ const PaperScroller = (props: Props) => {
     const onMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const {selectSteps} = props;
         const dragStart = (x: number, y: number) => {
-            dispatch(dragStartAction(x, y));
+            // dispatch(dragStartAction(x, y));
+            setGraph({
+                ...graph,
+                width: (x > graph.width) ? x : graph.width,
+                height: (y > graph.height) ? y : graph.height
+            });
             setDragRange({
                 start: {
                     x: x,
@@ -184,7 +193,12 @@ const PaperScroller = (props: Props) => {
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         // const {drag} = props;
         const dragging = (x: number, y: number) => {
-            dispatch(draggingAction(x, y));
+            // dispatch(draggingAction(x, y));
+            setGraph({
+                ...graph,
+                width: (x > graph.width) ? x : graph.width,
+                height: (y > graph.height) ? y : graph.height
+            });
             setDragRange({
                 start: {
                     x: dragRange?.start.x || x,

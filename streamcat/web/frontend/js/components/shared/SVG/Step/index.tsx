@@ -29,7 +29,7 @@ interface Props {
     selectSteps: (selected_steps: any[]) => void;
     selectFrame: (frame?:FrameType) => void;
     updateStep: (step: AllNodeType) => void;
-    moveSteps: Function;
+    moveSteps: (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => void;
     readOnly: boolean;
 }
 
@@ -159,7 +159,7 @@ const Step = (props: Props) => {
         const { model, selectedStepIds, moveSteps } = props;
         if (selectedStepIds.includes(model.id)) {
             const { new_x, new_y } = calcNewPosition(e);
-            moveSteps(new_x, new_y, model, selectedStepIds);
+            moveSteps(flowData, new_x, new_y, model, selectedStepIds);
         }
     };
 

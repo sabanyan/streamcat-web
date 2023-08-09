@@ -4,13 +4,14 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
-import { HistoryType } from 'Types/index';
-import { refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
+import { GraphType, HistoryType } from 'Types/index';
+import { graphUtil, refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type ToolBarProps = {
     // nodes: AllNodeType[];
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     flowData: Flow;
     history: HistoryType;
     // zoom: number;
@@ -52,6 +53,7 @@ export const ToolBar = (props: ToolBarProps) => {
             onClickRunFlowPromise} = props;
 
     const [flow, setFlow] = props.flowState;
+    const [graph, setGraph] = props.graphState;
     const [zoom, ] = props.zoomState;
 
     const dispatch = useDispatch();
@@ -64,14 +66,23 @@ export const ToolBar = (props: ToolBarProps) => {
     const undoDisabled = !(current - 1 >= 0);
 
     const refreshFlow = (flow:FlowType) => {
-        dispatch(refreshFlowAction(flow, zoom));
+        // dispatch(refreshFlowAction(flow, zoom));
+        const flowJson = graphUtil.load(flow.flow);
+        setGraph(graphUtil.getGraph(flowJson.nodes, zoom));
         setFlow({...flow});
     };
     // const setZoom = ({ offset, value }) => {
     //     dispatch(setZoomAction({ offset, value }));
     // };
     const sortFlow = () => {
-        dispatch(sortFlowAction(flowData, zoom));
+        // dispatch(sortFlowAction(flowData, zoom));
+        // Noteはソート対象外にする
+        const targets = flowData.nodes.filter(node => {
+            return node.type !== 'note';
+        });
+        //ノード位置を再計算
+        graphUtil.refreshPosition(targets);
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));;
     };
 
     return <div>
@@ -100,6 +111,7 @@ export const ToolBar = (props: ToolBarProps) => {
         </div>
         <div className={classnames(style.paper_toolbar)}>
             <Zoom zoomState={zoomState}
+                  graphState={[graph, setGraph]}
                   flowData={flowData}
                   disabled={false}/>
             <Sort disabled={baseDisabled}
