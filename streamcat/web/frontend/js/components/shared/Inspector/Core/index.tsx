@@ -26,7 +26,8 @@ import { InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
 type InspectorProps = {
   inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];
-  flowData?: Flow;
+  flowData: Flow;
+  flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
   lastSavedFlow?: FlowType;
   selectedStepIds: string[];
   // nodes: AllNodeType[];
@@ -50,27 +51,33 @@ type InspectorProps = {
 }
 
 export const Inspector = (props:InspectorProps) => {
+    const {flowData} = props;
+
+    const [flow, setFlow] = props.flowState;
 
     const dispatch = useDispatch();
 
     const addDataDstStep = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
-        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId, zoom));
+        dispatch(addDataDstStepAction(flowData, dataDst, selectedDataNodeId, zoom));
+        setFlow({...flow});
     };
     const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
-        dispatch(addDataSrcStepAction(dataSrc, zoom));
+        dispatch(addDataSrcStepAction(flowData, dataSrc, zoom));
+        setFlow({...flow});
     };
     const updateFlow = (flowData:Flow, zoom:number) => {
         dispatch(updateFlowAction(flowData, zoom));
     };
     const deleteCache = (selected_step_id: string) => {
-        dispatch(deleteCacheAction(selected_step_id));
+        dispatch(deleteCacheAction(flowData, selected_step_id));
+        setFlow({...flow});
     };
     // const resizeInspector = (width: number) => {
     //     dispatch(resizeInspectorAction(width));
     // };
 
 
-    const { selectedStepIds, lockUUID, runnables, flowData, lastSavedFlow,
+    const { selectedStepIds, lockUUID, runnables, lastSavedFlow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, zoom, addStep,updateStep,selectSteps,addHistory,
       selectedFrameState, deleteSteps,updateLastSavedFlow } = props

@@ -13,7 +13,7 @@ import {
     pasteStepsAction
 } from 'Modules/flowEditor';
 import { CommandNodeType, FrameNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType } from 'Model/Library';
+import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type Props = {
     canvasWidth: number;
@@ -23,10 +23,12 @@ type Props = {
     redo: () => void;
     undo: () => void;
     selectedStepIds: string[];
-    nodes: AllNodeType[];
+    // nodes: AllNodeType[];
+    flowData: Flow;
     zoom: number
     history: HistoryType;
     // drag: DragType | {};
+    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     children: React.ReactNode;
 }
@@ -38,8 +40,11 @@ const PaperScroller = (props: Props) => {
 
     // const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
+        const {flowData} = props;
+        const [flow, setFlow] = props.flowState;
         const pasteSteps = (paste_nodes: []) => {
-            dispatch(pasteStepsAction(paste_nodes, props.zoom));
+            dispatch(pasteStepsAction(flowData, paste_nodes, props.zoom));
+            setFlow({...flow});
         };
         navigator.clipboard.readText().then((data: any) => {
             pasteSteps(data);
@@ -49,9 +54,9 @@ const PaperScroller = (props: Props) => {
     };
 
     const getCopyNodes = (): string => {
-        const {selectedStepIds, nodes} = props;
+        const {selectedStepIds, flowData} = props;
         return JSON.stringify(selectedStepIds.map((id) => {
-            return GraphUtil.getNode(nodes, id);
+            return GraphUtil.getNode(flowData.nodes, id);
         }));
     };
 
@@ -60,12 +65,12 @@ const PaperScroller = (props: Props) => {
      * @returns {boolean}
      */
     const copyableStep = () => {
-        const {selectedStepIds, nodes} = props;
+        const {selectedStepIds, flowData} = props;
 
         if (selectedStepIds.length !== 1) return false;
 
         if(selectedStepIds.length){
-            const targetNode = GraphUtil.getNode(nodes, selectedStepIds[0]);
+            const targetNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
             if (targetNode.type === 'flow' || targetNode.type === 'command') {
                 return true;
             }

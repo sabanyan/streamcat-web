@@ -15,7 +15,7 @@ type Props = {
     selectedNodeId: string;
     // runnables: RunnablesType;
     nodes: any[];
-    updateStep: Function;
+    updateStep: (step: AllNodeType) => void;
     addHistory: () => void;
     selectSteps: (selected_steps: any[]) => void;
     deleteSteps: (step_ids: string[]) => void;

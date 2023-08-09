@@ -6,10 +6,12 @@ import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
 import { HistoryType } from 'Types/index';
 import { refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
-import { AllNodeType, FlowType } from 'Model/Library';
+import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type ToolBarProps = {
-    nodes: any[];
+    // nodes: AllNodeType[];
+    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+    flowData: Flow;
     history: HistoryType;
     // zoom: number;
     zoomState: [number, (value:React.SetStateAction<number>)=>void];
@@ -30,7 +32,7 @@ type ToolBarProps = {
 };
 
 export const ToolBar = (props: ToolBarProps) => {
-    const { nodes,
+    const { flowData,
             history,
             // zoom,
             zoomState,
@@ -49,6 +51,7 @@ export const ToolBar = (props: ToolBarProps) => {
             onClickSaveFlow,
             onClickRunFlowPromise} = props;
 
+    const [flow, setFlow] = props.flowState;
     const [zoom, ] = props.zoomState;
 
     const dispatch = useDispatch();
@@ -62,12 +65,13 @@ export const ToolBar = (props: ToolBarProps) => {
 
     const refreshFlow = (flow:FlowType) => {
         dispatch(refreshFlowAction(flow, zoom));
+        setFlow({...flow});
     };
     // const setZoom = ({ offset, value }) => {
     //     dispatch(setZoomAction({ offset, value }));
     // };
     const sortFlow = () => {
-        dispatch(sortFlowAction(zoom));
+        dispatch(sortFlowAction(flowData, zoom));
     };
 
     return <div>
@@ -85,7 +89,7 @@ export const ToolBar = (props: ToolBarProps) => {
                 lockUUID={lockUUID}
                 disabled={runDisabled}>このフローを実行</Run>
             <Note zoom={zoom}
-                  nodes={nodes}
+                  nodes={flowData.nodes}
                   addStep={addStep}
                   addHistory={addHistory}
                   disabled={baseDisabled}>メモ</Note>
@@ -96,6 +100,7 @@ export const ToolBar = (props: ToolBarProps) => {
         </div>
         <div className={classnames(style.paper_toolbar)}>
             <Zoom zoomState={zoomState}
+                  flowData={flowData}
                   disabled={false}/>
             <Sort disabled={baseDisabled}
                   addHistory={addHistory}

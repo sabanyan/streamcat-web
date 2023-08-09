@@ -30,7 +30,7 @@ type Props = {
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
-    updateStep: Function;
+    updateStep: (step: AllNodeType) => void;
     updateFlow: (flowData:Flow, zoom:number) => void;
     updateLastSavedFlow: (lastSavedFlow:FlowType) => void;
     previewDisabled: boolean;

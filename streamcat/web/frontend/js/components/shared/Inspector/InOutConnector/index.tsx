@@ -6,12 +6,13 @@ import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
 import Constants from "Constants/index";
 import { InConnector } from '../inConnector';
 import { CommandNodeType, addInPort } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
 
 type Props = {
     // TODO: 型指定をしたいがエラーになる箇所があるので保留する
     // selectedStep: SubFlowStepModel | CommandStepModel;
     selectedStep: any;
-    updateStep: Function;
+    updateStep: (step: AllNodeType) => void;
     nodes: any[];
     // FIXIT: 使用していないプロパティ?
     // selectedSubFlow: FlowModel | null;
