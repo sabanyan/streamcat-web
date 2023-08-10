@@ -933,18 +933,6 @@ export const deleteStepsAction = (flowData:Flow, step_ids:string[], zoom:number)
 };
 
 /**
- * ステップのコピー
- * @param step_ids
- * @returns {{type: string, step: *}}
- */
-export const copyStepsAction = (step_ids: string[]) => {
-  return {
-    type: COPY_STEPS_ACTION,
-    step_ids: step_ids
-  };
-};
-
-/**
  * ステップのペースト
  * @returns {{type: string, step: *}}
  */

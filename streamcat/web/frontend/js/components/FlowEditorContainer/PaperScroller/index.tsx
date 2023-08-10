@@ -6,7 +6,6 @@ import {DetectUtil, GraphUtil} from "Utils/index";
 import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/index";
 import {DragType, GraphType, HistoryType} from "Types/index";
 import {
-    copyStepsAction,
     graphUtil,
     pasteStepsAction
 } from 'Modules/flowEditor';
@@ -80,9 +79,6 @@ const PaperScroller = (props: Props) => {
     };
 
     const copySteps = () => {
-        const copySteps = (step_ids: string[]) => {
-            dispatch(copyStepsAction(step_ids));
-        };
         if (!copyableStep()) {
             navigator.clipboard.writeText("");
             return;
@@ -91,7 +87,7 @@ const PaperScroller = (props: Props) => {
         const {selectedStepIds} = props;
         const copyData = getCopyNodes();
         navigator.clipboard.writeText(copyData).then(() => {
-            copySteps(selectedStepIds);
+            // copySteps(selectedStepIds);
         }, (err) => {
             alert("クリップボードが利用できません");
         });
