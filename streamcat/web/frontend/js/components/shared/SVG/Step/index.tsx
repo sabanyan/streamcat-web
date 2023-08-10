@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Constants from "Constants/index";
 import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from "Model/index";
 import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";

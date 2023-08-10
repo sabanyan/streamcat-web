@@ -1,6 +1,5 @@
 //@flow
 import type { CommandParamType } from 'Types/index'
-import CommandModel from 'Model/Command/CommandModel'
 import { Command } from 'Model/Library';
 
 export default class CommandUtil {

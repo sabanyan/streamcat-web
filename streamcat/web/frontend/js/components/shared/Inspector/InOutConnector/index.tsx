@@ -1,8 +1,7 @@
 import React from 'react';
 import style from "../style.scss";
 import {AddButton} from "Shared/Input";
-import {CommandStepModel, SubFlowStepModel} from "Model/index";
-import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
+import {FlowUtil, ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import { InConnector } from '../inConnector';
 import { CommandNodeType, addInPort } from 'Model/Step/NodeTypes';

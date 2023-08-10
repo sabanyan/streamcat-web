@@ -4,7 +4,6 @@ import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
 import { RunnablesType } from "Types/index";
 import { TextField } from "Shared/Input";
-import { CommandModel } from "Model/index";
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 
 type Props = {

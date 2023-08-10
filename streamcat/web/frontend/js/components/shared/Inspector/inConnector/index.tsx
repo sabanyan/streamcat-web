@@ -1,7 +1,6 @@
 import React from 'react';
 import style from '../style.scss';
 import Constants from 'Constants/index';
-import {DataFrameStepModel} from 'Model/index';
 import {DropDownList} from 'Shared/Input';
 import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
 import { CommandNodeType, FrameNodeType } from 'Model/Step/NodeTypes';

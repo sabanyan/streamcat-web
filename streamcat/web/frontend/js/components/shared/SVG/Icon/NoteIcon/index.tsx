@@ -1,7 +1,6 @@
 import React from 'react';
 import {CSSProperties} from "react";
 import Constants from "Constants/index";
-import {NoteStepModel} from "Model/index";
 import { NoteNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {

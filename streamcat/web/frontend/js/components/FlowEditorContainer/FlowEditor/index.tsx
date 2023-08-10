@@ -7,11 +7,10 @@ import Constants from 'Constants/index';
 import style from './style.scss';
 import { Api } from 'Api';
 import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, FlowUtil} from 'Utils/index';
-import CommandModel from 'Model/Command/CommandModel';
 import { Loader } from 'Shared/Base';
 import { DragType, GraphType, HistoryType, RunnablesType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
-import { DataFrameStepModel, MessageModel, VisualizeModel } from 'Model/index';
+import { MessageModel, VisualizeModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
     addStepAction,

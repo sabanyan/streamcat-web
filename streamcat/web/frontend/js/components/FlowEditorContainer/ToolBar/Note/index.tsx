@@ -1,10 +1,9 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import Constants from 'Constants/index';
-import { NoteStepModel } from 'Model/index';
 import { FlowUtil, ModelUtil, PositionUtil, ZoomUtil } from 'Utils/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
-import { NoteNode, NoteNodeType, calcSize } from 'Model/Step/NodeTypes';
+import { NoteNode, NoteNodeType } from 'Model/Step/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 
 type Props = {
@@ -41,7 +40,7 @@ export const Note = (props: Props) => {
         //     content: ''
         // });
         const newId = ModelUtil.getNewId(nodes, 'note');
-        const note = new NoteNode(newId, notOverlapNodePosition);
+        const note = new NoteNode(newId, notOverlapNodePosition) as NoteNodeType;
 
         addStep(note, [], [], zoom);
         addHistory();

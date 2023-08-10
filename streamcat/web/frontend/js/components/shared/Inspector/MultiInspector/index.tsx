@@ -3,7 +3,6 @@ import React from 'react';
 import {BaseInspector} from 'Shared/Inspector';
 import {Button} from 'Shared/Input';
 import {CommandSelector} from 'FlowEditorContainer/Command';
-import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from 'Model/index';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { RunnablesType } from 'Types/index';

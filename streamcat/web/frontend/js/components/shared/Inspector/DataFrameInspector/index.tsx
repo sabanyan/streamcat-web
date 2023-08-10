@@ -5,7 +5,6 @@ import {GraphUtil, ModalUtil, SortUtil, StateUtil, StringUtil} from "Utils/index
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
-import {DataFrameStepModel} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";

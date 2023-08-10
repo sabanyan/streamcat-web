@@ -10,7 +10,6 @@ import {
   NoteInspector,
   Resizer
 } from 'Shared/Inspector'
-import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { GraphType, RunnablesType } from "Types/index";
 import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';

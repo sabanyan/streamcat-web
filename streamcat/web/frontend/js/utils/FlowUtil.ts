@@ -1,10 +1,10 @@
 //@flow
 import Constants from 'Constants/index'
-import type { CommandParamType, HistoryType } from 'Types/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel, BaseStepModel} from 'Model/index'
+import type { HistoryType } from 'Types/index'
+import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType, Command, Flow } from 'Model/Library';
+import { AllNodeType, Flow } from 'Model/Library';
 import ModelUtil from './ModelUtil';
 
 export default class FlowUtil {

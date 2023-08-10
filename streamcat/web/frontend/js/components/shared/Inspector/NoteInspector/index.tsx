@@ -3,11 +3,10 @@ import {BaseInspector} from 'Shared/Inspector';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import {Button, DropDownList} from 'Shared/Input';
 import Constants from 'Constants/index';
-import {NoteStepModel} from 'Model/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
 import { NoteNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType, Flow } from 'Model/Library';
+import { AllNodeType } from 'Model/Library';
 
 interface Props {
     selectedNodeId: string;

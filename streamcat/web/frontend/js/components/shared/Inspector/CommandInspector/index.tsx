@@ -6,8 +6,6 @@ import {Button} from "Shared/Input";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
-import {CommandParamType, RunnablesType} from "Types/index";
-import CommandModel from "Model/Command/CommandModel";
 import { AllNodeType, Command, FlowCommand } from 'Model/Library';
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 

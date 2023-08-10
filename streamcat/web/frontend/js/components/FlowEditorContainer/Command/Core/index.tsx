@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import Constants from "Constants/index";
 import style from "./style.scss";
 import classnames from "classnames";
-import { CommandStepModelProps } from "Model/Step/CommandStepModel";
-import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { ModelUtil, WebUtil } from "Utils/index";
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";

@@ -1,15 +1,12 @@
 import React from 'react';
-import {useState} from "react";
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
-import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/index";
 import {DragType, GraphType, HistoryType} from "Types/index";
 import {
     graphUtil,
     pasteStepsAction
 } from 'Modules/flowEditor';
-import { CommandNodeType, FrameNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType, Flow, FlowType } from 'Model/Library';
+import { Flow, FlowType } from 'Model/Library';
 
 type Props = {
     canvasWidth: number;
