@@ -150,7 +150,7 @@ const FlowSettingsInspector = (props: Props) => {
                 <Fragment>
                     <div className={style.full_hr} />
                     <CommandSelector
-                        // nodes={nodes}
+                        nodes={flowData.nodes}
                         runnables={runnables}
                         numberOfInput={0}
                         selectedStepIds={selectedStepIds}

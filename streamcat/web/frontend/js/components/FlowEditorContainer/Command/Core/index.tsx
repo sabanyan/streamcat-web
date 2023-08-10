@@ -5,12 +5,12 @@ import classnames from "classnames";
 import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { WebUtil } from "Utils/index";
+import { ModelUtil, WebUtil } from "Utils/index";
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from "Model/Step/NodeTypes";
 
 type Props = {
-    // nodes: any[];
+    nodes: AllNodeType[];
     command: Command | FlowCommand | InlineFlowCommand;
     selectedStepIds: string[];
     zoom: number;
@@ -24,6 +24,8 @@ type Props = {
 export const CommandItem = (props: Props) => {
 
     const [inputRefs, setInputRefs] = useState<any[]>([]);
+
+    const {nodes} = props;
 
     const onBuild = (param, element) => {
         if (element) setInputRefs([...inputRefs, { param: param, element: element }]);
@@ -51,7 +53,8 @@ export const CommandItem = (props: Props) => {
             // (model as any).commandId = command.id;
             // node = new CommandStepModel((model as any));
             // node.initArgs();
-            node = new CommandNode((command as Command).id || '', {x:0, y:0});
+            const newId = ModelUtil.getNewId(nodes, 'command');
+            node = new CommandNode(newId, (command as Command).id || '', {x:0, y:0});
             node.label = command.label;
             node.args = args;
 
@@ -60,7 +63,8 @@ export const CommandItem = (props: Props) => {
             // (model as any).type = Constants.step.type.subflow;
             // (model as any).uuid = command.uuid;
             // node = new SubFlowStepModel((model as any));
-            node = new FlowNode((command as FlowCommand).uuid, {x:0, y:0})
+            const newId = ModelUtil.getNewId(nodes, 'flow');
+            node = new FlowNode(newId, (command as FlowCommand).uuid, {x:0, y:0})
             node.label == command.label
         } else {
             throw Error('command or flow node type only!');
@@ -87,7 +91,8 @@ export const CommandItem = (props: Props) => {
                 //     uuid: null,
                 //     dataSource: Constants.data.dataSource.csv
                 // });
-                const output_step:FrameNodeType = new FrameNode({x:0, y:0});
+                const newId = ModelUtil.getNewId(nodes, 'frame');
+                const output_step:FrameNodeType = new FrameNode(newId, {x:0, y:0});
                 addStep(output_step, [], [], zoom);
                 return output_step;
             });

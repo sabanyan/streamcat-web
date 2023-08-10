@@ -9,7 +9,7 @@ import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Libr
 
 type Props = {
     runnables: RunnablesType;
-    // nodes:any[];
+    nodes:AllNodeType[];
     numberOfInput: number;
     selectedStepIds: string[];
     zoom: number;
@@ -55,7 +55,7 @@ const CommandSelector = (props: Props) => {
     };
 
     const { numberOfInput, selectedStepIds, zoom, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, runnables } = props;
+        selectSteps, addHistory, runnables, nodes } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
     const isNoKeyword = (keyword.length == 0);
@@ -102,7 +102,7 @@ const CommandSelector = (props: Props) => {
             operatorsContainer.push(<div key={command.classification || 'separator' + index} className={style.command_separator}>{label}</div>);
         }
         operatorsContainer.push(<CommandItem
-            // nodes={nodes}
+            nodes={nodes}
             key={index}
             command={command}
             selectedStepIds={selectedStepIds}

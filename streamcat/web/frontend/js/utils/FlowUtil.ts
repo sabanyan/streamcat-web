@@ -5,6 +5,7 @@ import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, M
 import { Api } from 'Api';
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 import { AllNodeType, Command, Flow } from 'Model/Library';
+import ModelUtil from './ModelUtil';
 
 export default class FlowUtil {
 
@@ -193,11 +194,10 @@ export default class FlowUtil {
     return step
   }
 
-  static setModelType (json: any): AllNodeType {
+  static setModelType (nodes:AllNodeType[], json: any): AllNodeType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) {
-
-      const node:FlowNodeType = new FlowNode(json.uuid, json.position);
-      (node as any).id = json.id;
+      const newId = ModelUtil.getNewId(nodes, 'flow');
+      const node:FlowNodeType = new FlowNode(newId, json.uuid, json.position);
       node.label = json.label;
       node.args = json.args;
       node.srcs = json.srcs;
@@ -209,9 +209,8 @@ export default class FlowUtil {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
       // let node = new CommandStepModel(json)
       // node.loadArgs()
-
-      const node:CommandNodeType = new CommandNode(json.commandId, json.position);
-      (node as any).id = json.id;
+      const newId = ModelUtil.getNewId(nodes, 'command');
+      const node:CommandNodeType = new CommandNode(newId, json.commandId, json.position);
       node.label = json.label;
       node.args = json.args;
       node.srcs = json.srcs;
@@ -221,7 +220,8 @@ export default class FlowUtil {
       return node;
     }
     if (json['uuid'] !== undefined && json['dataSource'] !== undefined){
-      const newNode:FrameNodeType = new FrameNode({x:0, y:0});
+      const newId = ModelUtil.getNewId(nodes, 'frame');
+      const newNode:FrameNodeType = new FrameNode(newId, {x:0, y:0});
       newNode.label = json.label;
       newNode.uuid = json.uuid;
       newNode.makeCache = json.makeCache;

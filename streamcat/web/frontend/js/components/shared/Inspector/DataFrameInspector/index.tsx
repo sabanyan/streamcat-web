@@ -407,7 +407,7 @@ const DataFrameInspector = (props: Props) => {
                     <Fragment>
                         <div className={style.full_hr} />
                         <CommandSelector
-                            // nodes={[]}
+                            nodes={flowData.nodes}
                             runnables={runnables}
                             numberOfInput={1}
                             selectedStepIds={selectedStepIds}

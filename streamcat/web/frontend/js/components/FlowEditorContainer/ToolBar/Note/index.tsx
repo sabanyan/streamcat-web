@@ -9,7 +9,7 @@ import { AllNodeType } from 'Model/Library';
 
 type Props = {
     zoom: number;
-    nodes: any[];
+    nodes: AllNodeType[];
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
     addHistory: () => void;
     children: React.ReactNode;
@@ -40,7 +40,8 @@ export const Note = (props: Props) => {
         //     title: '新しいメモ',
         //     content: ''
         // });
-        const note = new NoteNode(notOverlapNodePosition)
+        const newId = ModelUtil.getNewId(nodes, 'note');
+        const note = new NoteNode(newId, notOverlapNodePosition);
 
         addStep(note, [], [], zoom);
         addHistory();

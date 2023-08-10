@@ -207,7 +207,7 @@ const FlowEditor = () => {
     //     dispatch(addMasterAction(flow));
     // };
     const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
-        dispatch(addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, zoom));
+        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
@@ -234,7 +234,7 @@ const FlowEditor = () => {
         );
     };
     const deleteSteps = (step_ids: string[]) => {
-        dispatch(deleteStepsAction(flow.flow, step_ids, zoom));
+        deleteStepsAction(flow.flow, step_ids);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
         //削除後は非選択状態にする

@@ -1,5 +1,6 @@
 //@flow
 import Constants from 'Constants/index'
+import { AllNodeType } from 'Model/Library'
 import { ErrorUtil } from 'Utils/index'
 
 export default class ModelUtil {
@@ -8,9 +9,9 @@ export default class ModelUtil {
    * "d1,c1,f1" というフォーマットで発行される
    * @returns {string}
    */
-  static getNewId (type: string): string {
+  static getNewId (nodes:AllNodeType[], type: string): string {
     let prefix: string = ModelUtil.getTypePrefix(type)
-    let Id: string = ModelUtil.getMinimumIDNumberFromNodes(type)
+    let Id: string = ModelUtil.getMinimumIDNumberFromNodes(nodes, type)
     return prefix + Id
   }
 
@@ -35,9 +36,9 @@ export default class ModelUtil {
     return prefix
   }
 
-  static getMinimumIDNumberFromNodes (type: string): string {
+  static getMinimumIDNumberFromNodes (nodes:AllNodeType[], type: string): string {
     const prefix: string = ModelUtil.getTypePrefix(type)
-    const nodes = window.nodes as any[];
+    // const nodes = window.nodes as any[];
     let idNumber: string = ''
     for (let index = 1; index <= nodes.length; index++) {
       idNumber = index.toString()

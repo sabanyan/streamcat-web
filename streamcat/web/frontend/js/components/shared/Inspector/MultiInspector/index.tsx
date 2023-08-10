@@ -12,7 +12,7 @@ import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Libr
 type Props = {
     deleteSteps: (step_ids: string[]) => void;
     selectSteps: (selected_steps: any[]) => void;
-    nodes: any[];
+    nodes: AllNodeType[];
     runnables: RunnablesType;
     selectedStepIds: string[];
     zoom: number;
@@ -65,7 +65,7 @@ const MultiInspector = (props: Props) => {
         return cnt;
     };
 
-    const {runnables, selectedStepIds, zoom, addStep, addDataSrcStep, addDataDstStep,
+    const {runnables, selectedStepIds, zoom, nodes, addStep, addDataSrcStep, addDataDstStep,
            selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
     const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
 
@@ -73,7 +73,7 @@ const MultiInspector = (props: Props) => {
     if (numberOfSelectedDataSources) {
         commandSelector = <div>
             <CommandSelector
-                // nodes={nodes}
+                nodes={nodes}
                 runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
                 selectedStepIds={selectedStepIds}

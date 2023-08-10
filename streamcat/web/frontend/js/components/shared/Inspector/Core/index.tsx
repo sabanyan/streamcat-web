@@ -58,12 +58,12 @@ export const Inspector = (props:InspectorProps) => {
     const dispatch = useDispatch();
 
     const addDataDstStep = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
-        dispatch(addDataDstStepAction(flowData, dataDst, selectedDataNodeId, zoom));
+        addDataDstStepAction(flowData, dataDst, selectedDataNodeId);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
-        dispatch(addDataSrcStepAction(flowData, dataSrc, zoom));
+        addDataSrcStepAction(flowData, dataSrc);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };

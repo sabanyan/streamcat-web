@@ -41,12 +41,12 @@ const PaperScroller = (props: Props) => {
     const pasteSteps = () => {
         const {flowData} = props;
         const [flow, setFlow] = props.flowState;
-        const pasteSteps = (paste_nodes: []) => {
-            dispatch(pasteStepsAction(flowData, paste_nodes, props.zoom));
+        const pasteSteps = (paste_nodes:string) => {
+            pasteStepsAction(flowData, paste_nodes);
             setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
             setFlow({...flow});
         };
-        navigator.clipboard.readText().then((data: any) => {
+        navigator.clipboard.readText().then(data => {
             pasteSteps(data);
         }, (err) => {
             alert("クリップボードが利用できません");

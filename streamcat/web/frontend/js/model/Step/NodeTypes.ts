@@ -1,5 +1,5 @@
 import { Command, Flow, FlowCommand } from 'Model/Library';
-import { ModelUtil, StringUtil } from 'Utils/index';
+import { StringUtil } from 'Utils/index';
 
 export type NodeType = {
     readonly id: string;
@@ -22,11 +22,55 @@ export type FrameNodeType = NodeType & {
     deleteCache: () => void;
 };
 
-export const FrameNode = function(this: FrameNodeType, position:{x:number, y:number}) {
-    const newId = ModelUtil.getNewId('frame');
-    (this as any).id = newId;
+export type CommandNodeType = NodeType & {
+    commandId: string;
+    args?: { [name:string]:any };
+    srcs?: { [port:string]:string };
+    dsts?: { [port:string]:string };
+    srcsOrder?: string[];
+    deleteInPort: (label:string) => void;
+    addInPort: (label:string, nodeId:string) => void;
+    getInPortIndex: () => number;
+    addableInPort: () => boolean;
+    getCommand: () => Command;
+};
+
+export type BaseFlowNodeType = NodeType & {
+    classification?: string
+    args?: { [name:string]:any };
+    srcs?: { [port:string]:string };
+    dsts?: { [port:string]:string };
+    srcsOrder?: string[];
+    masked?: boolean;
+    addInPort: (label:string, nodeId:string) => void;
+    addableInPort: () => boolean;
+};
+
+export type FlowNodeType = BaseFlowNodeType & {
+    uuid: string | null;
+    getCommand: () => FlowCommand;
+};
+
+export type InlineFlowNodeType = BaseFlowNodeType & {
+    flow: Flow & {
+        creator: string;
+        createdAt: string;
+    };
+};
+
+export type NoteNodeType = NodeType & {
+    title: string;
+    content?: string;
+    fontSize?: number;
+    color?: string;
+    setTitle: (title:string) => void;
+    setFontSize: (fontSize:number) => void;
+};
+
+export const FrameNode = function(this: FrameNodeType, id:string, position:{x:number, y:number}) {
+    (this as any).id = id;
     (this as any).type = 'frame';
-    this.label = newId;
+    this.label = id;
     this.position = position;
     this.size = {width:38, height:38};
     this.error = {};
@@ -43,24 +87,10 @@ export const FrameNode = function(this: FrameNodeType, position:{x:number, y:num
     };
 };
 
-export type CommandNodeType = NodeType & {
-    commandId: string;
-    args?: { [name:string]:any };
-    srcs?: { [port:string]:string };
-    dsts?: { [port:string]:string };
-    srcsOrder?: string[];
-    deleteInPort: (label:string) => void;
-    addInPort: (label:string, nodeId:string) => void;
-    getInPortIndex: () => number;
-    addableInPort: () => boolean;
-    getCommand: () => Command;
-};
-
-export const CommandNode = function(this: CommandNodeType, commandId:string, position:{x:number, y:number}) {
-    const newId = ModelUtil.getNewId('command');
-    (this as any).id = newId;
+export const CommandNode = function(this: CommandNodeType, id:string, commandId:string, position:{x:number, y:number}) {
+    (this as any).id = id;
     (this as any).type = 'command';
-    this.label = newId;
+    this.label = id;
     this.position = position;
     this.size = {width:38, height:38};
     this.error = {};
@@ -105,34 +135,10 @@ export const CommandNode = function(this: CommandNodeType, commandId:string, pos
     };
 };
 
-export type BaseFlowNodeType = NodeType & {
-    classification?: string
-    args?: { [name:string]:any };
-    srcs?: { [port:string]:string };
-    dsts?: { [port:string]:string };
-    srcsOrder?: string[];
-    masked?: boolean;
-    addInPort: (label:string, nodeId:string) => void;
-    addableInPort: () => boolean;
-};
-
-export type FlowNodeType = BaseFlowNodeType & {
-    uuid: string | null;
-    getCommand: () => FlowCommand;
-};
-
-export type InlineFlowNodeType = BaseFlowNodeType & {
-    flow: Flow & {
-        creator: string;
-        createdAt: string;
-    };
-};
-
-export const FlowNode = function(this: FlowNodeType, uuid:string, position:{x:number, y:number}) {
-    const newId = ModelUtil.getNewId('flow');
-    (this as any).id = newId;
+export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, position:{x:number, y:number}) {
+    (this as any).id = id;
     (this as any).type = 'flow';
-    this.label = newId;
+    this.label = id;
     this.position = position;
     this.size = {width:38, height:38};
     this.error = {};
@@ -151,14 +157,14 @@ export const FlowNode = function(this: FlowNodeType, uuid:string, position:{x:nu
 };
 
 export const InlineFlowNode = function( this: InlineFlowNodeType,
+                                        id: string, 
                                         classification: string,
                                         flow:Flow & {creator:string; createdAt:string;},
                                         position:{x:number, y:number}) {
-    const newId = ModelUtil.getNewId('flow');
-    (this as any).id = newId;
+    (this as any).id = id;
     (this as any).type = 'flow';
     this.classification = classification;
-    this.label = newId;
+    this.label = id;
     this.position = position;
     this.size = {width:38, height:38};
     this.error = {};
@@ -171,17 +177,8 @@ export const InlineFlowNode = function( this: InlineFlowNodeType,
     this.addableInPort = () => false;
 };
 
-export type NoteNodeType = NodeType & {
-    title: string;
-    content?: string;
-    fontSize?: number;
-    color?: string;
-    setTitle: (title:string) => void;
-    setFontSize: (fontSize:number) => void;
-};
-
-export const NoteNode = function(this:NoteNodeType, position:{x:number, y:number}){
-    (this as any).id = ModelUtil.getNewId('note');
+export const NoteNode = function(this:NoteNodeType, id:string, position:{x:number, y:number}){
+    (this as any).id = id;
     (this as any).type = 'note';
     this.label = '';
     this.position = position;
