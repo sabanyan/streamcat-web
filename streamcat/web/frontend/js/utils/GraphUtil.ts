@@ -2,7 +2,6 @@
 import dagre from 'dagre'
 import Constants from 'Constants/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
-import { State } from 'Modules/flowEditor'
 import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType, addInPort, calcSize } from 'Model/Step/NodeTypes'
 import { AllNodeType, Flow } from 'Model/Library'
 

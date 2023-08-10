@@ -15,5 +15,4 @@ declare interface Window {
     subflows: {}
     emitter: any
     devToolsExtension: any
-    __REDUX_DEVTOOLS_EXTENSION__: any
 }

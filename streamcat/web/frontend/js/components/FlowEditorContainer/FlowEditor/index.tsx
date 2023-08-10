@@ -20,7 +20,6 @@ import {
     rebuildNodesEdges,
     allRebuildNodesEdges
 } from 'Modules/flowEditor';
-import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { NotAllowed } from 'Components/NotAllowedContainer';
@@ -122,7 +121,6 @@ const FlowEditor = () => {
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, []);
 
-    const dispatch = useDispatch();
     // const folderUuid = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.folderUuid);
 
     // const _modifiedAt = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.modifiedAt);

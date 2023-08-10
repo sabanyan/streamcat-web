@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import { graphUtil } from 'Modules/flowEditor';
@@ -20,7 +19,6 @@ export const Zoom = (props: Props) => {
     const [zoom, setZoom] = props.zoomState;
     const [graph, setGraph] = props.graphState;
 
-    const dispatch = useDispatch();
 
     const onClickZoomIn = (e: React.MouseEvent) => {
         zoom < 180 && setZoom(zoom + 10);

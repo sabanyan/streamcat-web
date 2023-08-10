@@ -1,5 +1,4 @@
 import React from 'react'
-import { useDispatch } from 'react-redux';
 import {AsyncResourceContent} from 'use-async-resource';
 import {
   CommandInspector,
@@ -55,7 +54,6 @@ export const Inspector = (props:InspectorProps) => {
     const [flow, setFlow] = props.flowState;
     const [graph, setGraph] = props.graphState;
 
-    const dispatch = useDispatch();
 
     const addDataDstStep = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
         addDataDstStepAction(flowData, dataDst, selectedDataNodeId);

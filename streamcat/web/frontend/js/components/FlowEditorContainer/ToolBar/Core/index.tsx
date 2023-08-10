@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import classnames from 'classnames';
@@ -56,7 +55,6 @@ export const ToolBar = (props: ToolBarProps) => {
     const [graph, setGraph] = props.graphState;
     const [zoom, ] = props.zoomState;
 
-    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
 
     const current = history.current;

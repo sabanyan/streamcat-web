@@ -1,6 +1,5 @@
 import React from 'react';
 import {useState} from "react";
-import { useDispatch } from 'react-redux';
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
 import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from "Model/index";
@@ -32,7 +31,6 @@ type Props = {
 }
 
 const PaperScroller = (props: Props) => {
-    const dispatch = useDispatch();
 
     const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
