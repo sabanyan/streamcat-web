@@ -5,7 +5,7 @@ import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
 import { GraphType, HistoryType } from 'Types/index';
-import { graphUtil, refreshFlowAction, sortFlowAction } from 'Modules/flowEditor';
+import { graphUtil } from 'Modules/flowEditor';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type ToolBarProps = {

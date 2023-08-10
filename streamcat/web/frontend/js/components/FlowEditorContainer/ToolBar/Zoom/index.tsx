@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
-import { graphUtil, setZoomAction } from 'Modules/flowEditor';
+import { graphUtil } from 'Modules/flowEditor';
 import { Flow } from 'Model/Library';
 import { GraphType } from 'Types/index';
 

@@ -18,10 +18,7 @@ import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlo
 import {
   addDataDstStepAction,
   addDataSrcStepAction,
-  deleteCacheAction,
   graphUtil,
-  // resizeInspectorAction,
-  updateFlowAction
 } from 'Modules/flowEditor';
 import { FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 
