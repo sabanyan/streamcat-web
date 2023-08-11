@@ -120,33 +120,6 @@ const FlowEditor = () => {
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, []);
 
-    // const folderUuid = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.folderUuid);
-
-    // const _modifiedAt = useSelector((state:State) => state.lastSavedFlow && state.lastSavedFlow.modifiedAt);
-    // useEffect(() => {
-    //     if (_modifiedAt) {
-    //         // modifiedAt が reducer 経由での取得になる
-    //         // 取得タイミングに差があるため取得ができ次第 State にセットする
-    //         setModifiedAt(_modifiedAt);
-    //     }
-    // }, [_modifiedAt])
-    // const [modifiedAt, setModifiedAt] = useState<string>();
-    // const flowData = useSelector((state:State) => state.flowData);
-    // const drag = useSelector((state:State) => state.drag);
-    // const selected_step_ids = useSelector((state:State) => state.selected_step_ids);
-    // const nodes = useSelector((state:State) => state.nodes);
-    // const history = useSelector((state:State) => state.history);
-    // const mast = useSelector((state:State) => state.mast);
-    // const selected_data_source_detail = useSelector((state:State) => state.selected_data_source_detail);
-    // const graph = useSelector((state:State) => state.graph);
-    // const zoom = useSelector((state:State) => state.zoom);
-    // const inspector = useSelector((state:State) => state.inspector);
-    // const editor = useSelector((state:State) => state.editor);
-    // const editMode = useSelector((state:State) => state.editMode);
-    // const executeMode = useSelector((state:State) => state.executeMode);
-    // const networkStatus = useSelector((state:State) => state.networkStatus);
-    // const lastSavedFlow = useSelector((state:State) => state.lastSavedFlow);
-
     // runnable: FlowまたはCommandを表す
     const [runnables, setRunnables] = useState<RunnablesType>(runnablesReader);
 
@@ -296,16 +269,7 @@ const FlowEditor = () => {
             setFlow({...flow, flow:nextFlowData});
         }
     };
-    // const executeFlow = (flowid: string) => {
-    //     // flowidは未使用
-    //     dispatch(executeFlowAction(flowid));
-    // };
-    // const updateDataFrameDetail = (detail: FrameType) => {
-    //     dispatch(updateDataFrameDetailAction(detail));
-    // };
-    // const addNote = (x: number, y: number) => {
-    //     dispatch(addNoteAction(x, y));
-    // };
+
     const moveSteps = (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
         // dispatch(moveStepsAction(flowData, x, y, step, selectedStepIds, zoom));
         if (selectedStepIds.length > 0 && step) {
@@ -321,18 +285,6 @@ const FlowEditor = () => {
             setGraph(graphUtil.getGraph(flowData.nodes, zoom));
         }
     };
-    // const setExecuteMode = (mode: FlowExecuteModeValue) => {
-    //     dispatch(setExecuteModeAction(mode));
-    // };
-    // const setEditMode = (mode: FlowEditModeValue) => {
-    //     dispatch(setEditModeAction(mode));
-    // };
-    // const refreshCanvasSize = () => {
-    //     dispatch(refreshCanvasSizeAction());
-    // };
-    // const updateLastSavedFlow = (lastSavedFlow:FlowType) => {
-    //     dispatch(updateLastSavedFlowAction(lastSavedFlow));
-    // };
 
     const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
     const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();

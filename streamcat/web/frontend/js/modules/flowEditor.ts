@@ -143,7 +143,7 @@ export const allRebuildNodesEdges = (nodes:AllNodeType[], edges:{v:string,w:stri
     });
 };
 
-export function newNodeId(prefix: string, nodes: AllNodeType[], count: number = 1) {
+const newNodeId = (prefix: string, nodes: AllNodeType[], count: number = 1) => {
     let idNumber: string = "";
     let result: string[] = [];
     let tempId = prefix + idNumber;
@@ -162,8 +162,7 @@ export function newNodeId(prefix: string, nodes: AllNodeType[], count: number = 
         index = index + 1;
     }
     return result;
-}
-
+};
 
 
 type PositionAndSize = {
@@ -177,7 +176,7 @@ type PositionAndSize = {
     }
 }
 
-function defaultNodePositionAndSize(): PositionAndSize {
+const defaultNodePositionAndSize = (): PositionAndSize => {
     return {
         position: {
             x: window.innerWidth / 2 - Constants.default.node.width / 2,
@@ -188,9 +187,9 @@ function defaultNodePositionAndSize(): PositionAndSize {
             height: Constants.default.node.height
         }
     }
-}
+};
 
-function newNodesPositionAndSize(nodes: AllNodeType[], srcNodeIds: string[] = [], dstNodeIds: string[] = []) {
+const newNodesPositionAndSize = (nodes: AllNodeType[], srcNodeIds: string[] = [], dstNodeIds: string[] = []) => {
     let result = {
         newNodePositionAndSize: defaultNodePositionAndSize(),
         dstNodesPositionAndSize: {}
@@ -247,31 +246,30 @@ function newNodesPositionAndSize(nodes: AllNodeType[], srcNodeIds: string[] = []
     }
 
     return result;
-}
+};
 
 
-function newDstNodes(nodes:AllNodeType[], dstNodeIds: string[], dstNodesPositionAndSize: {}, props: any) {
-    let result: any[] = [];
+const newDstNodes = (dstNodeIds: string[],
+                     dstNodesPositionAndSize: {}) => {
+    let result: FrameNodeType[] = [];
 
     dstNodeIds.forEach((key: string, index) => {
-        props.id = dstNodeIds[index];
-        props.label = key;
-        props.size = dstNodesPositionAndSize[key].size;
-        props.position = dstNodesPositionAndSize[key].position;
+        // props.id = dstNodeIds[index];
+        // props.label = key;
+        // props.size = dstNodesPositionAndSize[key].size;
+        // props.position = dstNodesPositionAndSize[key].position;
 
         // const newDstNode = new DataFrameStepModel(props);
-        const newId = ModelUtil.getNewId(nodes, 'frame');
-        const newDstNode = new FrameNode(newId, dstNodesPositionAndSize[key].position as {x:number, y:number});
-        newDstNode.id = dstNodeIds[index];
+        const newDstNode = new FrameNode(dstNodeIds[index], dstNodesPositionAndSize[key].position as {x:number, y:number}) as FrameNodeType;
         newDstNode.label = key;
 
         result.push(newDstNode);
     })
 
     return result;
-}
+};
 
-function addToGraph(graphUtil: GraphUtil, node: InlineFlowNodeType) {
+const addToGraph = (graphUtil: GraphUtil, node: InlineFlowNodeType) => {
     // node
     graphUtil.addNode(node.id);
     // src edges
@@ -289,20 +287,18 @@ function addToGraph(graphUtil: GraphUtil, node: InlineFlowNodeType) {
         graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
         graphUtil.addNode(to);
     })
-}
+};
 
-export type DataSrcProps = {
+type DataSrcProps = {
     id: string
-    label: string
     position: { x: number, y: number }
-    size: { width: number, height: number }
     dstNodeIds: string[]
     dataSrc: any
     args: {}
-}
+};
 
-export function newDataSrc(props: DataSrcProps) {
-    const { id, position, size, dstNodeIds, dataSrc, args } = props;
+const newDataSrc = (props: DataSrcProps) => {
+    const { id, position, dstNodeIds, dataSrc, args } = props;
 
     let dsts = {};
     const outPorts: any[] = dataSrc.ports[1];
@@ -315,19 +311,18 @@ export function newDataSrc(props: DataSrcProps) {
     flowNode.dsts = dsts;
     flowNode.args = args;
     return flowNode;
-}
+};
 
-export type DataDestProps = {
+type DataDestProps = {
     id: string
     position: { x: number, y: number }
-    size: { width: number, height: number }
     srcNodeIds: string[]
     dataDest: any
     args: {}
-}
+};
 
-export function newDataDest(props: DataDestProps) {
-    const { id, position, size, srcNodeIds, dataDest, args } = props;
+const newDataDest = (props: DataDestProps) => {
+    const { id, position, srcNodeIds, dataDest, args } = props;
 
     let srcs = {};
     const inPorts: any[] = dataDest.ports[0];
@@ -340,7 +335,7 @@ export function newDataDest(props: DataDestProps) {
     flowNode.srcs = srcs;
     flowNode.args = args;
     return flowNode;
-}
+};
 
 /**
  * ステップの追加
@@ -667,32 +662,22 @@ export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowComma
     // new dataSource
     const props = {
         id: id,
-        label: dataSrc.label,
+        // label: dataSrc.label,
         position: newNodePositionAndSize.position,
-        size: newNodePositionAndSize.size,
+        // size: newNodePositionAndSize.size,
         dataSrc: dataSrc,
         dstNodeIds: dstNodeIds,
         args: args,
     }
 
-    let dstProps = {
-        uuid: null,
-        position: newNodePositionAndSize.position,
-        type: Constants.step.type.frame,
-        size: newNodePositionAndSize.size,
-        dataSource: undefined,
-        makeCache: false,
-        cacheCreatedAt: "",
-    }
-
     const newNode = newDataSrc(props);
-    const dstNodes = newDstNodes(flowData.nodes, dstNodeIds, dstNodesPositionAndSize, dstProps);
+    const dstNodes = newDstNodes(dstNodeIds, dstNodesPositionAndSize);
     // データソースの出力ノードをフロー入力Portに設定する
     dstNodes.forEach(dstNode => {
         const port = {
-        label: dstNode.label,
-        nodeId: dstNode.id,
-        type: dstNode.type
+            label: dstNode.label || dstNode.id,
+            nodeId: dstNode.id,
+            type: dstNode.type
         };
         flowData.ports[0].upsert(port);
     });
@@ -706,7 +691,7 @@ export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowComma
     flowData.nodes = [...nodes];
     addToGraph(graphUtil, newNode);
     // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
-}
+};
 
 export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
     const srcNodeIds = [selectedDataNodeId];
@@ -739,9 +724,9 @@ export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowComma
     // new dataDest
     const props = {
         id: id,
-        label: dataDst.label,
+        // label: dataDst.label,
         position: newNodePositionAndSize.position,
-        size: newNodePositionAndSize.size,
+        // size: newNodePositionAndSize.size,
         dataDest: dataDst,
         srcNodeIds: srcNodeIds,
         args: args,
@@ -755,4 +740,4 @@ export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowComma
     // graph
     addToGraph(graphUtil, newNode);
     // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
-}
+};
