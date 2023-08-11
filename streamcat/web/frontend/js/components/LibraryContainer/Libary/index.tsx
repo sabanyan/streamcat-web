@@ -21,8 +21,7 @@ import { DatumType,
         DocumentType,
         ActivityType,
         ScheduleType,
-        TrashType, 
-        VCommand} from 'Model/Library';
+        TrashType} from 'Model/Library';
 import { FileListTable } from 'LibraryContainer/FileListTable';
 import { BreadCrumb, IBreadCrumbsLink } from 'LibraryContainer/BreadCrumb';
 import { TrashMenuList } from 'LibraryContainer/TrashMenuList';
@@ -93,14 +92,8 @@ export const Library = () => {
     const {notifyError} = useStreamCatNotifications();
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
-    const [vcommands, setVCommands] = React.useState<VCommand[]>([]);
 
     React.useEffect(() => {
-        // 
-        Api.findVCommands().then(vcommands => {
-            setVCommands(vcommands);
-        });
-        // 
         if (isDialog) {
             const bodyEl = document.querySelector('body');
             if (bodyEl) bodyEl.classList.add('dialog');
