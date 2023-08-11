@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Constants from "Constants/index";
 import style from "./style.scss";
 import classnames from "classnames";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
@@ -21,20 +20,7 @@ type Props = {
 
 export const CommandItem = (props: Props) => {
 
-    const [inputRefs, setInputRefs] = useState<any[]>([]);
-
     const {nodes} = props;
-
-    const onBuild = (param, element) => {
-        if (element) setInputRefs([...inputRefs, { param: param, element: element }]);
-    };
-
-    const onSubmitModal = (e: React.FormEvent) => {
-        e.preventDefault();
-        //クリックされたときのEventEmitterを実行
-        const id = Constants.modal.ADD_COMMAND;
-        window.emitter.emit(Constants.event.MODAL_ON_CLICK_DONE + id, { id: id });
-    };
 
     const getNewStepWithArgs = (command: Command | FlowCommand, args) => {
         let node:CommandNodeType | FlowNodeType ;

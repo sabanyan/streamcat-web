@@ -35,22 +35,5 @@ export default class ErrorUtil {
     return errorBody
   }
 
-  static showError (target, error) {
-    const errorBody = ErrorUtil.getErrorBody(error)
-    const content = <div>
-      <div>フローの実行中にエラーが発生しました。</div>
-      {errorBody}
-    </div>
-    ModalUtil.registerModal({
-      id: Constants.modal.SHOW_RUN_ERROR
-    })
-    ModalUtil.emitModal({
-      id: Constants.modal.SHOW_RUN_ERROR,
-      visible: true,
-      content: content
-    })
-    if (target['loading'] !== undefined) target.loading = false
-    target.forceUpdate()
-  }
 }
 
