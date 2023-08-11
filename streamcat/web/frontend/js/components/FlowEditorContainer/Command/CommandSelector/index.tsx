@@ -96,9 +96,10 @@ const CommandSelector = (props: Props) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             // 区切りを表示
             // classificationがない場合はSubFlowのはず
-            let label = Constants.lang.classification[command.classification || 'subflow'];
-            if (!label) label = command.classification;
-            operatorsContainer.push(<div key={command.classification || 'separator' + index} className={style.command_separator}>{label}</div>);
+            const label = Constants.lang.classification[command.classification || 'subflow'] || command.classification;
+            operatorsContainer.push(
+                <div key={`separator-${index}`} className={style.command_separator}>{label}</div>
+            );
         }
         operatorsContainer.push(<CommandItem
             nodes={nodes}
