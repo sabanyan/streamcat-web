@@ -97,15 +97,12 @@ const DataFrameInspector = (props: Props) => {
     useEffect(() => {
         if(!showPreview) return;
         
-        const {runnables, lockUUID} = props;
-        let visualizers = runnables.visualizers;
+        const {lockUUID} = props;
         const flowUuid = inject_flow_uuid;
         const selected_step = getSelectedStep();
         let id = selected_step.id;
         let stepIds: (string | null | undefined)[] = [];
         stepIds.push(id);
-
-        visualizers = SortUtil.getSortedContents(visualizers);
 
         saveFlow()?.then(() => {
             // preview

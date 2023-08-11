@@ -45,7 +45,14 @@ export type Group = {
 
 type Props = {
     //パラメーター定義
-    params: CommandParamType[];
+    params: {
+        name: string;
+        type: string;
+        label?: string;
+        optional?: boolean;
+        options?: any;
+        default?: string | number;
+    }[];
     //パラメータのグルプ定義
     groups?: string[];
     //入力値

@@ -304,9 +304,9 @@ export type Command = {
     params: {
         name: string;
         type: string;
-        label: string;
+        label?: string;
         optional?: boolean;
-        options: any;
+        options?: any;
         default?: string | number;
     }[];
     ports: [
@@ -322,6 +322,10 @@ export type Command = {
     // TODO: コマンド引数の検証機能は無効にしているが
     // 型不整合のエラーを回避するためにrulesを残しておく
     rules: {};
+};
+
+export type VCommand = Command & {
+    order: number;
 };
 
 /**

@@ -10,7 +10,7 @@ import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, FlowUtil} from 'Utils/index'
 import { Loader } from 'Shared/Base';
 import { DragType, GraphType, HistoryType, RunnablesType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
-import { MessageModel, VisualizeModel } from 'Model/index';
+import { MessageModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
 import {
     addStepAction,
@@ -74,11 +74,9 @@ const getRunnables = () => {
 
     // VCommandの一覧を取得する
     preRequest.push(
-        Api.findVCommands().then(visualizers => {
-            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
-            window.visualizers = visualizerModels;
+        Api.findVCommands().then(vcommands => {
             return {
-                visualizers: visualizerModels
+                vcommands: vcommands
             };
         })
     );

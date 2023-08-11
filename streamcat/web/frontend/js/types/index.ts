@@ -1,7 +1,4 @@
-import { Command, Flow, FlowCommand, InlineFlowCommand } from 'Model/Library';
-import {
-    VisualizeModel
-} from 'Model/index';
+import { Command, Flow, FlowCommand, InlineFlowCommand, VCommand } from 'Model/Library';
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
 // export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel;
@@ -31,7 +28,7 @@ export type CommandPortType = {
 
 export type RunnablesType =  {
     commands: Command[];
-    visualizers: VisualizeModel<Command>[];
+    vcommands: VCommand[];
     subflows: FlowCommand[];
     datasrcs: InlineFlowCommand[];
     datadsts: InlineFlowCommand[];

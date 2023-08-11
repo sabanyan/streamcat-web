@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import style from "./style.scss";
 import classnames from "classnames";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
@@ -19,17 +19,10 @@ type Props = {
 };
 
 export const CommandItem = (props: Props) => {
-
     const {nodes} = props;
 
     const getNewStepWithArgs = (command: Command | FlowCommand, args) => {
         let node:CommandNodeType | FlowNodeType ;
-        let model: any = {
-            id: null,
-            name: command.label,
-            label: null,
-            args: args
-        };
 
         // if (command instanceof CommandModel) {
         if (command.hasOwnProperty('id')) {

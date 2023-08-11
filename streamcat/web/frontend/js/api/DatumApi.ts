@@ -17,6 +17,7 @@ import {
     FlowCommand,
     InlineFlowCommand,
     Command,
+    VCommand,
     AllNodeType
 } from 'Model/Library';
 import {
@@ -674,7 +675,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findVCommands: () => {
-        return get<Command[]>('/api/v0/vcommands');
+        return get<VCommand[]>('/api/v0/vcommands');
     },
 
     /**

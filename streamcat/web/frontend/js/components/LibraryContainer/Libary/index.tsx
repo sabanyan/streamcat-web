@@ -21,13 +21,13 @@ import { DatumType,
         DocumentType,
         ActivityType,
         ScheduleType,
-        TrashType } from 'Model/Library';
+        TrashType, 
+        VCommand} from 'Model/Library';
 import { FileListTable } from 'LibraryContainer/FileListTable';
 import { BreadCrumb, IBreadCrumbsLink } from 'LibraryContainer/BreadCrumb';
 import { TrashMenuList } from 'LibraryContainer/TrashMenuList';
 import { ApplyMenuList } from 'Components/LibraryContainer/ApplyMenuList';
 import { MenuList } from 'LibraryContainer/MenuList';
-import { VisualizeModel, VisualizeModelProps } from 'Model/index';
 import { childrenLimit } from 'Shared/Base/ListTableBodyBase';
 import { ProjectDrawer } from 'Shared/Drawer/ProjectDrawer';
 import { FolderDrawer } from 'Shared/Drawer/FolderDrawer';
@@ -93,11 +93,13 @@ export const Library = () => {
     const {notifyError} = useStreamCatNotifications();
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
-    const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
+    const [vcommands, setVCommands] = React.useState<VCommand[]>([]);
 
     React.useEffect(() => {
         // 
-        getVisualizers();
+        Api.findVCommands().then(vcommands => {
+            setVCommands(vcommands);
+        });
         // 
         if (isDialog) {
             const bodyEl = document.querySelector('body');
@@ -107,13 +109,6 @@ export const Library = () => {
 
     const isDialog = (HttpUtil.getURLParam('dialog') === 'true');
     const mode = HttpUtil.getURLParam('mode') ? HttpUtil.getURLParam('mode') : Constants.library.mode.list;
-
-    const getVisualizers = () => {
-        Api.findVCommands().then(visualizers => {
-            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
-            setVisualizers(visualizerModels);
-        });
-    };
 
     const makeBreadCrumbLinks = (folderPath: any[] | any): IBreadCrumbsLink[] => {
         const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? '&mode=' + mode : '') : '';
