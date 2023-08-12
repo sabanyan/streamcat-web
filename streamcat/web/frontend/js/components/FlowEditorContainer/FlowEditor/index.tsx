@@ -572,13 +572,7 @@ const FlowEditor = () => {
 
     const onClickSaveFlow = () => {
         const targetFlow = lastSavedFlow as FlowType;
-        return saveFlowPromise(targetFlow).then(flow => {
-            if(!flow){
-                return flow;
-            }
-            // setModifiedAt(flow.modifiedAt);
-            return flow;
-        });
+        return saveFlowPromise(targetFlow);
     }
 
     /**

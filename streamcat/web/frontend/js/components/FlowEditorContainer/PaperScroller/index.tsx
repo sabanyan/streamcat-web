@@ -209,8 +209,7 @@ const PaperScroller = (props: Props) => {
 
     const onMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const {addHistory} = props;
-        const dragEnd = (x: number, y: number) => {
-            // dispatch(dragEndAction(x, y));
+        const dragEnd = () => {
             setDragRange(null);
         };
 
@@ -218,13 +217,19 @@ const PaperScroller = (props: Props) => {
         //     if(drag.hasOwnProperty('end')){
         if(dragRange){
             if(dragRange.start.x!==dragRange.end.x || dragRange.start.y!==dragRange.end.y){
-                const target_rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - target_rect.left;
-                const y = e.clientY - target_rect.top;
-                dragEnd(x, y);
+                dragEnd();
             }
             addHistory();
         }
+
+    };
+
+    const onMouseClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        // Click時には範囲選択を解除させる
+        const dragEnd = () => {
+            setDragRange(null);
+        }
+        dragEnd();
     };
 
     const isOnClickPaper = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -242,6 +247,7 @@ const PaperScroller = (props: Props) => {
                 onMouseDown={(e) => onMouseDown(e)}
                 onMouseMove={(e) => onMouseMove(e)}
                 onMouseUp={(e) => onMouseUp(e)}
+                onClick={e => onMouseClick(e)}
                 className={style.paper_scroller}
                 style={{width: canvasWidth}}>
         {children}
