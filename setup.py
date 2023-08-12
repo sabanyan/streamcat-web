@@ -13,6 +13,6 @@ setup(
         'Flask==2.3.2',
         # 'flask_mail',
         'oauthlib==3.2.2',
-        'PyJWT==2.6.0',
+        'PyJWT==2.8.0',
     ],
 )
