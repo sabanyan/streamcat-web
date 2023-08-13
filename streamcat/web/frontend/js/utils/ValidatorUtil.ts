@@ -1,9 +1,10 @@
+import { Command } from 'Model/Library';
 import { CommandUtil } from 'Utils/index'
 import ValidateJS from 'validate.js'
 
-class ValidatorUtil {
+export class ValidatorUtil {
   allDefined: ()=>any;
-  constructor () {
+  constructor (commands: Command[]) {
     //日本語対応のバリデーターに変更する
     (ValidateJS as any).options = {fullMessages: false}
 
@@ -75,7 +76,7 @@ class ValidatorUtil {
       const errorMessage : any[] = []
 
       if (options && !value) {
-        const command = CommandUtil.getCommand(attributes['_command_id'])
+        const command = CommandUtil.getCommand(commands, attributes['_command_id'])
         let arrayOptions = Array.isArray(options) ? options : [options]
 
         arrayOptions.forEach((option) => {
@@ -116,7 +117,7 @@ class ValidatorUtil {
       let isValueExist = false
       const errorMessage: any[] = []
       if (options && !value) {
-        const command = CommandUtil.getCommand(attributes['_command_id'])
+        const command = CommandUtil.getCommand(commands, attributes['_command_id'])
         const arrayOptions = Array.isArray(options) ? options : [options]
 
         arrayOptions.forEach((option) => {
@@ -171,7 +172,7 @@ class ValidatorUtil {
     ValidateJS.validators.onlyOneInput =  (value, options, key, attributes): any =>{
       //対象のパラメータの入力がある場合は必須項目になる
       if (options && value) {
-        const command = CommandUtil.getCommand(attributes['_command_id'])
+        const command = CommandUtil.getCommand(commands, attributes['_command_id'])
         let isError = false
         const errorMessage: any[] = []
         let arrayOptions = Array.isArray(options.target) ? options.target : [options.target]
@@ -295,7 +296,7 @@ class ValidatorUtil {
       const errorMessage:any[] = []
       if (options && value) {
         let isAllOptionsSelected = true
-        const command = CommandUtil.getCommand(attributes['_command_id'])
+        const command = CommandUtil.getCommand(commands, attributes['_command_id'])
         let arrayOptions = Array.isArray(options) ? options : [options]
         arrayOptions.forEach((option) => {
           const label = CommandUtil.getCommandParamLabel(command, option)
@@ -334,7 +335,7 @@ class ValidatorUtil {
     ValidateJS.validators.presencesIfSpecifiedValueInput = function (value, options, key, attributes) {
       if (options && options.target) {
         // 対象のパラメータ入力の検知
-        const command = CommandUtil.getCommand(attributes['_command_id'])
+        const command = CommandUtil.getCommand(commands, attributes['_command_id'])
         const label = CommandUtil.getCommandParamLabel(command, options.target)
         const matchingValue = (options.value).indexOf(attributes[options.target])
 
@@ -386,7 +387,7 @@ class ValidatorUtil {
         if ((commaInReferrence != commaLessThan + parseInt(options.difference))) {
           //justValueのチェック、justValueが無効化されているかもチェック
           if (options.justValue == -1 || commaLessThan != options.justValue) {
-            const command = CommandUtil.getCommand(attributes['_command_id'])
+            const command = CommandUtil.getCommand(commands, attributes['_command_id'])
             const label = CommandUtil.getCommandParamLabel(command, key)
             const targetLabel = CommandUtil.getCommandParamLabel(command, options.target)
             const errorMessage: any[] = []
@@ -546,6 +547,4 @@ class ValidatorUtil {
       node.validate()
     })
   }
-}
-
-export default new ValidatorUtil()
+};

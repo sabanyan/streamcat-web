@@ -4,9 +4,9 @@ import { Command } from 'Model/Library';
 
 export default class CommandUtil {
 
-  static getCommand (id: string){
+  static getCommand (commands: Command[], id: string){
     // windowオブジェクトに格納されているCommand配列を取得する
-    const commands = window.commands as any[];
+    // const commands = window.commands as any[];
     // command配列が無い、または配列型で無い場合はnullを返す
     if(!commands || !(commands instanceof Array)){
       return null;

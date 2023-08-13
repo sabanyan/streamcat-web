@@ -37,7 +37,6 @@ const getRunnables = () => {
     // サブフローの一覧を取得する
     preRequest.push(
         Api.findSubflows().then(subflows => {
-            window.subflows = subflows;
             return {
                 subflows: subflows
             };
@@ -65,7 +64,6 @@ const getRunnables = () => {
     // Commandの一覧を取得する
     preRequest.push(
         Api.findCommands().then(commands => {
-            window.commands = commands;
             return {
                 commands: commands
             };
