@@ -175,7 +175,7 @@ const FlowEditor = () => {
     //     dispatch(addMasterAction(flow));
     // };
     const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
-        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, zoom);
+        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnables, zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };

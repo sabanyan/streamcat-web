@@ -166,6 +166,7 @@ export const Inspector = (props:InspectorProps) => {
           property = <DataSrcInspector
             key={selectedNode.id}
             nodes={flowData.nodes}
+            runnables={runnables}
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
             updateStep={updateStep}
@@ -179,6 +180,7 @@ export const Inspector = (props:InspectorProps) => {
           property = <DataDstInspector
             key={selectedNode.id}
             nodes={flowData.nodes}
+            runnables={runnables}
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
             updateStep={updateStep}
@@ -191,7 +193,7 @@ export const Inspector = (props:InspectorProps) => {
         property = <CommandInspector
           key={selectedNode.id}
           selectedNodeId={selectedNode.id}
-          // runnables={runnables}
+          runnables={runnables}
           nodes={flowData.nodes}
           updateStep={updateStep}
           addHistory={addHistory}

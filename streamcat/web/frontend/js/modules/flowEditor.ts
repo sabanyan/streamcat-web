@@ -1,7 +1,7 @@
 import { defaultGraphProps, defaultNodeProps } from "Utils/GraphUtil";
 import Constants from "Constants/index";
 import { FlowUtil, GraphUtil, ModelUtil, ZoomUtil } from "Utils/index";
-import { CommandPortType } from "../types";
+import { CommandPortType, RunnablesType } from "../types";
 import _ from "lodash";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
@@ -342,9 +342,9 @@ const newDataDest = (props: DataDestProps) => {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
+export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[], dst_step_ids:string[], runnables:RunnablesType, zoom:number) => {
 
-    let offsetX = 0;
+    // let offsetX = 0;
     // let hasNode = (from_step_ids)?(graph.outEdges(from_step_ids[0]).length):false
     // if(hasNode){
     //     offsetX = defaultNodeProps.width + 100
@@ -436,10 +436,10 @@ export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[]
             let command;
             if (add_step.type === 'flow') {
                 const node = add_step as FlowNodeType;
-                command = node.getCommand();
+                command = node.getCommand(runnables.subflows);
             } else if (add_step.type === 'command') {
                 const node = add_step as CommandNodeType;
-                command = node.getCommand();
+                command = node.getCommand(runnables.commands);
                 isAddable = (command as Command).ports[0].length > 0 && (command as Command).ports[0][0].label === '*';
             }
             const inPorts: CommandPortType[] = command.ports[0];

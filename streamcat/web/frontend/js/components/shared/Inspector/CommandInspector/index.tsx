@@ -8,11 +8,13 @@ import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
 import { AllNodeType, Command, FlowCommand } from 'Model/Library';
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { RunnablesType } from 'Types/index';
 
 type Props = {
     selectedNodeId: string;
     // runnables: RunnablesType;
-    nodes: any[];
+    nodes: AllNodeType[];
+    runnables: RunnablesType;
     updateStep: (step: AllNodeType) => void;
     addHistory: () => void;
     selectSteps: (selected_steps: any[]) => void;
@@ -34,11 +36,11 @@ const CommandInspector = (props: Props) => {
 
     const getSelectedStep = () => {
         const {selectedNodeId, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedNodeId);
+        return GraphUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
     };
 
     // 選択中のステップを取得する
-    const selected_step: AllNodeType = getSelectedStep();
+    const selected_step = getSelectedStep();
 
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, (selected_step as any).uuid);
@@ -114,31 +116,31 @@ const CommandInspector = (props: Props) => {
     };
 
 
-    const {updateStep, baseInspectorDisabled, nodes} = props;
+    const {updateStep, baseInspectorDisabled, nodes, runnables} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
         const commandNode = selected_step as CommandNodeType;
         //指定されたステップの元コマンドを取得
-        const command = commandNode.getCommand();
+        const command = commandNode.getCommand(runnables.commands);
         //選択されたステップのラベルを取得
         label = commandNode.label;
         //コマンドのラベルを取得
-        subLabel = command.label;
-        const params = command.params;
+        subLabel = command?.label || '';
+        const params = command?.params || [];
         const args = commandNode.args;
         const invalids = commandNode.invalid;
 
-        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command}
-                                onChange={(e, param, value) => onArgChange(e, param, value)} groups={command.groups} />;
+        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command || undefined}
+                                onChange={(e, param, value) => onArgChange(e, param, value)} groups={command?.groups || []} />;
 
     } else if (selected_step.type === Constants.step.type.subflow) {
         label = selected_step.label;
         if (selected_step.hasOwnProperty('uuid')) {
             const flowNode = selected_step as FlowNodeType;
-            const subflowCommand = flowNode.getCommand();
-            subLabel = subflowCommand.label;
-            const params = subflowCommand.params;
+            const subflowCommand = flowNode.getCommand(runnables.subflows);
+            subLabel = subflowCommand?.label || '';
+            const params = subflowCommand?.params || [];
             const args = flowNode.args;
             const invalids = flowNode.invalid;
 
@@ -180,6 +182,7 @@ const CommandInspector = (props: Props) => {
         <InOutConnector
             updateStep={updateStep}
             nodes={nodes}
+            runnables={runnables}
             selectedStep={selected_step}
             disabled={baseInspectorDisabled}
         />

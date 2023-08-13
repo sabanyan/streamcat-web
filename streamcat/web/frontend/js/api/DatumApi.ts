@@ -358,23 +358,22 @@ const NodeArray = makeArrayCtor<AllNodeType>(node => {
     
             return max;
         };
-        c.addableInPort = () => {
+        c.addableInPort = (command: Command) => {
             // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
-            const filterKeys = c.getCommand().ports[0].filter((inPort) => {
+            const filterKeys = command.ports[0].filter((inPort) => {
                 return (inPort.label.indexOf("*") >= 0);
             });
             return filterKeys.length > 0;
         };
-        c.getCommand = () => {
-            const commands = (window as any).commands;
-            return commands.find(command => command.id === c.commandId);
+        c.getCommand = (commands: Command[]) => {
+            // const commands = (window as any).commands;
+            return commands.find(command => command.id === c.commandId) || null;
         };
     }else if(node.type === 'flow'){
         if(node.hasOwnProperty('uuid')){
             const f = node as FlowNodeType;
-            f.getCommand = () => {
-                const subflows = (window as any).subflows;
-                return subflows.find(subflow => subflow.uuid === f.uuid);
+            f.getCommand = (subflows: FlowCommand[]) => {
+                return subflows.find(subflow => subflow.uuid === f.uuid) || null;
             };
             f.addableInPort = () => false;
         }else if(node.hasOwnProperty('flow')){

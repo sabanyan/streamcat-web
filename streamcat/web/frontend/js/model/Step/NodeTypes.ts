@@ -31,8 +31,8 @@ export type CommandNodeType = NodeType & {
     deleteInPort: (label:string) => void;
     addInPort: (label:string, nodeId:string) => void;
     getInPortIndex: () => number;
-    addableInPort: () => boolean;
-    getCommand: () => Command;
+    addableInPort: (command: Command) => boolean;
+    getCommand: (commands: Command[]) => Command | null;
 };
 
 export type BaseFlowNodeType = NodeType & {
@@ -48,7 +48,7 @@ export type BaseFlowNodeType = NodeType & {
 
 export type FlowNodeType = BaseFlowNodeType & {
     uuid: string | null;
-    getCommand: () => FlowCommand;
+    getCommand: (subflows: FlowCommand[]) => FlowCommand | null;
 };
 
 export type InlineFlowNodeType = BaseFlowNodeType & {
@@ -122,16 +122,16 @@ export const CommandNode = function(this: CommandNodeType, id:string, commandId:
 
         return max;
     };
-    this.addableInPort = () => {
+    this.addableInPort = (command: Command) => {
         // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
-        const filterKeys = this.getCommand().ports[0].filter((inPort) => {
+        const filterKeys = command.ports[0].filter((inPort) => {
             return (inPort.label.indexOf("*") >= 0);
         });
         return filterKeys.length > 0;
     };
-    this.getCommand = () => {
-        const commands = (window as any).commands;
-        return commands.find(command => command.id === this.commandId);
+    this.getCommand = (commands: Command[]) => {
+        // const commands = (window as any).commands;
+        return commands.find(command => command.id === this.commandId) || null;
     };
 };
 
@@ -149,9 +149,9 @@ export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, pos
     this.dsts = {};
     this.srcsOrder = [];
     this.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
-    this.getCommand = () => {
-        const subflows = (window as any).subflows;
-        return subflows.find(subflow => subflow.uuid === this.uuid);
+    this.getCommand = (subflows: FlowCommand[]) => {
+        // const subflows = (window as any).subflows;
+        return subflows.find(subflow => subflow.uuid === this.uuid) || null;
     };
     this.addableInPort = () => false;
 };

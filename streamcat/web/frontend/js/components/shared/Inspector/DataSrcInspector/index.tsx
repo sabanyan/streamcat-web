@@ -7,6 +7,7 @@ import Constants from 'Constants/index'
 
 import style from '../style.scss'
 import { AllNodeType } from 'Model/Library';
+import { RunnablesType } from 'Types/index';
 
 
 type State = {
@@ -19,6 +20,7 @@ type Props = {
   selectedNodeId: string;
   baseInspectorDisabled: boolean;
 
+  runnables: RunnablesType;
   parentUUID?: string;
 
   updateStep: (step: AllNodeType) => void;
@@ -75,7 +77,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateStep, nodes, baseInspectorDisabled, parentUUID } = this.props;
+    const { updateStep, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
     const selected_step = this.getSelectedStep();
 
     let libraryPlace: any = null;
@@ -87,6 +89,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
         selectedStep={selected_step}
         updateStep={updateStep}
         nodes={nodes}
+        runnables={runnables}
         disabled={baseInspectorDisabled}
       />;
     }
