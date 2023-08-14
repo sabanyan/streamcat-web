@@ -38,7 +38,6 @@ export default class ModelUtil {
 
   static getMinimumIDNumberFromNodes (nodes:AllNodeType[], type: string): string {
     const prefix: string = ModelUtil.getTypePrefix(type)
-    // const nodes = window.nodes as any[];
     let idNumber: string = ''
     for (let index = 1; index <= nodes.length; index++) {
       idNumber = index.toString()

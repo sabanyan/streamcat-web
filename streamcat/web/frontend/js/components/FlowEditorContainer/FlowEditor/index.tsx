@@ -245,7 +245,6 @@ const FlowEditor = () => {
             });
             // dispatch(undoAction(prevFlowData, zoom));
             allRebuildNodesEdges(prevFlowData.nodes, graph.edges);
-            (window as any).nodes = prevFlowData.nodes;
             setGraph(graphUtil.getGraph(prevFlowData.nodes, zoom));
             setFlow({...flow, flow:prevFlowData});
         }
@@ -260,7 +259,6 @@ const FlowEditor = () => {
             });
             // dispatch(redoAction(nextFlowData, zoom));
             allRebuildNodesEdges(nextFlowData.nodes, graph.edges);
-            (window as any).nodes = nextFlowData.nodes;
             setGraph(graphUtil.getGraph(nextFlowData.nodes, zoom));
             setFlow({...flow, flow:nextFlowData});
         }

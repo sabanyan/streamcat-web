@@ -643,7 +643,6 @@ export const pasteStepsAction = (flowData:Flow, paste_nodes:string) => {
     //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
     // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
-    (window as any).nodes = flowData.nodes;
 };
 
 export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowCommand | InlineFlowCommand) => {
