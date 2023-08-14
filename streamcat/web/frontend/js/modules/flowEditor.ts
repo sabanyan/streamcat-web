@@ -436,10 +436,10 @@ export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[]
             let command;
             if (add_step.type === 'flow') {
                 const node = add_step as FlowNodeType;
-                command = node.getCommand(runnables.subflows);
+                command = runnables.subflows.getCommand(node.uuid);
             } else if (add_step.type === 'command') {
                 const node = add_step as CommandNodeType;
-                command = node.getCommand(runnables.commands);
+                command = runnables.commands.getCommand(node.commandId);
                 isAddable = (command as Command).ports[0].length > 0 && (command as Command).ports[0][0].label === '*';
             }
             const inPorts: CommandPortType[] = command.ports[0];

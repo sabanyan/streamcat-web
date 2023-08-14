@@ -122,7 +122,7 @@ const CommandInspector = (props: Props) => {
     if (selected_step.type === Constants.step.type.command) {
         const commandNode = selected_step as CommandNodeType;
         //指定されたステップの元コマンドを取得
-        const command = commandNode.getCommand(runnables.commands);
+        const command = runnables.commands.getCommand(commandNode.commandId);
         //選択されたステップのラベルを取得
         label = commandNode.label;
         //コマンドのラベルを取得
@@ -138,7 +138,7 @@ const CommandInspector = (props: Props) => {
         label = selected_step.label;
         if (selected_step.hasOwnProperty('uuid')) {
             const flowNode = selected_step as FlowNodeType;
-            const subflowCommand = flowNode.getCommand(runnables.subflows);
+            const subflowCommand = runnables.subflows.getCommand(flowNode.uuid);
             subLabel = subflowCommand?.label || '';
             const params = subflowCommand?.params || [];
             const args = flowNode.args;

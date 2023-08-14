@@ -85,7 +85,7 @@ export const InConnector = (props: Props) => {
     const actionProps = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
         if(node.type === 'command'){
             const commandNode = node as CommandNodeType;
-            const command = commandNode.getCommand(runnables.commands);
+            const command = runnables.commands.getCommand(commandNode.commandId);
             if(command && commandNode.addableInPort(command)){
                 return {
                     actionLabel: '削除',

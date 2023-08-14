@@ -90,10 +90,10 @@ export const InOutConnector = (props: Props) => {
             });
 
         }else{
-            const subflow = flowNode.hasOwnProperty('getCommand') && (flowNode as FlowNodeType).getCommand(runnables.subflows);
-            if (subflow) {
+            const flowCommand = flowNode.hasOwnProperty('getCommand') && runnables.subflows.getCommand((flowNode as FlowNodeType).uuid);
+            if (flowCommand) {
                 const commandStepDsts = flowNode.dsts || {};
-                const subflowOutPorts = subflow.ports[1];
+                const subflowOutPorts = flowCommand.ports[1];
                 outConnectors = Object.keys(commandStepDsts).map((key, index) => {
                     let dataFrameId: string;
                     dataFrameId = commandStepDsts[key];
@@ -160,7 +160,7 @@ export const InOutConnector = (props: Props) => {
     const addEdgeContainer = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
         if(node.type === 'command'){
             const commandNode = node as CommandNodeType;
-            const command = commandNode.getCommand(runnables.commands);
+            const command = runnables.commands.getCommand(commandNode.commandId);
             if(command && commandNode.addableInPort(command)){
                 return <AddButton onClick={() => onClickAddEdge(commandNode)}>入力を追加する</AddButton>;
             }

@@ -14,11 +14,12 @@ import {
     DocumentType,
     ActivityType,
     Port,
-    FlowCommand,
+    AllNodeType,
     InlineFlowCommand,
     Command,
     VCommand,
-    AllNodeType
+    Commands,
+    FlowCommands
 } from 'Model/Library';
 import {
     ConnectivityType,
@@ -365,16 +366,9 @@ const NodeArray = makeArrayCtor<AllNodeType>(node => {
             });
             return filterKeys.length > 0;
         };
-        c.getCommand = (commands: Command[]) => {
-            // const commands = (window as any).commands;
-            return commands.find(command => command.id === c.commandId) || null;
-        };
     }else if(node.type === 'flow'){
         if(node.hasOwnProperty('uuid')){
             const f = node as FlowNodeType;
-            f.getCommand = (subflows: FlowCommand[]) => {
-                return subflows.find(subflow => subflow.uuid === f.uuid) || null;
-            };
             f.addableInPort = () => false;
         }else if(node.hasOwnProperty('flow')){
             const f = node as InlineFlowNodeType;
@@ -642,7 +636,10 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findSubflows: () => {
-        return get<FlowCommand[]>('/api/v0/subflows');
+        return get<FlowCommands>('/api/v0/subflows').then(commands => {
+            commands.getCommand = (uuid:string|null) => commands.find(command => command.uuid === uuid) || null;
+            return commands;
+        });
     },
 
     /**
@@ -666,7 +663,10 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findCommands: () => {
-        return get<Command[]>('/api/v0/commands');
+        return get<Commands>('/api/v0/commands').then(commands => {
+            commands.getCommand = (commandId:string) => commands.find(command => command.id === commandId) || null;
+            return commands;
+        });
     },
 
     /**

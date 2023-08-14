@@ -10,8 +10,6 @@ declare const inject_is_trash: boolean;
 
 declare interface Window {
     nodes: {}
-    commands: {}
-    subflows: {}
     emitter: any
     devToolsExtension: any
 }

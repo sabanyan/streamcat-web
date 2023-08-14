@@ -1,4 +1,4 @@
-import { Command, Flow, FlowCommand } from 'Model/Library';
+import { Command, Flow } from 'Model/Library';
 import { StringUtil } from 'Utils/index';
 
 export type NodeType = {
@@ -32,7 +32,6 @@ export type CommandNodeType = NodeType & {
     addInPort: (label:string, nodeId:string) => void;
     getInPortIndex: () => number;
     addableInPort: (command: Command) => boolean;
-    getCommand: (commands: Command[]) => Command | null;
 };
 
 export type BaseFlowNodeType = NodeType & {
@@ -48,7 +47,6 @@ export type BaseFlowNodeType = NodeType & {
 
 export type FlowNodeType = BaseFlowNodeType & {
     uuid: string | null;
-    getCommand: (subflows: FlowCommand[]) => FlowCommand | null;
 };
 
 export type InlineFlowNodeType = BaseFlowNodeType & {
@@ -129,10 +127,6 @@ export const CommandNode = function(this: CommandNodeType, id:string, commandId:
         });
         return filterKeys.length > 0;
     };
-    this.getCommand = (commands: Command[]) => {
-        // const commands = (window as any).commands;
-        return commands.find(command => command.id === this.commandId) || null;
-    };
 };
 
 export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, position:{x:number, y:number}) {
@@ -149,10 +143,6 @@ export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, pos
     this.dsts = {};
     this.srcsOrder = [];
     this.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
-    this.getCommand = (subflows: FlowCommand[]) => {
-        // const subflows = (window as any).subflows;
-        return subflows.find(subflow => subflow.uuid === this.uuid) || null;
-    };
     this.addableInPort = () => false;
 };
 

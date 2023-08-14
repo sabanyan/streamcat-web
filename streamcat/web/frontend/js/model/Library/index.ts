@@ -328,6 +328,14 @@ export type VCommand = Command & {
     order: number;
 };
 
+export type FlowCommands = {
+    getCommand: (uuid:string|null) => FlowCommand | null;
+} & FlowCommand[];
+
+export type Commands = {
+    getCommand: (commandId:string) => Command | null;
+} & Command[];
+
 /**
  * Flowを格納するオブジェクト型
  */
