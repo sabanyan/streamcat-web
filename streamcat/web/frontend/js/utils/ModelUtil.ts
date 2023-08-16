@@ -27,6 +27,12 @@ export default class ModelUtil {
       case Constants.step.type.command:
         prefix = 'c'
         break
+      case 'datasrc':
+        prefix = 'i';
+        break;
+      case 'datadst':
+        prefix = 'o';
+        break;
       case Constants.step.type.note:
         prefix = 'n'
         break

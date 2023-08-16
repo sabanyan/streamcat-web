@@ -9,7 +9,6 @@ declare const inject_is_project: boolean;
 declare const inject_is_trash: boolean;
 
 declare interface Window {
-    nodes: {}
     emitter: any
     devToolsExtension: any
 }

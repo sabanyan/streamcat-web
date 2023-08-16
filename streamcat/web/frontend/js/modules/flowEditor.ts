@@ -143,28 +143,6 @@ export const allRebuildNodesEdges = (nodes:AllNodeType[], edges:{v:string,w:stri
     });
 };
 
-const newNodeId = (prefix: string, nodes: AllNodeType[], count: number = 1) => {
-    let idNumber: string = "";
-    let result: string[] = [];
-    let tempId = prefix + idNumber;
-
-    let index: number = 0;
-    while (index <= nodes.length + 1 && count > 0) {
-        const found = nodes.find((node) => {
-            return (node.id === tempId)
-        })
-        if (!found) {
-            result.push(tempId);
-            count = count - 1;
-        }
-
-        tempId = String(prefix + (index + 1));
-        index = index + 1;
-    }
-    return result;
-};
-
-
 type PositionAndSize = {
     position: {
         x: number
@@ -646,10 +624,10 @@ export const pasteStepsAction = (flowData:Flow, paste_nodes:string) => {
 };
 
 export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowCommand | InlineFlowCommand) => {
-    const id = newNodeId('i', flowData.nodes, 1)[0];
+    const id = ModelUtil.getNewId(flowData.nodes, 'datasrc');
     const outPorts = dataSrc.ports[1];
 
-    const dstNodeIds = newNodeId('d', flowData.nodes, outPorts.length);
+    const dstNodeIds = outPorts.map(() => ModelUtil.getNewId(flowData.nodes, 'frame'));
     const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(flowData.nodes, [], dstNodeIds);
     let args = {};
     // default value
@@ -695,7 +673,7 @@ export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowComma
 export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
     const srcNodeIds = [selectedDataNodeId];
 
-    const id = newNodeId('o', flowData.nodes, 1)[0];
+    const id = ModelUtil.getNewId(flowData.nodes, 'datadst');
 
     const { newNodePositionAndSize } = newNodesPositionAndSize(flowData.nodes, srcNodeIds, []);
 
