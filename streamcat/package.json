@@ -1,6 +1,6 @@
 {
 	"name": "streamcat",
-	"version": "3.3.1",
+	"version": "3.3.2",
 	"description": "A data-analysis software, StreamCat",
 	"author": "StreamCat developers",
 	"license": "AGPL-3.0-only",
@@ -26,7 +26,7 @@
 	"dependencies": {
 		"@emotion/react": "^11.11.1",
 		"@emotion/styled": "^11.11.0",
-		"@mui/material": "^5.14.4",
+		"@mui/material": "^5.14.5",
 		"@mui/x-date-pickers": "^6.11.1",
 		"@redux-devtools/extension": "^3.2.5",
 		"array-move": "^4.0.0",
