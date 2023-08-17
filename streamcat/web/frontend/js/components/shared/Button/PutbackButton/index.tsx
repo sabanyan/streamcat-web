@@ -18,7 +18,7 @@ export const PutbackButton = (props:Props) => {
 
     const putbackDatum = () => {
         // 移動完了メッセージを表示する
-        return trashFolder.putBack(datum.uuid).then(() => {
+        return trashFolder.putBack(datum.uuid).then(datum => {
             notifySuccess('元の場所に戻しました', datum.label);
             // イベントハンドラを呼び出す
             onSuccess && onSuccess(datum);

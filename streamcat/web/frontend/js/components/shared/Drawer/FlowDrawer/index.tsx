@@ -1,13 +1,13 @@
-import React from "react"
-import { FolderType, FlowType } from "Model/Library";
-import { Drawer2, TextField2 } from "Shared/Input";
-import { MoveButton } from "Shared/Button/MoveButton";
-import { DeleteButton } from "Shared/Button/DeleteButton";
-import { EditBox } from "Shared/Base/EditBox";
-import { EditLockCheckbox } from "Shared/Input/EditLockCheckbox";
-import { DuplicateButton } from "Shared/Button/DuplicateButton";
-import { DownloadFlowButton } from "Shared/Button/DownloadFlowButton";
-import { CreatorField } from "Shared/Input/CreatorField";
+import React from 'react'
+import { FolderType, FlowType } from 'Model/Library';
+import { Drawer2, TextField2 } from 'Shared/Input';
+import { MoveButton } from 'Shared/Button/MoveButton';
+import { DeleteButton } from 'Shared/Button/DeleteButton';
+import { EditBox } from 'Shared/Base/EditBox';
+import { EditLockSwitch } from 'Shared/Input/EditLockSwitch';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
+import { CreatorField } from 'Shared/Input/CreatorField';
 import { Api } from 'Api';
 
 type Props = {
@@ -52,34 +52,34 @@ export const FlowDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as FlowType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[flow]}
                             onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
-                <DeleteButton key='del'
-                              targets={[flow]}
-                              onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
                 <DuplicateButton key='duplicate'
                                  targets={[flow]}
                                  onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
+                <DeleteButton key='del'
+                              targets={[flow]}
+                              onSuccess={(data)=>onSuccess(data[0] as FlowType)} />,
                 <DownloadFlowButton key='download'
-                                    targets={[flow]} />,
-                <EditLockCheckbox key='editLock'
-                                  target={flow}
-                                  // 編集ロックの値はこのコンポーネント内では保持しない
-                                  state={[{value:flow.editLock,isError:false}, ()=>{}]}
-                                  onChange={(updated)=>onSuccess(updated)} />
-            ],
+                                    targets={[flow]} />
+            ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
+                <EditLockSwitch key='editLock'
+                                targets={[flow]}
+                                // 編集ロックの値はこのコンポーネント内では保持しない
+                                state={[{value:[flow.editLock],isError:false}, ()=>{}]}
+                                onChange={updated=>onSuccess(updated[0])} />,
                 <CreatorField key='creator' datum={flow} />
             ]
         ]}</EditBox>

@@ -17,7 +17,7 @@ type Props = {
 export const FixedField2 = (props:Props) => {
     const {label, value, mask} = props;
 
-    return  <>
+    return <>
         <Typography variant='caption'
                     color='textSecondary'
                     sx={{lineHeight:'0'}}>{label}</Typography>

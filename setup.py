@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='streamcat.web',
     packages=['streamcat.web'],
-    version='3.3.1',
+    version='3.3.2',
     description='Web Frontend of StreamCat',
     url='https://www.kskp.io',
     include_package_data=True,
@@ -13,6 +13,6 @@ setup(
         'Flask==2.3.2',
         # 'flask_mail',
         'oauthlib==3.2.2',
-        'PyJWT==2.6.0',
+        'PyJWT==2.8.0',
     ],
 )

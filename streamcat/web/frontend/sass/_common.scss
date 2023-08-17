@@ -124,29 +124,48 @@ $danger: #DE1117 !default;
 // 
 
 @mixin paper-background-color() {
-  background: #EDF1F3;
+  background-color: #EDF1F3;
   @media (prefers-color-scheme: dark) {
     background-color: #010f16;
   }
 }
 
-@mixin list-background-color() {
-  background: #fdfeff;
+@mixin list-color() {
+  color: #606c7a;
+  background-color: #fdfeff;
   @media (prefers-color-scheme: dark) {
+    color:#fff;
     background-color: #2d4863;
   }
 }
 
+@mixin list-select-color() {
+  background-color: #e1e9f3;
+  @media (prefers-color-scheme: dark) {
+    color:#fff;
+    background-color: #506a81;
+  }
+}
+
+@mixin list-candrop-color() {
+  background-color: #d1e9ff;
+  @media (prefers-color-scheme: dark) {
+    color:#fff;
+    background-color: #506a81;
+  }
+}
+
 @mixin button-background-color() {
-  background: #F5F7F8;
+  background-color: #F5F7F8;
   @media (prefers-color-scheme: dark) {
     background-color: #304861;
   }
 }
 
 @mixin form-background-color() {
-  background: #ffffff;
+  background-color: #ffffff;
   @media (prefers-color-scheme: dark) {
+    color:#fff;
     background-color: #000000;
   }
 }

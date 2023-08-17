@@ -16,14 +16,17 @@ from .utils import (
     login_required_api,
     update_project_info,
     update_projects_info,
-    update_projects_info2
+    update_projects_info2,
+    duplicate_datum
 )
 
 mod = Blueprint('library', __name__)
 
-def _add_children_info(folder, prev_folder_path=False):
+def _add_children_info(folder, offset=None, limit=None, prev_folder_path=False):
     # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-    children = folder.find_children(prev_folder_path=prev_folder_path)
+    children = folder.find_children(offset=offset,
+                                    limit=limit,
+                                    prev_folder_path=prev_folder_path)
 
     # folderPath属性を作成する
     folder_list = folder.get_folder_path()
@@ -43,6 +46,14 @@ def _add_children_info(folder, prev_folder_path=False):
 
     return folder
 
+def _get_offset_limit(request_args):
+    offset = request_args.get('offset')
+    limit  = request_args.get('limit')
+    if offset is not None:
+        offset = int(offset)
+    if limit is not None:
+        limit = int(limit)
+    return offset, limit
 
 @mod.route('/library', methods=['GET'])
 @login_required_api
@@ -52,8 +63,9 @@ def fecth_library():
     """
     ルートフォルダを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     root = g.factory.data.load_root()
-    return _add_children_info(root)
+    return _add_children_info(root, offset=offset, limit=limit)
 
 
 @mod.route('/projects')
@@ -79,8 +91,9 @@ def fetch_project(project_uuid):
     """
     指定したプロジェクトを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     project = g.factory.data.find_by_uuid(project_uuid)
-    return _add_children_info(project)
+    return _add_children_info(project, offset=offset, limit=limit)
 
 @mod.route('/projects', methods=['POST'])
 @login_required_api
@@ -89,13 +102,18 @@ def new_project():
     """
     新しいプロジェクトを作成する
     """
-    if 'parent' not in request.json:
-        raise Exception('parent属性を指定してください')
+    req = RequestJson(request.json)
 
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_project = parent.create_project_folder(request.json['label'])
-    new_project.save()
-    return new_project
+    if req.has('source'):
+        # プロジェクトを複製する
+        return duplicate_datum(req['source'])
+    elif req.has('parent'):
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_project = parent.create_project_folder(req['label'])
+        new_project.save()
+        return new_project
+    else:
+        raise Exception('parent属性を指定してください')
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
@@ -153,7 +171,7 @@ def throw_away_project(project_uuid):
     指定したプロジェクトをほかす
     """
     project = g.factory.data.find_by_uuid(project_uuid)
-    project.throw_away()
+    return project.throw_away()
 
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
@@ -164,8 +182,9 @@ def fetch_folder(folder_uuid):
     """
     指定したフォルダを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    return _add_children_info(folder)
+    return _add_children_info(folder, offset=offset, limit=limit)
 
 @mod.route('/folders', methods=['POST'])
 @login_required_api
@@ -174,10 +193,16 @@ def make_new_folder():
     """
     新しいフォルダを作成する
     """
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_folder = parent.create_folder(request.json['label'])
-    new_folder.save()
-    return new_folder
+    req = RequestJson(request.json)
+
+    if req.has('source'):
+        # フォルダを複製する
+        return duplicate_datum(req['source'])
+    else:
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_folder = parent.create_folder(req['label'])
+        new_folder.save()
+        return new_folder
 
 @mod.route('/folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
@@ -212,7 +237,7 @@ def throw_away_folder(folder_uuid):
     指定したフォルダをほかす
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    folder.throw_away()
+    return folder.throw_away()
 
 
 @mod.route('/trashes', methods=['GET'])
@@ -222,8 +247,12 @@ def fetch_trashes():
     """
     ゴミ箱を取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     trash_folder = g.factory.data.find_trashcan()
-    return _add_children_info(trash_folder, prev_folder_path=True)
+    return _add_children_info(trash_folder,
+                              offset=offset,
+                              limit=limit,
+                              prev_folder_path=True)
 
 @mod.route('/trashes/<datum_uuid>', methods=['PUT'])
 @login_required_api
@@ -264,17 +293,22 @@ def make_new_remote_folder():
     """
     新しいリモートフォルダを作成する
     """
-    remote_folder_conn = RemoteFolderConn(request.json)
+    req = RequestJson(request.json)
 
-    # 接続情報に漏れがあれば例外を送出する
-    remote_folder_conn.valid_or_raise()
+    if req.has('source'):
+        # リモートフォルダを複製する
+        return duplicate_datum(req['source'])
+    else:
+        remote_folder_conn = RemoteFolderConn(request.json)
+        # 接続情報に漏れがあれば例外を送出する
+        remote_folder_conn.valid_or_raise()
 
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_folder = parent.create_remote_folder(request.json['label'],
-                                             remote_folder_conn)
-    ret = new_folder.to_json()
-    new_folder.save()
-    return ret
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_folder = parent.create_remote_folder(req['label'],
+                                                remote_folder_conn)
+        ret = new_folder.to_json()
+        new_folder.save()
+        return ret
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
@@ -319,7 +353,7 @@ def throw_away_remote_folder(folder_uuid):
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     # リモートフォルダレコードをDBから削除する
-    folder.throw_away()
+    return folder.throw_away()
 
 
 @mod.route('/databases/<database_uuid>', methods=['GET'])
@@ -339,17 +373,22 @@ def make_new_database():
     """
     新しいデータベースを作成する
     """
-    database_conn = DatabaseConn(request.json)
+    req = RequestJson(request.json)
 
-    # 接続情報に漏れがあれば例外を送出する
-    database_conn.valid_or_raise()
+    if req.has('source'):
+        # データベースを複製する
+        return duplicate_datum(req['source'])
+    else:
+        database_conn = DatabaseConn(request.json)
+        # 接続情報に漏れがあれば例外を送出する
+        database_conn.valid_or_raise()
 
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_database= parent.create_database(request.json['label'],
-                                         database_conn)
-    ret = new_database.to_json()
-    new_database.save()
-    return ret
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_database= parent.create_database(req['label'],
+                                            database_conn)
+        ret = new_database.to_json()
+        new_database.save()
+        return ret
 
 @mod.route('/databases/<database_uuid>', methods=['PUT'])
 @login_required_api
@@ -394,7 +433,7 @@ def throw_away_database(database_uuid):
     """
     database = g.factory.data.find_by_uuid(database_uuid)
     # DatabaseレコードをDBから削除する
-    database.throw_away()
+    return database.throw_away()
 
 
 @mod.route('/frames', methods=['POST'])
@@ -404,19 +443,25 @@ def create_frame():
     """
     新しいフレームを作成する
     """
-    if request.files.get('file') is None:
-        raise Exception('No frame file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-    if 'label' not in request.form:
-        raise Exception('No label is designated.')
+    if request.headers.get('Content-Type') == 'application/json':
+        req = RequestJson(request.json)
+        if not req.has('source'):
+            raise Exception('No source is designated.')
+        # フレームを複製する
+        return duplicate_datum(req['source'])
+    else:
+        req = RequestJson(request.form)
+        if request.files.get('file') is None:
+            raise Exception('No frame file found.')
+        if not req.has_all('parent', 'label'):
+            raise Exception('No parent or label are designated.')
 
-    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
-    new_frame = parent.create_frame(request.form.get('label'),
-                                    request.files.get('file').stream)
-    # FrameをDBに格納する
-    new_frame.save()
-    return new_frame
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_frame = parent.create_frame(req['label'],
+                                        request.files.get('file').stream)
+        # FrameをDBに格納する
+        new_frame.save()
+        return new_frame
 
 @mod.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
@@ -466,7 +511,7 @@ def throw_away_frame(frame_uuid):
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
-    frame.throw_away()
+    return frame.throw_away()
 
 
 @mod.route('/documents/<document_uuid>', methods=['GET'])
@@ -498,26 +543,32 @@ def make_new_document():
     ファイルストリームからファイルタイプを判定して
     新しいフレームまたはドキュメントを作成する
     """
-    if request.files.get('file') is None:
-        raise Exception('No file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-    if 'label' not in request.form:
-        raise Exception('No label is designated.')
+    if request.headers.get('Content-Type') == 'application/json':
+        req = RequestJson(request.json)
+        if not req.has('source'):
+            raise Exception('No source is designated.')
+        # ファイルを複製する
+        return duplicate_datum(req['source'])
+    else:
+        req = RequestJson(request.form)
+        if request.files.get('file') is None:
+            raise Exception('No frame file found.')
+        if not req.has_all('parent', 'label'):
+            raise Exception('No parent or label are designated.')
 
-    # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
-    content_type = request.files['file'].content_type
-    maybe_csv = content_type == 'text/csv'
+        # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
+        content_type = request.files['file'].content_type
+        maybe_csv = content_type == 'text/csv'
 
-    # 格納先フォルダを取得する
-    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
-    # ファイルを作成する
-    new_file = parent.create_file(request.form.get('label'),
-                                  request.files.get('file').stream,
-                                  maybe_csv=maybe_csv)
-    # ファイルをDBに格納する
-    new_file.save()
-    return new_file
+        # 格納先フォルダを取得する
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        # ファイルを作成する
+        new_file = parent.create_file(req['label'],
+                                    request.files.get('file').stream,
+                                    maybe_csv=maybe_csv)
+        # ファイルをDBに格納する
+        new_file.save()
+        return new_file
 
 @mod.route('/documents/<document_uuid>', methods=['PUT'])
 @login_required_api
@@ -554,7 +605,7 @@ def throw_away_document(document_uuid):
     指定したドキュメントをほかす
     """
     document = g.factory.data.find_by_uuid(document_uuid)
-    document.throw_away()
+    return document.throw_away()
 
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
@@ -565,8 +616,9 @@ def fetch_awss3_folder(awss3_uuid):
     """
     指定したAWS S3フォルダを取得する
     """
+    offset, limit = _get_offset_limit(request.args)
     folder = g.factory.data.find_by_uuid(awss3_uuid)
-    return _add_children_info(folder)
+    return _add_children_info(folder, offset=offset, limit=limit)
 
 @mod.route('/awss3s', methods=['POST'])
 @login_required_api
@@ -606,4 +658,4 @@ def throw_away_awss3(awss3_uuid):
 
     folder = g.factory.data.find_by_uuid(awss3_uuid)
     # AWS S3 folderレコードをDBから削除する
-    folder.throw_away()
+    return folder.throw_away()

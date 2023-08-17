@@ -9,6 +9,7 @@ import { Value } from 'Shared/Input/FlowLinkField';
 import { EditBox } from 'Shared/Base/EditBox';
 import { FlowLinkField } from 'Shared/Input/FlowLinkField';
 import { MoveButton } from 'Shared/Button/MoveButton';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DeleteButton } from 'Shared/Button/DeleteButton';
 import { CreatorField } from 'Shared/Input/CreatorField';
 import { MultiSelect2 } from "Shared/Input";
@@ -391,17 +392,20 @@ export const ScheduleDrawer = (props:Props) => {
             update={update}
             onSuccess={datum=>onSuccess(datum as ScheduleType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[schedule]}
                             onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[schedule]}
+                                 onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />,
                 <DeleteButton key='del'
                               targets={[schedule]}
                               onSuccess={(data)=>onSuccess(data[0] as ScheduleType)} />
-            ],
+            ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
@@ -409,7 +413,7 @@ export const ScheduleDrawer = (props:Props) => {
                             autoFocus={true}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <FlowLinkField  key='flow'
                                 label='起動させるフロー'
                                 required={true}

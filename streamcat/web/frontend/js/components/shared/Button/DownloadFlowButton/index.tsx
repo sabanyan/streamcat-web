@@ -1,15 +1,15 @@
-import React from "react";
-import { useStreamCatNotifications } from "Shared/Notification";
+import React from 'react';
+import { useStreamCatNotifications } from 'Shared/Notification';
 import { Api } from 'Api';
-import { ProjectType, FolderType, FlowType } from "Model/Library";
-import { Button2 } from "Shared/Input";
+import { ProjectType, FolderType, FlowType } from 'Model/Library';
+import { Button2 } from 'Shared/Input';
 
-type FlowAndFolderType = ProjectType|FolderType|FlowType;
+type FlowOrFolderType = ProjectType|FolderType|FlowType;
 
 type Props = {
     readOnly?:boolean;
-    targets: FlowAndFolderType[];
-    onSuccess?: (targets:FlowAndFolderType[]) => void;
+    targets: FlowOrFolderType[];
+    onSuccess?: (targets:FlowOrFolderType[]) => void;
 };
 
 export const DownloadFlowButton = (props:Props) => {
@@ -19,7 +19,7 @@ export const DownloadFlowButton = (props:Props) => {
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     // Datumをダウンロードする
-    const downloadDatum = (datum:FlowAndFolderType) => {
+    const downloadDatum = (datum:FlowOrFolderType) => {
         return Api.downloadFlow(datum.uuid, datum.label).then(() => {
             notifySuccess('フローをダウンロードしました', datum.label);
         }).catch((e) => {
@@ -28,7 +28,7 @@ export const DownloadFlowButton = (props:Props) => {
     };
 
     // 全てのDatumをダウンロードする
-    const downloadData = (data:FlowAndFolderType[]) => {
+    const downloadData = (data:FlowOrFolderType[]) => {
         // 全てのDatumをダウンロードした後に、イベントハンドラを呼び出す
         Promise.all(
             data.map(datum => downloadDatum(datum))

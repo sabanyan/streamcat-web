@@ -4,17 +4,16 @@ import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkB
 import ImageUtil from "Utils/ImageUtil";
 
 interface Props {
-    onClickRemove: (selectedCategory: IFilterCategoryItem) => void;
     list: IFilterCategoryItem[];
+    onClickRemove: (selectedCategory: IFilterCategoryItem) => void;
 }
 
 const FilterSelectedList = (props: Props) => {
-    const {onClickRemove, list} = props;
+    const {list, onClickRemove} = props;
 
     if (!list || !list.length) {
         return null;
     }
-
 
     let listItemElements:React.ReactNode[] = [];
     list.forEach((categoryItem,index) => {

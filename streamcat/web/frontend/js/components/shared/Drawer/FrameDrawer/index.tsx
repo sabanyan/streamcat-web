@@ -1,10 +1,11 @@
-import React from "react"
+import React from "react";
 import { DatumType, FolderType, FrameType } from "Model/Library";
 import { Drawer2, FixedField2, Select2, TextField2 } from "Shared/Input";
 import { MoveButton } from "Shared/Button/MoveButton";
 import { DeleteButton } from "Shared/Button/DeleteButton";
 import { EditBox } from "Shared/Base/EditBox";
-import { DownloadCsvButton } from "Shared/Button/DownloadCsvButton";
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { DownloadFileButton } from "Shared/Button/DownloadFileButton";
 import StringUtil from "Utils/StringUtil";
 import Constants from "Constants/index";
 import { CreatorField } from "Shared/Input/CreatorField";
@@ -83,26 +84,29 @@ export const FrameDrawer = (props:Props) => {
                  update={update}
                  onSuccess={datum=>onSuccess(datum as FrameType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[frame]}
                             onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[frame]}
+                                 onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
                 <DeleteButton key='del'
                               targets={[frame]}
                               onSuccess={(data)=>onSuccess(data[0] as FrameType)} />,
-                <DownloadCsvButton  key='download'
+                <DownloadFileButton key='download'
                                     targets={[frame]} />
-            ],
+            ]: [],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <FixedField2 key='size'
                              label='ファイルサイズ'
                              value={ConvToFileSizeStr(frame.fileSize)} />,

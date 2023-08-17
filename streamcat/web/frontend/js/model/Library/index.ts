@@ -80,7 +80,8 @@ type DatumBaseType<TAllowlist> = {
 
     move: (parent:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
     rename: (label:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
-    delete: (lockUUID?:string) => Promise<void>;
+    duplicate:() => Promise<DatumBaseType<TAllowlist>>;
+    delete: (lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
 };
 
 /**
@@ -295,7 +296,6 @@ export type Command = {
         editLock: boolean,
         lockUUID?: string
     ) => Promise<FlowType>;
-    duplicate:() => Promise<FlowType>;
     deleteCache:(
         nodeId: string
     ) => Promise<void>;

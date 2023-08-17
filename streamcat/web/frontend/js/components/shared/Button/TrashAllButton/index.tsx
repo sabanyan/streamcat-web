@@ -1,7 +1,7 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { TrashType } from "Model/Library";
-import { Button2, DialogButton } from "Shared/Input";
+import { AwaitButton, Button2, DialogButton } from "Shared/Input";
 
 type Props = {
     readOnly?: boolean;
@@ -33,7 +33,7 @@ export const TrashAllButton = (props:Props) => {
     return <DialogButton label='ゴミ箱を空にする'
                          icon='trash'
                          large={large}
-                         dialogTitle={'ゴミ箱にある項目を完全に消去してもよろしいですか？'}
+                         dialogTitle='ゴミ箱にある項目を完全に消去してもよろしいですか？'
                          readOnly={!enabled || readOnly}>{[
         // Contents
         ()=>[<p key='warning'>この操作は取り消せません</p>],
@@ -41,10 +41,10 @@ export const TrashAllButton = (props:Props) => {
         (closeDialog) => [
             <Button2 key='cancel'
                      onClick={closeDialog}>キャンセル</Button2>,
-            <Button2 key='trashAll'
-                     onClick={() => trashAll().finally(() => {
-                        closeDialog()
-                     })}>ゴミ箱を空にする</Button2>
+            <AwaitButton key='trashAll'
+                        onClick={() => trashAll().finally(() => {
+                            closeDialog()
+                        })}>ゴミ箱を空にする</AwaitButton>
         ]
     ]}</DialogButton>;
 };

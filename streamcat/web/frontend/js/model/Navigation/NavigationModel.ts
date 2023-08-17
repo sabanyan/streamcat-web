@@ -55,12 +55,23 @@ export type SelfUserType = UserBaseType & {
     updatePassword: (password:string, currentPassword:string) => Promise<SelfUserType>;
 };
 
+export type StorageUsageType = {
+    total: number;
+    used : number;
+    free : number;
+};
+
 /**
  * Navigationを格納するオブジェクト型
  */
 export type NavigationType = {
     version: string;
     depoName: string;
+    storageUsage: StorageUsageType;
     user: UserType;
     allowlist: NavigationAllowlist;
+};
+
+export type ConnectivityType = {
+    conn: boolean;
 };

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import Constants from "Constants/index";
 import { Api } from 'Api';
-import {HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
+import {HttpUtil, ModalUtil, SortUtil, StringUtil, WebUtil} from "Utils/index";
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
@@ -28,6 +28,8 @@ const Preview = () => {
 
     useEffect(() => {
         getVisualizers();
+        // ブラウザバックによってブラウザタブを閉じれるように設定する
+        WebUtil.setCloseWindowOnBack();
     }, []);
 
     useEffect(() => {

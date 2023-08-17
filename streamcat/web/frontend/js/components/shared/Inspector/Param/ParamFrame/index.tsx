@@ -4,6 +4,7 @@ import { CommandParamType } from 'Types/index'
 import { Api } from 'Api';
 import { HttpUtil } from 'Utils/index';
 import style from './style.scss'
+import { Link2 } from 'Components/shared/Input';
 
 type Props = {
     param: CommandParamType;
@@ -37,7 +38,8 @@ export class ParamFrame extends React.Component<Props, State> {
             return;
         }
         Api.findFrame(value).then(frame => {
-            this.setState({ path: frame.folderPath + '/' + frame.label });
+            const folderPath = frame.folderPath? frame.folderPath+'/': '';
+            this.setState({ path: folderPath + frame.label });
         }).catch(e => {
             this.setState(initialState);
         });
@@ -100,7 +102,7 @@ export class ParamFrame extends React.Component<Props, State> {
     render() {
         return <React.Fragment>
             <div>
-                <a href={"#!"} onClick={(e) => this.onClick(e)} className={style.path}>{this.state.path}</a>
+                <Link2 value={this.state.path} onClick={e=>this.onClick(e)} />
             </div>
         </React.Fragment>
     }

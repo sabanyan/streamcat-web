@@ -1,8 +1,10 @@
 import React from "react"
 import { FolderType, RemoteFolderType } from "Model/Library";
 import { Drawer2, Select2, TextField2 } from "Shared/Input";
-import { MoveButton } from "Shared/Button//MoveButton";
+import { MoveButton } from "Shared/Button/MoveButton";
 import { DeleteButton } from "Shared/Button/DeleteButton";
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { CheckRemoteFolderButton } from "Shared/Button/CheckRemoteFolderButton";
 import { EditBox } from "Shared/Base/EditBox";
 import { CreatorField } from "Shared/Input/CreatorField";
 
@@ -34,6 +36,9 @@ export const RemoteFolderDrawer = (props:Props) => {
     const [userId, setUserId]       = React.useState(initUserId);
     const [password, setPassword]   = React.useState(initPassword);
 
+    // リモートフォルダへの接続が確認済みの場合はTrue
+    const [checked, setChecked] = React.useState(false);
+
     // 値の初期化処理
     const initValues = () => {
         setLabel(initLabel);
@@ -43,6 +48,7 @@ export const RemoteFolderDrawer = (props:Props) => {
         setDirectory(initDirectory);
         setUserId(initUserId);
         setPassword(initPassword);
+        setChecked(false);
     };
 
     // リモートフォルダの新規追加処理
@@ -70,66 +76,90 @@ export const RemoteFolderDrawer = (props:Props) => {
                  initValues={initValues}
                  create={create}
                  update={update}
+                 // キャンセル押下後に接続確認ボタンの確認結果が反映される場合があるので
+                 // 変更ボタン押下時にも未確認状態に戻しておく 
+                 onEdit={()=>setChecked(false)}
                  onSuccess={datum=>onSuccess(datum as RemoteFolderType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[remoteFolder]}
                             onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[remoteFolder]}
+                                 onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,
                 <DeleteButton key='del'
                               targets={[remoteFolder]}
-                              onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />
+                              onSuccess={(data)=>onSuccess(data[0] as RemoteFolderType)} />,
+            ]: [
+                <CheckRemoteFolderButton
+                    key='check'
+                    readOnly={readonly}
+                    forceUnchecked={!checked}
+                    protocol={protocol}
+                    hostname={hostname}
+                    domain={domain}
+                    directory={directory}
+                    userId={userId}
+                    password={password}
+                    onSuccess={() => setChecked(true)} />
             ],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <Select2    key='protocol'
                             label='プロトコル'
                             required={true}
                             items={[{label:'Samba',value:'smb'}]}
                             readOnly={readOnly}
                             state={[protocol, setProtocol]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange} />,
                 <TextField2 key='hostname'
                             label='ホスト名またはIPアドレス'
                             required={true}
                             readOnly={readOnly}
                             state={[hostname,setHostname]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='domain'
                             label='ドメイン名'
                             required={true}
                             readOnly={readOnly}
                             state={[domain,setDomain]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='directory'
                             label='ディレクトリパス'
                             required={true}
                             readOnly={readOnly}
                             state={[directory,setDirectory]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='userId'
                             label='ユーザーID'
                             readOnly={readOnly}
                             state={[userId,setUserId]}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onChange={() => setChecked(false)}
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='password'
                             label='パスワード'
                             type='password'
                             readOnly={readOnly}
                             state={[password,setPassword]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <CreatorField key='creator' datum={remoteFolder} />
             ]
         ]}</EditBox>

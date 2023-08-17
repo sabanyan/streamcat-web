@@ -93,10 +93,9 @@ const CommandSelector = (props: Props) => {
     operators.map((command: CommandModelType, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             //区切りを表示
-            let key = command.classification;
-            let label = Constants.lang.classification[key];
+            let label = Constants.lang.classification[command.classification];
             if (!label) label = command.classification;
-            operatorsContainer.push(<div key={index + command.id} className={style.command_separator}>{label}</div>);
+            operatorsContainer.push(<div key={command.classification + index} className={style.command_separator}>{label}</div>);
         }
         operatorsContainer.push(<Command
             nodes={nodes}

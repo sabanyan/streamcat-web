@@ -169,7 +169,7 @@ class TrashTestCase(ApiTestCaseBase):
             "label"    : "ゴミ箱"
         }
 
-        # PUT /trashes apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        # GET /trashes apiの戻り値が正しいことを検証する(createdAtは検証できない)
         self.assertIsNotNone(result['uuid'])
         self.assertEqual(result['type'], expected_result['type'])
         self.assertEqual(result['label'], expected_result['label'])
@@ -204,6 +204,21 @@ class TrashTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['folderPath'][1]['uuid'])
         self.assertEqual(result['folderPath'][1]['type'], folder_path2['type'])
         self.assertEqual(result['folderPath'][1]['label'], folder_path2['label'])
+
+    def test_get_trashes_offset_limit(self):
+        """
+        GET /trashes?offset=&limit=
+        """
+        # offsetとlimitを指定してGET /trashesでゴミ箱の中を確認する
+        result = self.get_uri('/api/v0/trashes?offset=3&limit=2', self.USER1)
+
+        # GET /trashes apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'trash')
+        self.assertEqual(result['label'], 'ゴミ箱')
+        # テストではLibrary._init_library_folders()でゴミ箱を作成しているのでcreator=None
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertNotEqual(result['createdAt'], None)
 
     def test_maintain_folder_hierarchy(self):
         """

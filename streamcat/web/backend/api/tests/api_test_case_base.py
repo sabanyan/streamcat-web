@@ -97,7 +97,7 @@ class ApiTestCaseBase(TestCaseBase):
             token = make_access_token(user.uuid)
             client.set_cookie('S', token)
             response = client.get(uri)
-            result = response.get_json()
+            result = response.get_json(silent=True)
         error_detail = result['message'] if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), f'GET {uri} is failed. {error_detail}')
         return result

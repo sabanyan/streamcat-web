@@ -108,16 +108,19 @@ input::placeholder,textarea::placeholder {
 // テーブルプレビュー
 .s-tbl {
 	border-collapse: collapse;
-  tr:nth-child(even){
-    background-color: #e0e0e0;
-  }
   th {
     padding: 5px 10px;
     border: 1px solid #c0c0c0;
     // ヘッダ行を固定する
     top: 0;
     position: sticky;
-    background-color: #e0e0e0;
+    @include list-color();
+  }
+  tr:nth-child(odd){
+    @include list-select-color();
+  }
+  tr:nth-child(even){
+    @include list-color();
   }
   td {
     padding: 5px 10px;

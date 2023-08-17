@@ -1,9 +1,9 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import Constants from 'Constants/index';
-import { FlowUtil, ModalUtil, ReactDomUtil } from 'Utils/index';
+import { FlowUtil, ModalUtil } from 'Utils/index';
 import { Api } from 'Api';
-import { ActivityType, FlowType } from 'Model/Library';
+import { FlowType } from 'Model/Library';
 import style from '../Core/style.scss';
 
 type Props = {
@@ -13,8 +13,8 @@ type Props = {
     notifyLoading: (title: string, message: string) => string;
     notifiWarning: (title: string, message: string) => string;
     notifyError: (title: string, message: string) => string;
-    notifyComplete: Function;
-    dismissNotify: Function;
+    notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
+    dismissNotify: (id:string) => void;
     lockUUID?: string;
     children: React.ReactNode;
     disabled: boolean;
@@ -33,17 +33,6 @@ export const Run = (props: Props) => {
             children,
             disabled} = props;
 
-    const renderRunResult = (activity: ActivityType) => {
-        const result = activity.outs.map(n => {
-            return <li>{n.id}</li>;
-        });
-        const content = <div>
-            <div>ライブラリにフローの実行結果が追加されました。</div>
-            <ul>{result}</ul>
-        </div>;
-        return content;
-    };
-
     const flowUpdate = () => {
         Api.findFlow(inject_flow_uuid).then(flow => {
             refreshFlow(flow);
@@ -60,11 +49,12 @@ export const Run = (props: Props) => {
             'variables': []
         };
         return FlowUtil.runWithArgs(runArgs, notifyLoading, notifiWarning, notifyError, dismissNotify).then(activity => {
-            const content = renderRunResult(activity);
             // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
             const parentFolderUUID = activity.outs[0].parent; //　今はlasts[0]
+            // outsのid
+            const outLabels = activity.outs.map(out => out.label)
             // 結果出力
-            notifyComplete('フロー実行完了', ReactDomUtil.renderToString(content), parentFolderUUID);
+            notifyComplete('フロー実行完了', outLabels, parentFolderUUID);
             // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
             flowUpdate();
         }).catch(e => {

@@ -3,6 +3,7 @@ import {Menu, MenuItem, Button, Link, Avatar, Divider, Typography} from '@mui/ma
 import {WebUtil} from 'Utils/index';
 import {NavigationType} from 'Model/Navigation/NavigationModel';
 import { Spacer } from "Shared/Base";
+import {StorageUsage} from 'Shared/Input'
 
 interface Props {
     navigation: NavigationType | null;
@@ -61,13 +62,20 @@ const AccountMenu = (props: Props) => {
             <MenuItem>
                 {depoName}
             </MenuItem>
+            <StorageUsage storageUsage={navigation?.storageUsage} />
             <Divider sx={{my:0.5}} />
             <MenuItem>
                 <Link href='/settings/profile' underline='none'>ユーザー情報変更</Link>
             </MenuItem>
-            <MenuItem>
-                {availableUserAdmin ? <Link href='/admin/users' underline='none'>ユーザー管理</Link> : null}
-            </MenuItem>
+            {
+                availableUserAdmin ?
+                <MenuItem >
+                    <Link href='/admin/users' underline='none'>ユーザー管理</Link>
+                </MenuItem> :
+                // <></>を返すと"MUI: The Menu component doesn't accept a Fragment as a child"
+                // という警告が表示される
+                null
+            }
             <MenuItem onClick={e=>onClickLogout(e)}>
                 <Link href='#' underline='none'>ログアウト</Link>
             </MenuItem>

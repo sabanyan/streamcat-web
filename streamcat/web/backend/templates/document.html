@@ -1,10 +1,23 @@
 <!DOCTYPE html>
 <html lang="ja" style="height:100%">
 <head>
-  <title>{{ label }}</title>
+    <script type="text/javascript">
+        // Firefoxでは戻る押下でタブを閉じれる
+        window.onload = () => {
+            // ブラウザバックができるように履歴URLを一つ追加する
+            history.pushState(null, '', window.location.href);
+            // 最後のpushStateが現在URLになる
+            history.pushState(null, '', window.location.href);
+        }
+        // Chromeではセキュリティ対策として、
+        // ページ読み込み直後にブラウザバックでのpopstateイベントが発火しない
+        // クリックなどのユーザ操作の後であれば発火する
+        window.addEventListener('popstate', () => {window.close()});
+    </script>
+    <title>{{ label }}</title>
 </head>
 <body style="height:100%;margin:0;">
-  <object data="/api/v0/documents/{{ document_uuid }}?contents=on" name="{{ label }}" style="width:100%;height:100%"/>
+    <object data="/api/v0/documents/{{ document_uuid }}?contents=on" name="{{ label }}" style="width:100%;height:100%"/>
 </body>
 </html>
 

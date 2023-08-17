@@ -17,13 +17,16 @@ import {
     Flow,
     Command
 } from 'Model/Library';
-import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {
+    ConnectivityType,
+    NavigationType
+} from 'Model/Navigation/NavigationModel';
 import {
     toJsonOrRaise,
+    getBase as get,
     postBase,
     putBase,
-    getBase as get,
-    delBase as del,
+    delBase,
     makeArrayCtor
 } from './ApiBase';
 
@@ -36,6 +39,13 @@ const post = <TDatumType>(url: string, body: {}) => {
 
 const put = <TDatumType>(url: string, body: {}) => {
     return putBase<TDatumType>(url, body).then<TDatumType>(datum => {
+        // DatumArrayのshift()を用いてdatumに各種関数を付与する
+        return datum && (new DatumArray([datum as any])).shift() as any;
+    });
+};
+
+const del = <TDatumType>(url: string, body={}) => {
+    return delBase<TDatumType>(url, body).then<TDatumType>(datum => {
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift() as any;
     });
@@ -171,8 +181,10 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {parent:parent});
             d.rename = (label) => 
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
+            d.duplicate = () =>
+                post(`/api/v0/folders`, {source:d.uuid});
             d.delete = () =>
-                del(`/api/v0/projects/${d.uuid}`);
+                del<ProjectType>(`/api/v0/projects/${d.uuid}`);
             d.initMembers = (members, lastModifiedAt) =>
                 put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
             d.joinMember = (member) =>
@@ -186,14 +198,16 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
                 put<FolderType>(`/api/v0/folders/${d.uuid}`, {parent:parent});
             d.rename = (label) => 
                 put<FolderType>(`/api/v0/folders/${d.uuid}`, {label:label});
+            d.duplicate = () =>
+                post(`/api/v0/folders`, {source:d.uuid});
             d.delete = () =>
-                del(`/api/v0/folders/${d.uuid}`);
+                del<FolderType>(`/api/v0/folders/${d.uuid}`);
         }
 
     }else if(datum.type === 'trash') {
         const d = datum as TrashType;
         d.trashAll = () =>
-            del(`/api/v0/trashes`);
+            del<void>(`/api/v0/trashes`);
         d.putBack = (uuid) =>
             put<TrashType>(`/api/v0/trashes/${uuid}`, {});
     }else if(datum.type === 'rfolder') {
@@ -202,8 +216,10 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/remote-folders`, {source:d.uuid});
         d.delete = () =>
-            del(`/api/v0/remote-folders/${d.uuid}`);
+            del<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`);
         d.update = (label, protocol, hostname, domain, directory, userId, password) =>
             put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`,
                                     { label    : label,
@@ -219,8 +235,10 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/databases`, {source:d.uuid});
         d.delete = () =>
-            del(`/api/v0/databases/${d.uuid}`);
+            del<DatabaseType>(`/api/v0/databases/${d.uuid}`);
         d.update = (label, dbms, hostname, port, database, userId, password) =>
             put<DatabaseType>(`/api/v0/databases/${d.uuid}`,
                                 { label   : label,
@@ -237,7 +255,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.rename = (label, lockUUID) => 
             put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label, lock:lockUUID});
         d.delete = (lockUUID) =>
-            del(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
+            del<FlowType>(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
         d.update = (flow, lockUUID) =>
             put<FlowType>(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
         d.updateLock = (editLock, lockUUID) =>
@@ -245,15 +263,17 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         d.duplicate = () =>
             post(`/api/v0/flows`, {source:d.uuid});
         d.deleteCache = (nodeId) =>
-            del(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
+            del<void>(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
     }else if(datum.type === 'schedule') {
         const d = datum as ScheduleType;
         d.move = (parent) => 
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/schedules`, {source:d.uuid});
         d.delete = () =>
-            del(`/api/v0/schedules/${d.uuid}`);
+            del<ScheduleType>(`/api/v0/schedules/${d.uuid}`);
         d.update = (label, runnableUUID, args, inputs, trigger) =>
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`,
                                 { label   : label,
@@ -267,8 +287,10 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<FrameType>(`/api/v0/frames/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<FrameType>(`/api/v0/frames/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/frames`, {source:d.uuid});
         d.delete = () =>
-            del(`/api/v0/frames/${d.uuid}`);
+            del<FrameType>(`/api/v0/frames/${d.uuid}`);
         d.update = (encoding, newline) =>
             put<FrameType>(`/api/v0/frames/${d.uuid}`,
                             { encoding: encoding,
@@ -279,8 +301,10 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             put<DocumentType>(`/api/v0/documents/${d.uuid}`, {parent:parent});
         d.rename = (label) => 
             put<DocumentType>(`/api/v0/documents/${d.uuid}`, {label:label});
+        d.duplicate = () =>
+            post(`/api/v0/documents`, {source:d.uuid});
         d.delete = () =>
-            del(`/api/v0/documents/${d.uuid}`);
+            del<DocumentType>(`/api/v0/documents/${d.uuid}`);
     }else if(datum.type === 'activity') {
         // Activityの変更・削除はできない
     }
@@ -328,6 +352,16 @@ PortArray.prototype.toJSON = function(){
 }
 
 /**
+ * 引数を追加する共通関数
+ */
+const addOffsetLimit = (params:{offset?:number,limit?:number}, offset?:number, limit?:number) => {
+    // offset==0の場合はoffsetパラメタを指定しない
+    offset && (params.offset = offset);
+    // limit==0の場合はlimitパラメタを指定する
+    limit != null && (params.limit = limit);
+};
+
+/**
  * Web APIを発行する関数を纏めるクラス
  */
 export const DatumApi = {
@@ -356,9 +390,10 @@ export const DatumApi = {
      * GET /libraryを発行してルートフォルダを取得する
      * @throws {ErrorResponse}
      */
-    findLibrary: (members?: boolean) => {
+    findLibrary: (offset?:number, limit?:number, members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
-        let params: {members?:string} = {};
+        let params: {offset?:number, limit?:number, members?:string} = {};
+        addOffsetLimit(params, offset, limit);
         members && (params.members = 'on');
         return get<ParentFolderType>('/api/v0/library', params).then(folder => {
             folder = (new DatumArray([folder])).shift() as any;
@@ -371,8 +406,10 @@ export const DatumApi = {
      * GET /trashesを発行してゴミ箱を取得する
      * @throws {ErrorResponse}
      */
-    findTrash: () => {
-        return get<ParentTrashType>('/api/v0/trashes').then(trash => {
+    findTrash: (offset?:number, limit?:number) => {
+        let params: {offset?:number, limit?:number} = {};
+        addOffsetLimit(params, offset, limit);
+        return get<ParentTrashType>('/api/v0/trashes', params).then(trash => {
             trash = (new DatumArray([trash])).shift() as any;
             trash.children = new DatumArray(trash.children);
             return trash;
@@ -399,9 +436,10 @@ export const DatumApi = {
      * @param uuid 取得するプロジェクトのUUID
      * @throws {ErrorResponse}
      */
-    findProject: (uuid: string, members?: boolean) => {
+    findProject: (uuid: string, offset?:number, limit?:number, members?: boolean) => {
         // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
-        let params: {members?:string} = {};
+        let params: {offset?:number, limit?:number, members?:string} = {};
+        addOffsetLimit(params, offset, limit);
         members && (params.members = 'on');
         return get<ParentProjectType>(`/api/v0/projects/${uuid}`, params).then(project => {
             project = (new DatumArray([project])).shift() as any;
@@ -415,8 +453,10 @@ export const DatumApi = {
      * @param uuid 取得するフォルダのUUID
      * @throws {ErrorResponse}
      */
-    findFolder: (uuid: string) => {
-        return get<ParentFolderType>(`/api/v0/folders/${uuid}`).then(folder => {
+    findFolder: (uuid: string, offset?:number, limit?:number) => {
+        let params: {offset?:number, limit?:number} = {};
+        addOffsetLimit(params, offset, limit);
+        return get<ParentFolderType>(`/api/v0/folders/${uuid}`, params).then(folder => {
             folder = (new DatumArray([folder])).shift() as any;
             folder.children = new DatumArray(folder.children);
             return folder;
@@ -485,13 +525,31 @@ export const DatumApi = {
         const params = {contents:true};
         const accept = `text/csv; charset=${encoding||'utf-8'}`;
         // ダウンロードファイル名を作成する
-        let fileName: string;;
+        let fileName: string;
         if(label.endsWith('.csv') || label.endsWith('.txt')){
             fileName = label;
         }else{
             fileName = label + '.csv';
         }
         return download(`/api/v0/frames/${uuid}`, accept, fileName, params);
+    },
+
+    /**
+     * GET /documentsを発行してドキュメントファイルを取得する
+     * @param uuid 取得するドキュメントのUUID
+     */
+    downloadDocument: (uuid: string, label: string, extension: string='') => {
+        // 引数が指定された場合はparamsオブジェクトに引数のプロパティを追加する
+        const params = {contents:true};
+        const accept = '*/*';
+        // ダウンロードファイル名を作成する
+        let fileName: string;
+        if(label.includes('.') || extension===''){
+            fileName = label;
+        }else{
+            fileName = label + '.' + extension;
+        }
+        return download(`/api/v0/documents/${uuid}`, accept, fileName, params);
     },
 
     /**
@@ -540,6 +598,52 @@ export const DatumApi = {
      */
     findNavigation: () => {
         return get<NavigationType>('/api/v0/navigation');
+    },
+
+    /**
+     * GET /connectables/remote-foldersを発行して
+     * RemoteFolderへの接続を確認する
+     */
+    checkRemoteFolderConnection: (
+        protocol: 'smb',
+        hostname: string,
+        domain: string,
+        directory: string,
+        userId: string,
+        password: string
+    ) => {
+        const params = {
+            protocol: protocol,
+            hostname: hostname,
+            domain: domain,
+            directory: directory,
+            userId: userId,
+            password: password
+        };
+        return get<ConnectivityType>('/api/v0/connections/remote-folders', params);
+    },
+
+    /**
+     * GET /connectables/databasesを発行して
+     * Databaseへの接続を確認する
+     */
+    checkDatabaseConnection: (
+        dbms: 'postgresql'|'oracle',
+        hostname: string,
+        port: number,
+        database: string,
+        userId: string,
+        password: string
+    ) => {
+        const params = {
+            dbms: dbms,
+            hostname: hostname,
+            port: port,
+            database: database,
+            userId: userId,
+            password: password
+        };
+        return get<ConnectivityType>('/api/v0/connections/databases', params);
     },
 
     /**

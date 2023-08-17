@@ -1,7 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import ja from 'dayjs/locale/ja';
-import {TextField} from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FixedField2 } from '../FixedField2';
@@ -72,31 +71,31 @@ export const DatePicker2 = (props:Props) => {
         // 
         // 入力可の場合
         // 
-        <LocalizationProvider dateAdapter={AdapterDayjs} dateFormats={{monthAndYear:'YYYY年 M月'}} locale={ja} >
+        <LocalizationProvider dateAdapter={AdapterDayjs} dateFormats={{monthAndYear:'YYYY年 M月'}} adapterLocale={ja.name} >
         <DatePicker label={label}
-                    inputFormat='YYYY-MM-DD'
-                    mask='____-__-__'
+                    format='YYYY-MM-DD'
                     minDate={minDate}
                     maxDate={maxDate}
                     value={value.value}
                     onChange={onChangeValue}
-                    renderInput={params =>
-                        <TextField  required={required}
-                                    // 小さく表示する
-                                    size='small'
-                                    // ある程度の横幅を設定する
-                                    fullWidth={true}
-                                    // labelの表示域を確保する
-                                    margin='dense'
-                                    // 枠線を設定する
-                                    variant='outlined'
-                                    // 入力値が空の場合はエラーにする
-                                    // (未入力時はエラー表示をしない)
-                                    error={valueChanged && isError(value.value)}
-                                    // エラーメッセージ
-                                    helperText={(valueChanged && isError(value.value))? requiredMessage: ''}
-                                    {...params} />
-                    }
+                    slotProps={{
+                        textField: {
+                            required: required,
+                            // 小さく表示する
+                            size: 'small',
+                            // ある程度の横幅を設定する
+                            fullWidth: true,
+                            // labelの表示域を確保する
+                            margin: 'dense',
+                            // 枠線を設定する
+                            variant: 'outlined',
+                            // 入力値が空の場合はエラーにする
+                            // (未入力時はエラー表示をしない)
+                            error: valueChanged && isError(value.value),
+                            // エラーメッセージ
+                            helperText: (valueChanged && isError(value.value))? requiredMessage: ''
+                        }
+                    }}
         />
         </LocalizationProvider>
     }</>;

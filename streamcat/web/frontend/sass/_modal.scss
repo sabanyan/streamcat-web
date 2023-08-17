@@ -50,7 +50,7 @@ $preview-height: 100%;
     .modal-content {
       border-radius: 0;
       height: 100%;
-      background: #F4F4F4 !important;
+      @include paper-background-color();
       .modal-body{
         max-height: inherit!important;
         overflow: scroll;

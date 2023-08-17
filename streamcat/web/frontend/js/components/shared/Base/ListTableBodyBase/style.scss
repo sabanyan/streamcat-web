@@ -1,0 +1,38 @@
+@import "../../../../../sass/common";
+
+.listTableBody {
+    tr {
+        @include list-color();
+        @extend .selectDisable;
+        td {
+            white-space: nowrap;
+            height: 56px;
+            vertical-align: middle;
+            padding: 0 24px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 16px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: normal;
+            letter-spacing: normal;
+        }
+    }
+    tr:first-of-type {
+        border-top: 1px solid #e5e5e5;
+    }
+    tr.selected {
+        @include list-select-color();
+    }
+    tr.canDrop {
+        @include list-candrop-color();
+    }
+}
+
+.selectDisable {
+    user-select: none;
+    a::selection,img::selection,td::selection{
+        background: transparent!important;
+    }
+}

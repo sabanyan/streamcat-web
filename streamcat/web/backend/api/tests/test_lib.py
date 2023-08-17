@@ -139,7 +139,6 @@ class LibraryTestCase(ApiTestCaseBase):
         # フォルダに対応するディレクトリが存在することを検証する
         self.assertTrue(os.path.isdir((root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
 
-
     def test_move_folder2(self):
         # ルートを取得する
         root = self.factory.data.load_root()
@@ -185,6 +184,122 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1'))
         self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1' / '新しいフォルダ1_1'))
         self.assertTrue(os.path.isfile(dst_folder_path/ '新しいフォルダ1' / '新しいフォルダ1_1' / 'フレームファイル_1'))
+
+    def test_delete_folder(self):
+        # フォルダを作成する(POST /folders)
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {"label" : "私の新しいフォルダ", "parent": root.uuid}, self.USER1)
+        folder_uuid = result['uuid']
+
+        # フォルダを削除する(DELETE /folders)
+        result = self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER1)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '私の新しいフォルダ'
+            ,'type'     : 'folder'
+            ,'creator'  : 'ユーザー管理者'
+        }
+
+        # DELETE /folders apiの戻り値が正しいことを検証する
+        self.assertEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['label'], expected_result['label'])
+        self.assertEqual(result['type'], expected_result['type'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertEqual(result['creator'], expected_result['creator'])
+        self.assertNotEqual(result['createdAt'], None)
+
+        # フォルダはゴミ箱に移動していること
+        trash_folder = self.factory.data.load_trash_folder()
+        trashed = trash_folder.find_children()
+        self.assertEqual(len(trashed), 1)
+        self.assertEqual(trashed[0].label, '私の新しいフォルダ')
+
+    def test_duplicate_folder(self):
+        """
+        フォルダを複製できること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {"label" : "私の新しいフォルダ", "parent": root.uuid}, self.USER1)
+        folder_uuid = result['uuid']
+
+        # フォルダの下にフローを作成する
+        data = {
+            'parent': folder_uuid,
+            'label': 'my-flow',
+            'flow': {}
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+        flow_uuid = result['uuid']
+
+        # フォルダを複製する(POST /folders)
+        result = self.post_uri(f'/api/v0/folders', {'source':folder_uuid}, self.USER1)
+        duplicated_folder_uuid = result['uuid']
+
+        # POST /folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertNotEqual(result['uuid'], folder_uuid)
+        self.assertEqual(result['label'], '私の新しいフォルダ のコピー')
+        self.assertEqual(result['type'], 'folder')
+        self.assertEqual(result['folderPath'], '/ライブラリ')
+        self.assertEqual(result['folderUuid'], root.uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], self.USER1.name)
+        self.assertNotEqual(result['createdAt'], None)
+        self.assertTrue(result['allowlist']['read'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertFalse(result['allowlist']['execute'])
+        self.assertTrue(result['allowlist']['download'])
+        self.assertTrue(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['move'])
+        self.assertFalse(result['allowlist']['lock'])
+        self.assertFalse(result['allowlist']['findMember'])
+        self.assertFalse(result['allowlist']['updateMember'])
+        self.assertFalse(result['allowlist']['createProject'])
+        self.assertTrue(result['allowlist']['createFolder'])
+        self.assertTrue(result['allowlist']['createFile'])
+        self.assertTrue(result['allowlist']['upload'])
+        self.assertTrue(result['allowlist']['import'])
+
+        # 複製したフォルダの下にフローも複製されること
+        result = self.get_uri(f'/api/v0/folders/{duplicated_folder_uuid}', self.USER1)
+        self.assertEqual(len(result['children']), 1)
+        duplicated_flow = result['children'][0]
+        self.assertNotEqual(duplicated_flow['uuid'], flow_uuid)
+        self.assertEqual(duplicated_flow['label'], 'my-flow')
+        self.assertEqual(duplicated_flow['type'], 'flow')
+        self.assertIsNone(duplicated_flow['folderPath'])
+        self.assertEqual(duplicated_flow['folderUuid'], duplicated_folder_uuid)
+        self.assertIsNone(duplicated_flow['prevFolderPath'])
+        self.assertEqual(duplicated_flow['creator'], self.USER1.name)
+        self.assertNotEqual(duplicated_flow['createdAt'], None)
+        self.assertTrue(duplicated_flow['allowlist']['read'])
+        self.assertTrue(duplicated_flow['allowlist']['update'])
+        self.assertTrue(duplicated_flow['allowlist']['delete'])
+        self.assertTrue(duplicated_flow['allowlist']['execute'])
+        self.assertTrue(duplicated_flow['allowlist']['download'])
+        self.assertTrue(duplicated_flow['allowlist']['export'])
+        self.assertTrue(duplicated_flow['allowlist']['copy'])
+        self.assertTrue(duplicated_flow['allowlist']['move'])
+        self.assertTrue(duplicated_flow['allowlist']['lock'])
+        self.assertFalse(duplicated_flow['allowlist']['findMember'])
+        self.assertFalse(duplicated_flow['allowlist']['updateMember'])
+
+        # フォルダを削除する(DELETE /folders)
+        self.delete_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
+        self.delete_uri(f'/api/v0/folders/{duplicated_folder_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_create_get_frame(self):
         # フォルダを作成する(POST /folders)

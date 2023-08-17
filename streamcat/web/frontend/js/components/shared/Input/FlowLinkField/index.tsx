@@ -2,7 +2,7 @@ import React from "react";
 import HttpUtil from "Utils/HttpUtil";
 import { TextField } from "@mui/material";
 import { FlowType, FolderType } from "Model/Library";
-import { Link2 } from "Shared/Input";
+import { LinkField } from "Shared/Input";
 import { WebUtil } from "Utils/index";
 
 export type Value = {
@@ -98,7 +98,7 @@ export const FlowLinkField = (props:Props) => {
         // 
         // 入力不可の場合
         // 
-        <Link2 label={label} value={flowPath} onClick={openFlow} />:
+        <LinkField label={label} value={flowPath} onClick={openFlow} />:
         // 
         // 入力可の場合
         //
@@ -122,7 +122,7 @@ export const FlowLinkField = (props:Props) => {
                     value={flowPath}
                     // テキストフィールドへのキー入力を無効にする
                     onChange={()=>{}}
-                    onKeyPress={onClickSelect}
+                    onKeyDown={onClickSelect}
                     onClick={onClickSelect} />
     }</>;
 };

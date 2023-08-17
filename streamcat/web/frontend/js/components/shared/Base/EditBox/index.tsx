@@ -1,42 +1,55 @@
-import React from "react"
-import { Box } from "@mui/material"
+import React from 'react'
+import { Box } from '@mui/material'
 import { useStreamCatNotifications } from 'Shared/Notification';
 import { ErrorResponse } from 'Api';
-import { DatumType } from "Model/Library";
-import LibraryUtil from "Utils/LibraryUtil";
-import { Button2 } from "Shared/Input";
+import { DatumType } from 'Model/Library';
+import { UserType } from 'Model/Navigation/NavigationModel';
+import { typeNames } from 'Utils/TypeNames';
+import { Button2 } from 'Shared/Input';
 
-type Value ={
+// UserTypeを扱う場合は追加のプロパティが必要になる
+export type ExtendedUserType = UserType & {
+    label: string;
+    type: string;
+    allowlist: {
+        update: boolean;
+    };
+};
+
+type Value = {
     value: any;
     isError: boolean;
 };
 
-type Props = {
+type Props<T> = {
     readOnly?: boolean;
     // Datumを新規追加する場合はtrue
     createMode?: boolean;
     // EditBoxの状態を初期化するためのトリガー
-    datum?: DatumType;
+    datum?: T;
     // 入力値
     values: Value[];
     // 入力値の初期化処理
     initValues: () => void;
     // Datumを新規追加する処理
-    create: () => Promise<DatumType>;
+    create: () => Promise<T>;
     // Datumを変更する処理
-    update?: () => Promise<DatumType>;
+    update?: () => Promise<T>;
     // 新規追加/変更後の処理
-    onSuccess: (datum:DatumType) => void;
+    onSuccess: (datum:T) => void;
+    // 変更ボタン押下時の処理
+    onEdit?: () => void;
     // キャンセルボタン押下時の処理
     onCancel?: () => void;
     // 入力コンポーネント
     // (EditBoxにおいてreadOnlyとonErrorChangeを制御したいので
     //  子コンポーネントを生成する関数を引数とする)
     children:[
-        JSX.Element[],
-        (readOnly: boolean,
+        (   readonly: boolean,
+        ) => JSX.Element[],
+        (   readOnly: boolean,
             onErrorChange: (isError:boolean) => void,
-            onEnterKeyPress: (value:Value) => void
+            onEnterKeyDown: (value:Value) => void
         ) => JSX.Element[]
     ];
 };
@@ -45,8 +58,8 @@ type Props = {
  * 新規追加/変更可能なBox
  * @param props 
  */
-export const EditBox = (props:Props) => {
-    const { datum, values, initValues, create, update, onSuccess, onCancel } = props;
+export const EditBox = <T extends DatumType|ExtendedUserType = DatumType>(props:Props<T>) => {
+    const { datum, values, initValues, create, update, onSuccess, onEdit, onCancel } = props;
     const readOnly = !!props.readOnly;
     const createMode = !!props.createMode;
     const [ buttons, inputs ] = props.children
@@ -55,7 +68,7 @@ export const EditBox = (props:Props) => {
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     // ペインの変更可否
-    const [editMode, setEditMode] = React.useState(!createMode);
+    const [editMode, setEditMode] = React.useState(createMode);
     // 追加ボタンの押下可否
     const [editBoxError, setEditBoxError] = React.useState(createMode);
 
@@ -66,7 +79,7 @@ export const EditBox = (props:Props) => {
         // datum、またはcreateの変更に応じてreadOnlyを変更する
         setEditMode(createMode);
         setEditBoxError(createMode);
-    }, [datum,createMode]);
+    }, [datum]);
 
     /**
      * テキストボックスのエラー状態が変更された時、確定ボタンの押下可否を更新する
@@ -84,6 +97,14 @@ export const EditBox = (props:Props) => {
             const myPrevErrorCount = prevIsError? 1: 0;
             setEditBoxError((errorCount - myPrevErrorCount) > 0);
         }
+    };
+
+    // 変更ボタン押下時の処理
+    const onClickEdit = () => {
+        // ペインの変更可能にする
+        setEditMode(true);
+        // イベントハンドラを呼び出す
+        onEdit && onEdit();
     };
 
     // キャンセルボタン押下時の処理
@@ -108,13 +129,13 @@ export const EditBox = (props:Props) => {
 
     // Datumの新規作成処理
     const createDatum = () => {
-        // リモートフォルダを新規作成する
+        // Datumを新規作成する
         create().then(datum => {
             // ペインを変更不可にする
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
             if(datum){
-                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                const typeLabel = typeNames[datum.type];
                 notifySuccess(`${typeLabel}を作成しました`, datum.label);
                 // イベントハンドラを呼び出す
                 onSuccess(datum);
@@ -130,13 +151,13 @@ export const EditBox = (props:Props) => {
             // updateが指定されていない場合、処理を中断する
             return;
         }
-        // リモートフォルダを変更する
+        // Datumを変更する
         update().then(datum => {
             // ペインを変更不可にする
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
             if(datum){
-                const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+                const typeLabel = typeNames[datum.type];
                 notifySuccess(`${typeLabel}を変更しました`, datum.label);
                 // イベントハンドラを呼び出す
                 onSuccess(datum);
@@ -150,27 +171,29 @@ export const EditBox = (props:Props) => {
     const enabled = datum && datum.allowlist.update && !readOnly;
 
     // 変更ボタン
-    const EditButton = (props:{align:'left'|'right'}) => {
+    const editbuttons = (align:'left'|'right') => {
         if(editMode){
-            return <Box textAlign={props.align}>
+            return <Box textAlign={align}>
+                {createMode? buttons(!editMode): []}
                 <Button2 onClick={onClickCancel}>キャンセル</Button2>
                 <Button2 disabled={editBoxError} onClick={submit}>確定</Button2>
-            </Box>;
+                {createMode? []: buttons(!editMode)}
+            </Box>
         }else{
-            return <Box textAlign={props.align}>
-                <Button2 disabled={!enabled} onClick={()=>setEditMode(true)}>変更</Button2>
-                {buttons}
+            return <Box textAlign={align}>
+                <Button2 disabled={!enabled} onClick={onClickEdit}>変更</Button2>
+                {buttons(!editMode)}
             </Box>;
         }
-    }
+    };
 
     return <>
         {/* 変更モードの場合はボタンを左上に配置する */}
-        {createMode? <></>: <EditButton align='left'/>}
+        {createMode? <></>: editbuttons('left')}
         {/* Function as Child Components pattern
             https://stackoverflow.com/questions/32370994/how-to-pass-props-to-this-props-children */}
         {inputs(!editMode, onErrorChange, submit)}
         {/* 新規追加モードの場合はボタンを右下に配置する */}
-        {createMode? <EditButton align='right'/>: <></>}
+        {createMode? editbuttons('right'): <></>}
     </>;
 };

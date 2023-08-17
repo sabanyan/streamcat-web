@@ -1,10 +1,12 @@
-import React from "react"
-import { FolderType, DatabaseType } from "Model/Library";
-import { Drawer2, Select2, TextField2 } from "Shared/Input";
-import { MoveButton } from "Shared/Button/MoveButton";
-import { DeleteButton } from "Shared/Button/DeleteButton";
-import { EditBox } from "Shared/Base/EditBox";
-import { CreatorField } from "Shared/Input/CreatorField";
+import React from 'react'
+import { FolderType, DatabaseType } from 'Model/Library';
+import { Drawer2, Select2, TextField2 } from 'Shared/Input';
+import { MoveButton } from 'Shared/Button/MoveButton';
+import { DeleteButton } from 'Shared/Button/DeleteButton';
+import { EditBox } from 'Shared/Base/EditBox';
+import { CreatorField } from 'Shared/Input/CreatorField';
+import { DuplicateButton } from 'Shared/Button/DuplicateButton';
+import { CheckDatabaseButton } from 'Components/shared/Button/CheckDatabaseButton';
 
 type Props = {
     createMode: boolean;
@@ -34,6 +36,9 @@ export const DatabaseDrawer = (props:Props) => {
     const [userId, setUserId]     = React.useState(initUserId);
     const [password, setPassword] = React.useState(initPassword);
 
+    // リモートフォルダへの接続が確認済みの場合はTrue
+    const [checked, setChecked] = React.useState(false);
+
     // 値の初期化処理
     const initValues = () => {
         setLabel(initLabel);
@@ -43,6 +48,7 @@ export const DatabaseDrawer = (props:Props) => {
         setDatabase(initDatabase);
         setUserId(initUserId);
         setPassword(initPassword);
+        setChecked(false);
     };
 
     // リモートフォルダの新規追加処理
@@ -70,26 +76,44 @@ export const DatabaseDrawer = (props:Props) => {
                  initValues={initValues}
                  create={create}
                  update={update}
+                 // キャンセル押下後に接続確認ボタンの確認結果が反映される場合があるので
+                 // 変更ボタン押下時にも未確認状態に戻しておく 
+                 onEdit={()=>setChecked(false)}
                  onSuccess={datum=>onSuccess(datum as DatabaseType)} >{[
             // ボタン
-            [
+            (readonly) => readonly? [
                 <MoveButton key='move'
                             parent={parent} 
                             targets={[datum]}
                             onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />,
+                <DuplicateButton key='duplicate'
+                                 targets={[datum]}
+                                 onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />,
                 <DeleteButton key='del'
                               targets={[datum]}
                               onSuccess={(data)=>onSuccess(data[0] as DatabaseType)} />
+            ]: [
+                <CheckDatabaseButton
+                    key='check'
+                    readOnly={readonly}
+                    forceUnchecked={!checked}
+                    dbms={dbms}
+                    hostname={hostname}
+                    port={port}
+                    database={database}
+                    userId={userId}
+                    password={password}
+                    onSuccess={() => setChecked(true)} />
             ],
             // テキストボックス
-            (readOnly, onErrorChange, onEnterKeyPress) => [
+            (readOnly, onErrorChange, onEnterKeyDown) => [
                 <TextField2 key='label'
                             label='ラベル'
                             required={true}
                             readOnly={readOnly}
                             state={[label, setLabel]}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <Select2    key='dbms'
                             label='DBMS'
                             required={true}
@@ -97,41 +121,47 @@ export const DatabaseDrawer = (props:Props) => {
                                     {label:'ORACLE',value:'oracle'}]}
                             readOnly={readOnly}
                             state={[dbms,setDbms]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange} />,
                 <TextField2 key='hostname'
                             label='ホスト名またはIPアドレス'
                             required={true}
                             readOnly={readOnly}
                             state={[hostname,setHostname]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='port'
                             label='ポート番号'
                             type='number'
                             required={true}
                             readOnly={readOnly}
                             state={[port,setPort]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='database'
                             label='データベース名'
                             required={true}
                             readOnly={readOnly}
                             state={[database,setDatabase]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='userId'
                             label='ユーザーID'
                             readOnly={readOnly}
                             state={[userId,setUserId]}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onChange={() => setChecked(false)}
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <TextField2 key='password'
                             label='パスワード'
                             type='password'
                             readOnly={readOnly}
                             state={[password,setPassword]}
+                            onChange={() => setChecked(false)}
                             onErrorChange={onErrorChange}
-                            onEnterKeyPress={onEnterKeyPress} />,
+                            onEnterKeyDown={onEnterKeyDown} />,
                 <CreatorField key='creator' datum={datum} />
             ]
         ]}</EditBox>

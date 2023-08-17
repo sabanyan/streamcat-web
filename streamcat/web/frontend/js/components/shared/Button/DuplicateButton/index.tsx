@@ -1,12 +1,12 @@
 import React from "react";
 import { useStreamCatNotifications } from "Shared/Notification";
-import { FlowType } from "Model/Library";
-import { Button2 } from "Shared/Input";
+import { DatumType } from "Model/Library";
+import { AwaitButton } from "Shared/Input";
 
 type Props = {
     readOnly?:boolean;
-    targets: FlowType[];
-    onSuccess?: (targets:FlowType[]) => void;
+    targets: DatumType[];
+    onSuccess?: (targets:DatumType[]) => void;
 };
 
 export const DuplicateButton = (props:Props) => {
@@ -16,18 +16,18 @@ export const DuplicateButton = (props:Props) => {
     const {notifySuccess, notifyError} = useStreamCatNotifications();
 
     // Datumを複製する
-    const duplicateDatum = (datum:FlowType) => {
-        return datum.duplicate().then(() => {
-            notifySuccess('フローを複製しました', datum.label);
+    const duplicateDatum = (datum:DatumType) => {
+        return datum.duplicate().then(datum => {
+            notifySuccess('複製しました', datum.label);
         }).catch((e) => {
-            notifyError(`フロー複製エラー(${datum.label})`, e.message);
+            notifyError(`複製エラー(${datum.label})`, e.message);
         });
     };
 
     // 全てのDatumを複製する
-    const duplicateData = (data:FlowType[]) => {
+    const duplicateData = (data:DatumType[]) => {
         // 全てのDatumを複製した後に、イベントハンドラを呼び出す
-        Promise.all(
+        return Promise.all(
             data.map(datum => duplicateDatum(datum))
         ).finally(() => {
             // イベントハンドラを呼び出す
@@ -41,6 +41,6 @@ export const DuplicateButton = (props:Props) => {
         prevAllow && allow
     );
 
-    return <Button2 disabled={!enabled || readOnly}
-                    onClick={() => duplicateData(targets)}>複製</Button2>;
+    return <AwaitButton disabled={!enabled || readOnly}
+                        onClick={() => duplicateData(targets)}>複製</AwaitButton>;
 };

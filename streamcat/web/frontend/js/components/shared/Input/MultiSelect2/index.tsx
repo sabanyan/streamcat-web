@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 import {Autocomplete,
         AutocompleteRenderInputParams,
         AutocompleteChangeReason,
-        TextField} from "@mui/material";
-import {Array2, List2} from "Shared/Input";
+        TextField} from '@mui/material';
+import {Array2, List2} from 'Shared/Input';
 
-export type Value<T> ={
+export type Values<T> ={
     value: T[];
     isError: boolean;
 };
@@ -17,16 +17,16 @@ type Props<T> = {
     requiredMessage?:string;
     readOnlyLayout?: 'array'|'list';
     items: T[];
-    state?: [Value<T>, (value:React.SetStateAction<Value<T>>)=>void];
+    state?: [Values<T>, (value:React.SetStateAction<Values<T>>)=>void];
     isEqual: (item:T, value:T) => boolean;
     compare?: (item1:T, item2:T) => number;
-    isDisabledItem: (item:T) => boolean;
+    isDisabledItem?: (item:T) => boolean;
     getLabel: (value:T) => string;
-    onChange?: (value:Value<T>) => void;
+    onChange?: (value:Values<T>) => void;
     onErrorChange?:(isError:boolean) => void;
 };
 
-export const MultiSelect2 = <T,>(props:Props<T>) => {
+export const MultiSelect2 = <T extends {label:string}>(props:Props<T>) => {
 
     // 親コンポーネントで変更可能なvalue.isErrorの値に依存しないよう
     // value.valueの値からエラー状態を判定する
@@ -35,7 +35,7 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
         return !!required && (!value || value.length===0);
     };
 
-    const {label, readOnly, required, items, readOnlyLayout, isEqual, compare, isDisabledItem: isDisabledItem, getLabel} = props;
+    const {label, readOnly, required, items, readOnlyLayout, isEqual, compare, isDisabledItem, getLabel} = props;
     const requiredMessage = props.requiredMessage || '入力必須です';
     const [value, setValue] = props.state || [{value:[],isError:isError([])}, () => {}];
     const onChange = props.onChange || (() => {});
@@ -114,8 +114,11 @@ export const MultiSelect2 = <T,>(props:Props<T>) => {
                         isOptionEqualToValue={isEqual}
                         // 選択不可の判定をする関数
                         getOptionDisabled={isDisabledItem}
-                        // 選択肢からタグのラベルを返す関数
-                        getOptionLabel={getLabel}
+                        // key値の重複警告を抑止するためgetOptionLabelの代わりに
+                        // renderOptionを用いて各選択肢にkey属性を設定する
+                        renderOption={(props, option, state) =>
+                            // key属性は{...props}の後に記述すること
+                            <li {...props} key={state.index}>{getLabel(option)}</li>}
                         // 初期表示値
                         defaultValue={value.value}
                         value={value.value}

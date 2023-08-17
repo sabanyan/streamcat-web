@@ -3,7 +3,7 @@ import { useAsyncResource } from "use-async-resource";
 import { DatumType } from "Model/Library";
 import { MultiSelect2 } from "Shared/Input";
 import { SelectItem } from "Shared/Input/Select2";
-import { Value as MultiValue } from 'Shared/Input/MultiSelect2';
+import { Values as MultiValue } from 'Shared/Input/MultiSelect2';
 import { Api } from 'Api';
 
 type Props = {

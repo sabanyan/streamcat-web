@@ -539,6 +539,7 @@ class FlowTestCase(ApiTestCaseBase):
         # まずユーザとプロジェクトを作る
         with app.app_context():
             test_flow_uuid = setUpFlow(self)
+            test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
         # APIを投げる前はフローは存在するはず
         self.assertTrue(self.factory.data.exists(test_flow_uuid))
@@ -548,14 +549,40 @@ class FlowTestCase(ApiTestCaseBase):
         lock_uuid = result['uuid']
 
         # フローを削除する
-        self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
-            
+        result = self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # ゴミ箱のUUID
+        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+
+        # APIの返り値を検証する
+        self.assertEqual(result['uuid'], test_flow_uuid)
+        self.assertEqual(result['type'], 'flow')
+        self.assertEqual(result['label'], test_flow_label)
+        self.assertFalse(result['editLock'])
+        self.assertIsNone(result['folderPath'])
+        self.assertEqual(result['folderUuid'], trash_folder_uuid)
+        self.assertIsNone(result['prevFolderPath'])
+        self.assertEqual(result['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['modifiedAt'])
+        self.assertIsNotNone(result['createdAt'])
+        self.assertTrue(result['allowlist']['read'])
+        self.assertTrue(result['allowlist']['update'])
+        self.assertTrue(result['allowlist']['delete'])
+        self.assertTrue(result['allowlist']['execute'])
+        self.assertTrue(result['allowlist']['download'])
+        self.assertTrue(result['allowlist']['export'])
+        self.assertTrue(result['allowlist']['copy'])
+        self.assertTrue(result['allowlist']['move'])
+        self.assertTrue(result['allowlist']['lock'])
+        self.assertFalse(result['allowlist']['findMember'])
+        self.assertFalse(result['allowlist']['updateMember'])
+
         # ロックを解除する
         self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
  
         # フローはゴミ箱に移動していること
         flow = self.factory.data.find_by_uuid(test_flow_uuid)
-        self.assertEqual(flow.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        self.assertEqual(flow.find_parent().uuid, trash_folder_uuid)
 
     @unittest.skip('とりあえず手動でテストする')
     def test_fetch_subflows0(self):

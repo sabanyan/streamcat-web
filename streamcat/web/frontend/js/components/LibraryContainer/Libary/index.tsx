@@ -1,6 +1,5 @@
 import React from 'react';
 import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
-import * as lodash from 'lodash';
 import { EmptyState, Spacer } from 'Shared/Base';
 import { Flex } from 'Shared/Base/Layouts/Flex';
 import { NotificationManager, useStreamCatNotifications } from 'Shared/Notification';
@@ -8,9 +7,7 @@ import Constants from 'Constants/index';
 import { Api } from 'Api';
 import { ErrorUtil,
         HttpUtil,
-        ReactDomUtil,
-        StringUtil,
-        WebUtil } from 'Utils/index';
+        ReactDomUtil} from 'Utils/index';
 import { DatumType,
         ParentProjectType,
         ParentFolderType,
@@ -21,6 +18,7 @@ import { DatumType,
         RemoteFolderType,
         FlowType,
         FrameType,
+        DocumentType,
         ActivityType,
         ScheduleType,
         TrashType } from 'Model/Library';
@@ -29,8 +27,8 @@ import { BreadCrumb, IBreadCrumbsLink } from 'LibraryContainer/BreadCrumb';
 import { TrashMenuList } from 'LibraryContainer/TrashMenuList';
 import { ApplyMenuList } from 'Components/LibraryContainer/ApplyMenuList';
 import { MenuList } from 'LibraryContainer/MenuList';
-import { ITableHeader } from 'LibraryContainer/FileListTable/FileListHeader';
 import { VisualizeModel, VisualizeModelProps } from 'Model/index';
+import { childrenLimit } from 'Shared/Base/ListTableBodyBase';
 import { ProjectDrawer } from 'Shared/Drawer/ProjectDrawer';
 import { FolderDrawer } from 'Shared/Drawer/FolderDrawer';
 import { DatabaseDrawer } from 'Shared/Drawer/DatabaseDrawer';
@@ -39,7 +37,8 @@ import { SystemFolderDrawer } from 'Shared/Drawer/SystemFolderDrawer';
 import { TrashFolderDrawer } from 'Shared/Drawer/TrashFolderDrawer';
 import { FlowDrawer } from 'Shared/Drawer/FlowDrawer';
 import { FrameDrawer } from 'Shared/Drawer/FrameDrawer';
-import { TrashDrawer } from 'Shared/Drawer/TrashDrawer'
+import { DocumentDrawer } from 'Shared/Drawer/DocumentDrawer';
+import { TrashDrawer } from 'Shared/Drawer/TrashDrawer';
 import { ActivityDrawer } from 'Shared/Drawer/ActivityDrawer';
 import { ScheduleDrawer } from 'Shared/Drawer/ScheduleDrawer';
 import { MultiDataDrawer } from 'Shared/Drawer/MultiDataDrawer';
@@ -53,21 +52,21 @@ export type DatumEntryType = DatumType & {
     clickable: boolean;
 };
 
-const getParentFolder = () => {
+const getParentFolder = (offset:number=0, limit:number=childrenLimit) => {
     if(inject_folder_uuid){
         if(inject_is_project){
             // プロジェクトを表示する場合
-            return Api.findProject(inject_folder_uuid);
+            return Api.findProject(inject_folder_uuid, offset, limit);
         }else{
             // フォルダを表示する場合
-            return Api.findFolder(inject_folder_uuid);
+            return Api.findFolder(inject_folder_uuid, offset, limit);
         }
     }else if(inject_is_trash) {
         // ゴミ箱を表示する場合
-        return Api.findTrash();
+        return Api.findTrash(offset, limit);
     }else{
         // ルートフォルダを表示する場合
-        return Api.findLibrary();
+        return Api.findLibrary(offset, limit);
     }
 };
 
@@ -93,12 +92,8 @@ export const Library = () => {
 
     const {notifyError} = useStreamCatNotifications();
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
-    const [sortedDatas, setSortedDatas] = React.useState<DatumType[]>(folderReader().children);
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
-    const [lastSelectedCell, setLastSelectedCell] = React.useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
-    const [links, setLinks] = React.useState<IBreadCrumbsLink[]>([]);
-    const clickedLibraryCell = React.useRef(false);
 
     React.useEffect(() => {
         // 
@@ -109,11 +104,6 @@ export const Library = () => {
             if (bodyEl) bodyEl.classList.add('dialog');
         }
     }, []);
-
-    React.useEffect(() => {
-        if (!parentFolder) return;
-        setLinks(makeBreadCrumbLinks(parentFolder.folderPath));
-    }, [parentFolder]);
 
     const isDialog = (HttpUtil.getURLParam('dialog') === 'true');
     const mode = HttpUtil.getURLParam('mode') ? HttpUtil.getURLParam('mode') : Constants.library.mode.list;
@@ -163,23 +153,9 @@ export const Library = () => {
         });
     };
 
-    const clearSelected = () => {
-        parentFolder!.children.map((selectedData) => {
-            (selectedData as DatumEntryType).selected = false;
-        });
-        setSelectedDatas([]);
-    };
-
     const onClickSelectDestination = () => {
         if (window.opener || !window.opener.closed) {
             window.opener.onCallbackApply(parentFolder.uuid);
-        }
-        window.close();
-    };
-
-    const onClickApply = (selected_data: DatumType) => {
-        if (window.opener || !window.opener.closed) {
-            window.opener.onCallbackApply(selected_data);
         }
         window.close();
     };
@@ -192,102 +168,15 @@ export const Library = () => {
     };
 
     const renderAll = () => {
-        const isEmptyLibraryList = !Array.isArray(parentFolder!.children) || parentFolder!.children.length === 0;
+        const isEmptyLibraryList = !Array.isArray(parentFolder.children) || parentFolder.children.length === 0;
 
         if (isEmptyLibraryList && mode === Constants.library.mode.dialog){
             return renderEmptyState();
         }
 
-        const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
-            if (event) event.stopPropagation();
-            const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? '&mode=' + mode : '') : '';
-
-            if (body.type === 'trash') {
-                WebUtil.navigateURL(WebUtil.webURL('/trashes' + dialogOption));
-            }else if (body.type === 'folder') {
-                WebUtil.navigateURL(WebUtil.webURL('/folders/' + body.uuid + dialogOption));
-            }else if (body.type === 'project') {
-                WebUtil.navigateURL(WebUtil.webURL('/projects/' + body.uuid + dialogOption));
-            }else if (body.type === 'database') {
-                // onClickEditDatabase(body as DatabaseType);
-            }else if (body.type === 'frame') {
-                if (mode === Constants.library.mode.frame_select) {
-                    // データソースの追加時
-                    onClickApply(body);
-                    return;
-                }
-                window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
-            }else if (body.type === 'document') {
-                window.open(WebUtil.webURL('/documents/' + body.uuid));
-            }else if (body.type === 'flow') {
-                if(mode===Constants.library.mode.flow_select){
-                    // フロー選択モードの場合
-                    onClickApply(body);
-                    return;
-                }
-                window.open(WebUtil.webURL('/flows/' + body.uuid + dialogOption));
-            }else if (body.type==='activity') {
-                window.open(WebUtil.webURL('/flows/' + (body as ActivityType).flowUuid + dialogOption));
-            }
-        };
-
-        const onClickCell = (cell: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-            let data = cell;
-            // ライブラリ画面の単体表示時のみ複数選択を許可
-            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
-
-            if (event) event.stopPropagation();
-
-            if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
-                data.selected = true;
-                // command or ctrl + click
-                if (selectedDatas.includes(data)) {
-                    data.selected = !data.selected;
-                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
-                    if (!data.selected) {
-                        setLastSelectedCell(null);
-                    }
-                } else {
-                    selectedDatas.push(data);
-                    setLastSelectedCell(data);
-                }
-            } else if (event && event.shiftKey && enableMultiSelect) {
-                // shift + click
-                clearSelected();// 選択状態を一旦解除
-                const children = parentFolder!.children;
-                let current = children.findIndex(libraryChild => data.uuid === libraryChild.uuid);
-                if (lastSelectedCell) {
-                    let last = children.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
-                    let min, max;
-                    if (current >= last) {
-                        min = last;
-                        max = current;
-                    } else {
-                        min = current;
-                        max = last;
-                    }
-                    const selectedEntries = children.slice(min, max + 1).map((selectedData) => {
-                        (selectedData as DatumEntryType).selected = true;
-                        return selectedData;
-                    });
-                    setSelectedDatas(selectedEntries);
-                }
-            } else {
-                // 単一選択
-                clearSelected();
-                data.selected = true;
-                setSelectedDatas([data]);
-                setLastSelectedCell(data);
-            }
-            clickedLibraryCell.current = true;
-        };
-
-        const onMouseDownLibrary = () => {
-            if (clickedLibraryCell.current) {
-                clearSelected();// 選択状態を一旦解除
-                setLastSelectedCell(null);
-                clickedLibraryCell.current = false;
-            }
+        const clearSelection = () => {
+            // FileListTableの選択行を解除する
+            setSelectedDatas([]);
         };
 
         const renderMenuList = () => {
@@ -307,7 +196,7 @@ export const Library = () => {
                 } else {
                     menuList = <MenuList
                         parent={parentFolder}
-                        allowlist={parentFolder!.allowlist}
+                        allowlist={parentFolder.allowlist}
                         onSuccess={forceFetchFolder}
                     />;
                 }
@@ -322,63 +211,46 @@ export const Library = () => {
             </>;
         };
 
+        const onLoadMore = (offset:number, limit:number) => getParentFolder(offset, limit).then(response => {
+            const nextChildren = response.children;
+            if(nextChildren.length > 0){
+                // parentFolder.childrenは__isWrapped=trueなので
+                // nextChildrenの全要素にWebAPIを発行する関数を付与してからpushする
+                parentFolder.children.push(...nextChildren.slice());
+                response.children = parentFolder.children;
+                // useStateに同じオブジェクトインスタンスを設定すると再レンダリングされないのでresponseを設定する
+                setParentFolder(response);
+                return true;
+            }else{
+                return false;
+            }
+        });
+
         return <Flex justifyContent={'center'} fluid={true}>
-            <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                onMouseDown={onMouseDownLibrary}>
+            <Flex flexDirection={'row'}
+                  width={1480 + 40 + 40}
+                  minHeight={'calc(100vh - 64px)'}
+                  fluid={true}
+                  onClick={clearSelection}>
                 <Spacer width={40} />
                 <Flex flexDirection={'column'} fluid={true}>
-                    <Spacer height={40} />
-                    <BreadCrumb links={links} />
-                    <Spacer height={8} />
-                    <FileListTable
-                        minWidth={800}
-                        onClickCell={onClickCell}
-                        onClickFileName={onClickFileName}
-                        onClickHeader={(header: ITableHeader, event) => {
-                            if (event) event.stopPropagation();
-                            if (header.sort) {
-                                setSortedDatas(lodash.orderBy(parentFolder!.children, header.key, header.sort));
-                            } else {
-                                setSortedDatas(parentFolder!.children);
-                            }
-                        }}
-                        bodies={
-                            sortedDatas.map((datum) => {
-                                const body = datum as DatumEntryType;
-                                if (mode === Constants.library.mode.folder_select) {
-                                    switch (body.type) {
-                                        case 'folder':
-                                        case 'project':
-                                            body.clickable = true;
-                                    }
-                                } else if (mode === Constants.library.mode.frame_select) {
-                                    switch (body.type) {
-                                        case 'frame':
-                                        case 'folder':
-                                        case 'project':
-                                        case Constants.library.type.remoteFolder:
-                                        case Constants.library.type.database:
-                                            body.clickable = true;
-                                    }
-                                }else if(mode===Constants.library.mode.flow_select){
-                                    switch(body.type){
-                                        case 'flow':
-                                        case 'folder':
-                                        case 'project':
-                                            body.clickable = true;
-                                    };
-                                } else {
-                                    body.clickable = true;
-                                    if (body.type === 'database') body.clickable = false;
-                                }
-                                if (inject_is_trash) {
-                                    // ゴミ箱の場合は全て選択不可
-                                    body.clickable = false;
-                                }
-                                return body;
-                            })
-                        }
-                    />
+                    <Spacer height={40}/>
+                    <Flex flexDirection={'row'}>
+                        <Spacer height={40} />
+                        <BreadCrumb links={makeBreadCrumbLinks(parentFolder.folderPath)} />
+                        <Spacer height={8} />
+                    </Flex>
+                    <Spacer height={10}/>
+                    <Flex flexDirection={'row'}>
+                        {/* DatumのListTable */}
+                        <FileListTable
+                            mode={mode}
+                            allDatas={parentFolder.children}
+                            selectedDatas={[selectedDatas, setSelectedDatas]}
+                            minWidth={800}
+                            onLoadMore={onLoadMore}
+                            onSuccess={data=>refreshLibrary(...data)} />
+                    </Flex>
                     <Spacer height={80} />
                 </Flex>
                 {renderMenuList()}
@@ -394,10 +266,15 @@ export const Library = () => {
     };
 
     const fetchFolder = () => {
-        return getParentFolder().then(response => {
+        // 読み込み済みのDatum数
+        const loadedLength = parentFolder.children.length;
+        // Datumの追加や(複数一括の)複製によって読み込むDatum数が増える場合に備え
+        // 読み込むDatum数をchildrenLimitの倍数にして再読み込み可能な状態にしておく
+        const minMultiple = loadedLength + (childrenLimit - loadedLength % childrenLimit);
+        // 今読み込んでいる位置まで再読み込みする
+        return getParentFolder(0, minMultiple).then(response => {
             // 取得したフォルダ等を状態変数に格納する
             setParentFolder(response);
-            setSortedDatas(response.children);
             return response;
         }).catch(e => {
             notifyError('フォルダ取得エラー', ReactDomUtil.renderToString(ErrorUtil.getErrorBody(e)));
@@ -413,11 +290,18 @@ export const Library = () => {
         fetchFolder();
     };
 
-    const refreshLibrary = (datum:DatumType) => {
-        // フォルダを再取得する
+    const refreshLibrary = (...data:DatumType[]) => {
+        // フォルダを再取得してListTableを再表示する
         fetchFolder();
-        // 状態変数を更新する
-        setSelectedDatas([datum]);
+        // 処理前後で親フォルダのUUIDが異なる場合は削除または移動処理がなされたと見做す
+        const isDeleteOrMove = data.some(datum => datum.folderUuid!==parentFolder.uuid)
+        if(isDeleteOrMove){
+            // 削除または移動後はDatumを未選択状態に変更してペインを非表示にする
+            setSelectedDatas([]);
+        }else{
+            // ペインの表示を更新する
+            setSelectedDatas(data);
+        }
     };
 
     const getProject = (project:DatumType|null) => {
@@ -452,7 +336,7 @@ export const Library = () => {
             return <TrashDrawer 
                         trashFolder={parentFolder as ParentTrashType}
                         datum={datum}
-                        onSuccess={data=>refreshLibrary(data[0])} />;
+                        onSuccess={data=>refreshLibrary(...data)} />;
         }else{
             // Datumをゴミ箱から戻した直後にselectedDatas[0]がundefinedになるため、
             return <></>;
@@ -487,6 +371,11 @@ export const Library = () => {
                         parent={parentFolder}
                         frame={selectedDatas[0] as FrameType}
                         onSuccess={refreshLibrary} />,
+        document:   <DocumentDrawer
+                        createMode={false}
+                        parent={parentFolder}
+                        document={selectedDatas[0] as DocumentType}
+                        onSuccess={refreshLibrary} />,
         schedule:   <ScheduleDrawer
                         createMode={false}
                         parent={parentFolder}
@@ -503,7 +392,7 @@ export const Library = () => {
     const unkownDrawer = <UnkownDrawer
                             parent={parentFolder}
                             datum={selectedDatas[0]}
-                            onSuccess={data => refreshLibrary(data[0])} />;
+                            onSuccess={data=>refreshLibrary(...data)} />;
 
     const Drawer = (props:{selectedDatas:DatumType[]}) => {
         const {selectedDatas} = props;
@@ -526,7 +415,10 @@ export const Library = () => {
             // Datumが2つ以上選択されている場合
             if(mode === Constants.library.mode.list) {
                 // リストモードの場合は、MultiDataDrawerを表示する
-                return <MultiDataDrawer parent={parentFolder} data={selectedDatas} onSuccess={fetchFolder}/>;
+                return <MultiDataDrawer
+                            parent={parentFolder}
+                            data={selectedDatas}
+                            onSuccess={data=>refreshLibrary(...data)}/>;
             }else{
                 // それ以外のモードの場合は、ペインを表示しない
                 return <></>;

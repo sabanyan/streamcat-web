@@ -1,14 +1,15 @@
-import React from 'react';
-import {useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import style from './style.scss';
-import {Api} from 'Api';
 import Constants from 'Constants/index';
+import {Api} from 'Api';
+import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
+import { NotAllowed } from 'Components/NotAllowedContainer';
 import {Flex, Spacer} from 'Shared/Base';
 import {NotificationManager} from 'Shared/Notification';
+import { TextField2  } from 'Shared/Input';
 import {FilterListLinkButton, IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelectedList';
-import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import { UserBody } from '../UserBody';
 
 interface Props {
@@ -16,23 +17,32 @@ interface Props {
 };
 
 export const UserList = (props: Props) => {
-
     // 全てのプロジェクトを取得する
     const exceptMyProject = true;
     const [projectsReader] = useAsyncResource(Api.findProjects, true, exceptMyProject);
 
+    // 自身のユーザ情報が変更された時は最新のNavigationを再取得するため状態変数として保持する
+    const [navigation, setNavigation] = useState(props.navigation);
     // キーワード条件
-    const [keyword, setKeyword] = useState('');
+    const [keyword, setKeyword] = useState({value:'', isError:true});
     // 所属プロジェクト条件
     const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     // ユーザ状態条件
-    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+    const initStatuses = [
+        Constants.admin.userStatus.tmp,
+        Constants.admin.userStatus.active,
+        Constants.admin.userStatus.expired
+    ];
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initStatuses);
     // UserBodyコンポーネントで選択中のUser
     const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
-    // UserBodyコンポーネントで最後に選択したUser
-    const [lastSelectedUser, setLastSelectedUser] = useState<UserType | null>(null);
     // UserBodyコンポーネントをクリックした時にtrueにする
     const clickedUserListCell = useRef(false);
+
+    // ユーザ一覧を参照する権限がない場合は表示しない
+    if(! navigation?.allowlist.findUsers){
+        return <NotAllowed />;
+    };
 
     // 全てのプロジェクト
     const allProjects = projectsReader();
@@ -98,24 +108,19 @@ export const UserList = (props: Props) => {
     // FilterListLinkButton、FilterSelectedListコンポーネントに設定する値を作成する
     const categoryItems = makeCategoryItems(selectedProjects, selectedStatuses);
 
-    const onClickBody = () => {
-        // UserBodyをクリックしたら押下フラグをtrueにする
-        clickedUserListCell.current = true;
-    };
-
     const onClickUserList = () => {
         // 押下フラグがfalseの場合にユーザの選択を解除する
         if (!clickedUserListCell.current) {
             // 選択状態を一旦解除
             setSelectedUsers([]);
-            setLastSelectedUser(null);
         }
         // UserBodyを含む画面全域をクリックしたら押下フラグをfalseにする
         clickedUserListCell.current = false;
     };
 
-    const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setKeyword(e.target.value)
+    const onClickBody = () => {
+        // UserBodyをクリックしたら押下フラグをtrueにする
+        clickedUserListCell.current = true;
     };
 
     const onClickListItem = (categoryId: string, selectedListItems: IFilterListItem[]) => {
@@ -151,55 +156,56 @@ export const UserList = (props: Props) => {
         );
     };
 
+    const onSuccess = (newUsers:UserType[]) => {
+        // 自身のユーザ情報が変更された時はallowlistを再読み込みする
+        if(-1 !== newUsers.findIndex(user => user.uuid===navigation.user.uuid)){
+            Api.findNavigation().then(navi => setNavigation(navi));
+        }
+    };
+
     return <>
         <Flex justifyContent={'center'} fluid={true}>
-            <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                    onClick={onClickUserList}>
+            <Flex flexDirection={'row'}
+                  width={1480 + 40 + 40}
+                  minHeight={'calc(100vh - 64px)'}
+                  fluid={true}
+                  onClick={onClickUserList}>
                 <Spacer width={40}/>
                 <Flex flexDirection={'column'}>
                     <Spacer height={40}/>
                     <Flex flexDirection={'row'}>
                         <div className={style.pageTitleHeader}>
-                            <div className={style.searchHeaderContainer}>
-                                <div className={style.pageTitle}>
-                                    ユーザー管理
-                                </div>
-                                <div className={style.searchBarContainer}>
-                                    <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
-                                </div>
+                            <div className={style.searchBarContainer}>
+                                <TextField2 key='search'
+                                            label='ユーザー名、E-mail で絞り込む'
+                                            state={[keyword,setKeyword]} />
                             </div>
                             <Spacer height={20}/>
-                            <div className={style.resultAndFilterContainer}>
-                                <div className={style.resultCount}>
-                                    {/* FIXME: users変数をUserBodyコンポーネントに移動したので件数を取得できなくなった */}
-                                    表示されている件数 {0}件
-                                </div>
-                                <div className={style.filterLinkContainer}>
-                                    <FilterListLinkButton
-                                        list={categoryItems}
-                                        onClickFilterCategoryItem={()=>{}}
-                                        onClickFilterListItem={onClickListItem}
-                                    >検索フィルタ</FilterListLinkButton>
-                                    <Spacer width={20}/>
-                                    <FilterSelectedList onClickRemove={onClickRemove} list={categoryItems}/>
-                                </div>
+                            <div className={style.filterLinkContainer}>
+                                <FilterListLinkButton
+                                    list={categoryItems}
+                                    onClickFilterCategoryItem={()=>{}}
+                                    onClickFilterListItem={onClickListItem}
+                                >検索フィルタ</FilterListLinkButton>
+                                <Spacer width={20}/>
+                                <FilterSelectedList list={categoryItems} onClickRemove={onClickRemove}/>
                             </div>
                         </div>
                         <Spacer width={420}/>
                     </Flex>
                     <Spacer height={30}/>
-                    <Flex flexDirection={'row'} onClick={onClickBody}>
+                    <span onClick={onClickBody}>
                         <AsyncResourceContent fallback={<p>Loading...</p>}>
-                        <UserBody navigation={props.navigation}
-                                allProjects={allProjects}
-                                keyword={keyword}
-                                selectedProjects={selectedProjects}
-                                selectedStatuses={selectedStatuses}
-                                selectedUsers = {[selectedUsers, setSelectedUsers]}
-                                lastSelectedUser = {[lastSelectedUser, setLastSelectedUser]}
-                        />
+                            <UserBody navigation={navigation}
+                                    allProjects={allProjects}
+                                    keyword={keyword.value}
+                                    selectedProjects={selectedProjects}
+                                    selectedStatuses={selectedStatuses}
+                                    selectedUsers = {[selectedUsers, setSelectedUsers]}
+                                    onSuccess={onSuccess}
+                            />
                         </AsyncResourceContent>
-                    </Flex>
+                    </span>
                     <Spacer height={80}/>
                 </Flex>
                 <Spacer width={40}/>
