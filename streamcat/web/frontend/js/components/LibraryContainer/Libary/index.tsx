@@ -43,14 +43,6 @@ import { ScheduleDrawer } from 'Shared/Drawer/ScheduleDrawer';
 import { MultiDataDrawer } from 'Shared/Drawer/MultiDataDrawer';
 import { UnkownDrawer } from 'Shared/Drawer/UnkownDrawer';
 
-/**
- * ライブラリ画面に表示するDatumの表示行
- */
-export type DatumEntryType = DatumType & {
-    selected: boolean;
-    clickable: boolean;
-};
-
 const getParentFolder = (offset:number=0, limit:number=childrenLimit) => {
     if(inject_folder_uuid){
         if(inject_is_project){

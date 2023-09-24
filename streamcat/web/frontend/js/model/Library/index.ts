@@ -45,7 +45,7 @@ type Allowlist = {
     export: boolean;
     findMember: boolean;
     updateMember: boolean;
-    lock: boolean
+    lock: boolean;
 };
 
 /**

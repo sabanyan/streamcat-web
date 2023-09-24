@@ -28,7 +28,7 @@ import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
-import { AllNodeType, Command, Flow, FlowType, FrameType } from 'Model/Library';
+import { AllNodeType, Flow, FlowType, FrameType } from 'Model/Library';
 
 
 const getRunnables = () => {
@@ -95,18 +95,23 @@ const getFlow = () => {
     return Api.findFlow(inject_flow_uuid);
 };
 
-const getLock = (targetUUID:string) => {
-    return Api.createLock(targetUUID).catch(e => {
-        if(e instanceof ErrorResponse){
-            // ロックの取得に失敗した場合はエラー情報を返す
-            return e as ErrorResponse;
-        }else if(e instanceof Promise){
-            // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
-            throw e;
-        }else{
-            throw e;
-        }
-    });
+const getLock = (targetUUID:string, updatable:boolean) => {
+    if(updatable){
+        return Api.createLock(targetUUID).catch(e => {
+            if(e instanceof ErrorResponse){
+                // ロックの取得に失敗した場合はエラー情報を返す
+                return e as ErrorResponse;
+            }else if(e instanceof Promise){
+                // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
+                throw e;
+            }else{
+                throw e;
+            }
+        });
+    }else{
+        // Flowの更新権限がない場合はロックの取得を試みない
+        return Api.findNull();
+    }
 };
 
 const FlowEditor = () => {
@@ -143,9 +148,27 @@ const FlowEditor = () => {
     const [zoom, setZoom] = useState(100);
 
     // 実行可否
-    const [executeMode, setExecuteMode] = useState<FlowExecuteModeValue>(FlowExecuteModeValue.NotExecutable);
+    const [executeMode, setExecuteMode] = useState(
+        flow.allowlist.execute? FlowExecuteModeValue.Executable: FlowExecuteModeValue.NotExecutable
+    );
+
+    const [readLock] = useAsyncResource(getLock, inject_flow_uuid, flow.allowlist.update);
+    const [lock, setLock] = useState(readLock());
+
+    const lockIsAcquired = !(lock instanceof ErrorResponse || lock===null);
+
     // 編集可否
-    const [editMode, setEditMode] = useState<FlowEditModeValue>(FlowEditModeValue.ReadOnlyUpdateDisabled);
+    const [editMode, setEditMode] = useState<FlowEditModeValue>(
+        // read が無効な場合は NotAllowed に飛ばす
+        !flow.allowlist.read? FlowEditModeValue.NotAllowed:
+        // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
+        !flow.allowlist.update? FlowEditModeValue.ReadOnlyUpdateDisabled:
+        // ロックの取得に失敗 => [読み取り専用モード2]
+        !lockIsAcquired? FlowEditModeValue.ReadOnlyLocked:
+        // ロックの取得に成功
+        FlowEditModeValue.Editable
+    );
+
     // ネットワークの接続状態
     const [networkStatus, setNetworkStatus] = useState<NetworkStatusValue>(NetworkStatusValue.UnKnown);
     // ネットワークオフラインを通知するポップアップのId
@@ -284,12 +307,9 @@ const FlowEditor = () => {
     const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [readOnly, setReadOnly] = useState<boolean>(false);
-    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(false);
+    const [readOnly, setReadOnly] = useState<boolean>(editMode!==FlowEditModeValue.Editable);
+    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(editMode===FlowEditModeValue.Editable);
     // const hasLockedUUID = useMemo(() => !!(lockUUID), [lockUUID]); // lockUUIDを保持している際は、編集可能な状態
-
-    const [readLock] = useAsyncResource(getLock, inject_flow_uuid);
-    const [lock, setLock] = useState<LockType | ErrorResponse>(readLock());
 
     const [saveAsFlowName, setSaveAsFlowName] = useState<string>();
     const [hasShowSaveAsFlowModal, setHasShowSaveAsFlowModal] = useState<boolean>(false);
@@ -407,7 +427,7 @@ const FlowEditor = () => {
 
         // タブが閉じられた時にロックを解除する
         const handleUnload = (e) => {
-            if(lock instanceof ErrorResponse){
+            if(!lockIsAcquired){
                 return;
             }
             // ・Pageを閉じる時はnavigator.sendBeacon()を用いないとAPIが発行できない(ただしmacOSのChromeは発行できるようだ)
@@ -429,8 +449,9 @@ const FlowEditor = () => {
 
     useEffect(() => {
         // 排他ロックが取得できなかった場合は警告メッセージを表示する
-        if(lock instanceof ErrorResponse){
-            notifyWarning('警告：読取専用フロー', lock.message)
+        // ロックを試みなかった場合(lock==null)はメッセージを表示しない
+        if(!lockIsAcquired && lock){
+            notifyWarning('警告：読取専用フロー', lock.message);
         }
     }, []);
 
@@ -450,29 +471,11 @@ const FlowEditor = () => {
         if (flow.editLock) {
             notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
         }
-            
-        // 実行モードの設定
-        const executeMode = (flow.allowlist.execute) ? FlowExecuteModeValue.Executable : FlowExecuteModeValue.NotExecutable;
-        setExecuteMode(executeMode);
-        // 編集モードの設定
-        if (!flow.allowlist.read) {
-            // read が無効な場合は NotAllowed に飛ばす
-            setEditMode(FlowEditModeValue.NotAllowed)
-            setIsLoading(false);
-            return;
-        }
-        if (!flow.allowlist.update) {
-            // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
-            setEditMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
-            setIsLoading(false);
-            return;
-        }
-        // update が有効な場合は、排他ロックを取得する
-        getNewLockUUID();
 
         // ブラウザバックによってブラウザタブを閉じれるように設定する
         WebUtil.setCloseWindowOnBack();
 
+        setIsLoading(false);
     }, []);
 
     // 初回レンダリング時のみ実行する
@@ -494,7 +497,7 @@ const FlowEditor = () => {
 
     const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
     useInterval(() => {;
-        if(lock instanceof ErrorResponse){
+        if(!lockIsAcquired){
             return;
         }else if(hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
             extendLock(lock);
@@ -509,7 +512,7 @@ const FlowEditor = () => {
         
         return new Promise<FlowType>(async (reslove, reject) => {
             // 編集権限がないと、保存不可
-            if (lock instanceof ErrorResponse) {
+            if (!lockIsAcquired) {
                 reject(new MessageModel({
                     title: "警告：読取専用フロー",
                     message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
@@ -575,12 +578,12 @@ const FlowEditor = () => {
      * lock の延長処理
      * @param lockUUID
      */
-    const extendLock = (lock: LockType|ErrorResponse) => {
-        if (lock instanceof ErrorResponse){
+    const extendLock = (lock: LockType|ErrorResponse|null) => {
+        if (!lockIsAcquired){
             return;
         }
         // 延長処理
-        lock.extend().then(() => {
+        (lock as LockType).extend().then(() => {
             // 取得した lockUUID を設定
             setLock(lock);
         }).catch(e => {
@@ -618,24 +621,7 @@ const FlowEditor = () => {
         }).finally(() => {
             setIsLoading(false);
         });
-    }
-
-    /**
-     * lock の新規取得
-     */
-    const getNewLockUUID = () => {
-        if(lock instanceof ErrorResponse){
-            setReadOnly(true);
-            // ロック失敗 => [読み取り専用モード2]
-            setEditMode(FlowEditModeValue.ReadOnlyLocked);
-            setHasEnableAutoLockExtended(false);
-        }else{
-            setEditMode(FlowEditModeValue.Editable)
-            // ロックの自動更新を有効にする
-            setHasEnableAutoLockExtended(true);
-        }
-        setIsLoading(false);
-    }    
+    }  
 
     const renderSteps = useCallback(() => {
         let steps: any = [];
@@ -762,7 +748,7 @@ const FlowEditor = () => {
     }
 
     // ロックのUUID(ロックの取得に失敗した場合はundefined)
-    const lockUUID = (lock instanceof ErrorResponse)? undefined: lock.uuid;
+    const lockUUID = (!lockIsAcquired)? undefined: lock.uuid;
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
