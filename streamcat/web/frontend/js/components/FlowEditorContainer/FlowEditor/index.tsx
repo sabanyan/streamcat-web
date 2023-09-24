@@ -20,7 +20,7 @@ import {
     allRebuildNodesEdges
 } from 'Modules/flowEditor';
 import { Paper } from 'FlowEditorContainer/Paper';
-import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
+import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
 import { NotAllowed } from 'Components/NotAllowedContainer';
 import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
@@ -170,7 +170,7 @@ const FlowEditor = () => {
     );
 
     // ネットワークの接続状態
-    const [networkStatus, setNetworkStatus] = useState<NetworkStatusValue>(NetworkStatusValue.UnKnown);
+    const [serverConnectivity, setServerConnectivity] = useState<Connectivity>(Connectivity.UnKnown);
     // ネットワークオフラインを通知するポップアップのId
     // (オンライン復帰時にポップアップを閉じるために一時保存する)
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
@@ -390,7 +390,7 @@ const FlowEditor = () => {
     // }, [editMode]);
 
     useEffect(() => {
-        if (networkStatus === NetworkStatusValue.Online) {
+        if (serverConnectivity === Connectivity.Connectable) {
             if (offLineNotificationId) {
                 dismissNotify(offLineNotificationId);
                 notifySuccess('ネットワークに再接続しています');
@@ -398,11 +398,11 @@ const FlowEditor = () => {
                 // ロックを延長する
                 extendLock(lock);
             }
-        } else if (networkStatus === NetworkStatusValue.Offline) {
+        } else if (serverConnectivity === Connectivity.Disconnected) {
             const offLineNotificationId = notifyWarning('現在ネットワークがオフラインです', 'ネットワークの状態を確認してください');
             setOffLineNotificationId(offLineNotificationId);
         }
-    }, [networkStatus, lock]);
+    }, [serverConnectivity, lock]);
 
     useEffect(() => {
         // Canvasのサイズを変更する
@@ -482,24 +482,35 @@ const FlowEditor = () => {
     useEffect(() => {
         const getNavigatorNetworkStatus = () => {
             if(navigator.onLine){
-                return NetworkStatusValue.Online;
+                // Webブラウザがネットワーク接続状態の場合
+                return Connectivity.Connectable;
             }else{
-                return NetworkStatusValue.Offline;
+                return Connectivity.Disconnected;
             }
         }
-        // 現在のネットワーク接続状態を設定する
-        setNetworkStatus(getNavigatorNetworkStatus());
-        // オンライン復帰時のイベントハンドラを設定する
-        window.addEventListener("online", () => setNetworkStatus(getNavigatorNetworkStatus()));
-        // ネットワーク切断時のイベントハンドラを設定する
-        window.addEventListener("offline", () => setNetworkStatus(getNavigatorNetworkStatus()));
+
+        const apServerIsLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
+        if(apServerIsLocal){
+            // APサーバがWebブラウザと同じホストに存在する場合
+            setServerConnectivity(Connectivity.Connectable);
+        }else{
+            // APサーバがWebブラウザと異なるホストに存在する場合
+            // Webブラウザのネットーワーク切断復帰のイベントハンドラを設定する
+
+            // 現在のネットワーク接続状態を設定する
+            setServerConnectivity(getNavigatorNetworkStatus());
+            // オンライン復帰時のイベントハンドラを設定する
+            window.addEventListener('online', () => setServerConnectivity(getNavigatorNetworkStatus()));
+            // ネットワーク切断時のイベントハンドラを設定する
+            window.addEventListener('offline', () => setServerConnectivity(getNavigatorNetworkStatus()));
+        }
     }, []);
 
     const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
     useInterval(() => {;
         if(!lockIsAcquired){
             return;
-        }else if(hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
+        }else if(hasEnableAutoLockExtended && serverConnectivity !== Connectivity.Disconnected){
             extendLock(lock);
         }
     }, extendLockInterval);
@@ -628,7 +639,7 @@ const FlowEditor = () => {
         if (flow.flow.nodes) {
             steps = flow.flow.nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
-                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
+                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly ;
                 return <Step
                     key={step.id}
                     model={step}
@@ -724,24 +735,24 @@ const FlowEditor = () => {
     // 読み取り専用モードの場合は disabled にする
     // ☁️保存 ☁️データソース追加 💬メモ ↩︎もとに戻す ↪︎繰り返す の制御
     const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
-        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || networkStatus === NetworkStatusValue.Offline || readOnly
+        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集可能で実行可能な場合のみフロー以外は disabled にする
     // ▶︎このフローを実行の制御
-    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
     // プレビューを開くリンクの制御
-    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集モード以外は、フロー変数の追加機能を hidden にする
-    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集モード以外は、コマンドセレクター機能を hidden にする
-    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
-    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     const onClickRunFlowPromise = () => {
         return onClickSaveFlow();

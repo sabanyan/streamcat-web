@@ -18,10 +18,10 @@ export enum FlowEditModeValue {
     ReadOnlyLocked = 'ReadOnlyLocked'
 }
 
-export enum NetworkStatusValue {
-    Offline = 'Offline',
-    Online = 'Online',
-    UnKnown = 'UnKnown'
+export enum Connectivity {
+    Disconnected,
+    Connectable,
+    UnKnown
 }
 
 export enum FlowExecuteModeValue {
