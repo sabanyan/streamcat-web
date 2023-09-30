@@ -117,12 +117,10 @@ const getLock = (targetUUID:string, updatable:boolean) => {
 const FlowEditor = () => {
 
     // ここでRunnableの取得を開始する
+    // runnable: FlowまたはCommandを表す
     const [runnablesReader] = useAsyncResource(getRunnables, []);
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, []);
-
-    // runnable: FlowまたはCommandを表す
-    const [runnables, setRunnables] = useState<RunnablesType>(runnablesReader);
 
     // 直近で保存したFlow
     const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
@@ -147,27 +145,8 @@ const FlowEditor = () => {
     // Canvasの拡大率
     const [zoom, setZoom] = useState(100);
 
-    // 実行可否
-    const [executeMode, setExecuteMode] = useState(
-        flow.allowlist.execute? FlowExecuteModeValue.Executable: FlowExecuteModeValue.NotExecutable
-    );
-
     const [readLock] = useAsyncResource(getLock, inject_flow_uuid, flow.allowlist.update);
     const [lock, setLock] = useState(readLock());
-
-    const lockIsAcquired = !(lock instanceof ErrorResponse || lock===null);
-
-    // 編集可否
-    const [editMode, setEditMode] = useState<FlowEditModeValue>(
-        // read が無効な場合は NotAllowed に飛ばす
-        !flow.allowlist.read? FlowEditModeValue.NotAllowed:
-        // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
-        !flow.allowlist.update? FlowEditModeValue.ReadOnlyUpdateDisabled:
-        // ロックの取得に失敗 => [読み取り専用モード2]
-        !lockIsAcquired? FlowEditModeValue.ReadOnlyLocked:
-        // ロックの取得に成功
-        FlowEditModeValue.Editable
-    );
 
     // ネットワークの接続状態
     const [serverConnectivity, setServerConnectivity] = useState<Connectivity>(Connectivity.UnKnown);
@@ -180,6 +159,23 @@ const FlowEditor = () => {
     const [inspectorWidth, setInspectorWidth] = useState(Constants.default.inspector.width);
     // Canvasの横幅
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
+
+    // 実行可否
+    const executeMode = flow.allowlist.execute? FlowExecuteModeValue.Executable: FlowExecuteModeValue.NotExecutable;
+
+    // ロックの取得に成功した場合はtrue
+    const lockIsAcquired = !(lock instanceof ErrorResponse || lock===null);
+
+    // 編集可否
+    const editMode = 
+        // read が無効な場合は NotAllowed に飛ばす
+        !flow.allowlist.read? FlowEditModeValue.NotAllowed:
+        // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
+        !flow.allowlist.update? FlowEditModeValue.ReadOnlyUpdateDisabled:
+        // ロックの取得に失敗 => [読み取り専用モード2]
+        !lockIsAcquired? FlowEditModeValue.ReadOnlyLocked:
+        // ロックの取得に成功
+        FlowEditModeValue.Editable;
 
     const loadFlowJSON = (flow: FlowType) => {
         const newFlowData = StateUtil.deepCopy(flow.flow);
@@ -196,7 +192,7 @@ const FlowEditor = () => {
     //     dispatch(addMasterAction(flow));
     // };
     const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
-        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnables, zoom);
+        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnablesReader(), zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
@@ -382,12 +378,6 @@ const FlowEditor = () => {
             </div>,
         })
     }, [hasShowConfirmReloadFlowModal]);
-
-    // useEffect(() => {
-    //     if (initialEditMode === null) {
-    //         setInitialEditMode(editMode);
-    //     }
-    // }, [editMode]);
 
     useEffect(() => {
         if (serverConnectivity === Connectivity.Connectable) {
@@ -648,7 +638,7 @@ const FlowEditor = () => {
                     selected={selected}
                     invalid={step.invalid}
                     error={step.error}
-                    runnables={runnables}
+                    runnables={runnablesReader()}
                     flowData={flow.flow}
                     selectedStepIds={selectedStepIds}
                     zoom={zoom}
@@ -666,7 +656,6 @@ const FlowEditor = () => {
         return steps;
     }, [ //nodes,
         selectedStepIds,
-        runnables,
         flow,
         zoom,
         dragRange,
@@ -811,7 +800,7 @@ const FlowEditor = () => {
             <Inspector
                 selectedStepIds={selectedStepIds}
                 // nodes={flow?.nodes || []}
-                runnables={runnables}
+                runnables={runnablesReader()}
                 zoom={zoom}
                 addStep={addStep}
                 selectSteps={selectSteps}
