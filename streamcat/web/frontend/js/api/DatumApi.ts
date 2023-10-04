@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
     DatumType,
     ParentProjectType,
@@ -13,6 +14,7 @@ import {
     FrameType,
     DocumentType,
     ActivityType,
+    Flow,
     Port,
     AllNodeType,
     InlineFlowCommand,
@@ -559,11 +561,20 @@ export const DatumApi = {
                 flowJson.params = [];
             }
             if(!flowJson.ports){
-                flowJson.ports =[new PortArray([]), new PortArray([])];
+                flowJson.ports = [new PortArray([]), new PortArray([])];
             }else if(flow.flow.ports.length === 2) {
                 flowJson.ports[0] = new PortArray(flowJson.ports[0]);
                 flowJson.ports[1] = new PortArray(flowJson.ports[1]);
             }
+            // Flowオブジェクトを複製するclone関数を設定する
+            const cloneFunc = (f:Flow) => {
+                const clonedFlowJson = _.cloneDeepWith(f);
+                clonedFlowJson.nodes = new NodeArray(clonedFlowJson.nodes);
+                clonedFlowJson.ports = [new PortArray(clonedFlowJson.ports[0]), new PortArray(clonedFlowJson.ports[1])];
+                clonedFlowJson.clone = () => cloneFunc(clonedFlowJson);
+                return clonedFlowJson;
+            };
+            flowJson.clone = () => cloneFunc(flowJson);
             return flow;
         });
     },

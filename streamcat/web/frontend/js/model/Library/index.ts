@@ -267,6 +267,7 @@ export type Flow = {
     nodes: AllNodeType[];
     params: Param[];
     ports: [PortArray,PortArray];
+    clone: () => Flow;
 };
 
 type BaseFlowCommand =  {

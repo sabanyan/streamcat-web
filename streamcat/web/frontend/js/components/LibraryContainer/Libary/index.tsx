@@ -194,7 +194,7 @@ export const Library = () => {
         const onLoadMore = (offset:number, limit:number) => getParentFolder(offset, limit).then(response => {
             const nextChildren = response.children;
             if(nextChildren.length > 0){
-                // parentFolder.childrenは__isWrapped=trueなので
+                // parentFolder.childrenは__allAPIFuncSet=trueなので
                 // nextChildrenの全要素にWebAPIを発行する関数を付与してからpushする
                 parentFolder.children.push(...nextChildren.slice());
                 response.children = parentFolder.children;
