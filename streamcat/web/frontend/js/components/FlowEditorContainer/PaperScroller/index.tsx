@@ -1,7 +1,7 @@
 import React from 'react';
 import style from "./style.scss";
 import {DetectUtil, GraphUtil} from "Utils/index";
-import {DragType, GraphType, HistoryType} from "Types/index";
+import {DragType, GraphType} from "Types/index";
 import {
     graphUtil,
     pasteStepsAction
@@ -19,7 +19,6 @@ type Props = {
     // nodes: AllNodeType[];
     flowData: Flow;
     zoom: number
-    history: HistoryType;
     // drag: DragType | {};
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
@@ -94,12 +93,7 @@ const PaperScroller = (props: Props) => {
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const {history, redo, undo} = props;
-        const current = history.current;
-        const max = history.flows.length;
-
-        const redoDisabled = !(current + 1 < max);
-        const undoDisabled = !(current - 1 >= 0);
+        const {redo, undo} = props;
 
         if (DetectUtil.isMac()) {
             if (e.metaKey && e.key === "c") {
@@ -111,11 +105,11 @@ const PaperScroller = (props: Props) => {
                 return;
             }
             if (e.metaKey && e.shiftKey && e.key === "z") {
-                if (!redoDisabled) redo();
+                redo();
                 return;
             }
             if (e.metaKey && e.key === "z") {
-                if (!undoDisabled) undo();
+                undo();
                 return;
             }
         } else {
@@ -128,11 +122,11 @@ const PaperScroller = (props: Props) => {
                 return;
             }
             if (e.ctrlKey && e.shiftKey && e.key === "z") {
-                if (!redoDisabled) redo();
+                redo();
                 return;
             }
             if (e.ctrlKey && e.key === "z") {
-                if (!undoDisabled) undo();
+                undo();
                 return;
             }
         }

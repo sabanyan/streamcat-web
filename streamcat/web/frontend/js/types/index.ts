@@ -1,4 +1,4 @@
-import { Commands, Flow, FlowCommands, InlineFlowCommand, VCommand } from 'Model/Library';
+import { Commands, FlowCommands, InlineFlowCommand, VCommand } from 'Model/Library';
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
 // export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel;
@@ -32,11 +32,6 @@ export type RunnablesType =  {
     subflows: FlowCommands;
     datasrcs: InlineFlowCommand[];
     datadsts: InlineFlowCommand[];
-};
-
-export type HistoryType = {
-    current: number;
-    flows: Flow[];
 };
 
 export type DragType = {

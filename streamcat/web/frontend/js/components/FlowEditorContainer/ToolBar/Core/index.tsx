@@ -3,7 +3,7 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
-import { GraphType, HistoryType } from 'Types/index';
+import { GraphType } from 'Types/index';
 import { graphUtil } from 'Modules/flowEditor';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
@@ -12,7 +12,9 @@ type ToolBarProps = {
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     flowData: Flow;
-    history: HistoryType;
+    // history: HistoryType;
+    undoStackLength: number;
+    redoStackLength: number;
     // zoom: number;
     zoomState: [number, (value:React.SetStateAction<number>)=>void];
     lockUUID?: string;
@@ -33,8 +35,10 @@ type ToolBarProps = {
 
 export const ToolBar = (props: ToolBarProps) => {
     const { flowData,
-            history,
+            // history,
             // zoom,
+            undoStackLength,
+            redoStackLength,
             zoomState,
             lockUUID,
             notifyLoading,
@@ -57,11 +61,11 @@ export const ToolBar = (props: ToolBarProps) => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const current = history.current;
-    const max = history.flows.length;
+    // const current = history.current;
+    // const max = history.flows.length;
 
-    const redoDisabled = !(current + 1 < max);
-    const undoDisabled = !(current - 1 >= 0);
+    // const redoDisabled = !(current + 1 < max);
+    // const undoDisabled = !(current - 1 >= 0);
 
     const refreshFlow = (flow:FlowType) => {
         // dispatch(refreshFlowAction(flow, zoom));
@@ -103,9 +107,9 @@ export const ToolBar = (props: ToolBarProps) => {
                   addHistory={addHistory}
                   disabled={baseDisabled}>メモ</Note>
             <Undo undo={undo}
-                  disabled={baseDisabled || undoDisabled}>もとに戻す</Undo>
+                  disabled={baseDisabled || undoStackLength===0}>もとに戻す</Undo>
             <Redo redo={redo}
-                  disabled={baseDisabled || redoDisabled}>繰り返す</Redo>
+                  disabled={baseDisabled || redoStackLength===0}>繰り返す</Redo>
         </div>
         <div className={classnames(style.paper_toolbar)}>
             <Zoom zoomState={zoomState}

@@ -1,10 +1,9 @@
 //@flow
 import Constants from 'Constants/index'
-import type { HistoryType } from 'Types/index'
 import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
 import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType, Flow } from 'Model/Library';
+import { AllNodeType } from 'Model/Library';
 import ModelUtil from './ModelUtil';
 
 export default class FlowUtil {
@@ -250,17 +249,5 @@ export default class FlowUtil {
   // static isSameNodes (nodesA: [], nodesB: []) {
   //   return JSON.stringify(nodesA) === JSON.stringify(nodesB)
   // }
-
-  /**
-   * 現在のノードと履歴の一つ前のノードが一緒かどうか
-   * @param history
-   * @param currentFlow
-   * @returns {boolean}
-   */
-  static isSameCurrentNodesToBeforeHistoryNodes (history:HistoryType, currentFlow:Flow) {
-    if (!history) return false;
-    if (history.flows[history.current].nodes.length !== currentFlow.nodes.length) return false;
-    return JSON.stringify(history.flows[history.current]) === JSON.stringify(currentFlow)
-  }
 
 }

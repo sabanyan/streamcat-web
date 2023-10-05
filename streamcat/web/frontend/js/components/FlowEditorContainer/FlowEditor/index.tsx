@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
+import * as jsonpatch from 'fast-json-patch';
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
 import { Edge, Selector, Step } from 'Shared/SVG';
 import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
 import { Api } from 'Api';
-import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, FlowUtil} from 'Utils/index';
+import { GraphUtil, ZoomUtil, ModalUtil, StateUtil} from 'Utils/index';
 import { Loader } from 'Shared/Base';
-import { DragType, GraphType, HistoryType, RunnablesType } from 'Types/index';
+import { DragType, GraphType, RunnablesType } from 'Types/index';
 import { Inspector } from 'Shared/Inspector';
 import { MessageModel } from 'Model/index';
 import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
@@ -128,11 +129,12 @@ const FlowEditor = () => {
     // Canvasに表示するFlow
     const [flow, setFlow] = useState<FlowType>(flowReader);
 
-    // 変更履歴
-    const [history, setHistory] = useState<HistoryType>({
-        current: -1,
-        flows: []
-    });
+    // 変更後のFlowに対する差分(履歴)を取得するための起点
+    const [prevFlow, setPrevFlow] = useState<FlowType>({...flow, flow:flow.flow.clone()});
+
+    // UndoとRedo用のStack
+    const [undoStack,] = useState<jsonpatch.Operation[][]>([]);
+    const [redoStack,] = useState<jsonpatch.Operation[][]>([]);
 
     const [graph, setGraph] = useState<GraphType>(graphUtil.getGraph(flow.flow.nodes, 100))
 
@@ -178,12 +180,6 @@ const FlowEditor = () => {
         FlowEditModeValue.Editable;
 
     const loadFlowJSON = (flow: FlowType) => {
-        const newFlowData = StateUtil.deepCopy(flow.flow);
-        setHistory({
-            current: 0,
-            flows: [newFlowData]
-        });
-        // const {flow:newFlow} = dispatch(loadFlowJSONAction(flow, zoom));
         const flowData = graphUtil.load(flow.flow);
         setFlow({...flow, flow:flowData});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
@@ -228,59 +224,98 @@ const FlowEditor = () => {
     // const cutSteps = (step_ids: []) => {
     //     dispatch(cutStepsAction(step_ids));
     // };
-    const addHistory = () => {
-        const newFlowData = StateUtil.deepCopy(flow.flow);
 
-        if (FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history, newFlowData)) {
+    // FlowDataを比較する
+    const compareFlowData =(flow1:Flow, flow2:Flow) => {
+        // compareが出力する差分には関数の差分も含まれるためこれらを除外する
+        return jsonpatch.compare(flow1, flow2).filter(pathch => {
+            if(pathch.path === '/nodes/__allAPIFuncSet'){
+                // ArrayCtor型オブジェクトが内部で使用するフラグは除外する
+                return false;
+            }else if(pathch.op === 'replace' && typeof pathch.value === 'function'){
+                // 関数は差分として認識させない
+                return false;
+            }else{
+                return true;
+            }
+        });
+    };
+
+    const addHistory = () => {
+        // 変更前後のFlowを比較して差分を取得する
+        const patches = compareFlowData(flow.flow, prevFlow.flow);
+        
+        // 差分が無ければ変更無しと看做し履歴に追加しない
+        if(patches.length === 0){
             return;
         }
 
-        if (history.current === history.flows.length - 1) {
-            // newState.history.flows.push(flow);
-            // newState.history.current = history.flows.length - 1;
-            setHistory({
-                current: history.flows.length,
-                flows: [...history.flows, newFlowData]
-            });
-        } else {
-            //前に戻っている状態で履歴が追加された場合は、
-            //current以降の履歴は消す
-            // newState.history.flows = history.flows.slice(0, history.current + 1);
-            // newState.history.flows.push(flow);
-            // newState.history.current = history.flows.length - 1;
-            setHistory({
-                current: history.current + 1,
-                flows: [...history.flows.slice(0, history.current + 1), newFlowData]
-            });
-        }
+        // 新たな履歴を追加する場合はRedoスタックをクリアする
+        redoStack.length = 0;
+
+        // Undoスタックに履歴を追加する
+        undoStack.push(patches);
+
+        // 差分を保存した後、変更前のFlowと現在のFlowを同じにする
+        setPrevFlow({...flow, flow:flow.flow.clone()});
     };
     const undo = () => {
-        if (history.current > 0) {
-            //一つ前に巻き戻し
-            const prevFlowData = history.flows[history.current - 1];
-            setHistory({
-                current: history.current - 1,
-                flows: history.flows
-            });
-            // dispatch(undoAction(prevFlowData, zoom));
-            allRebuildNodesEdges(prevFlowData.nodes, graph.edges);
-            setGraph(graphUtil.getGraph(prevFlowData.nodes, zoom));
-            setFlow({...flow, flow:prevFlowData});
+        // Undoスタックから直近の履歴を取り出す
+        const patches = undoStack.pop();
+
+        // 履歴が無ければUndo処理をしない
+        if(!patches){
+            return;
         }
+
+        // 現在のFlowを複製する
+        const clonedFlowData = flow.flow.clone();
+
+        // Canvasに表示中のFlowに差分を適用する
+        // Patchの検証をしない：validateOperation=false
+        // 複製を取らずPatch対象に適用する：mutateDocument=true
+        const prevFlowData = jsonpatch.applyPatch(clonedFlowData, patches, false, true).newDocument;
+
+        // Redo用の差分を作成してRedoスタックに乗せる
+        const reversePatches = compareFlowData(prevFlowData, flow.flow);
+        redoStack.push(reversePatches);
+
+        // エッジを繋ぎ直す
+        allRebuildNodesEdges(prevFlowData.nodes, graph.edges);
+        // graphの更新
+        setGraph(graphUtil.getGraph(prevFlowData.nodes, zoom));
+        // Flowの更新
+        setFlow({...flow, flow:prevFlowData});
+        // 変更前のFlowと現在のFlowを同じにする
+        setPrevFlow({...flow, flow:prevFlowData.clone()});
     };
     const redo = () => {
-        if (history.current < history.flows.length) {
-            //一つ後に前送り
-            const nextFlowData = history.flows[history.current + 1];
-            setHistory({
-                current: history.current + 1,
-                flows: history.flows
-            });
-            // dispatch(redoAction(nextFlowData, zoom));
-            allRebuildNodesEdges(nextFlowData.nodes, graph.edges);
-            setGraph(graphUtil.getGraph(nextFlowData.nodes, zoom));
-            setFlow({...flow, flow:nextFlowData});
+        // Rndoスタックから最新の履歴を取り出す
+        const patches = redoStack.pop();
+
+        // 履歴が無ければUndo処理をしない
+        if(!patches){
+            return;
         }
+
+        // 現在のFlowを複製する
+        const clonedFlowData = flow.flow.clone();
+
+        // Canvasに表示中のFlowに差分を適用する
+        const nextFlowData = jsonpatch.applyPatch(clonedFlowData, patches, false, true).newDocument;
+
+        // Redo用の差分を作成してRedoスタックに乗せる
+        const reversePatches = compareFlowData(nextFlowData, flow.flow);
+        undoStack.push(reversePatches);
+
+        // エッジを繋ぎ直す
+        allRebuildNodesEdges(nextFlowData.nodes, graph.edges);
+        // graphの更新
+        setGraph(graphUtil.getGraph(nextFlowData.nodes, zoom));
+        // flowの更新
+        setFlow({...flow, flow:nextFlowData});
+        // 変更前のFlowと現在のFlowを同じにする
+        setPrevFlow({...flow, flow:nextFlowData.clone()});
     };
 
     const moveSteps = (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
@@ -759,7 +794,8 @@ const FlowEditor = () => {
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
-                history={history}
+                undoStackLength={undoStack.length}
+                redoStackLength={redoStack.length}
                 notifyLoading={notifyLoading}
                 notifiWarning={notifyWarning}
                 notifyError={notifyError}
@@ -788,7 +824,6 @@ const FlowEditor = () => {
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
                 zoom={zoom}
-                history={history}
                 dragRangeState={[dragRange, setDragRange]}
             >
                 <Paper graph={graph} zoom={zoom}>
