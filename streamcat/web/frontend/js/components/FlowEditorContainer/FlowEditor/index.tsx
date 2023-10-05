@@ -26,7 +26,6 @@ import { NotAllowed } from 'Components/NotAllowedContainer';
 import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
-import _ from 'lodash';
 import { LockType } from 'Model/Locks';
 import { ErrorResponse } from 'Api';
 import { AllNodeType, Flow, FlowType, FrameType } from 'Model/Library';
@@ -448,14 +447,18 @@ const FlowEditor = () => {
 
     useEffect(() => {
         const handleLeavePage = (e) => {
-            e.preventDefault();
-            let dialogText
-            let isSame = _.isEqual(flow.flow, lastSavedFlow.flow)
-            if (!isSame) {
-                dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
-                e.returnValue = dialogText;
+            // 画面表示中のFlowと最後に保存したFlowの差分を取得する
+            const patches = compareFlowData(flow.flow, lastSavedFlow.flow);
+            if(patches.length === 0){
+                // 差分がない場合は警告ダイアログを表示しない
+                return;
+            }else{
+                // 差分がある場合は警告ダイアログを表示する
+                e.preventDefault();
+                // カスタムメッセージは動作しない(Chrome)
+                e.returnValue = 'Dialog text here'; 
+                return e.returnValue;
             }
-            return dialogText;
         };
 
         // タブが閉じられた時にロックを解除する
