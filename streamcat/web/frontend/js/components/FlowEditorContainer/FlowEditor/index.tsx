@@ -359,7 +359,7 @@ export const FlowEditor = () => {
         ModalUtil.registerModal({
             id: Constants.modal.SAVE_AS_FLOW, onClickDone: async () => {
                 if (!saveAsFlowName || !saveAsFlowName.length) {
-                    alert("フロー名を指定してください")
+                    alert('フロー名を指定してください')
                 } else {
                     // フローを別名保存する
                     Api.findFolder(lastSavedFlow.folderUuid as string).then(folder => {
@@ -375,7 +375,7 @@ export const FlowEditor = () => {
                                     // 転移する前にnewFlowのロックは一度解除する
                                     lock.delete();
                                     // 保存後に作成したフローに遷移する
-                                    WebUtil.navigateURL(WebUtil.webURL("/flows/" + anotherFlow.uuid, true));
+                                    WebUtil.navigateURL(WebUtil.webURL('/flows/' + anotherFlow.uuid, true));
                                 });
                             });
                         });
@@ -475,12 +475,12 @@ export const FlowEditor = () => {
         // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
         // ・document.addEventListener()へのイベントハンドラの登録では
         //   Pageを閉じる時にイベントハンドラが実行されなかった
-        window.addEventListener("beforeunload", handleLeavePage);
-        window.addEventListener("unload", handleUnload);
+        window.addEventListener('beforeunload', handleLeavePage);
+        window.addEventListener('unload', handleUnload);
 
         return () => {
-            window.removeEventListener("beforeunload", handleLeavePage);
-            window.removeEventListener("unload", handleUnload);
+            window.removeEventListener('beforeunload', handleLeavePage);
+            window.removeEventListener('unload', handleUnload);
         }
     }, [lock, flow, lastSavedFlow]);
 
@@ -499,7 +499,7 @@ export const FlowEditor = () => {
         // 
         // HTML headのtitleにフロー名を設定する
         // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
-        document.title = "📐" + flow.label;
+        document.title = '📐' + flow.label;
         // フローJSONを解析する
         loadFlowJSON(flow);
         // 直近で保存したFlowを保持する
@@ -562,9 +562,9 @@ export const FlowEditor = () => {
             // 編集権限がないと、保存不可
             if (!lockIsAcquired) {
                 reject(new MessageModel({
-                    title: "警告：読取専用フロー",
-                    message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                    messageStatus: "warning"
+                    title: '警告：読取専用フロー',
+                    message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
+                    messageStatus: 'warning'
                 }));
             } else {
                 // フロー保存
@@ -576,9 +576,9 @@ export const FlowEditor = () => {
                     return result;
                 }).catch(e => {
                     reject(new MessageModel({
-                        title: "フロー保存エラー",
+                        title: 'フロー保存エラー',
                         message: e.message,
-                        messageStatus: "error"
+                        messageStatus: 'error'
                     }));
                 }).finally(() => {
                     dismissNotify(notificationId);
@@ -604,9 +604,9 @@ export const FlowEditor = () => {
                 return result;
             }).catch(e => {
                 reject(new MessageModel({
-                    title: "フロー保存エラー",
+                    title: 'フロー保存エラー',
                     message: e.message,
-                    messageStatus: "error"
+                    messageStatus: 'error'
                 }));
             }).finally(() => {
                 dismissNotify(notificationId);
@@ -823,7 +823,7 @@ export const FlowEditor = () => {
                 onClickSaveFlow={onClickSaveFlow}
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
-                message={"フローを構築中です"} />
+                message={'フローを構築中です'} />
             <PaperScroller
                 canvasWidth={canvasWidth}
                 deleteSteps={deleteSteps}
