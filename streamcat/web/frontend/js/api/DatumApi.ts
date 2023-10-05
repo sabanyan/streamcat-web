@@ -398,14 +398,16 @@ const NodeArray = makeArrayCtor<AllNodeType>(node => {
  */
 const PortArray = function(this: any, ports: Port[]){
     Array.prototype.push.apply(this, ports);
-}
+    // JsonStringify()でlengthプロパティをJSON文字列から除外するために設定しておく
+    this.__allAPIFuncSet = true;
+};
 PortArray.prototype = Object.create(Array.prototype);
 PortArray.prototype.constructor = PortArray;
 
 PortArray.prototype.exists = function(portId: string){
     // TODO: Portの識別子はnodeIdからlabelに変更予定
     return !!PortArray.prototype.find.apply(this, [p => p.nodeId === portId]);
-}
+};
 
 PortArray.prototype.upsert = function(port: Port){
     const findPort = PortArray.prototype.find.apply(this, [p => p.nodeId === port.nodeId]);
@@ -417,7 +419,7 @@ PortArray.prototype.upsert = function(port: Port){
         // 存在しない場合は追加する
         this.push(port);
     }
-}
+};
 
 PortArray.prototype.removeByNodeId = function(nodeId: string){
     const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === nodeId]);
@@ -427,12 +429,7 @@ PortArray.prototype.removeByNodeId = function(nodeId: string){
     }
     // 存在する場合は削除する
     PortArray.prototype.splice.apply(this, [index, 1]);
-}
-
-// PortArrayをJSON文字列に変換する
-PortArray.prototype.toJSON = function(){
-    return PortArray.prototype.map.apply(this, [port => {return {...port};}]);
-}
+};
 
 /**
  * 引数を追加する共通関数

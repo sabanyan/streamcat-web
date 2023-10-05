@@ -256,7 +256,6 @@ type PortArray = Port[] & {
     exists: (portId: string) => boolean;
     upsert: (port: Port) => void;
     removeByNodeId: (nodeId: string) => void;
-    toJSON: () => string;
 };
 
 export type AllNodeType = FrameNodeType | CommandNodeType | FlowNodeType | InlineFlowNodeType | NoteNodeType;
