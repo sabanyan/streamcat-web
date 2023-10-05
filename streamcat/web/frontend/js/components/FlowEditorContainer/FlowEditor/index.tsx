@@ -6,7 +6,7 @@ import { Edge, Selector, Step } from 'Shared/SVG';
 import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
-import { Api } from 'Api';
+import { Api, NodeArray } from 'Api';
 import { GraphUtil, ZoomUtil, ModalUtil, StateUtil} from 'Utils/index';
 import { Loader } from 'Shared/Base';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
@@ -228,16 +228,24 @@ const FlowEditor = () => {
     // FlowDataを比較する
     const compareFlowData =(flow1:Flow, flow2:Flow) => {
         // compareが出力する差分には関数の差分も含まれるためこれらを除外する
-        return jsonpatch.compare(flow1, flow2).filter(pathch => {
-            if(pathch.path === '/nodes/__allAPIFuncSet'){
+        return jsonpatch.compare(flow1, flow2).filter(patch => {
+            if(patch.path === '/nodes/__allAPIFuncSet'){
                 // ArrayCtor型オブジェクトが内部で使用するフラグは除外する
                 return false;
-            }else if(pathch.op === 'replace' && typeof pathch.value === 'function'){
+            }else if(patch.op === 'replace' && typeof patch.value === 'function'){
                 // 関数は差分として認識させない
                 return false;
             }else{
                 return true;
             }
+        }).map(patch => {
+            if(patch.path === '/nodes' && (patch.op === 'add' || patch.op === 'replace')){
+                // nodes配列全体の置き換えの場合
+                // patch.valueはプロパティ名が整数のオブジェクトが格納されるので、これをNodeArrayに変換する
+                const nodes = Object.keys(patch.value).filter(key => Number.isInteger(+key)).map(key => patch.value[key]);
+                patch.value = new NodeArray(nodes);
+            }
+            return patch;
         });
     };
 

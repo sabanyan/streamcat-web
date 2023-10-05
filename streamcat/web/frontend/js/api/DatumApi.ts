@@ -328,7 +328,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
 /**
  * NodeArrayのコンストラクタ関数を作成する
  */
-const NodeArray = makeArrayCtor<AllNodeType>(node => {
+export const NodeArray = makeArrayCtor<AllNodeType>(node => {
     if(node.type === 'frame'){
         const n = node as FrameNodeType;
         n.hasData = () => !!n.uuid;
