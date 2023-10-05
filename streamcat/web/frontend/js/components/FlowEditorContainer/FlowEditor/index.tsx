@@ -1,18 +1,29 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
+import useInterval from 'use-interval';
 import * as jsonpatch from 'fast-json-patch';
-import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
-import { Edge, Selector, Step } from 'Shared/SVG';
-import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
-import Constants from 'Constants/index';
 import style from './style.scss';
-import { Api, NodeArray } from 'Api';
-import { GraphUtil, ZoomUtil, ModalUtil, StateUtil} from 'Utils/index';
-import { Loader } from 'Shared/Base';
-import { DragType, GraphType, RunnablesType } from 'Types/index';
-import { Inspector } from 'Shared/Inspector';
+import { Api, ErrorResponse, NodeArray } from 'Api';
 import { MessageModel } from 'Model/index';
-import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
+import { LockType } from 'Model/Locks';
+import { AllNodeType, Flow, FlowType, FrameType } from 'Model/Library';
+import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
+import Constants from 'Constants/index';
+import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, WebUtil} from 'Utils/index';
+import { DragType, GraphType, RunnablesType } from 'Types/index';
+import {
+    NotificationManager,
+    useStreamCatFlowNotification,
+    useStreamCatNotifications
+} from 'Shared/Notification';
+import { Inspector } from 'Shared/Inspector';
+import { Loader } from 'Shared/Base';
+import { Edge, Selector, Step } from 'Shared/SVG';
+import { TextField } from 'Shared/Input';
+import { NotAllowed } from 'Components/NotAllowedContainer';
+import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
+import { Paper } from 'FlowEditorContainer/Paper';
+import { ToolBar } from 'FlowEditorContainer/ToolBar/Core';
 import {
     addStepAction,
     deleteStepsAction,
@@ -20,16 +31,6 @@ import {
     rebuildNodesEdges,
     allRebuildNodesEdges
 } from 'Modules/flowEditor';
-import { Paper } from 'FlowEditorContainer/Paper';
-import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
-import { NotAllowed } from 'Components/NotAllowedContainer';
-import { TextField } from 'Shared/Input';
-import useInterval from 'use-interval';
-import WebUtil from "Utils/WebUtil";
-import { LockType } from 'Model/Locks';
-import { ErrorResponse } from 'Api';
-import { AllNodeType, Flow, FlowType, FrameType } from 'Model/Library';
-
 
 const getRunnables = () => {
     const preRequest :Promise<{}>[] = [];
@@ -114,7 +115,7 @@ const getLock = (targetUUID:string, updatable:boolean) => {
     }
 };
 
-const FlowEditor = () => {
+export const FlowEditor = () => {
 
     // ここでRunnableの取得を開始する
     // runnable: FlowまたはCommandを表す
@@ -873,5 +874,3 @@ const FlowEditor = () => {
         </div>
     </div>;
 };
-
-export { FlowEditor };
