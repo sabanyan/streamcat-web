@@ -536,22 +536,6 @@ export const FlowEditor = () => {
         setPrevFlow({...flow, flow:nextFlowData.clone()});
     };
 
-    const moveSteps = (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
-        // dispatch(moveStepsAction(flowData, x, y, step, selectedStepIds, zoom));
-        if (selectedStepIds.length > 0 && step) {
-            const dx = (step.position.x - x);
-            const dy = (step.position.y - y);
-    
-            flowData.nodes.map((node, index) => {
-              if (selectedStepIds.includes(node.id)) {
-                node.position.x = node.position.x - dx;
-                node.position.y = node.position.y - dy;
-              }
-            });
-            setGraph(graphUtil.getGraph(flowData.nodes, zoom));
-        }
-    };
-
     // 現在表示中のフローの保存処理
     const saveFlowPromise = (targetFlow: FlowType) => {
         // newLockUUIDがあれば、別名保存として判断する
@@ -687,6 +671,7 @@ export const FlowEditor = () => {
                     error={step.error}
                     runnables={runnablesReader()}
                     flowData={flow.flow}
+                    graphState={[graph, setGraph]}
                     selectedStepIds={selectedStepIds}
                     zoom={zoom}
                     dragRange={dragRange}
@@ -695,7 +680,6 @@ export const FlowEditor = () => {
                     selectSteps={selectSteps}
                     selectFrame={frame => setSelectedFrame(frame)}
                     updateStep={updateStep}
-                    moveSteps={moveSteps}
                     readOnly={stepReadOnly}
                 />;
             });
@@ -709,8 +693,7 @@ export const FlowEditor = () => {
         addSelectStep,
         deleteSelectStep,
         selectSteps,
-        updateStep,
-        moveSteps]);
+        updateStep]);
 
     const renderEdges = useCallback(() => {
         const edges:React.JSX.Element[] = [];

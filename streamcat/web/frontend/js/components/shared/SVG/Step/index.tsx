@@ -4,9 +4,10 @@ import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIco
 import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
-import { DragType, RunnablesType } from "Types/index";
-import { AllNodeType, Flow, FlowType, FrameType } from "Model/Library";
+import { DragType, GraphType, RunnablesType } from "Types/index";
+import { AllNodeType, Flow, FrameType } from "Model/Library";
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
+import { graphUtil } from "Modules/flowEditor";
 
 let mouseMoveEvent;
 let mouseUpEvent;
@@ -20,6 +21,7 @@ interface Props {
     error?: {};
     runnables: RunnablesType;
     flowData: Flow;
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     selectedStepIds: string[];
     zoom: number;
     dragRange: DragType | null;
@@ -28,7 +30,6 @@ interface Props {
     selectSteps: (selected_steps: any[]) => void;
     selectFrame: (frame?:FrameType) => void;
     updateStep: (step: AllNodeType) => void;
-    moveSteps: (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => void;
     readOnly: boolean;
 }
 
@@ -153,9 +154,27 @@ const Step = (props: Props) => {
         return { new_x: new_x, new_y: new_y };
     };
 
+    const moveSteps = (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
+        const [graph, setGraph] = props.graphState;
+        const { zoom } = props;
+
+        // dispatch(moveStepsAction(flowData, x, y, step, selectedStepIds, zoom));
+        if (selectedStepIds.length > 0 && step) {
+            const dx = (step.position.x - x);
+            const dy = (step.position.y - y);
+    
+            flowData.nodes.map((node, index) => {
+              if (selectedStepIds.includes(node.id)) {
+                node.position.x = node.position.x - dx;
+                node.position.y = node.position.y - dy;
+              }
+            });
+            setGraph(graphUtil.getGraph(flowData.nodes, zoom));
+        }
+    };
 
     const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
-        const { model, selectedStepIds, moveSteps } = props;
+        const { model, selectedStepIds } = props;
         if (selectedStepIds.includes(model.id)) {
             const { new_x, new_y } = calcNewPosition(e);
             moveSteps(flowData, new_x, new_y, model, selectedStepIds);
