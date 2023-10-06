@@ -123,6 +123,15 @@ export const FlowEditor = () => {
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, []);
 
+    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
+    useInterval(() => {;
+        if(!lockIsAcquired){
+            return;
+        }else if(hasEnableAutoLockExtended && serverConnectivity !== Connectivity.Disconnected){
+            extendLock(lock);
+        }
+    }, extendLockInterval);
+
     // 直近で保存したFlow
     const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
 
@@ -178,6 +187,207 @@ export const FlowEditor = () => {
         !lockIsAcquired? FlowEditModeValue.ReadOnlyLocked:
         // ロックの取得に成功
         FlowEditModeValue.Editable;
+
+    const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
+    const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
+
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [readOnly, setReadOnly] = useState<boolean>(editMode!==FlowEditModeValue.Editable);
+    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(editMode===FlowEditModeValue.Editable);
+    // const hasLockedUUID = useMemo(() => !!(lockUUID), [lockUUID]); // lockUUIDを保持している際は、編集可能な状態
+
+    const [saveAsFlowName, setSaveAsFlowName] = useState<string>();
+    const [hasShowSaveAsFlowModal, setHasShowSaveAsFlowModal] = useState<boolean>(false);
+    const [hasShowConfirmReloadFlowModal, setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
+
+    useEffect(() => {
+        // 排他ロックが取得できなかった場合は警告メッセージを表示する
+        // ロックを試みなかった場合(lock==null)はメッセージを表示しない
+        if(!lockIsAcquired && lock){
+            notifyWarning('警告：読取専用フロー', lock.message);
+        }
+    }, []);
+
+    useEffect(() => {
+        // 
+        // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
+        // これらを取得した後に、findFlowを実行する
+        // 
+        // HTML headのtitleにフロー名を設定する
+        // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
+        document.title = '📐' + flow.label;
+        // フローJSONを解析する
+        loadFlowJSON(flow);
+        // 直近で保存したFlowを保持する
+        setLastSavedFlow(StateUtil.deepCopy(flow));
+        // 編集ロックされたフローの場合は通知する
+        if (flow.editLock) {
+            notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
+        }
+
+        // ブラウザバックによってブラウザタブを閉じれるように設定する
+        WebUtil.setCloseWindowOnBack();
+
+        setIsLoading(false);
+    }, []);
+
+    // 初回レンダリング時のみ実行する
+    useEffect(() => {
+        const getNavigatorNetworkStatus = () => {
+            if(navigator.onLine){
+                // Webブラウザがネットワーク接続状態の場合
+                return Connectivity.Connectable;
+            }else{
+                return Connectivity.Disconnected;
+            }
+        }
+
+        const apServerIsLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
+        if(apServerIsLocal){
+            // APサーバがWebブラウザと同じホストに存在する場合
+            setServerConnectivity(Connectivity.Connectable);
+        }else{
+            // APサーバがWebブラウザと異なるホストに存在する場合
+            // Webブラウザのネットーワーク切断復帰のイベントハンドラを設定する
+
+            // 現在のネットワーク接続状態を設定する
+            setServerConnectivity(getNavigatorNetworkStatus());
+            // オンライン復帰時のイベントハンドラを設定する
+            window.addEventListener('online', () => setServerConnectivity(getNavigatorNetworkStatus()));
+            // ネットワーク切断時のイベントハンドラを設定する
+            window.addEventListener('offline', () => setServerConnectivity(getNavigatorNetworkStatus()));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!hasShowSaveAsFlowModal) return;
+        ModalUtil.registerModal({
+            id: Constants.modal.SAVE_AS_FLOW, onClickDone: async () => {
+                if (!saveAsFlowName || !saveAsFlowName.length) {
+                    alert('フロー名を指定してください')
+                } else {
+                    // フローを別名保存する
+                    Api.findFolder(lastSavedFlow.folderUuid as string).then(folder => {
+                        // 現在のフォルダに別名フローを新規作成する
+                        folder.createFlow(saveAsFlowName).then(anotherFlow => {
+                            // 別名保存するための現在表示されている flow
+                            const targetFlowData = flow.flow;
+                            targetFlowData.label = saveAsFlowName;
+                            // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
+                            Api.createLock(anotherFlow.uuid).then(lock => {
+                                // 新規に作成した newFlow の uuid を設定して保存する
+                                saveAnotherFlowPromise(targetFlowData, anotherFlow, lock.uuid).then(() => {
+                                    // 転移する前にnewFlowのロックは一度解除する
+                                    lock.delete();
+                                    // 保存後に作成したフローに遷移する
+                                    WebUtil.navigateURL(WebUtil.webURL('/flows/' + anotherFlow.uuid, true));
+                                });
+                            });
+                        });
+                    });
+                }
+            }, onClickCancel: () => {
+                setHasEnableAutoLockExtended(true);
+                setHasShowSaveAsFlowModal(false);
+                ModalUtil.closeModal(Constants.modal.SAVE_AS_FLOW)
+            }
+        })
+        ModalUtil.emitModal({
+            id: Constants.modal.SAVE_AS_FLOW,
+            visible: true,
+            done: '別名で保存する',
+            danger: false,
+            content: <div>
+                <TextField placeholder={'別名保存するフロー名'}
+                    onChange={(e) => setSaveAsFlowName(e.target.value)} />
+            </div>,
+        })
+    }, [hasShowSaveAsFlowModal, saveAsFlowName, flow]);
+
+    useEffect(() => {
+        if (!hasShowConfirmReloadFlowModal) return;
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_RELOAD_FLOW, onClickDone: () => {
+                location.reload();
+                ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW);
+            }, onClickCancel: () => {
+                setHasEnableAutoLockExtended(true);
+                setHasShowConfirmReloadFlowModal(false);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW)
+            }
+        })
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM_RELOAD_FLOW,
+            visible: true,
+            done: '現在のフローを破棄して再読込み',
+            danger: true,
+            content: <div>
+                現在の編集中のフローを破棄してフローを再読込みしますがよろしいですか？
+            </div>,
+        })
+    }, [hasShowConfirmReloadFlowModal]);
+
+    useEffect(() => {
+        if (serverConnectivity === Connectivity.Connectable) {
+            if (offLineNotificationId) {
+                dismissNotify(offLineNotificationId);
+                notifySuccess('ネットワークに再接続しています');
+                setOffLineNotificationId(null);
+                // ロックを延長する
+                extendLock(lock);
+            }
+        } else if (serverConnectivity === Connectivity.Disconnected) {
+            const offLineNotificationId = notifyWarning('現在ネットワークがオフラインです', 'ネットワークの状態を確認してください');
+            setOffLineNotificationId(offLineNotificationId);
+        }
+    }, [serverConnectivity, lock]);
+
+    useEffect(() => {
+        // Canvasのサイズを変更する
+        setCanvasWidth(window.innerWidth - inspectorWidth);
+        // Windowサイズの変更時にCanvasのサイズを変更する
+        window.onresize = () => {
+            setCanvasWidth(window.innerWidth - inspectorWidth);
+        };
+    }, [inspectorWidth]);
+
+    useEffect(() => {
+        const handleLeavePage = (e) => {
+            // 画面表示中のFlowと最後に保存したFlowの差分を取得する
+            const patches = compareFlowData(flow.flow, lastSavedFlow.flow);
+            if(patches.length === 0){
+                // 差分がない場合は警告ダイアログを表示しない
+                return;
+            }else{
+                // 差分がある場合は警告ダイアログを表示する
+                e.preventDefault();
+                // カスタムメッセージは動作しない(Chrome)
+                e.returnValue = 'Dialog text here'; 
+                return e.returnValue;
+            }
+        };
+
+        // タブが閉じられた時にロックを解除する
+        const handleUnload = (e) => {
+            if(!lockIsAcquired){
+                return;
+            }
+            // ・Pageを閉じる時はnavigator.sendBeacon()を用いないとAPIが発行できない(ただしmacOSのChromeは発行できるようだ)
+            // ・navigator.sendBeacon()はPOSTしか発行できないので、POSTでロックを解除する
+            lock && navigator.sendBeacon(`/api/v0/delete-locks/${lock.uuid}`);
+        }
+
+        // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
+        // ・document.addEventListener()へのイベントハンドラの登録では
+        //   Pageを閉じる時にイベントハンドラが実行されなかった
+        window.addEventListener('beforeunload', handleLeavePage);
+        window.addEventListener('unload', handleUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleLeavePage);
+            window.removeEventListener('unload', handleUnload);
+        }
+    }, [lock, flow, lastSavedFlow]);
 
     const loadFlowJSON = (flow: FlowType) => {
         const flowData = graphUtil.load(flow.flow);
@@ -341,216 +551,6 @@ export const FlowEditor = () => {
             setGraph(graphUtil.getGraph(flowData.nodes, zoom));
         }
     };
-
-    const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
-    const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
-
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [readOnly, setReadOnly] = useState<boolean>(editMode!==FlowEditModeValue.Editable);
-    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(editMode===FlowEditModeValue.Editable);
-    // const hasLockedUUID = useMemo(() => !!(lockUUID), [lockUUID]); // lockUUIDを保持している際は、編集可能な状態
-
-    const [saveAsFlowName, setSaveAsFlowName] = useState<string>();
-    const [hasShowSaveAsFlowModal, setHasShowSaveAsFlowModal] = useState<boolean>(false);
-    const [hasShowConfirmReloadFlowModal, setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
-
-    useEffect(() => {
-        if (!hasShowSaveAsFlowModal) return;
-        ModalUtil.registerModal({
-            id: Constants.modal.SAVE_AS_FLOW, onClickDone: async () => {
-                if (!saveAsFlowName || !saveAsFlowName.length) {
-                    alert('フロー名を指定してください')
-                } else {
-                    // フローを別名保存する
-                    Api.findFolder(lastSavedFlow.folderUuid as string).then(folder => {
-                        // 現在のフォルダに別名フローを新規作成する
-                        folder.createFlow(saveAsFlowName).then(anotherFlow => {
-                            // 別名保存するための現在表示されている flow
-                            const targetFlowData = flow.flow;
-                            targetFlowData.label = saveAsFlowName;
-                            // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
-                            Api.createLock(anotherFlow.uuid).then(lock => {
-                                // 新規に作成した newFlow の uuid を設定して保存する
-                                saveAnotherFlowPromise(targetFlowData, anotherFlow, lock.uuid).then(() => {
-                                    // 転移する前にnewFlowのロックは一度解除する
-                                    lock.delete();
-                                    // 保存後に作成したフローに遷移する
-                                    WebUtil.navigateURL(WebUtil.webURL('/flows/' + anotherFlow.uuid, true));
-                                });
-                            });
-                        });
-                    });
-                }
-            }, onClickCancel: () => {
-                setHasEnableAutoLockExtended(true);
-                setHasShowSaveAsFlowModal(false);
-                ModalUtil.closeModal(Constants.modal.SAVE_AS_FLOW)
-            }
-        })
-        ModalUtil.emitModal({
-            id: Constants.modal.SAVE_AS_FLOW,
-            visible: true,
-            done: '別名で保存する',
-            danger: false,
-            content: <div>
-                <TextField placeholder={'別名保存するフロー名'}
-                    onChange={(e) => setSaveAsFlowName(e.target.value)} />
-            </div>,
-        })
-    }, [hasShowSaveAsFlowModal, saveAsFlowName, flow]);
-
-    useEffect(() => {
-        if (!hasShowConfirmReloadFlowModal) return;
-        ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM_RELOAD_FLOW, onClickDone: () => {
-                location.reload();
-                ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW);
-            }, onClickCancel: () => {
-                setHasEnableAutoLockExtended(true);
-                setHasShowConfirmReloadFlowModal(false);
-                ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW)
-            }
-        })
-        ModalUtil.emitModal({
-            id: Constants.modal.CONFIRM_RELOAD_FLOW,
-            visible: true,
-            done: '現在のフローを破棄して再読込み',
-            danger: true,
-            content: <div>
-                現在の編集中のフローを破棄してフローを再読込みしますがよろしいですか？
-            </div>,
-        })
-    }, [hasShowConfirmReloadFlowModal]);
-
-    useEffect(() => {
-        if (serverConnectivity === Connectivity.Connectable) {
-            if (offLineNotificationId) {
-                dismissNotify(offLineNotificationId);
-                notifySuccess('ネットワークに再接続しています');
-                setOffLineNotificationId(null);
-                // ロックを延長する
-                extendLock(lock);
-            }
-        } else if (serverConnectivity === Connectivity.Disconnected) {
-            const offLineNotificationId = notifyWarning('現在ネットワークがオフラインです', 'ネットワークの状態を確認してください');
-            setOffLineNotificationId(offLineNotificationId);
-        }
-    }, [serverConnectivity, lock]);
-
-    useEffect(() => {
-        // Canvasのサイズを変更する
-        setCanvasWidth(window.innerWidth - inspectorWidth);
-        // Windowサイズの変更時にCanvasのサイズを変更する
-        window.onresize = () => {
-            setCanvasWidth(window.innerWidth - inspectorWidth);
-        };
-    }, [inspectorWidth]);
-
-    useEffect(() => {
-        const handleLeavePage = (e) => {
-            // 画面表示中のFlowと最後に保存したFlowの差分を取得する
-            const patches = compareFlowData(flow.flow, lastSavedFlow.flow);
-            if(patches.length === 0){
-                // 差分がない場合は警告ダイアログを表示しない
-                return;
-            }else{
-                // 差分がある場合は警告ダイアログを表示する
-                e.preventDefault();
-                // カスタムメッセージは動作しない(Chrome)
-                e.returnValue = 'Dialog text here'; 
-                return e.returnValue;
-            }
-        };
-
-        // タブが閉じられた時にロックを解除する
-        const handleUnload = (e) => {
-            if(!lockIsAcquired){
-                return;
-            }
-            // ・Pageを閉じる時はnavigator.sendBeacon()を用いないとAPIが発行できない(ただしmacOSのChromeは発行できるようだ)
-            // ・navigator.sendBeacon()はPOSTしか発行できないので、POSTでロックを解除する
-            lock && navigator.sendBeacon(`/api/v0/delete-locks/${lock.uuid}`);
-        }
-
-        // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
-        // ・document.addEventListener()へのイベントハンドラの登録では
-        //   Pageを閉じる時にイベントハンドラが実行されなかった
-        window.addEventListener('beforeunload', handleLeavePage);
-        window.addEventListener('unload', handleUnload);
-
-        return () => {
-            window.removeEventListener('beforeunload', handleLeavePage);
-            window.removeEventListener('unload', handleUnload);
-        }
-    }, [lock, flow, lastSavedFlow]);
-
-    useEffect(() => {
-        // 排他ロックが取得できなかった場合は警告メッセージを表示する
-        // ロックを試みなかった場合(lock==null)はメッセージを表示しない
-        if(!lockIsAcquired && lock){
-            notifyWarning('警告：読取専用フロー', lock.message);
-        }
-    }, []);
-
-    useEffect(() => {
-        // 
-        // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
-        // これらを取得した後に、findFlowを実行する
-        // 
-        // HTML headのtitleにフロー名を設定する
-        // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
-        document.title = '📐' + flow.label;
-        // フローJSONを解析する
-        loadFlowJSON(flow);
-        // 直近で保存したFlowを保持する
-        setLastSavedFlow(StateUtil.deepCopy(flow));
-        // 編集ロックされたフローの場合は通知する
-        if (flow.editLock) {
-            notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
-        }
-
-        // ブラウザバックによってブラウザタブを閉じれるように設定する
-        WebUtil.setCloseWindowOnBack();
-
-        setIsLoading(false);
-    }, []);
-
-    // 初回レンダリング時のみ実行する
-    useEffect(() => {
-        const getNavigatorNetworkStatus = () => {
-            if(navigator.onLine){
-                // Webブラウザがネットワーク接続状態の場合
-                return Connectivity.Connectable;
-            }else{
-                return Connectivity.Disconnected;
-            }
-        }
-
-        const apServerIsLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
-        if(apServerIsLocal){
-            // APサーバがWebブラウザと同じホストに存在する場合
-            setServerConnectivity(Connectivity.Connectable);
-        }else{
-            // APサーバがWebブラウザと異なるホストに存在する場合
-            // Webブラウザのネットーワーク切断復帰のイベントハンドラを設定する
-
-            // 現在のネットワーク接続状態を設定する
-            setServerConnectivity(getNavigatorNetworkStatus());
-            // オンライン復帰時のイベントハンドラを設定する
-            window.addEventListener('online', () => setServerConnectivity(getNavigatorNetworkStatus()));
-            // ネットワーク切断時のイベントハンドラを設定する
-            window.addEventListener('offline', () => setServerConnectivity(getNavigatorNetworkStatus()));
-        }
-    }, []);
-
-    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
-    useInterval(() => {;
-        if(!lockIsAcquired){
-            return;
-        }else if(hasEnableAutoLockExtended && serverConnectivity !== Connectivity.Disconnected){
-            extendLock(lock);
-        }
-    }, extendLockInterval);
 
     // 現在表示中のフローの保存処理
     const saveFlowPromise = (targetFlow: FlowType) => {
