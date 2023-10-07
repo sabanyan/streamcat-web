@@ -87,13 +87,8 @@ const PaperScroller = (props: Props) => {
         });
     };
 
-    const deleteSteps = () => {
-        const {selectedStepIds, deleteSteps} = props;
-        deleteSteps(selectedStepIds);
-    };
-
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const {redo, undo} = props;
+        const {redo, undo, selectedStepIds, deleteSteps, addHistory} = props;
 
         if (DetectUtil.isMac()) {
             if (e.metaKey && e.key === "c") {
@@ -132,7 +127,8 @@ const PaperScroller = (props: Props) => {
         }
 
         if (e.key === "Backspace" || e.key === "Delete") {
-            deleteSteps();
+            deleteSteps(selectedStepIds);
+            addHistory();
         }
     };
 
@@ -213,6 +209,8 @@ const PaperScroller = (props: Props) => {
             if(dragRange.start.x!==dragRange.end.x || dragRange.start.y!==dragRange.end.y){
                 dragEnd();
             }
+            // FIXME: コマンドオプションの編集処理などに履歴追加処理が実装されてないようなので
+            // Canvasのクリック時に履歴を追加する必要がある
             addHistory();
         }
 

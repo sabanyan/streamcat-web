@@ -32,6 +32,7 @@ const MultiInspector = (props: Props) => {
                 const {selectedStepIds} = props;
                 deleteSteps(selectedStepIds);
                 selectSteps([]);
+                addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
