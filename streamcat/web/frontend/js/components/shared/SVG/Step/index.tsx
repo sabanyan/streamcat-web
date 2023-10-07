@@ -13,9 +13,8 @@ let mouseMoveEvent;
 let mouseUpEvent;
 
 interface Props {
-    model: AllNodeType;
+    step: AllNodeType;
     position: { x: number, y: number };
-    type: string;
     selected: boolean;
     invalid?: {};
     error?: {};
@@ -40,6 +39,7 @@ let setCoords = (_coords: { x: number, y: number } | null) => {
 };
 
 const Step = (props: Props) => {
+    const { step } = props;
 
     const [hover, setHover] = useState<boolean>(false);
 
@@ -65,10 +65,10 @@ const Step = (props: Props) => {
     };
 
     const isSelected = () => {
-        const { selectedStepIds, model } = props;
+        const { selectedStepIds } = props;
         let selected = false;
         selectedStepIds.map((id) => {
-            if (id === model.id) {
+            if (id === step.id) {
                 selected = true;
             }
         });
@@ -83,8 +83,7 @@ const Step = (props: Props) => {
 
         setCoords(null);
 
-        const { model, addSelectStep, deleteSelectStep, selectSteps, selectFrame } = props;
-        let step = model;
+        const { addSelectStep, deleteSelectStep, selectSteps, selectFrame } = props;
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected()) {
@@ -124,10 +123,13 @@ const Step = (props: Props) => {
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
         const { selectedStepIds, readOnly } = props;
         if (readOnly) return; // 読み取り専用の場合は移動不可
+
         if (selectedStepIds.length > 1) {
+            // 複数のStepを一括して移動させる
             onMoveSteps(e);
         } else {
-            onUpdateStep(e);
+            // 単一のStepを移動させる
+            onMoveStep(e);
         }
         //一時保存された位置を更新
         setCoords({
@@ -154,47 +156,37 @@ const Step = (props: Props) => {
         return { new_x: new_x, new_y: new_y };
     };
 
-    const moveSteps = (flowData:Flow, x: number, y: number, step:AllNodeType, selectedStepIds:string[]) => {
+    const moveSteps = (flowData:Flow, x: number, y: number, selectedStepIds:string[]) => {
         const [graph, setGraph] = props.graphState;
         const { zoom } = props;
 
-        // dispatch(moveStepsAction(flowData, x, y, step, selectedStepIds, zoom));
-        if (selectedStepIds.length > 0 && step) {
-            const dx = (step.position.x - x);
-            const dy = (step.position.y - y);
-    
-            flowData.nodes.map((node, index) => {
-              if (selectedStepIds.includes(node.id)) {
-                node.position.x = node.position.x - dx;
-                node.position.y = node.position.y - dy;
-              }
-            });
-            setGraph(graphUtil.getGraph(flowData.nodes, zoom));
-        }
+        // 移動距離を算出する
+        const dx = (step.position.x - x);
+        const dy = (step.position.y - y);
+
+        // 選択中の全てのStepを移動する
+        // 複数のStepを一括で移動させる場合は、そのStepの中に自Stepが含まれていること
+        flowData.nodes.filter(node => selectedStepIds.includes(node.id)).forEach(node => {
+            // Stepの位置を変更する
+            node.position.x = node.position.x - dx;
+            node.position.y = node.position.y - dy;
+        });
+
+        // Canvasへ反映させる
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
+    };
+
+    const onMoveStep = (e: React.MouseEvent<SVGElement>) => {
+        const { new_x, new_y } = calcNewPosition(e);
+        moveSteps(flowData, new_x, new_y, [step.id]);
     };
 
     const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
-        const { model, selectedStepIds } = props;
-        if (selectedStepIds.includes(model.id)) {
+        const { selectedStepIds } = props;
+        if (selectedStepIds.includes(step.id)) {
             const { new_x, new_y } = calcNewPosition(e);
-            moveSteps(flowData, new_x, new_y, model, selectedStepIds);
+            moveSteps(flowData, new_x, new_y, selectedStepIds);
         }
-    };
-
-    const onUpdateStep = (e: React.MouseEvent<SVGElement>) => {
-        const { selectedStepIds, model, updateStep } = props;
-        if (selectedStepIds.length > 1) {
-            onMoveSteps(e);
-            return;
-        }
-        const { new_x, new_y } = calcNewPosition(e);
-        //移動に応じてStepの位置を更新
-        let step = model;
-        // step.setPosition({ x: new_x, y: new_y });
-        // step.position = {x:new_x, y:new_y} では何故かノードが移動しない
-        step.position.x = new_x;
-        step.position.y = new_y;
-        updateStep(step);
     };
 
     /**
@@ -268,22 +260,22 @@ const Step = (props: Props) => {
     };
 
 
-    const isCommandStep = (model): boolean => {
-        // return (model instanceof CommandStepModel);
-        return model.type === 'command';
+    const isCommandStep = (step): boolean => {
+        // return (step instanceof CommandStepModel);
+        return step.type === 'command';
     };
 
-    const isDataFrame = (model): boolean => {
-        return model.type === 'frame';
+    const isDataFrame = (step): boolean => {
+        return step.type === 'frame';
     };
 
-    const isSubFlow = (model): boolean => {
-        return model.type === 'flow';
+    const isSubFlow = (step): boolean => {
+        return step.type === 'flow';
     };
 
-    const isNote = (model): boolean => {
-        // return (model instanceof NoteStepModel);
-        return model.type === 'note';
+    const isNote = (step): boolean => {
+        // return (step instanceof NoteStepModel);
+        return step.type === 'note';
     };
 
     const getFilter = () => {
@@ -291,25 +283,23 @@ const Step = (props: Props) => {
         return filter;
     };
     useEffect(() => {
-        const { model, addSelectStep, deleteSelectStep } = props;
+        const { addSelectStep, deleteSelectStep } = props;
         // componentDidUpdate
         if (selectorIntersect()) {
             if (!isSelected()) {
-                addSelectStep(model.id);
+                addSelectStep(step.id);
             }
 
         } else {
             if (isSelected()) {
-                deleteSelectStep(model.id);
+                deleteSelectStep(step.id);
             }
         }
     });
 
-    const { position, runnables, flowData, invalid, error, model } = props;
+    const { position, runnables, flowData, invalid, error } = props;
     const { x, y } = position;
     let icon: JSX.Element | null;
-
-    let step: AllNodeType = model;
 
     /**
      * STEPの種類に応じた見た目の設定

@@ -663,9 +663,8 @@ export const FlowEditor = () => {
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly ;
                 return <Step
                     key={step.id}
-                    model={step}
+                    step={step}
                     position={step.position}
-                    type={step.type}
                     selected={selected}
                     invalid={step.invalid}
                     error={step.error}
