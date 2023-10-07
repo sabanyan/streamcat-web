@@ -679,6 +679,7 @@ export const FlowEditor = () => {
                     selectSteps={selectSteps}
                     selectFrame={frame => setSelectedFrame(frame)}
                     updateStep={updateStep}
+                    addHistory={addHistory}
                     readOnly={stepReadOnly}
                 />;
             });

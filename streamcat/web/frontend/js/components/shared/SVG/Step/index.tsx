@@ -29,6 +29,7 @@ interface Props {
     selectSteps: (selected_steps: any[]) => void;
     selectFrame: (frame?:FrameType) => void;
     updateStep: (step: AllNodeType) => void;
+    addHistory: () => void;
     readOnly: boolean;
 }
 
@@ -42,6 +43,17 @@ const Step = (props: Props) => {
     const { step } = props;
 
     const [hover, setHover] = useState<boolean>(false);
+
+    const isSelected = () => {
+        const { selectedStepIds } = props;
+        let selected = false;
+        selectedStepIds.map((id) => {
+            if (id === step.id) {
+                selected = true;
+            }
+        });
+        return selected;
+    };
 
     /**
      * mouse down ステップ選択処理
@@ -58,21 +70,10 @@ const Step = (props: Props) => {
             x: e.pageX,
             y: e.pageY
         });
-        mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(e);
         mouseUpEvent = (e: React.MouseEvent<SVGElement>) => handleMouseUp(e);
+        mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(e);
         document.addEventListener("mousemove", mouseMoveEvent, { passive: true });
         document.addEventListener("mouseup", mouseUpEvent, { passive: true });
-    };
-
-    const isSelected = () => {
-        const { selectedStepIds } = props;
-        let selected = false;
-        selectedStepIds.map((id) => {
-            if (id === step.id) {
-                selected = true;
-            }
-        });
-        return selected;
     };
 
     /**
@@ -80,10 +81,9 @@ const Step = (props: Props) => {
      * @param e
      */
     const handleMouseUp = (e: React.MouseEvent<SVGElement>) => {
-
         setCoords(null);
 
-        const { addSelectStep, deleteSelectStep, selectSteps, selectFrame } = props;
+        const { addSelectStep, deleteSelectStep, selectSteps, selectFrame, addHistory } = props;
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected()) {
@@ -115,7 +115,11 @@ const Step = (props: Props) => {
 
         document.removeEventListener("mousemove", mouseMoveEvent);
         document.removeEventListener("mouseup", mouseUpEvent);
+
+        // Undoスタックに履歴を追加する
+        addHistory();
     };
+
     /**
      * mouse move ステップのドラッグ処理
      * @param e
