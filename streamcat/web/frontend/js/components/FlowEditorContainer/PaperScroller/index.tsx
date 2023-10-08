@@ -1,12 +1,13 @@
 import React from 'react';
-import style from "./style.scss";
-import {DetectUtil, GraphUtil} from "Utils/index";
-import {DragType, GraphType} from "Types/index";
+import style from './style.scss';
+import {DetectUtil, GraphUtil} from 'Utils/index';
+import {DragType, GraphType} from 'Types/index';
 import {
     graphUtil,
     pasteStepsAction
 } from 'Modules/flowEditor';
 import { Flow, FlowType } from 'Model/Library';
+import { FlowNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     canvasWidth: number;
@@ -36,6 +37,10 @@ const PaperScroller = (props: Props) => {
         const {flowData} = props;
         const [flow, setFlow] = props.flowState;
         const pasteSteps = (paste_nodes:string) => {
+            // コピーするJSONが空の場合はペースト処理をしない
+            if(paste_nodes === ''){
+                return;
+            }
             pasteStepsAction(flowData, paste_nodes);
             setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
             setFlow({...flow});
@@ -43,7 +48,7 @@ const PaperScroller = (props: Props) => {
         navigator.clipboard.readText().then(data => {
             pasteSteps(data);
         }, (err) => {
-            alert("クリップボードが利用できません");
+            alert('クリップボードが利用できません');
         });
     };
 
@@ -58,22 +63,30 @@ const PaperScroller = (props: Props) => {
      * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
      * @returns {boolean}
      */
-    const copyableStep = () => {
+    const stepIsCopyable = () => {
         const {selectedStepIds, flowData} = props;
 
-        if (selectedStepIds.length !== 1) return false;
-
-        if(selectedStepIds.length){
-            const targetNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
-            if (targetNode.type === 'flow' || targetNode.type === 'command') {
-                return true;
-            }
+        // 複数のノードをコピーさせない
+        if(selectedStepIds.length !== 1){
+            return false
         }
-        return false;
+
+        const copyNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
+        if(copyNode.type === 'flow'){
+            const flowNode = copyNode as FlowNodeType;
+            if(flowNode.classification === 'data_source' || flowNode.classification === 'data_dest'){
+                return false;
+            }
+        }else if(copyNode.type !== 'command'){
+            return false;
+        }
+
+        // Command、またはデータソース/デスト以外のFlow
+        return true;
     };
 
     const copySteps = () => {
-        if (!copyableStep()) {
+        if (!stepIsCopyable()) {
             navigator.clipboard.writeText("");
             return;
         }
