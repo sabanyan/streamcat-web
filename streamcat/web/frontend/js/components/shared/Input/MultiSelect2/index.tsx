@@ -109,7 +109,8 @@ export const MultiSelect2 = <T extends {label:string}>(props:Props<T>) => {
                         multiple={true}
                         readOnly={readOnly}
                         // 全ての選択肢を設定する
-                        options={items}
+                        // NOTE: 警告メッセージを抑止するためArrayCtor型からArray型へ変換する
+                        options={[...items]}
                         // 選択肢の同値を判定する関数
                         isOptionEqualToValue={isEqual}
                         // 選択不可の判定をする関数

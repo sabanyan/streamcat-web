@@ -43,6 +43,8 @@ export const TextField2 = (props:Props) => {
 
     // 入力値の変更の有無
     const [valueChanged, setValueChanged] = React.useState(false);
+    // IME未確定の場合はtrue
+    const [imeMode, setImeMode] = React.useState(false);
 
     // 初期処理
     React.useEffect(() => {
@@ -68,7 +70,8 @@ export const TextField2 = (props:Props) => {
 
     // エンターキーの押下でイベントハンドラを呼び出す
     const onDownKey = (key:string, value:string, isError:boolean) => {
-        if(key==='Enter'){
+        // IME未確定の場合はイベントハンドラを呼び出さない
+        if(key==='Enter' && !imeMode){
             onEnterKeyDown({value:value, isError:isError});
         }
     };
@@ -106,6 +109,9 @@ export const TextField2 = (props:Props) => {
                     // 入力値
                     value={value.value}
                     onChange={onChangeValue}
-                    onKeyDown={e => onDownKey(e.key, value.value, isError(value.value))} />
+                    onKeyDown={e => onDownKey(e.key, value.value, isError(value.value))}
+                    // IME切替時のイベントハンドラ
+                    onCompositionStart={() => setImeMode(true)}
+                    onCompositionEnd={() => setImeMode(false)} />
     }</>;
 };
