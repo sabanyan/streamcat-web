@@ -21,13 +21,12 @@ import { DatumType,
         DocumentType,
         ActivityType,
         ScheduleType,
-        TrashType } from 'Model/Library';
+        TrashType} from 'Model/Library';
 import { FileListTable } from 'LibraryContainer/FileListTable';
 import { BreadCrumb, IBreadCrumbsLink } from 'LibraryContainer/BreadCrumb';
 import { TrashMenuList } from 'LibraryContainer/TrashMenuList';
 import { ApplyMenuList } from 'Components/LibraryContainer/ApplyMenuList';
 import { MenuList } from 'LibraryContainer/MenuList';
-import { VisualizeModel, VisualizeModelProps } from 'Model/index';
 import { childrenLimit } from 'Shared/Base/ListTableBodyBase';
 import { ProjectDrawer } from 'Shared/Drawer/ProjectDrawer';
 import { FolderDrawer } from 'Shared/Drawer/FolderDrawer';
@@ -43,14 +42,6 @@ import { ActivityDrawer } from 'Shared/Drawer/ActivityDrawer';
 import { ScheduleDrawer } from 'Shared/Drawer/ScheduleDrawer';
 import { MultiDataDrawer } from 'Shared/Drawer/MultiDataDrawer';
 import { UnkownDrawer } from 'Shared/Drawer/UnkownDrawer';
-
-/**
- * ライブラリ画面に表示するDatumの表示行
- */
-export type DatumEntryType = DatumType & {
-    selected: boolean;
-    clickable: boolean;
-};
 
 const getParentFolder = (offset:number=0, limit:number=childrenLimit) => {
     if(inject_folder_uuid){
@@ -93,12 +84,8 @@ export const Library = () => {
     const {notifyError} = useStreamCatNotifications();
     const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
-    const [visualizers, setVisualizers] = React.useState<VisualizeModel<VisualizeModelProps>[]>([]);
 
     React.useEffect(() => {
-        // 
-        getVisualizers();
-        // 
         if (isDialog) {
             const bodyEl = document.querySelector('body');
             if (bodyEl) bodyEl.classList.add('dialog');
@@ -107,13 +94,6 @@ export const Library = () => {
 
     const isDialog = (HttpUtil.getURLParam('dialog') === 'true');
     const mode = HttpUtil.getURLParam('mode') ? HttpUtil.getURLParam('mode') : Constants.library.mode.list;
-
-    const getVisualizers = () => {
-        Api.findVCommands().then(visualizers => {
-            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
-            setVisualizers(visualizerModels);
-        });
-    };
 
     const makeBreadCrumbLinks = (folderPath: any[] | any): IBreadCrumbsLink[] => {
         const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? '&mode=' + mode : '') : '';
@@ -168,7 +148,7 @@ export const Library = () => {
     };
 
     const renderAll = () => {
-        const isEmptyLibraryList = !Array.isArray(parentFolder.children) || parentFolder.children.length === 0;
+        const isEmptyLibraryList = parentFolder.children.length === 0;
 
         if (isEmptyLibraryList && mode === Constants.library.mode.dialog){
             return renderEmptyState();
@@ -214,7 +194,7 @@ export const Library = () => {
         const onLoadMore = (offset:number, limit:number) => getParentFolder(offset, limit).then(response => {
             const nextChildren = response.children;
             if(nextChildren.length > 0){
-                // parentFolder.childrenは__isWrapped=trueなので
+                // parentFolder.childrenは__allAPIFuncSet=trueなので
                 // nextChildrenの全要素にWebAPIを発行する関数を付与してからpushする
                 parentFolder.children.push(...nextChildren.slice());
                 response.children = parentFolder.children;

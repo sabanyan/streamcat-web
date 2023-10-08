@@ -1,44 +1,61 @@
 import React from 'react';
-import {useState} from "react";
-import style from "./style.scss";
-import {DetectUtil, GraphUtil} from "Utils/index";
-import {CommandStepModel, SubFlowStepModel} from "Model/index";
-import {DragType, HistoryType} from "Types/index";
+import style from './style.scss';
+import {DetectUtil, GraphUtil} from 'Utils/index';
+import {DragType, GraphType} from 'Types/index';
+import {
+    graphUtil,
+    pasteStepsAction
+} from 'Modules/flowEditor';
+import { Flow, FlowType } from 'Model/Library';
+import { FlowNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
-    editor: any;
-    pasteSteps: Function;
-    copySteps: Function;
-    deleteSteps: Function;
-    selectSteps: Function;
-    dragStart: Function;
-    dragging: Function;
-    dragEnd: Function;
-    addHistory: Function;
-    redo: Function;
-    undo: Function;
-    selected_step_ids: string[];
-    nodes: [];
-    history: HistoryType;
-    drag: DragType;
+    canvasWidth: number;
+    deleteSteps: (step_ids: string[]) => void;
+    selectSteps: (selected_steps: any[]) => void;
+    addHistory: () => void;
+    redo: () => void;
+    undo: () => void;
+    selectedStepIds: string[];
+    // nodes: AllNodeType[];
+    flowData: Flow;
+    zoom: number
+    // drag: DragType | {};
+    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
+    dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     children: React.ReactNode;
 }
 
 const PaperScroller = (props: Props) => {
-    const [coords, setCoords] = useState<{x:number, y:number}>();
+
+    const [graph, setGraph] = props.graphState;
+    const [dragRange, setDragRange] = props.dragRangeState;
+
+    // const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
-        const {pasteSteps} = props;
-        navigator.clipboard.readText().then((data: any) => {
+        const {flowData} = props;
+        const [flow, setFlow] = props.flowState;
+        const pasteSteps = (paste_nodes:string) => {
+            // コピーするJSONが空の場合はペースト処理をしない
+            if(paste_nodes === ''){
+                return;
+            }
+            pasteStepsAction(flowData, paste_nodes);
+            setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
+            setFlow({...flow});
+        };
+        navigator.clipboard.readText().then(data => {
             pasteSteps(data);
         }, (err) => {
-            alert("クリップボードが利用できません");
+            alert('クリップボードが利用できません');
         });
     };
 
     const getCopyNodes = (): string => {
-        const {selected_step_ids, nodes} = props;
-        return JSON.stringify(selected_step_ids.map((id) => {
-            return GraphUtil.getNode(nodes, id);
+        const {selectedStepIds, flowData} = props;
+        return JSON.stringify(selectedStepIds.map((id) => {
+            return GraphUtil.getNode(flowData.nodes, id);
         }));
     };
 
@@ -46,48 +63,45 @@ const PaperScroller = (props: Props) => {
      * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
      * @returns {boolean}
      */
-    const copyableStep = () => {
-        const {selected_step_ids, nodes} = props;
+    const stepIsCopyable = () => {
+        const {selectedStepIds, flowData} = props;
 
-        if (selected_step_ids.length as number !== 1) return false;
-
-        if(selected_step_ids.length){
-            const targetNode = GraphUtil.getNode(nodes, selected_step_ids[0]);
-            if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
-                return true;
-            }
+        // 複数のノードをコピーさせない
+        if(selectedStepIds.length !== 1){
+            return false
         }
-        return false;
+
+        const copyNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
+        if(copyNode.type === 'flow'){
+            const flowNode = copyNode as FlowNodeType;
+            if(flowNode.classification === 'data_source' || flowNode.classification === 'data_dest'){
+                return false;
+            }
+        }else if(copyNode.type !== 'command'){
+            return false;
+        }
+
+        // Command、またはデータソース/デスト以外のFlow
+        return true;
     };
 
     const copySteps = () => {
-        const {copySteps} = props;
-        if (!copyableStep()) {
+        if (!stepIsCopyable()) {
             navigator.clipboard.writeText("");
             return;
         }
 
-        const {selected_step_ids} = props;
+        const {selectedStepIds} = props;
         const copyData = getCopyNodes();
         navigator.clipboard.writeText(copyData).then(() => {
-            copySteps(selected_step_ids);
+            // copySteps(selectedStepIds);
         }, (err) => {
             alert("クリップボードが利用できません");
         });
     };
 
-    const deleteSteps = () => {
-        const {selected_step_ids, deleteSteps} = props;
-        deleteSteps(selected_step_ids);
-    };
-
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const {history, redo, undo} = props;
-        const current = history.current;
-        const max = history.nodes.length;
-
-        const redoDisabled = !(current + 1 < max);
-        const undoDisabled = !(current - 1 >= 0);
+        const {redo, undo, selectedStepIds, deleteSteps, addHistory} = props;
 
         if (DetectUtil.isMac()) {
             if (e.metaKey && e.key === "c") {
@@ -99,11 +113,11 @@ const PaperScroller = (props: Props) => {
                 return;
             }
             if (e.metaKey && e.shiftKey && e.key === "z") {
-                if (!redoDisabled) redo();
+                redo();
                 return;
             }
             if (e.metaKey && e.key === "z") {
-                if (!undoDisabled) undo();
+                undo();
                 return;
             }
         } else {
@@ -116,22 +130,41 @@ const PaperScroller = (props: Props) => {
                 return;
             }
             if (e.ctrlKey && e.shiftKey && e.key === "z") {
-                if (!redoDisabled) redo();
+                redo();
                 return;
             }
             if (e.ctrlKey && e.key === "z") {
-                if (!undoDisabled) undo();
+                undo();
                 return;
             }
         }
 
         if (e.key === "Backspace" || e.key === "Delete") {
-            deleteSteps();
+            deleteSteps(selectedStepIds);
+            addHistory();
         }
     };
 
     const onMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {selectSteps, dragStart} = props;
+        const {selectSteps} = props;
+        const dragStart = (x: number, y: number) => {
+            // dispatch(dragStartAction(x, y));
+            setGraph({
+                ...graph,
+                width: (x > graph.width) ? x : graph.width,
+                height: (y > graph.height) ? y : graph.height
+            });
+            setDragRange({
+                start: {
+                    x: x,
+                    y: y
+                },
+                end: {
+                    x: x,
+                    y: y
+                }
+            });
+        };
         if (isOnClickPaper(e) && !e.shiftKey) {
             // 規定の要素からのカーソル座標値を求めるためには
             // https://qiita.com/yukiB/items/cc533fbbf3bb8372a924
@@ -139,38 +172,69 @@ const PaperScroller = (props: Props) => {
             const x = e.clientX - target_rect.left;
             const y = e.clientY - target_rect.top;
 
-            selectSteps();
+            selectSteps([]);
             dragStart(x, y);
-            setCoords({
-                x: x,
-                y: y
-            });
+            // setCoords({
+            //     x: x,
+            //     y: y
+            // });
         }
     };
 
     const onMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {drag, dragging} = props;
-        if (drag.start) {
+        // const {drag} = props;
+        const dragging = (x: number, y: number) => {
+            // dispatch(draggingAction(x, y));
+            setGraph({
+                ...graph,
+                width: (x > graph.width) ? x : graph.width,
+                height: (y > graph.height) ? y : graph.height
+            });
+            setDragRange({
+                start: {
+                    x: dragRange?.start.x || x,
+                    y: dragRange?.start.y || y
+                },
+                end: {
+                    x: x,
+                    y: y
+                }
+            });
+        };
+        // if(drag.hasOwnProperty('start')){
+        if(dragRange){
             const target_rect = e.currentTarget.getBoundingClientRect();
             const x = e.clientX - target_rect.left;
             const y = e.clientY - target_rect.top;
-
             dragging(x, y);
         }
     };
 
     const onMouseUp = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {drag, dragEnd, addHistory} = props;
-        if (drag.start) {
-            if (drag.end) {
-                const target_rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - target_rect.left;
-                const y = e.clientY - target_rect.top;
+        const {addHistory} = props;
+        const dragEnd = () => {
+            setDragRange(null);
+        };
 
-                dragEnd(x, y);
+        // if(drag.hasOwnProperty('start')){
+        //     if(drag.hasOwnProperty('end')){
+        if(dragRange){
+            if(dragRange.start.x!==dragRange.end.x || dragRange.start.y!==dragRange.end.y){
+                dragEnd();
             }
+            // FIXME: コマンドオプションの編集処理などに履歴追加処理が実装されてないようなので
+            // Canvasのクリック時に履歴を追加する必要がある
             addHistory();
         }
+
+    };
+
+    const onMouseClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        // Click時には範囲選択を解除させる
+        const dragEnd = () => {
+            setDragRange(null);
+        }
+        dragEnd();
     };
 
     const isOnClickPaper = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -181,16 +245,16 @@ const PaperScroller = (props: Props) => {
         return 'nodeName' in e.target && (e.target['nodeName']==='svg' || e.target['nodeName']==='DIV');
     };
 
-    const {editor, children} = props;
-    const width = editor.width;
+    const {canvasWidth, children} = props;
     // onKeyDownには tabIndex が必要
     // ref:https://stackoverflow.com/questions/43503964/onkeydown-event-not-working-on-divs-in-react
     return <div tabIndex={0} onKeyDown={(e) => onKeyDown(e)}
                 onMouseDown={(e) => onMouseDown(e)}
                 onMouseMove={(e) => onMouseMove(e)}
                 onMouseUp={(e) => onMouseUp(e)}
+                onClick={e => onMouseClick(e)}
                 className={style.paper_scroller}
-                style={{width: width}}>
+                style={{width: canvasWidth}}>
         {children}
     </div>;
 };

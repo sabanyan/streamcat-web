@@ -1,253 +1,286 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
-import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
-import { Edge, Selector, Step } from 'Shared/SVG';
-import {ToolBar} from 'FlowEditorContainer/ToolBar/Core';
-import Constants from 'Constants/index';
-import style from './style.scss';
-import { Api } from 'Api';
-import { GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
-import CommandModel from 'Model/Command/CommandModel';
-import { Loader } from 'Shared/Base';
-import { StepModelType } from 'Types/index';
-import { Inspector } from 'Shared/Inspector';
-import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
-import { NotificationManager, useStreamCatFlowNotification, useStreamCatNotifications } from 'Shared/Notification';
-import {
-    addHistoryAction,
-    addMasterAction,
-    addSelectStepAction,
-    addStepAction,
-    addDataDstStepAction,
-    addDataSrcStepAction,
-    copyStepsAction,
-    deleteCacheAction,
-    deleteSelectStepAction,
-    deleteStepsAction,
-    dragEndAction,
-    draggingAction,
-    dragStartAction,
-    loadFlowJSONAction,
-    moveStepsAction,
-    pasteStepsAction,
-    redoAction,
-    resizeInspectorAction,
-    selectStepsAction,
-    setEditModeAction,
-    setExecuteModeAction,
-    setZoomAction,
-    sortFlowAction,
-    sortStepSrcEndAction,
-    undoAction,
-    updateDataFrameDetailAction,
-    updateFlowAction,
-    updateStepAction,
-    refreshCanvasSizeAction,
-    refreshFlowAction,
-    updateLastSavedFlowAction
-} from 'Modules/flowEditor';
-import { useDispatch, useSelector } from 'react-redux';
-import { Paper } from 'FlowEditorContainer/Paper';
-import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
-import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
-import { NotAllowed } from 'Components/NotAllowedContainer';
-import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
-import WebUtil from "Utils/WebUtil";
-import _ from 'lodash';
+import * as jsonpatch from 'fast-json-patch';
+import style from './style.scss';
+import { Api, ErrorResponse, NodeArray } from 'Api';
+import { MessageModel } from 'Model/index';
 import { LockType } from 'Model/Locks';
-import { ErrorResponse } from 'Api';
-import { FlowType, FrameType } from 'Model/Library';
+import { AllNodeType, Flow, FlowType, FrameType } from 'Model/Library';
+import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
+import Constants from 'Constants/index';
+import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, WebUtil} from 'Utils/index';
+import { DragType, GraphType, RunnablesType } from 'Types/index';
+import {
+    NotificationManager,
+    useStreamCatFlowNotification,
+    useStreamCatNotifications
+} from 'Shared/Notification';
+import { Inspector } from 'Shared/Inspector';
+import { Loader } from 'Shared/Base';
+import { Edge, Selector, Step } from 'Shared/SVG';
+import { TextField } from 'Shared/Input';
+import { NotAllowed } from 'Components/NotAllowedContainer';
+import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
+import { Paper } from 'FlowEditorContainer/Paper';
+import { ToolBar } from 'FlowEditorContainer/ToolBar/Core';
+import {
+    addStepAction,
+    deleteStepsAction,
+    graphUtil,
+    rebuildNodesEdges,
+    allRebuildNodesEdges
+} from 'Modules/flowEditor';
 
-const getLock = (targetUUID:string) => {
-    return Api.createLock(targetUUID).catch(e => {
-        if(e instanceof ErrorResponse){
-            // ロックの取得に失敗した場合はエラー情報を返す
-            return e as ErrorResponse;
-        }else if(e instanceof Promise){
-            // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
-            throw e;
-        }else{
-            throw e;
-        }
+const getRunnables = () => {
+    const preRequest :Promise<{}>[] = [];
+
+    // サブフローの一覧を取得する
+    preRequest.push(
+        Api.findSubflows().then(subflows => {
+            return {
+                subflows: subflows
+            };
+        })
+    );
+
+    // データソースの一覧を取得する
+    preRequest.push(
+        Api.findDataSrcs().then(datasrcs => {
+            return {
+                datasrcs: datasrcs
+            };
+        })
+    );
+
+    // データデストの一覧を取得する
+    preRequest.push(
+        Api.findDataDsts().then(datadsts => {
+            return {
+                datadsts: datadsts
+            };
+        })
+    );
+
+    // Commandの一覧を取得する
+    preRequest.push(
+        Api.findCommands().then(commands => {
+            return {
+                commands: commands
+            };
+        })
+    );
+
+    // VCommandの一覧を取得する
+    preRequest.push(
+        Api.findVCommands().then(vcommands => {
+            return {
+                vcommands: vcommands
+            };
+        })
+    );
+
+    return Promise.all(preRequest).then((runnablesFragments) => {
+        // 全てのrunnableを取得した後に、RunnablesType型の値に統合して返す
+        return {
+            ...runnablesFragments[0],
+            ...runnablesFragments[1],
+            ...runnablesFragments[2],
+            ...runnablesFragments[3],
+            ...runnablesFragments[4],
+        } as RunnablesType;
     });
 };
 
-const FlowEditor = () => {
+const getFlow = () => {
+    return Api.findFlow(inject_flow_uuid);
+};
 
-    const dispatch = useDispatch();
-    const folderUuid = useSelector((state: any) => state.FlowEditorReducer.folderUuid);
+const getLock = (targetUUID:string, updatable:boolean) => {
+    if(updatable){
+        return Api.createLock(targetUUID).catch(e => {
+            if(e instanceof ErrorResponse){
+                // ロックの取得に失敗した場合はエラー情報を返す
+                return e as ErrorResponse;
+            }else if(e instanceof Promise){
+                // Web APIの応答待ちの場合はPromiseオブジェクトを再送出する
+                throw e;
+            }else{
+                throw e;
+            }
+        });
+    }else{
+        // Flowの更新権限がない場合はロックの取得を試みない
+        return Api.findNull();
+    }
+};
 
-    const _modifiedAt = useSelector((state: any) => state.FlowEditorReducer.modifiedAt);
-    useEffect(() => {
-        if (_modifiedAt) {
-            // modifiedAt が reducer 経由での取得になる
-            // 取得タイミングに差があるため取得ができ次第 State にセットする
-            setModifiedAt(_modifiedAt);
+export const FlowEditor = () => {
+
+    // ここでRunnableの取得を開始する
+    // runnable: FlowまたはCommandを表す
+    const [runnablesReader] = useAsyncResource(getRunnables, []);
+    // ここでFlowの取得を開始する
+    const [flowReader] = useAsyncResource(getFlow, []);
+
+    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
+    useInterval(() => {;
+        if(!lockIsAcquired){
+            return;
+        }else if(hasEnableAutoLockExtended && serverConnectivity !== Connectivity.Disconnected){
+            extendLock(lock);
         }
-    }, [_modifiedAt])
-    const [modifiedAt, setModifiedAt] = useState<string>();
-    const flow = useSelector<any, FlowType>((state: any) => state.FlowEditorReducer.flow);
-    const drag = useSelector((state: any) => state.FlowEditorReducer.drag);
-    const selected_step_ids = useSelector((state: any) => state.FlowEditorReducer.selected_step_ids);
-    const nodes = useSelector((state: any) => state.FlowEditorReducer.nodes);
-    const history = useSelector((state: any) => state.FlowEditorReducer.history);
-    const mast = useSelector((state: any) => state.FlowEditorReducer.mast);
-    const selected_tab_id = useSelector((state: any) => state.FlowEditorReducer.selected_tab_id);
-    const selected_data_source_detail = useSelector((state: any) => state.FlowEditorReducer.selected_data_source_detail);
-    const graph = useSelector((state: any) => state.FlowEditorReducer.graph);
-    const zoom = useSelector((state: any) => state.FlowEditorReducer.zoom);
-    const inspector = useSelector((state: any) => state.FlowEditorReducer.inspector);
-    const editor = useSelector((state: any) => state.FlowEditorReducer.editor);
-    const editMode = useSelector((state: any) => state.FlowEditorReducer.editMode);
-    const executeMode = useSelector((state: any) => state.FlowEditorReducer.executeMode);
-    const networkStatus = useSelector((state: any) => state.FlowEditorReducer.networkStatus);
-    const lastSavedFlow = useSelector<any, FlowType>((state: any) => state.FlowEditorReducer.lastSavedFlow);
+    }, extendLockInterval);
 
+    // 直近で保存したFlow
+    const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
+
+    // Canvasに表示するFlow
+    const [flow, setFlow] = useState<FlowType>(flowReader);
+
+    // 変更後のFlowに対する差分(履歴)を取得するための起点
+    const [prevFlow, setPrevFlow] = useState<FlowType>({...flow, flow:flow.flow.clone()});
+
+    // UndoとRedo用のStack
+    const [undoStack,] = useState<jsonpatch.Operation[][]>([]);
+    const [redoStack,] = useState<jsonpatch.Operation[][]>([]);
+
+    const [graph, setGraph] = useState<GraphType>(graphUtil.getGraph(flow.flow.nodes, 100))
+
+    // 選択中のStepのId
+    const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
+    // 選択中のDataFrameNodeのFrame
+    const [selectedFrame, setSelectedFrame] = useState<FrameType>();
+    // Canvasでの選択範囲
+    const [dragRange, setDragRange] = useState<DragType | null>(null);
+    // Canvasの拡大率
+    const [zoom, setZoom] = useState(100);
+
+    const [readLock] = useAsyncResource(getLock, inject_flow_uuid, flow.allowlist.update);
+    const [lock, setLock] = useState(readLock());
+
+    // ネットワークの接続状態
+    const [serverConnectivity, setServerConnectivity] = useState<Connectivity>(Connectivity.UnKnown);
+    // ネットワークオフラインを通知するポップアップのId
+    // (オンライン復帰時にポップアップを閉じるために一時保存する)
     const [offLineNotificationId, setOffLineNotificationId] = useState<string | null>(null);
-    const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
+    // const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
-    const loadFlowJSON = useCallback((context: {}) => {
-        return dispatch(loadFlowJSONAction(context));
-    }, []);
-    const addMaster = useCallback((context: {}) => {
-        dispatch(addMasterAction(context));
-    }, []);
-    const addStep = useCallback((add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
-        dispatch(addStepAction(add_step, src_step_ids, dst_step_ids));
-    }, []);
-    const addDataDstStep = useCallback((dataDst: any, selectedDataNodeId: string) => {
-        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId));
-    }, []);
-    const addDataSrcStep = useCallback((dataSrc: any) => {
-        dispatch(addDataSrcStepAction(dataSrc));
-    }, []);
-    const updateStep = useCallback((step: StepModelType) => {
-        dispatch(updateStepAction(step));
-    }, []);
-    const updateFlow = useCallback((flow) => {
-        dispatch(updateFlowAction(flow));
-    }, []);
-    const selectSteps = useCallback((selected_steps: []) => {
-        dispatch(selectStepsAction(selected_steps));
-    }, []);
-    const addSelectStep = useCallback((selected_step_id: string) => {
-        dispatch(addSelectStepAction(selected_step_id));
-    }, []);
-    const deleteSelectStep = useCallback((selected_step_id: string) => {
-        dispatch(deleteSelectStepAction(selected_step_id));
-    }, []);
-    const deleteSteps = useCallback((step_ids: []) => {
-        dispatch(deleteStepsAction(step_ids));
-    }, []);
-    const deleteCache = useCallback((selected_step_id: string) => {
-        dispatch(deleteCacheAction(selected_step_id));
-    }, []);
-    // const cutSteps = useCallback((step_ids: []) => {
-    //     dispatch(cutStepsAction(step_ids));
-    // },[]);
-    const copySteps = useCallback((step_ids: []) => {
-        dispatch(copyStepsAction(step_ids));
-    }, []);
-    const pasteSteps = useCallback((paste_nodes: []) => {
-        dispatch(pasteStepsAction(paste_nodes));
-    }, []);
-    const addHistory = useCallback(() => {
-        dispatch(addHistoryAction());
-    }, []);
-    const undo = useCallback(() => {
-        dispatch(undoAction());
-    }, []);
-    const redo = useCallback(() => {
-        dispatch(redoAction());
-    }, []);
-    const sortFlow = useCallback(() => {
-        dispatch(sortFlowAction());
-    }, []);
-    // const executeFlow = useCallback((flowid: string) => {
-    //     // flowidは未使用
-    //     dispatch(executeFlowAction(flowid));
-    // },[]);
-    // const selectTab = useCallback((tab_id: string) => {
-    //     dispatch(selectTabAction(tab_id));
-    // },[]);
-    const dragStart = useCallback((x: number, y: number) => {
-        dispatch(dragStartAction(x, y));
-    }, []);
-    const dragging = useCallback((x: number, y: number) => {
-        dispatch(draggingAction(x, y));
-    }, []);
-    const dragEnd = useCallback((x: number, y: number) => {
-        dispatch(dragEndAction(x, y));
-    }, []);
-    const setZoom = useCallback(({ offset, value }) => {
-        dispatch(setZoomAction({ offset, value }));
-    }, []);
-    const updateDataFrameDetail = useCallback((detail: FrameType) => {
-        dispatch(updateDataFrameDetailAction(detail));
-    }, []);
-    // const addNote = useCallback((x: number, y: number) => {
-    //     dispatch(addNoteAction(x, y));
-    // },[]);
-    const moveSteps = useCallback((x: number, y: number, step) => {
-        dispatch(moveStepsAction(x, y, step));
-    }, []);
-    const resizeInspector = useCallback((width: number) => {
-        dispatch(resizeInspectorAction(width));
-    }, []);
-    const setExecuteMode = useCallback((mode: FlowExecuteModeValue) => {
-        dispatch(setExecuteModeAction(mode));
-    }, []);
-    const setEditMode = useCallback((mode: FlowEditModeValue) => {
-        dispatch(setEditModeAction(mode));
-    }, []);
-    const refreshCanvasSize = useCallback(() => {
-        dispatch(refreshCanvasSizeAction());
-    }, []);
-    const refreshFlow = useCallback((context) => {
-        dispatch(refreshFlowAction(context));
-    }, []);
-    const updateLastSavedFlow = useCallback(() => {
-        dispatch(updateLastSavedFlowAction());
-    }, []);
+    // Inspectorの横幅
+    const [inspectorWidth, setInspectorWidth] = useState(Constants.default.inspector.width);
+    // Canvasの横幅
+    const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
+
+    // 実行可否
+    const executeMode = flow.allowlist.execute? FlowExecuteModeValue.Executable: FlowExecuteModeValue.NotExecutable;
+
+    // ロックの取得に成功した場合はtrue
+    const lockIsAcquired = !(lock instanceof ErrorResponse || lock===null);
+
+    // 編集可否
+    const editMode = 
+        // read が無効な場合は NotAllowed に飛ばす
+        !flow.allowlist.read? FlowEditModeValue.NotAllowed:
+        // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
+        !flow.allowlist.update? FlowEditModeValue.ReadOnlyUpdateDisabled:
+        // ロックの取得に失敗 => [読み取り専用モード2]
+        !lockIsAcquired? FlowEditModeValue.ReadOnlyLocked:
+        // ロックの取得に成功
+        FlowEditModeValue.Editable;
 
     const {notifySuccess, notifyLoading, notifyWarning, notifyError, dismissNotify} = useStreamCatNotifications();
     const {notifyComplete, notifySaveAs} = useStreamCatFlowNotification();
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [readOnly, setReadOnly] = useState<boolean>(false);
-    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(false);
+    const [readOnly, setReadOnly] = useState<boolean>(editMode!==FlowEditModeValue.Editable);
+    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(editMode===FlowEditModeValue.Editable);
     // const hasLockedUUID = useMemo(() => !!(lockUUID), [lockUUID]); // lockUUIDを保持している際は、編集可能な状態
-
-    const [readLock] = useAsyncResource(getLock, inject_flow_uuid);
-    const [lock, setLock] = useState<LockType | ErrorResponse>(readLock());
 
     const [saveAsFlowName, setSaveAsFlowName] = useState<string>();
     const [hasShowSaveAsFlowModal, setHasShowSaveAsFlowModal] = useState<boolean>(false);
     const [hasShowConfirmReloadFlowModal, setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
 
     useEffect(() => {
+        // 排他ロックが取得できなかった場合は警告メッセージを表示する
+        // ロックを試みなかった場合(lock==null)はメッセージを表示しない
+        if(!lockIsAcquired && lock){
+            notifyWarning('警告：読取専用フロー', lock.message);
+        }
+    }, []);
+
+    useEffect(() => {
+        // 
+        // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
+        // これらを取得した後に、findFlowを実行する
+        // 
+        // HTML headのtitleにフロー名を設定する
+        // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
+        document.title = '📐' + flow.label;
+        // フローJSONを解析する
+        loadFlowJSON(flow);
+        // 直近で保存したFlowを保持する
+        setLastSavedFlow(StateUtil.deepCopy(flow));
+        // 編集ロックされたフローの場合は通知する
+        if (flow.editLock) {
+            notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
+        }
+
+        // ブラウザバックによってブラウザタブを閉じれるように設定する
+        WebUtil.setCloseWindowOnBack();
+
+        setIsLoading(false);
+    }, []);
+
+    // 初回レンダリング時のみ実行する
+    useEffect(() => {
+        const getNavigatorNetworkStatus = () => {
+            if(navigator.onLine){
+                // Webブラウザがネットワーク接続状態の場合
+                return Connectivity.Connectable;
+            }else{
+                return Connectivity.Disconnected;
+            }
+        }
+
+        const apServerIsLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
+        if(apServerIsLocal){
+            // APサーバがWebブラウザと同じホストに存在する場合
+            setServerConnectivity(Connectivity.Connectable);
+        }else{
+            // APサーバがWebブラウザと異なるホストに存在する場合
+            // Webブラウザのネットーワーク切断復帰のイベントハンドラを設定する
+
+            // 現在のネットワーク接続状態を設定する
+            setServerConnectivity(getNavigatorNetworkStatus());
+            // オンライン復帰時のイベントハンドラを設定する
+            window.addEventListener('online', () => setServerConnectivity(getNavigatorNetworkStatus()));
+            // ネットワーク切断時のイベントハンドラを設定する
+            window.addEventListener('offline', () => setServerConnectivity(getNavigatorNetworkStatus()));
+        }
+    }, []);
+
+    useEffect(() => {
         if (!hasShowSaveAsFlowModal) return;
         ModalUtil.registerModal({
             id: Constants.modal.SAVE_AS_FLOW, onClickDone: async () => {
                 if (!saveAsFlowName || !saveAsFlowName.length) {
-                    alert("フロー名を指定してください")
+                    alert('フロー名を指定してください')
                 } else {
                     // フローを別名保存する
-                    Api.findFolder(folderUuid).then(folder => {
+                    Api.findFolder(lastSavedFlow.folderUuid as string).then(folder => {
                         // 現在のフォルダに別名フローを新規作成する
                         folder.createFlow(saveAsFlowName).then(anotherFlow => {
                             // 別名保存するための現在表示されている flow
-                            const targetFlow = flow;
-                            targetFlow.label = saveAsFlowName;
+                            const targetFlowData = flow.flow;
+                            targetFlowData.label = saveAsFlowName;
                             // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
                             Api.createLock(anotherFlow.uuid).then(lock => {
                                 // 新規に作成した newFlow の uuid を設定して保存する
-                                saveAnotherFlowPromise(targetFlow, anotherFlow, lock.uuid).then(() => {
+                                saveAnotherFlowPromise(targetFlowData, anotherFlow, lock.uuid).then(() => {
                                     // 転移する前にnewFlowのロックは一度解除する
                                     lock.delete();
                                     // 保存後に作成したフローに遷移する
-                                    WebUtil.navigateURL(WebUtil.webURL("/flows/" + anotherFlow.uuid));
+                                    WebUtil.navigateURL(WebUtil.webURL('/flows/' + anotherFlow.uuid, true));
                                 });
                             });
                         });
@@ -295,13 +328,7 @@ const FlowEditor = () => {
     }, [hasShowConfirmReloadFlowModal]);
 
     useEffect(() => {
-        if (initialEditMode === null) {
-            setInitialEditMode(editMode);
-        }
-    }, [editMode]);
-
-    useEffect(() => {
-        if (networkStatus === NetworkStatusValue.Online) {
+        if (serverConnectivity === Connectivity.Connectable) {
             if (offLineNotificationId) {
                 dismissNotify(offLineNotificationId);
                 notifySuccess('ネットワークに再接続しています');
@@ -309,33 +336,40 @@ const FlowEditor = () => {
                 // ロックを延長する
                 extendLock(lock);
             }
-        } else if (networkStatus === NetworkStatusValue.Offline) {
+        } else if (serverConnectivity === Connectivity.Disconnected) {
             const offLineNotificationId = notifyWarning('現在ネットワークがオフラインです', 'ネットワークの状態を確認してください');
             setOffLineNotificationId(offLineNotificationId);
         }
-    }, [networkStatus, lock]);
+    }, [serverConnectivity, lock]);
 
     useEffect(() => {
+        // Canvasのサイズを変更する
+        setCanvasWidth(window.innerWidth - inspectorWidth);
+        // Windowサイズの変更時にCanvasのサイズを変更する
         window.onresize = () => {
-            refreshCanvasSize();
-        }
-    }, [refreshCanvasSize]);
+            setCanvasWidth(window.innerWidth - inspectorWidth);
+        };
+    }, [inspectorWidth]);
 
     useEffect(() => {
         const handleLeavePage = (e) => {
-            e.preventDefault();
-            let dialogText
-            let isSame = _.isEqual(flow, lastSavedFlow)
-            if (!isSame) {
-                dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
-                e.returnValue = dialogText;
+            // 画面表示中のFlowと最後に保存したFlowの差分を取得する
+            const patches = compareFlowData(flow.flow, lastSavedFlow.flow);
+            if(patches.length === 0){
+                // 差分がない場合は警告ダイアログを表示しない
+                return;
+            }else{
+                // 差分がある場合は警告ダイアログを表示する
+                e.preventDefault();
+                // カスタムメッセージは動作しない(Chrome)
+                e.returnValue = 'Dialog text here'; 
+                return e.returnValue;
             }
-            return dialogText;
         };
 
         // タブが閉じられた時にロックを解除する
         const handleUnload = (e) => {
-            if(lock instanceof ErrorResponse){
+            if(!lockIsAcquired){
                 return;
             }
             // ・Pageを閉じる時はnavigator.sendBeacon()を用いないとAPIが発行できない(ただしmacOSのChromeは発行できるようだ)
@@ -346,144 +380,189 @@ const FlowEditor = () => {
         // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
         // ・document.addEventListener()へのイベントハンドラの登録では
         //   Pageを閉じる時にイベントハンドラが実行されなかった
-        window.addEventListener("beforeunload", handleLeavePage);
-        window.addEventListener("unload", handleUnload);
+        window.addEventListener('beforeunload', handleLeavePage);
+        window.addEventListener('unload', handleUnload);
 
         return () => {
-            window.removeEventListener("beforeunload", handleLeavePage);
-            window.removeEventListener("unload", handleUnload);
+            window.removeEventListener('beforeunload', handleLeavePage);
+            window.removeEventListener('unload', handleUnload);
         }
     }, [lock, flow, lastSavedFlow]);
 
-    useEffect(() => {
-        // 排他ロックが取得できなかった場合は警告メッセージを表示する
-        if(lock instanceof ErrorResponse){
-            notifyWarning('警告：読取専用フロー', lock.message)
-        }
-    }, []);
-
-    useEffect(() => {
-        const preRequest :Promise<any>[] = [];
-
-        // サブフローの一覧を取得する
-        preRequest.push(
-            Api.findSubflows().then(subflows => {
-                const subflowModels = subflows.map(subflow => new SubflowCommandModel(subflow));
-                window.subflows = subflowModels;
-                addMaster({ subflows: subflowModels });
-            })
+    const loadFlowJSON = (flow: FlowType) => {
+        const flowData = graphUtil.load(flow.flow);
+        setFlow({...flow, flow:flowData});
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
+    };
+    // const addMaster = (flow: {}) => {
+    //     dispatch(addMasterAction(flow));
+    // };
+    const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
+        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnablesReader(), zoom);
+        setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
+    };
+    const updateStep = (step: AllNodeType) => {
+        // dispatch(updateStepAction(flow.flow, step, zoom));
+        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, {step:step});
+        setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
+    };
+    const selectSteps = (selected_steps: any[]) => {
+        // dispatch(selectStepsAction(selected_steps));
+        setSelectedStepIds(
+            selected_steps.map(step => step.id)
         );
-
-        // データソースの一覧を取得する
-        preRequest.push(
-            Api.findDataSrcs().then(datasrcs => {
-                addMaster({ datasrcs: datasrcs });
-            })
+    };
+    const addSelectStep = (selected_step_id: string) => {
+        // dispatch(addSelectStepAction(selected_step_id));
+        setSelectedStepIds([...selectedStepIds, selected_step_id])
+    };
+    const deleteSelectStep = (selected_step_id: string) => {
+        // dispatch(deleteSelectStepAction(selected_step_id));
+        setSelectedStepIds(
+            selectedStepIds.filter(stepId => stepId !== selected_step_id)
         );
+    };
+    const deleteSteps = (step_ids: string[]) => {
+        deleteStepsAction(flow.flow, step_ids);
+        setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
+        //削除後は非選択状態にする
+        setSelectedStepIds([]);
+    };
+    // const cutSteps = (step_ids: []) => {
+    //     dispatch(cutStepsAction(step_ids));
+    // };
 
-        // データデストの一覧を取得する
-        preRequest.push(
-            Api.findDataDsts().then(datadsts => {
-                addMaster({ datadsts: datadsts });
-            })
-        );
-
-        // Commandの一覧を取得する
-        preRequest.push(
-            Api.findCommands().then(commands => {
-                const commandModels = commands.map(command => new CommandModel(command as any));
-                window.commands = commandModels;
-                addMaster({ commands: commandModels });
-            })
-        );
-
-        // VCommandの一覧を取得する
-        preRequest.push(
-            Api.findVCommands().then(visualizers => {
-                const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
-                window.visualizers = visualizerModels;
-                addMaster({ visualizers: visualizerModels });
-            })
-        );
-
-        Promise.all(preRequest).then(() => {
-            // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
-            // これらを取得した後に、findFlowを実行する
-            return Api.findFlow(inject_flow_uuid).then(flow => {
-                // HTML headのtitleにフロー名を設定する
-                // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
-                document.title = "📐" + flow.label;
-                // フローJSONを解析する
-                loadFlowJSON(flow);
-                // 編集ロックされたフローの場合は通知する
-                if (flow.editLock) {
-                    notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
-                }
-                return flow.allowlist;
-            });
-        }).then(allowlist => {
-            // 実行モードの設定
-            const executeMode = (allowlist.execute) ? FlowExecuteModeValue.Executable : FlowExecuteModeValue.NotExecutable;
-            setExecuteMode(executeMode);
-            // 編集モードの設定
-            if (!allowlist.read) {
-                // read が無効な場合は NotAllowed に飛ばす
-                setEditMode(FlowEditModeValue.NotAllowed)
-                setIsLoading(false);
-                return;
+    // FlowDataを比較する
+    const compareFlowData =(flow1:Flow, flow2:Flow) => {
+        // compareが出力する差分には関数の差分も含まれるためこれらを除外する
+        return jsonpatch.compare(flow1, flow2).filter(patch => {
+            if(patch.path === '/nodes/__allAPIFuncSet'){
+                // ArrayCtor型オブジェクトが内部で使用するフラグは除外する
+                return false;
+            }else if(patch.op === 'replace' && typeof patch.value === 'function'){
+                // 関数は差分として認識させない
+                return false;
+            }else{
+                return true;
             }
-            if (!allowlist.update) {
-                // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
-                setEditMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
-                setIsLoading(false);
-                return;
+        }).map(patch => {
+            if(patch.path === '/nodes' && (patch.op === 'add' || patch.op === 'replace')){
+                // nodes配列全体の置き換えの場合
+                // patch.valueはプロパティ名が整数のオブジェクトが格納されるので、これをNodeArrayに変換する
+                const nodes = Object.keys(patch.value).filter(key => Number.isInteger(+key)).map(key => patch.value[key]);
+                patch.value = new NodeArray(nodes);
             }
-            // update が有効な場合は、排他ロックを取得する
-            getNewLockUUID();
-        }).catch((error) => {
-            console.log(error);
+            return patch;
         });
+    };
 
-        // ブラウザバックによってブラウザタブを閉じれるように設定する
-        WebUtil.setCloseWindowOnBack();
-
-    }, []);
-
-    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
-    useInterval(() => {;
-        if(lock instanceof ErrorResponse){
+    const addHistory = () => {
+        // 変更前後のFlowを比較して差分を取得する
+        const patches = compareFlowData(flow.flow, prevFlow.flow);
+        
+        // 差分が無ければ変更無しと看做し履歴に追加しない
+        if(patches.length === 0){
             return;
-        }else if(hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
-            extendLock(lock);
         }
-    }, extendLockInterval);
+
+        // 新たな履歴を追加する場合はRedoスタックをクリアする
+        redoStack.length = 0;
+
+        // Undoスタックに履歴を追加する
+        undoStack.push(patches);
+
+        // 差分を保存した後、変更前のFlowと現在のFlowを同じにする
+        setPrevFlow({...flow, flow:flow.flow.clone()});
+    };
+    const undo = () => {
+        // Undoスタックから直近の履歴を取り出す
+        const patches = undoStack.pop();
+
+        // 履歴が無ければUndo処理をしない
+        if(!patches){
+            return;
+        }
+
+        // 現在のFlowを複製する
+        const clonedFlowData = flow.flow.clone();
+
+        // Canvasに表示中のFlowに差分を適用する
+        // Patchの検証をしない：validateOperation=false
+        // 複製を取らずPatch対象に適用する：mutateDocument=true
+        const prevFlowData = jsonpatch.applyPatch(clonedFlowData, patches, false, true).newDocument;
+
+        // Redo用の差分を作成してRedoスタックに乗せる
+        const reversePatches = compareFlowData(prevFlowData, flow.flow);
+        redoStack.push(reversePatches);
+
+        // エッジを繋ぎ直す
+        allRebuildNodesEdges(prevFlowData.nodes, graph.edges);
+        // graphの更新
+        setGraph(graphUtil.getGraph(prevFlowData.nodes, zoom));
+        // Flowの更新
+        setFlow({...flow, flow:prevFlowData});
+        // 変更前のFlowと現在のFlowを同じにする
+        setPrevFlow({...flow, flow:prevFlowData.clone()});
+    };
+    const redo = () => {
+        // Rndoスタックから最新の履歴を取り出す
+        const patches = redoStack.pop();
+
+        // 履歴が無ければUndo処理をしない
+        if(!patches){
+            return;
+        }
+
+        // 現在のFlowを複製する
+        const clonedFlowData = flow.flow.clone();
+
+        // Canvasに表示中のFlowに差分を適用する
+        const nextFlowData = jsonpatch.applyPatch(clonedFlowData, patches, false, true).newDocument;
+
+        // Redo用の差分を作成してRedoスタックに乗せる
+        const reversePatches = compareFlowData(nextFlowData, flow.flow);
+        undoStack.push(reversePatches);
+
+        // エッジを繋ぎ直す
+        allRebuildNodesEdges(nextFlowData.nodes, graph.edges);
+        // graphの更新
+        setGraph(graphUtil.getGraph(nextFlowData.nodes, zoom));
+        // flowの更新
+        setFlow({...flow, flow:nextFlowData});
+        // 変更前のFlowと現在のFlowを同じにする
+        setPrevFlow({...flow, flow:nextFlowData.clone()});
+    };
 
     // 現在表示中のフローの保存処理
     const saveFlowPromise = (targetFlow: FlowType) => {
         // newLockUUIDがあれば、別名保存として判断する
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.flow.nodes = nodes;
+        // targetFlow.flow.nodes = nodes;
         
         return new Promise<FlowType>(async (reslove, reject) => {
             // 編集権限がないと、保存不可
-            if (lock instanceof ErrorResponse) {
+            if (!lockIsAcquired) {
                 reject(new MessageModel({
-                    title: "警告：読取専用フロー",
-                    message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                    messageStatus: "warning"
+                    title: '警告：読取専用フロー',
+                    message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
+                    messageStatus: 'warning'
                 }));
             } else {
                 // フロー保存
-                return await targetFlow.update(flow.flow, lock.uuid).then(flow => {
-                    updateLastSavedFlow();
+                return await targetFlow.update(flow.flow, lock.uuid).then(result => {
+                    // FIXME: PUT /flow の戻り値にflow属性が含まれていない
+                    setLastSavedFlow({...result, flow:flow.flow});
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
-                    reslove(flow);
-                    return flow;
+                    reslove(result);
+                    return result;
                 }).catch(e => {
                     reject(new MessageModel({
-                        title: "フロー保存エラー",
+                        title: 'フロー保存エラー',
                         message: e.message,
-                        messageStatus: "error"
+                        messageStatus: 'error'
                     }));
                 }).finally(() => {
                     dismissNotify(notificationId);
@@ -495,22 +574,23 @@ const FlowEditor = () => {
         });
     };
 
-    const saveAnotherFlowPromise = (targetFlow:FlowType, anotherFlow:FlowType, newLockUUID:string) => {
+    const saveAnotherFlowPromise = (targetFlow:Flow, anotherFlow:FlowType, newLockUUID:string) => {
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
-        targetFlow.flow.nodes = nodes;
+        // targetFlow.nodes = nodes;
 
         return new Promise(async (reslove, reject) => {
             // フロー保存
-            anotherFlow.update(flow.flow, newLockUUID).then(flow => {
-                updateLastSavedFlow();
+            anotherFlow.update(flow.flow, newLockUUID).then(result => {
+                // FIXME: PUT /flow の戻り値にflow属性が含まれていない
+                setLastSavedFlow({...result, flow:flow.flow});
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
-                reslove(flow);
-                return flow;
+                reslove(result);
+                return result;
             }).catch(e => {
                 reject(new MessageModel({
-                    title: "フロー保存エラー",
+                    title: 'フロー保存エラー',
                     message: e.message,
-                    messageStatus: "error"
+                    messageStatus: 'error'
                 }));
             }).finally(() => {
                 dismissNotify(notificationId);
@@ -522,26 +602,20 @@ const FlowEditor = () => {
     };
 
     const onClickSaveFlow = () => {
-        const targetFlow = flow;
-        return saveFlowPromise(targetFlow).then(flow => {
-            if(!flow){
-                return flow;
-            }
-            setModifiedAt(flow.modifiedAt);
-            return flow;
-        });
+        const targetFlow = lastSavedFlow as FlowType;
+        return saveFlowPromise(targetFlow);
     }
 
     /**
      * lock の延長処理
      * @param lockUUID
      */
-    const extendLock = (lock: LockType|ErrorResponse) => {
-        if (lock instanceof ErrorResponse){
+    const extendLock = (lock: LockType|ErrorResponse|null) => {
+        if (!lockIsAcquired){
             return;
         }
         // 延長処理
-        lock.extend().then(() => {
+        (lock as LockType).extend().then(() => {
             // 取得した lockUUID を設定
             setLock(lock);
         }).catch(e => {
@@ -558,7 +632,7 @@ const FlowEditor = () => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        Api.createLock(inject_flow_uuid, modifiedAt).then(lock => {
+        Api.createLock(inject_flow_uuid, lastSavedFlow.modifiedAt).then(lock => {
                 setLock(lock);
                 // モードは変更せずに ReadOnly だけオフにする
                 setReadOnly(false);
@@ -579,75 +653,54 @@ const FlowEditor = () => {
         }).finally(() => {
             setIsLoading(false);
         });
-    }
-
-    /**
-     * lock の新規取得
-     */
-    const getNewLockUUID = () => {
-        if(lock instanceof ErrorResponse){
-            setReadOnly(true);
-            // ロック失敗 => [読み取り専用モード2]
-            setEditMode(FlowEditModeValue.ReadOnlyLocked);
-            setHasEnableAutoLockExtended(false);
-        }else{
-            setEditMode(FlowEditModeValue.Editable)
-            // ロックの自動更新を有効にする
-            setHasEnableAutoLockExtended(true);
-        }
-        setIsLoading(false);
-    }    
+    }  
 
     const renderSteps = useCallback(() => {
         let steps: any = [];
-        if (Array.isArray(nodes)) {
-            steps = nodes.map((step: StepModelType) => {
-                let selected = (step.id === selected_step_ids[0]);
-                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
+        if (flow.flow.nodes) {
+            steps = flow.flow.nodes.map((step: AllNodeType) => {
+                let selected = (step.id === selectedStepIds[0]);
+                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly ;
                 return <Step
                     key={step.id}
-                    model={step}
+                    step={step}
                     position={step.position}
-                    type={step.type}
                     selected={selected}
-                    text={step.text}
                     invalid={step.invalid}
                     error={step.error}
-                    mast={mast}
-                    flow={flow}
-                    selected_step_ids={selected_step_ids}
+                    runnables={runnablesReader()}
+                    flowData={flow.flow}
+                    graphState={[graph, setGraph]}
+                    selectedStepIds={selectedStepIds}
                     zoom={zoom}
-                    drag={drag}
+                    dragRange={dragRange}
                     addSelectStep={addSelectStep}
                     deleteSelectStep={deleteSelectStep}
                     selectSteps={selectSteps}
-                    updateDataFrameDetail={updateDataFrameDetail}
+                    selectFrame={frame => setSelectedFrame(frame)}
                     updateStep={updateStep}
-                    moveSteps={moveSteps}
+                    addHistory={addHistory}
                     readOnly={stepReadOnly}
                 />;
             });
         }
         return steps;
-    }, [nodes,
-        selected_step_ids,
-        mast,
+    }, [ //nodes,
+        selectedStepIds,
         flow,
         zoom,
-        drag,
+        dragRange,
         addSelectStep,
         deleteSelectStep,
         selectSteps,
-        updateDataFrameDetail,
-        updateStep,
-        moveSteps]);
+        updateStep]);
 
     const renderEdges = useCallback(() => {
-        let edges: any = [];
+        const edges:React.JSX.Element[] = [];
         if (Array.isArray(graph.edges)) {
             graph.edges.forEach((edge, index) => {
-                const v_node = GraphUtil.getNode(nodes, edge.v); // 入力元ノード
-                const w_node = GraphUtil.getNode(nodes, edge.w); // 出力元ノード
+                const v_node = GraphUtil.getNode(flow.flow.nodes || [], edge.v); // 入力元ノード
+                const w_node = GraphUtil.getNode(flow.flow.nodes || [], edge.w); // 出力元ノード
 
                 if (v_node && w_node) {
                     const vx = v_node.position.x +
@@ -661,15 +714,15 @@ const FlowEditor = () => {
                     let outPortLabel; // 入力元ノードからの出力ポートラベル
                     let inPortLabel;  // 出力元ノードからの入力ポートラベル
                     //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
-                    if (w_node instanceof DataFrameStepModel) {
+                    if (w_node.type === 'frame') {
                         outPortLabel = JSON.parse(edge.name).port_name;
                     }
                     //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
-                    if (v_node instanceof DataFrameStepModel) {
+                    if (v_node.type === 'frame') {
                         inPortLabel = JSON.parse(edge.name).port_name;
                     }
 
-                    let e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy}
+                    const e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy}
                         key={index} />;
                     edges.push(e);
                 }
@@ -677,18 +730,18 @@ const FlowEditor = () => {
         }
         
         return edges;
-    }, [graph, nodes]);
+    }, [graph]);
 
     const renderSelector = useCallback(() => {
         let selector: any = null;
-        if (Object.keys(drag).length) {
-            selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x, zoom)}
-                sy={ZoomUtil.zoomReverse(drag.start.y, zoom)}
-                ex={ZoomUtil.zoomReverse(drag.end.x, zoom)}
-                ey={ZoomUtil.zoomReverse(drag.end.y, zoom)} />;
+        if(dragRange!==null){
+            selector = <Selector sx={ZoomUtil.zoomReverse(dragRange.start.x, zoom)}
+                sy={ZoomUtil.zoomReverse(dragRange.start.y, zoom)}
+                ex={ZoomUtil.zoomReverse(dragRange.end.x, zoom)}
+                ey={ZoomUtil.zoomReverse(dragRange.end.y, zoom)} />;
         }
         return selector;
-    }, [drag, zoom]);
+    }, [dragRange, zoom]);
 
     if (editMode === undefined || executeMode === undefined) {
         // モードが設定前はローディング中にする
@@ -701,40 +754,43 @@ const FlowEditor = () => {
     // 読み取り専用モードの場合は disabled にする
     // ☁️保存 ☁️データソース追加 💬メモ ↩︎もとに戻す ↪︎繰り返す の制御
     const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
-        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || networkStatus === NetworkStatusValue.Offline || readOnly
+        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集可能で実行可能な場合のみフロー以外は disabled にする
     // ▶︎このフローを実行の制御
-    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
     // プレビューを開くリンクの制御
-    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集モード以外は、フロー変数の追加機能を hidden にする
-    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集モード以外は、コマンドセレクター機能を hidden にする
-    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
-    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
 
     const onClickRunFlowPromise = () => {
         return onClickSaveFlow();
     }
 
     // ロックのUUID(ロックの取得に失敗した場合はundefined)
-    const lockUUID = (lock instanceof ErrorResponse)? undefined: lock.uuid;
+    const lockUUID = (!lockIsAcquired)? undefined: lock.uuid;
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
-            <PaperZoom />
+            {/* <PaperZoom /> */}
             <ToolBar
-                zoom={zoom}
+                zoomState={[zoom, setZoom]}
                 lockUUID={lockUUID}
-                nodes={nodes}
-                history={history}
+                flowState={[flow, setFlow]}
+                graphState={[graph, setGraph]}
+                flowData={flow.flow}
+                undoStackLength={undoStack.length}
+                redoStackLength={redoStack.length}
                 notifyLoading={notifyLoading}
                 notifiWarning={notifyWarning}
                 notifyError={notifyError}
@@ -742,34 +798,28 @@ const FlowEditor = () => {
                 dismissNotify={dismissNotify}
                 addStep={addStep}
                 addHistory={addHistory}
-                sortFlow={sortFlow}
-                setZoom={setZoom}
                 undo={undo}
                 redo={redo}
                 baseDisabled={baseToolBarDisabled}
                 runDisabled={runDisabled}
-                refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}
                 onClickSaveFlow={onClickSaveFlow}
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
-                message={"フローを構築中です"} />
+                message={'フローを構築中です'} />
             <PaperScroller
-                editor={editor}
-                pasteSteps={pasteSteps}
-                copySteps={copySteps}
+                canvasWidth={canvasWidth}
                 deleteSteps={deleteSteps}
                 selectSteps={selectSteps}
-                dragStart={dragStart}
-                dragging={dragging}
-                dragEnd={dragEnd}
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
-                selected_step_ids={selected_step_ids}
-                nodes={nodes}
-                history={history}
-                drag={drag}
+                selectedStepIds={selectedStepIds}
+                flowState={[flow, setFlow]}
+                graphState={[graph, setGraph]}
+                flowData={flow.flow}
+                zoom={zoom}
+                dragRangeState={[dragRange, setDragRange]}
             >
                 <Paper graph={graph} zoom={zoom}>
                     {renderEdges()}
@@ -778,35 +828,32 @@ const FlowEditor = () => {
                 </Paper>
             </PaperScroller>
             <Inspector
-                selected_step_ids={selected_step_ids}
-                nodes={nodes}
-                mast={mast}
-                selected_tab_id={selected_tab_id}
+                selectedStepIds={selectedStepIds}
+                // nodes={flow?.nodes || []}
+                runnables={runnablesReader()}
+                zoom={zoom}
                 addStep={addStep}
-                addDataSrcStep={addDataSrcStep}
-                addDataDstStep={addDataDstStep}
                 selectSteps={selectSteps}
-                flow={flow}
+                flowState={[flow, setFlow]}
+                graphState={[graph, setGraph]}
+                flowData={flow.flow}
+                lastSavedFlow={lastSavedFlow}
                 lockUUID={lockUUID}
-                inspector={inspector}
-                updateFlow={updateFlow}
-                selected_data_source_detail={selected_data_source_detail}
-                updateDataFrameDetail={updateDataFrameDetail}
+                inspectorWidthState={[inspectorWidth, setInspectorWidth]}
+                // selected_data_source_detail={selected_data_source_detail!}
+                // updateDataFrameDetail={updateDataFrameDetail}
+                selectedFrameState={[selectedFrame, setSelectedFrame]}
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}
-                deleteCache={deleteCache}
                 updateStep={updateStep}
-                resizeInspector={resizeInspector}
-                refreshFlow={refreshFlowAction}
+                // refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}
                 baseInspectorDisabled={baseInspectorDisabled}
-                updateLastSavedFlow={updateLastSavedFlow}
+                updateLastSavedFlow={lastSavedFlow => setLastSavedFlow(lastSavedFlow)}
             />
             <NotificationManager />
         </div>
     </div>;
 };
-
-export { FlowEditor };

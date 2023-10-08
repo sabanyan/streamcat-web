@@ -34,6 +34,21 @@ export const toJsonOrRaise = (res: Response) => {
     }
 };
 
+const JsonStringify = (body:{}) => {
+    // Ctor<AllNodeType>型はArray型ではないので、lengthプロパティがJSON文字列から除外されない
+    // これを除外するためのreplacer関数を用意する
+    const replacer = (key:string, value) => {
+        // 値に__allAPIFuncSetプロパティがあればCtor<AllNodeType>型と見做す
+        if(value && value.__allAPIFuncSet){
+            // __allAPIFuncSet, lengthプロパティをJSON文字列から除外する
+            return [...value];
+        }else{
+            return value;
+        }
+    };
+    return JSON.stringify(body, replacer);
+};
+
 /**
  * GET APIを発行する
  * @param url
@@ -67,7 +82,7 @@ export const postBase = <TDatumType>(url: string, body: {}) => {
         url,
         {
             method: 'POST',
-            body: JSON.stringify(body),
+            body: JsonStringify(body),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -88,7 +103,7 @@ export const putBase = <TDatumType>(url: string, body: {}) => {
         url,
         {
             method: 'PUT',
-            body: JSON.stringify(body),
+            body: JsonStringify(body),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -109,7 +124,7 @@ export const delBase = <TDatumType>(url: string, body={}) => {
         url,
         {
             method: 'DELETE',
-            body: JSON.stringify(body),
+            body: JsonStringify(body),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -133,13 +148,16 @@ export const makeArrayCtor = <TType>(setAPIFunc: (datum:TType)=>void) : Ctor<TTy
     /**
      * DatumにWebAPIを発行する関数を付与する
      * @param data Datumのリスト
+     * @param allAPIFuncSet setAllAPIFuncによってdataの全要素にWebAPIを発行する関数が付与されている場合はtrueを指定する
      */
-    const ArrayCtor = function(this: any, data: TType[]) {
+    const ArrayCtor = function(this: any, data: TType[], allAPIFuncSet: boolean) {
         // NOTE: Arrow形式のコンストラクタ関数内ではthisを参照できない
         // NOTE: TypeScriptではコンストラクタ関数にはthis引数が必要のようだ
         // 
         // this: new ArrayCtor()で生成するオブジェクト
         Array.prototype.push.apply(this, data);
+        // 生成するオブジェクトにallAPIFuncSetフラグを設定する
+        this.__allAPIFuncSet = allAPIFuncSet;
     };
 
     // ArrayCtorはArrayオブジェクトを継承する
@@ -148,65 +166,67 @@ export const makeArrayCtor = <TType>(setAPIFunc: (datum:TType)=>void) : Ctor<TTy
     ArrayCtor.prototype = Object.create(Array.prototype);
     ArrayCtor.prototype.constructor = ArrayCtor;
 
-    // map関数をオーバーライドする
-    // map関数でDatumのリストをイテレートする時に、WebAPIを発行する関数を付与する
+    // Datumのリストをイテレートして、WebAPIを発行する関数を付与する
     // こうすることで無駄にDatumのリストをイテレートするのを防ぐ
-    ArrayCtor.prototype.map = function(callbackfn: (datum: TType, index: number, array: TType[]) => TType,
-                                       thisArg?: any) : any {
-        // Arrayのmap関数に渡すコールバック関数
-        let wrapCallbackfn;
-
-        if(this.__isWrapped) {
-            // 既にラッパー処理済みの場合は何もしない
-            wrapCallbackfn = callbackfn;
+    const setAllAPIFunc = function(this: any) : TType[] {
+        if(this.__allAPIFuncSet) {
+            // 既に関数が付与済みの場合はWebAPIを付与しない
+            // 無限呼び出しを防ぐためArrayCtor型からArray型に変換する
+            return [...this];
         }else{
             // 未ラッパーの場合はラッパー処理を行う
-            this.__isWrapped = true;
+            this.__allAPIFuncSet = true;
 
-            // ラッパー処理をする関数を作成する
-            wrapCallbackfn = (datum: TType, index: number, array: TType[]) => {
+            // Arrayのmap関数に渡すコールバック関数
+            const wrapCallbackfn = (datum: TType, index: number, array: TType[]) => {
                 // オブジェクトに、WebAPIを発行する関数を付与する
                 setAPIFunc(datum);
-                // map関数に渡されたコールバック関数を実行する
-                return callbackfn(datum, index, array);
-            }
-        }
+                return datum;
+            };
 
-        // Arrayのmapメソッドを、this=[ArrayCtorのインスタンス]で呼び出す
-        // NOTE: TypeScriptにargumentsキーワードは存在しない
-        return Array.prototype.map.apply(this, [wrapCallbackfn, thisArg]);
+            // Arrayのmapメソッドを、this=[ArrayCtorのインスタンス]で呼び出す
+            // NOTE: TypeScriptにargumentsキーワードは存在しない
+            return Array.prototype.map.apply(this, [wrapCallbackfn]) as TType[];
+        }
+    };
+
+    // map関数をオーバーライドする
+    ArrayCtor.prototype.map = function(callbackfn: (datum: TType, index: number, array: TType[]) => TType,
+                                       thisArg?: any) : any {
+        // this: new ArrayCtor()で生成するオブジェクト
+        return new ArrayCtor(setAllAPIFunc.apply(this).map(callbackfn, thisArg), this.__allAPIFuncSet);
     };
 
     // find関数をオーバーライドする
     ArrayCtor.prototype.find = function(callbackfn: (value: TType, index: number, array: TType[]) => boolean,
                                         thisArg?: any) {
         // this: new ArrayCtor()で生成するオブジェクト
-        return ArrayCtor.prototype.map.apply(this, [datum => datum]).find(callbackfn, thisArg);
+        return setAllAPIFunc.apply(this).find(callbackfn, thisArg);
     };
 
     // slice関数をオーバーライドする
     ArrayCtor.prototype.slice = function(start?: number, end?: number) {
         // this: new ArrayCtor()で生成するオブジェクト
-        return ArrayCtor.prototype.map.apply(this, [datum => datum]).slice(start, end);
+        return new ArrayCtor(setAllAPIFunc.apply(this).slice(start, end), this.__allAPIFuncSet);
     };
 
     // shift関数をオーバーライドする
     ArrayCtor.prototype.shift = function() {
         // this: new ArrayCtor()で生成するオブジェクト
-        return ArrayCtor.prototype.map.apply(this, [datum => datum]).shift();
+        return setAllAPIFunc.apply(this).shift();
     };
 
     // pop関数をオーバーライドする
     ArrayCtor.prototype.pop = function() {
         // this: new ArrayCtor()で生成するオブジェクト
-        return ArrayCtor.prototype.map.apply(this, [datum => datum]).pop();
+        return setAllAPIFunc.apply(this).pop();
     };
 
     // filter関数をオーバーライドする
     ArrayCtor.prototype.filter = function(callbackfn: (value: TType, index: number, array: TType[]) => boolean,
                                           thisArg?: any) {
         // this: new ArrayCtor()で生成するオブジェクト
-        return ArrayCtor.prototype.map.apply(this, [datum => datum]).filter(callbackfn, thisArg);
+        return new ArrayCtor(setAllAPIFunc.apply(this).filter(callbackfn, thisArg), this.__allAPIFuncSet);
     };
 
     return ArrayCtor as any;

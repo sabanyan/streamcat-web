@@ -1,15 +1,16 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import Constants from 'Constants/index';
-import { NoteStepModel } from 'Model/index';
-import { FlowUtil, PositionUtil, ZoomUtil } from 'Utils/index';
+import { FlowUtil, ModelUtil, PositionUtil, ZoomUtil } from 'Utils/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
+import { NoteNode, NoteNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
 
 type Props = {
     zoom: number;
-    nodes: any[];
-    addStep: Function;
-    addHistory: Function;
+    nodes: AllNodeType[];
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addHistory: () => void;
     children: React.ReactNode;
     disabled: boolean;
 };
@@ -31,15 +32,17 @@ export const Note = (props: Props) => {
             nodes
         );
 
-        const note = new NoteStepModel({
-            id: '',
-            type: Constants.step.type.note,
-            position: notOverlapNodePosition,
-            title: '新しいメモ',
-            content: ''
-        });
+        // const note = new NoteStepModel({
+        //     id: '',
+        //     type: Constants.step.type.note,
+        //     position: notOverlapNodePosition,
+        //     title: '新しいメモ',
+        //     content: ''
+        // });
+        const newId = ModelUtil.getNewId(nodes, 'note');
+        const note = new NoteNode(newId, notOverlapNodePosition) as NoteNodeType;
 
-        addStep(note);
+        addStep(note, [], [], zoom);
         addHistory();
     };
 

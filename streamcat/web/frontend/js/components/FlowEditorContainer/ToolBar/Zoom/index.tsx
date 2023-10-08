@@ -1,26 +1,41 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
+import { graphUtil } from 'Modules/flowEditor';
+import { Flow } from 'Model/Library';
+import { GraphType } from 'Types/index';
 
 type Props = {
-    zoom: number;
-    setZoom: Function;
+    // zoom: number;
+    // setZoom: Function;
+    zoomState: [number, (value:React.SetStateAction<number>)=>void];
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
+    flowData: Flow;
     disabled: boolean;
 };
 
 export const Zoom = (props: Props) => {
-    const {zoom, setZoom, disabled} = props;
+    const {flowData, disabled} = props;
+    const [zoom, setZoom] = props.zoomState;
+    const [graph, setGraph] = props.graphState;
+
 
     const onClickZoomIn = (e: React.MouseEvent) => {
-        setZoom({ offset: 10 });
+        zoom < 180 && setZoom(zoom + 10);
+        // dispatch(setZoomAction(flowData, zoom + 10));
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom + 10));
     };
 
     const onClickZoomOut = (e: React.MouseEvent) => {
-        setZoom({ offset: -10 });
+        zoom > 40 && setZoom(zoom - 10);
+        // dispatch(setZoomAction(flowData, zoom - 10));
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom - 10));
     };
 
     const onClickDefaultZoom = (e: React.MouseEvent) => {
-        setZoom({ value: 100 });
+        setZoom(100);
+        // dispatch(setZoomAction(flowData, 100));
+        setGraph(graphUtil.getGraph(flowData.nodes, 100));
     };
 
     return <div className={style.zoom}>

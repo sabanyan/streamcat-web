@@ -3,21 +3,22 @@ import React from 'react';
 import {BaseInspector} from 'Shared/Inspector';
 import {Button} from 'Shared/Input';
 import {CommandSelector} from 'FlowEditorContainer/Command';
-import {CommandStepModel, DataFrameStepModel, SubFlowStepModel} from 'Model/index';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
-import { MastType } from 'Types/index';
+import { RunnablesType } from 'Types/index';
+import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 
 type Props = {
-    deleteSteps: Function;
-    selectSteps: Function;
-    nodes: any[];
-    mast: MastType;
-    selected_step_ids: string[];
-    addStep: Function;
-    addDataSrcStep: Function;
-    addDataDstStep: Function;
-    addHistory: Function;
+    deleteSteps: (step_ids: string[]) => void;
+    selectSteps: (selected_steps: any[]) => void;
+    nodes: AllNodeType[];
+    runnables: RunnablesType;
+    selectedStepIds: string[];
+    zoom: number;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
+    addHistory: () => void;
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;
 }
@@ -28,9 +29,10 @@ const MultiInspector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selected_step_ids} = props;
-                deleteSteps(selected_step_ids);
-                selectSteps();
+                const {selectedStepIds} = props;
+                deleteSteps(selectedStepIds);
+                selectSteps([]);
+                addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
@@ -46,16 +48,16 @@ const MultiInspector = (props: Props) => {
     };
 
     const getNumberOfSelectedDataSources = () => {
-        const {nodes, selected_step_ids} = props;
+        const {nodes, selectedStepIds} = props;
         let cnt = 0;
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
-        selected_step_ids.forEach((id) => {
+        selectedStepIds.forEach((id) => {
             const node = GraphUtil.getNode(nodes, id);
-            if (node instanceof DataFrameStepModel) {
+            if (node.type === 'frame') {
                 cnt++;
-            } else if (node instanceof SubFlowStepModel) {
+            } else if (node.type === 'flow') {
                 hasMixedCommand = true;
-            } else if (node instanceof CommandStepModel) {
+            } else if (node.type === 'command') {
                 hasMixedCommand = true;
             }
         });
@@ -63,8 +65,8 @@ const MultiInspector = (props: Props) => {
         return cnt;
     };
 
-    const {mast, selected_step_ids, addStep, addDataSrcStep, addDataDstStep,
-           selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden, nodes} = props;
+    const {runnables, selectedStepIds, zoom, nodes, addStep, addDataSrcStep, addDataDstStep,
+           selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
     const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
 
     let commandSelector;
@@ -72,9 +74,10 @@ const MultiInspector = (props: Props) => {
         commandSelector = <div>
             <CommandSelector
                 nodes={nodes}
-                mast={mast}
+                runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
-                selected_step_ids={selected_step_ids}
+                selectedStepIds={selectedStepIds}
+                zoom={zoom}
                 addStep={addStep}
                 addDataSrcStep={addDataSrcStep}
                 addDataDstStep={addDataDstStep}
@@ -88,9 +91,9 @@ const MultiInspector = (props: Props) => {
         commandSelector = null;
     }
 
-    return <BaseInspector key={JSON.stringify(selected_step_ids)}
+    return <BaseInspector key={JSON.stringify(selectedStepIds)}
                           header={''}
-                          title={selected_step_ids.length + ' files'}
+                          title={selectedStepIds.length + ' files'}
                           disabled={baseInspectorDisabled}>
         <div className='streamcat-form'>
             <Button onClick={() => onClickDelete()} danger={true} disabled={baseInspectorDisabled}>

@@ -3,9 +3,10 @@ export default class WebUtil {
         window.location.href = url;
     }
 
-    static webURL(url: string): string {
+    static webURL(url:string, isDialog=false): string {
         url = url.replace("./", "/");
-        return window.location.protocol + "//" + window.location.host + url;
+        const args = isDialog? '?dialog=1': '';
+        return window.location.protocol + "//" + window.location.host + url + args;
     }
 
     static setCloseWindowOnBack(){

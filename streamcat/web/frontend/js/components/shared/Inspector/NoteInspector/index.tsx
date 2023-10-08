@@ -3,18 +3,19 @@ import {BaseInspector} from 'Shared/Inspector';
 import {GraphUtil, ModalUtil} from 'Utils/index';
 import {Button, DropDownList} from 'Shared/Input';
 import Constants from 'Constants/index';
-import {NoteStepModel} from 'Model/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
+import { NoteNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
 
 interface Props {
-    selected_step_ids: string[];
-    nodes: [];
-    selectSteps: Function;
-    updateStep: Function;
-    deleteSteps: Function;
+    selectedNodeId: string;
+    nodes: AllNodeType[];
+    selectSteps: (selected_steps: any[]) => void;
+    updateStep: (node:NoteNodeType) => void;
+    deleteSteps: (step_ids: string[]) => void;
     baseInspectorDisabled: boolean;
-    addHistory: Function;
+    addHistory: () => void;
 }
 
 const NoteInspector = (props: Props) => {
@@ -23,21 +24,18 @@ const NoteInspector = (props: Props) => {
         if (element) element.focus();
     }, []);
 
-    const getSelectedStep = (): NoteStepModel | null => {
-        const {selected_step_ids, nodes} = props;
-        if (Array.isArray(selected_step_ids) && selected_step_ids.length > 0) {
-            return GraphUtil.getNode(nodes, selected_step_ids[0]);
-        }
-        return null;
+    const getSelectedStep = () => {
+        const {selectedNodeId, nodes} = props;
+        return GraphUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
     };
 
     const onClickDelete = () => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selected_step_ids, deleteSteps, selectSteps, addHistory} = props;
-                deleteSteps(selected_step_ids);
-                selectSteps();
+                const {selectedNodeId, deleteSteps, selectSteps, addHistory} = props;
+                deleteSteps([selectedNodeId]);
+                selectSteps([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -53,11 +51,13 @@ const NoteInspector = (props: Props) => {
         });
     };
 
-    const update = (getNewStep: Function) => {
+    const update = (getNewStep:(step:NoteNodeType) => NoteNodeType) => {
         const {updateStep} = props;
         const selectedStep = getSelectedStep();
-        const newStep = getNewStep(selectedStep);
-        updateStep(newStep);
+        if(selectedStep){
+            const newStep = getNewStep(selectedStep);
+            updateStep(newStep);
+        }
     };
 
     const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +71,7 @@ const NoteInspector = (props: Props) => {
 
     const onContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         update((step) => {
-            step.setContent(e.target.value);
+            step.content = e.target.value;
             return step;
         });
     };
@@ -86,7 +86,7 @@ const NoteInspector = (props: Props) => {
 
     const onChangeColor = (e: React.ChangeEvent<HTMLInputElement>, data, label) => {
         update((step) => {
-            step.setColor(e.target.value);
+            step.color = e.target.value;
             return step;
         });
     };
@@ -152,7 +152,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
-                defaultValue={fontSize.toString()}
+                defaultValue={fontSize?.toString() || '16'}
                 disabled={baseInspectorDisabled}
                 list={getFontSizeList()}
                 label={'文字'}
@@ -162,7 +162,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='color'
                 onChange={(e, data, label) => onChangeColor(e, data, label)}
-                defaultValue={color}
+                defaultValue={color || Constants.default.note.color.green}
                 disabled={baseInspectorDisabled}
                 list={getColorList()}
                 label={'色'}
@@ -175,7 +175,7 @@ const NoteInspector = (props: Props) => {
         </div>
     </div>;
 
-    return <BaseInspector key={selected_step.uuid} header={''} label={null} disabled={baseInspectorDisabled} >
+    return <BaseInspector key={selected_step.id} header={''} label={null} disabled={baseInspectorDisabled} >
         {content}
     </BaseInspector>;
 };

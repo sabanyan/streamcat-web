@@ -3,35 +3,43 @@ import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/Too
 import style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
-import { HistoryType } from 'Types/index';
+import { GraphType } from 'Types/index';
+import { graphUtil } from 'Modules/flowEditor';
+import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type ToolBarProps = {
-    nodes: any[];
-    history: HistoryType;
-    zoom: number;
+    // nodes: AllNodeType[];
+    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
+    flowData: Flow;
+    // history: HistoryType;
+    undoStackLength: number;
+    redoStackLength: number;
+    // zoom: number;
+    zoomState: [number, (value:React.SetStateAction<number>)=>void];
     lockUUID?: string;
     notifyLoading: (title: string, message: string) => string;
     notifiWarning: (title: string, message: string) => string;
     notifyError: (title: string, message: string) => string;
     notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
     dismissNotify: (id:string) => void;
-    addStep: Function;
-    addHistory: Function;
-    sortFlow: Function;
-    setZoom: Function;
-    undo: Function;
-    redo: Function;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addHistory: () => void;
+    undo: () => void;
+    redo: () => void;
     baseDisabled: boolean
     runDisabled: boolean;
-    refreshFlow: Function;
     onClickSaveFlow: () => {};
     onClickRunFlowPromise: any;
 };
 
 export const ToolBar = (props: ToolBarProps) => {
-    const { nodes,
-            history,
-            zoom,
+    const { flowData,
+            // history,
+            // zoom,
+            undoStackLength,
+            redoStackLength,
+            zoomState,
             lockUUID,
             notifyLoading,
             notifiWarning,
@@ -40,23 +48,44 @@ export const ToolBar = (props: ToolBarProps) => {
             dismissNotify,
             addStep,
             addHistory, 
-            sortFlow,
-            setZoom,
             undo,
             redo, 
             baseDisabled,
             runDisabled,
-            refreshFlow,
             onClickSaveFlow,
             onClickRunFlowPromise} = props;
 
+    const [flow, setFlow] = props.flowState;
+    const [graph, setGraph] = props.graphState;
+    const [zoom, ] = props.zoomState;
+
     const [isLoading, setIsLoading] = useState(false);
 
-    const current = history.current;
-    const max = history.nodes.length;
+    // const current = history.current;
+    // const max = history.flows.length;
 
-    const redoDisabled = !(current + 1 < max);
-    const undoDisabled = !(current - 1 >= 0);
+    // const redoDisabled = !(current + 1 < max);
+    // const undoDisabled = !(current - 1 >= 0);
+
+    const refreshFlow = (flow:FlowType) => {
+        // dispatch(refreshFlowAction(flow, zoom));
+        const flowJson = graphUtil.load(flow.flow);
+        setGraph(graphUtil.getGraph(flowJson.nodes, zoom));
+        setFlow({...flow});
+    };
+    // const setZoom = ({ offset, value }) => {
+    //     dispatch(setZoomAction({ offset, value }));
+    // };
+    const sortFlow = () => {
+        // dispatch(sortFlowAction(flowData, zoom));
+        // Noteはソート対象外にする
+        const targets = flowData.nodes.filter(node => {
+            return node.type !== 'note';
+        });
+        //ノード位置を再計算
+        graphUtil.refreshPosition(targets);
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));;
+    };
 
     return <div>
         <div className={classnames(style.flow_toolbar)}>
@@ -73,18 +102,19 @@ export const ToolBar = (props: ToolBarProps) => {
                 lockUUID={lockUUID}
                 disabled={runDisabled}>このフローを実行</Run>
             <Note zoom={zoom}
-                  nodes={nodes}
+                  nodes={flowData.nodes}
                   addStep={addStep}
                   addHistory={addHistory}
                   disabled={baseDisabled}>メモ</Note>
             <Undo undo={undo}
-                  disabled={baseDisabled || undoDisabled}>もとに戻す</Undo>
+                  disabled={baseDisabled || undoStackLength===0}>もとに戻す</Undo>
             <Redo redo={redo}
-                  disabled={baseDisabled || redoDisabled}>繰り返す</Redo>
+                  disabled={baseDisabled || redoStackLength===0}>繰り返す</Redo>
         </div>
         <div className={classnames(style.paper_toolbar)}>
-            <Zoom zoom={zoom}
-                  setZoom={setZoom}
+            <Zoom zoomState={zoomState}
+                  graphState={[graph, setGraph]}
+                  flowData={flowData}
                   disabled={false}/>
             <Sort disabled={baseDisabled}
                   addHistory={addHistory}

@@ -1,9 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import {Provider} from 'react-redux';
 import {AsyncResourceContent} from 'use-async-resource';
 import EventEmitter from 'eventemitter3';
-import store from 'Modules/store/index';
 import {StreamCat, ViewId} from './StreamCat';
 
 window.emitter = new EventEmitter();
@@ -50,10 +48,8 @@ if (elementId) {
         document.getElementById(elementId)!
     );
     root.render(
-        <Provider store={store}>
         <AsyncResourceContent fallback={<p>Loading...</p>}>
             <StreamCat viewId={viewId} />
         </AsyncResourceContent>
-        </Provider>
     );
 }

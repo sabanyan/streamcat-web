@@ -1,17 +1,19 @@
 import React from 'react';
 import style from '../style.scss';
 import Constants from 'Constants/index';
-import {StepModelType} from 'Types/index';
-import {DataFrameStepModel} from 'Model/index';
 import {DropDownList} from 'Shared/Input';
 import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
+import { RunnablesType } from 'Types/index';
 
 type Props = {
     portLabel: string;
     index: number;
-    nodes: [];
-    selectedStep: any;
-    updateStep: Function;
+    nodes: AllNodeType[];
+    runnables: RunnablesType;
+    selectedStep: CommandNodeType | FlowNodeType | InlineFlowNodeType;
+    updateStep: (step: AllNodeType) => void;
     disabled: boolean;
 };
 
@@ -21,13 +23,14 @@ type Props = {
  * @returns 
  */
 export const InConnector = (props: Props) => {
-    const {portLabel, index, nodes, selectedStep, updateStep, disabled} = props;
+    const {portLabel, index, nodes, runnables, selectedStep, updateStep, disabled} = props;
 
-    const nodeId = selectedStep.srcs[portLabel];
+    const nodeSrcs = selectedStep?.srcs || {};
+    const nodeId = nodeSrcs[portLabel] || '';
 
     const dataSourceOptions = FlowUtil.getAllDataFrame(nodes).map(dataFrame => ({
         value: dataFrame.id,
-        label: dataFrame.getLabel(),
+        label: dataFrame.label || '',
         object: dataFrame
     }));
 
@@ -37,7 +40,7 @@ export const InConnector = (props: Props) => {
         //data.objectにデータフレームが格納されている
         if (data.object) {
             //ノードが選択されたとき
-            const dataSource: DataFrameStepModel = data.object;
+            const dataSource: FrameNodeType = data.object;
             newSelectedStep.srcs[label] = dataSource.id;
             updateStep(newSelectedStep);
         } else {
@@ -47,11 +50,23 @@ export const InConnector = (props: Props) => {
         }
     };
 
-    const deletePort = (step: StepModelType, portLabel: string) => {
+    const deletePort = (step:CommandNodeType, portLabel:string) => {
+        // FIXME:
+        // dispatch(updateStepAction(step, zoom)) の処理ではStateと入力Nodeのsrcsに差異がある場合に限りCanvasのエッジ描画に反映させる
+        // そのため、Stateが参照するNodeではなくこれを複製して、iPortを削除したものを渡す必要がある
+        // 複製したNodeのdeleteinPort関数は複製元のiPortを削除するので、複製したNodeのinPortを削除するためのdeleteInPort関数を用意する
+        const deleteInPort = (step:CommandNodeType, label:string) => {
+            step.srcs && delete step.srcs[label];
+            if(step.srcsOrder){
+                step.srcsOrder = step.srcsOrder.filter(srcLabel => srcLabel !== label);
+            }
+        };
+
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const newStep = StateUtil.deepCopy(step);
-                newStep.deleteInPort(portLabel);
+                // const newStep:CommandNodeType = StateUtil.deepCopy(step);
+                const newStep:CommandNodeType = {...step, srcs:{...step.srcs}, srcsOrder:[...(step.srcsOrder || [])]};
+                deleteInPort(newStep, portLabel);
                 updateStep(newStep);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -67,10 +82,19 @@ export const InConnector = (props: Props) => {
         });
     };
 
-    const actionProps = selectedStep.addableInPort() ? {
-        actionLabel: '削除',
-        onClickAction: () => deletePort(selectedStep, portLabel)
-    }: null;
+    const actionProps = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
+        if(node.type === 'command'){
+            const commandNode = node as CommandNodeType;
+            const command = runnables.commands.getCommand(commandNode.commandId);
+            if(command && commandNode.addableInPort(command)){
+                return {
+                    actionLabel: '削除',
+                    onClickAction: () => deletePort(commandNode, portLabel)
+                }
+            }
+        }
+        return null;
+    };
 
     return <li>
         <div key={index} className={style.param}>
@@ -82,7 +106,7 @@ export const InConnector = (props: Props) => {
                 hiddenNoSelect={false}
                 disabled={disabled}
                 onChange={(e, data, label) => onChangeInEdge(e, data, label)}
-                {...actionProps}
+                {...actionProps(selectedStep)}
             />
         </div>
     </li>;

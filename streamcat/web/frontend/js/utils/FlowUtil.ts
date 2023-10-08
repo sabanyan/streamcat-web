@@ -1,49 +1,51 @@
 //@flow
 import Constants from 'Constants/index'
-import type { CommandParamType, StepModelType } from 'Types/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, CommandModel, MessageModel} from 'Model/index'
+import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
+import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
+import ModelUtil from './ModelUtil';
 
 export default class FlowUtil {
 
-  static getAllDataFrame (nodes: StepModelType[]) {
+  static getAllDataFrame (nodes: AllNodeType[]) {
     return nodes.filter((node) => {
-      if (node instanceof DataFrameStepModel) {
+      if (node.type === 'frame') {
         return true
       }
       return false
     })
   }
 
-  static getNodeFromID (nodes: StepModelType[], id: string) {
+  static getNodeFromID (nodes: AllNodeType[], id: string) {
     return nodes.find((node) => {
-      if (node instanceof DataFrameStepModel) {
+      if (node.type === 'frame') {
         return (node.id === id)
       }
       return false
     })
   }
 
-  static getCommandParam (paramName: string, command: CommandModel): (CommandParamType | {}) {
-    let param = {}
-    if (command && command.getParams()) {
-      command.getParams().map((_param) => {
-        if (_param.name === paramName) {
-          param = _param
-        }
-      })
-    }
-    return param
-  }
+  // static getCommandParam (paramName: string, command: Command): (CommandParamType | {}) {
+  //   let param = {}
+  //   if (command && command.params) {
+  //     command.params.map((_param) => {
+  //       if (_param.name === paramName) {
+  //         param = _param
+  //       }
+  //     })
+  //   }
+  //   return param
+  // }
 
-  static getFlowJson (nodes: [], projectId: string, projectName: string): {} {
-    const flow_json = {
-      projectId: projectId,
-      name: projectName,
-      nodes: nodes,
-    }
-    return flow_json
-  }
+  // static getFlowJson (nodes: BaseStepModel[], projectId: string, projectName: string): {} {
+  //   const flow_json = {
+  //     projectId: projectId,
+  //     name: projectName,
+  //     nodes: nodes,
+  //   }
+  //   return flow_json
+  // }
 
   /**
    * ノードのdsts,srcsのNodeIdをすべて書き換える
@@ -88,25 +90,25 @@ export default class FlowUtil {
   //   return newNodeId
   // }
 
-  static removeNodeId (nodes: any[], node_ids: any[]) {
+  static removeNodeId (nodes: CommandNodeType[], node_ids: string[]) {
     node_ids.forEach((removeId) => {
       nodes.forEach((node) => {
         if (node.dsts) {
           Object.keys(node.dsts).forEach((from) => {
-            const to = node.dsts[from]
+            const to = node.dsts![from]
             //if (from === removeId || to === removeId)
             if (to === removeId)
             //node.dsts[from] = null;
-            delete node.dsts[from]
+            delete node.dsts![from]
           })
         }
         if (node.srcs) {
           Object.keys(node.srcs).forEach((from) => {
-            const to = node.srcs[from]
+            const to = node.srcs![from]
             //if (from === removeId || to === removeId)
             if (to === removeId)
               //node.srcs[from] = null;
-              delete node.srcs[from]
+              delete node.srcs![from]
           })
         }
       })
@@ -153,15 +155,15 @@ export default class FlowUtil {
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
-  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: any[]) {
+  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: {position:{x:number,y:number}}[]) {
     let result = {x: x, y: y}
     const threshold = 3
     nodes.forEach((node) => {
       //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
-      if (parseInt(node.position.x) >= x - threshold &&
-        parseInt(node.position.x) <= x + threshold &&
-        parseInt(node.position.y) >= y - threshold &&
-        parseInt(node.position.y) <= y + threshold) {
+      if (node.position.x >= x - threshold &&
+          node.position.x <= x + threshold &&
+          node.position.y >= y - threshold &&
+          node.position.y <= y + threshold) {
         //合致していた場合新しい座標を計算
         result = FlowUtil.getNotOverlapNodePosition({x: x + 10, y: y + 10}, nodes)
       }
@@ -172,10 +174,12 @@ export default class FlowUtil {
   /**
    * Srcsをコピーする
    */
-  static copySrcs (step: StepModelType): StepModelType {
-    Object.keys(step.srcs).forEach((key) => {
-      //入力はポートは残して、接続先を空にする
-      step.srcs[key] = null
+  static copySrcs (step: CommandNodeType | FlowNodeType | InlineFlowNodeType): CommandNodeType | FlowNodeType | InlineFlowNodeType {
+    step.srcs && Object.keys(step.srcs).forEach((key) => {
+      if(step.srcs){
+        //入力はポートは残して、接続先を空にする
+        step.srcs[key] = ''
+      }
     })
     return step
   }
@@ -183,20 +187,46 @@ export default class FlowUtil {
   /**
    * Positionを少しずらしてコピーする
    */
-  static copyPositionWithOffsetX (step: StepModelType): StepModelType {
+  static copyPositionWithOffsetX (step: AllNodeType): AllNodeType {
     step.position.x = step.position.x + Constants.default.graph.nodeSeparator
     step.position.y = step.position.y + Constants.default.graph.rankSeparator
     return step
   }
 
-  static setModelType (json: any): StepModelType {
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
-      let node = new CommandStepModel(json)
-      node.loadArgs()
-      return node
+  static setModelType (nodes:AllNodeType[], json: any): AllNodeType {
+    if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) {
+      const newId = ModelUtil.getNewId(nodes, 'flow');
+      const node:FlowNodeType = new FlowNode(newId, json.uuid, json.position);
+      node.label = json.label;
+      node.args = json.args;
+      node.srcs = json.srcs;
+      node.dsts = json.dsts;
+      node.srcsOrder = json.srcsOrder;
+
+      return node;
     }
-    if (json['uuid'] !== undefined && json['dataSource'] !== undefined) return new DataFrameStepModel(json)
+    if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
+      // let node = new CommandStepModel(json)
+      // node.loadArgs()
+      const newId = ModelUtil.getNewId(nodes, 'command');
+      const node:CommandNodeType = new CommandNode(newId, json.commandId, json.position);
+      node.label = json.label;
+      node.args = json.args;
+      node.srcs = json.srcs;
+      node.dsts = json.dsts;
+      node.srcsOrder = json.srcsOrder;
+
+      return node;
+    }
+    if (json['uuid'] !== undefined && json['dataSource'] !== undefined){
+      const newId = ModelUtil.getNewId(nodes, 'frame');
+      const newNode:FrameNodeType = new FrameNode(newId, {x:0, y:0});
+      newNode.label = json.label;
+      newNode.uuid = json.uuid;
+      newNode.makeCache = json.makeCache;
+      newNode.cacheCreatedAt = json.cacheCreatedAt;
+      return newNode;
+    }
     return json
   }
 
@@ -206,9 +236,9 @@ export default class FlowUtil {
    * @param flowB
    * @returns {boolean}
    */
-  static isSameFlow (flowA: {}, flowB: {}) {
-    return JSON.stringify(flowA) === JSON.stringify(flowB)
-  }
+  // static isSameFlow (flowA: {}, flowB: {}) {
+  //   return JSON.stringify(flowA) === JSON.stringify(flowB)
+  // }
 
   /**
    * ノードの集合体の比較
@@ -216,20 +246,8 @@ export default class FlowUtil {
    * @param nodesB
    * @returns {boolean}
    */
-  static isSameNodes (nodesA: [], nodesB: []) {
-    return JSON.stringify(nodesA) === JSON.stringify(nodesB)
-  }
-
-  /**
-   * 現在のノードと履歴の一つ前のノードが一緒かどうか
-   * @param history
-   * @param currentNodes
-   * @returns {boolean}
-   */
-  static isSameCurrentNodesToBeforeHistoryNodes (history, currentNodes) {
-    if (!history) return false
-    if (history.nodes[history.current].length !== currentNodes.length) return false
-    return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)
-  }
+  // static isSameNodes (nodesA: [], nodesB: []) {
+  //   return JSON.stringify(nodesA) === JSON.stringify(nodesB)
+  // }
 
 }

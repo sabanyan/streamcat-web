@@ -2,10 +2,10 @@ import React, {useEffect, useState} from "react";
 import Constants from "Constants/index";
 import { Api } from 'Api';
 import {HttpUtil, ModalUtil, SortUtil, StringUtil, WebUtil} from "Utils/index";
-import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
 import {NotificationManager} from "Shared/Notification";
+import { VCommand } from "Model/Library";
 
 /**
  * ======================================================
@@ -16,28 +16,22 @@ import {NotificationManager} from "Shared/Notification";
 const Preview = () => {
 
     const [isLoading, setIsLoading] = useState(false);
-    const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
-
-    const getVisualizers = () => {
-        Api.findVCommands().then(visualizers => {
-            const visualizerModels = visualizers.map(visualizer => new VisualizeModel(visualizer));
-            setVisualizers(SortUtil.getSortedContents(visualizerModels));
-            window.visualizers = visualizerModels;
-        });
-    }
+    const [vcommands, setVCommands] = useState<VCommand[]>([]);
 
     useEffect(() => {
-        getVisualizers();
+        Api.findVCommands().then(vcommands => {
+            setVCommands(SortUtil.getSortedContents(vcommands));
+        });
         // ブラウザバックによってブラウザタブを閉じれるように設定する
         WebUtil.setCloseWindowOnBack();
     }, []);
 
     useEffect(() => {
-        if(!visualizers.length)return;
+        if(!vcommands.length)return;
         // vizs
         setIsLoading(false);
         let contents: any[] = [];
-        for (const v of visualizers) {
+        for (const v of vcommands) {
             let content: any;
             const viz = {visualize: v};
             const frameUuid = HttpUtil.getURLParam("frame_uuid");
@@ -71,7 +65,7 @@ const Preview = () => {
             contents: contents,
             title: title
         });
-    }, [visualizers]);
+    }, [vcommands]);
 
     return <div className={"container mt-40px"}>
         <Loader center={true} absolute={true} visible={isLoading} />

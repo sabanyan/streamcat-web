@@ -86,7 +86,7 @@ export const FlowLinkField = (props:Props) => {
         if(!value.value){
             return;
         }
-        window.open(WebUtil.webURL(`/flows/${value.value.uuid}`));
+        window.open(WebUtil.webURL(`/flows/${value.value.uuid}`, true));
     };
 
     // TODO: フローのフォルダパスを表示したいが、

@@ -1,15 +1,8 @@
-import {
-    CommandModel,
-    CommandStepModel,
-    DataFrameStepModel,
-    NoteStepModel,
-    SubflowCommandModel,
-    SubFlowStepModel
-} from 'Model/index';
+import { Commands, FlowCommands, InlineFlowCommand, VCommand } from 'Model/Library';
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
 // export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel;
-export type StepModelType = any;
+// export type StepModelType = any;
 
 // TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
 // export type CommandParamType = {
@@ -28,26 +21,17 @@ export type StepModelType = any;
 // };
 export type CommandParamType = any;
 
-// TODO: 型指定をすると型エラーが発生するので暫定的にany型とする
-// export type CommandModelType = CommandModel | SubflowCommandModel;
-export type CommandModelType = any;
-
 export type CommandPortType = {
     label: string;
     type: string;
 };
 
-export type MastType =  {
-    commands: any[];
-    visualizers: any[];
-    subflows: any[];
-    datasrcs: any[];
-    datadsts: any[];
-};
-
-export type HistoryType = {
-    current: number;
-    nodes: [];
+export type RunnablesType =  {
+    commands: Commands;
+    vcommands: VCommand[];
+    subflows: FlowCommands;
+    datasrcs: InlineFlowCommand[];
+    datadsts: InlineFlowCommand[];
 };
 
 export type DragType = {
