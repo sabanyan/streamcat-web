@@ -1,51 +1,62 @@
 import React from 'react';
 import style from "../style.scss";
 import {AddButton} from "Shared/Input";
-import {CommandStepModel, SubFlowStepModel} from "Model/index";
-import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
+import {FlowUtil, ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import { InConnector } from '../inConnector';
+import { CommandNodeType, FlowNodeType, InlineFlowNodeType, addInPort } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
+import { RunnablesType } from 'Types/index';
 
 type Props = {
     // TODO: 型指定をしたいがエラーになる箇所があるので保留する
     // selectedStep: SubFlowStepModel | CommandStepModel;
-    selectedStep: any;
-    updateStep: Function;
-    nodes: [];
+    selectedStep: CommandNodeType | FlowNodeType | InlineFlowNodeType;
+    updateStep: (step: AllNodeType) => void;
+    nodes: AllNodeType[];
+    runnables: RunnablesType;
     // FIXIT: 使用していないプロパティ?
     // selectedSubFlow: FlowModel | null;
     disabled?: boolean;
 }
 
 export const InOutConnector = (props: Props) => {
-    const {nodes, selectedStep, updateStep, disabled} = props;
+    const {nodes, runnables, selectedStep, updateStep, disabled} = props;
     
     // 
     // 入力コネクタリストを作成する
     // 
     let portlabels: string[] = [];
-    if (selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
-        // サブフローまたはコマンドの場合
-        portlabels = selectedStep.srcsOrder;
-    } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
-        // データデストの場合は何故かsrcsOrderに値が格納されていないので
-        // srcsプロパティから入力ポートを取得する
-        portlabels = Object.entries(selectedStep.srcs).map(src => {
-            const portLabel = src[0]
-            // NOTE: サブフローの変更によってポートが減った場合に備えている?
-            if(selectedStep.flow.ports[0].find(port => port.label===portLabel)){
-                return portLabel;
-            }else{
-                return '';
-            }
-        });
+    if (selectedStep.type === 'flow'){
+        const flowNode = selectedStep as FlowNodeType | InlineFlowNodeType;
+        
+        if(flowNode.classification === 'data_dest') { // datadst
+            // データデストの場合は何故かsrcsOrderに値が格納されていないので
+            // srcsプロパティから入力ポートを取得する
+            portlabels = Object.entries(flowNode.srcs || {}).map(src => {
+                const portLabel = src[0]
+                // NOTE: サブフローの変更によってポートが減った場合に備えている?
+                if(flowNode.hasOwnProperty('flow') && (flowNode as InlineFlowNodeType).flow.ports[0].find(port => port.label===portLabel)){
+                    return portLabel;
+                }else{
+                    return '';
+                }
+            });
+        }else{
+            portlabels = flowNode.srcsOrder || [];
+        }
+    } else if (selectedStep.type === 'command') {
+        // コマンドの場合
+        portlabels = selectedStep.srcsOrder || [];
     }
 
     const inConnectors = portlabels.map((portLabel, index) =>
         <InConnector
+            key={index}
             portLabel={portLabel}
             index={index}
             nodes={nodes}
+            runnables={runnables}
             selectedStep={selectedStep}
             updateStep={updateStep}
             disabled={!!disabled}
@@ -56,47 +67,64 @@ export const InOutConnector = (props: Props) => {
     // 出力コネクタリストを作成する
     // 
     let outConnectors: React.ReactNode[] = [];
-    if (selectedStep instanceof SubFlowStepModel) {
-        const subflow = selectedStep.getCommand();
-        if (subflow) {
-            const subflowOutPorts = subflow.getOutPorts();
-            outConnectors = Object.keys(selectedStep.dsts).map((key, index) => {
-                let dataFrameId: string;
-                dataFrameId = selectedStep.dsts[key];
-                const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
-                const subflowOutPort = subflowOutPorts.find((outPort) => {
-                    return (outPort.label == key);
-                });
+
+    if (selectedStep.type === 'flow') {
+        const flowNode = selectedStep as FlowNodeType | InlineFlowNodeType;
+        
+        if(flowNode.classification === 'data_source') {
+            const commandStepDsts = flowNode.dsts || {};
+            outConnectors = Object.keys(commandStepDsts).map((key, index) => {
+                let dataFrameId: string = commandStepDsts[key]
+                const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+                if(!node){
+                    return <></>;
+                }
                 return <div key={index} className={style.outPort_}>
                     <div className={style.outPort_Port}>
-                        {(subflowOutPort) ? subflowOutPort.label : null}
+                        {key}
                     </div>
                     <div className={style.outPort_Node}>
-                        {node.getLabel()}
+                        {node.label}
                     </div>
                 </div>;
             });
+
+        }else{
+            const flowCommand = flowNode.hasOwnProperty('getCommand') && runnables.subflows.getCommand((flowNode as FlowNodeType).uuid);
+            if (flowCommand) {
+                const commandStepDsts = flowNode.dsts || {};
+                const subflowOutPorts = flowCommand.ports[1];
+                outConnectors = Object.keys(commandStepDsts).map((key, index) => {
+                    let dataFrameId: string;
+                    dataFrameId = commandStepDsts[key];
+                    const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
+                    const subflowOutPort = subflowOutPorts.find((outPort) => {
+                        return (outPort.label == key);
+                    });
+                    if(!node){
+                        return <></>;
+                    }
+                    return <div key={index} className={style.outPort_}>
+                        <div className={style.outPort_Port}>
+                            {(subflowOutPort) ? subflowOutPort.label : null}
+                        </div>
+                        <div className={style.outPort_Node}>
+                            {node.label}
+                        </div>
+                    </div>;
+                });
+            }
         }
-    } else if (selectedStep instanceof CommandStepModel) {
+    } else if (selectedStep.type === 'command') {
         const commandStep = selectedStep;
-        const commandStepDsts = commandStep.dsts;
+        const commandStepDsts = commandStep.dsts || {};
         outConnectors = Object.keys(commandStepDsts).map((key, index) => {
             let dataFrameId: string;
             dataFrameId = commandStepDsts[key];
             const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
-            return <div key={index} className={style.outPort_}>
-                <div className={style.outPort_Port}>
-                    {key}
-                </div>
-                <div className={style.outPort_Node}>
-                    {node.getLabel()}
-                </div>
-            </div>;
-        });
-    } else if(selectedStep.dsts) {
-        outConnectors = Object.keys(selectedStep.dsts).map((key, index) => {
-            let dataFrameId: string = selectedStep.dsts[key]
-            const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+            if(!node){
+                return <></>;
+            }
             return <div key={index} className={style.outPort_}>
                 <div className={style.outPort_Port}>
                     {key}
@@ -108,13 +136,13 @@ export const InOutConnector = (props: Props) => {
         });
     }
 
-    const onClickAddEdge = (step) => {
-        const {updateStep} = props;
+    const onClickAddEdge = (step:CommandNodeType) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 const nextIndex = step.getInPortIndex() + 1;
-                const newStep = StateUtil.deepCopy(step);
-                newStep.addInPort("*" + nextIndex);
+                // const newStep:CommandNodeType = StateUtil.deepCopy(step);
+                const newStep:CommandNodeType = {...step, srcs:{...step.srcs}, srcsOrder:[...(step.srcsOrder || [])]};
+                addInPort(newStep, '*' + nextIndex, '');
                 updateStep(newStep);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -129,16 +157,23 @@ export const InOutConnector = (props: Props) => {
         });
     };
 
-    const addEdgeContainer = selectedStep.addableInPort()?
-        <AddButton onClick={() => onClickAddEdge(selectedStep)}>入力を追加する</AddButton>:
-        null;
+    const addEdgeContainer = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
+        if(node.type === 'command'){
+            const commandNode = node as CommandNodeType;
+            const command = runnables.commands.getCommand(commandNode.commandId);
+            if(command && commandNode.addableInPort(command)){
+                return <AddButton onClick={() => onClickAddEdge(commandNode)}>入力を追加する</AddButton>;
+            }
+        }
+        return <></>;
+    };
 
     // FIXIT: React Hooks対応の後に、className={'streamcat-form'}が出力されない、classnamesの不具合?
     // https://github.com/JedWatson/classnames/issues/115
     return <div className={'streamcat-form'}>
         <label>入力</label>
         <ul className="inPorts" >{inConnectors}</ul>
-        {addEdgeContainer}
+        {addEdgeContainer(selectedStep)}
         <label>出力</label>
         {outConnectors}
     </div>;

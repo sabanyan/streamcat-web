@@ -1,9 +1,9 @@
 //@flow
 import dagre from 'dagre'
 import Constants from 'Constants/index'
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
-import FlowModel from 'Model/Flow/FlowModel'
+import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType, addInPort, calcSize } from 'Model/Step/NodeTypes'
+import { AllNodeType, Flow } from 'Model/Library'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -112,7 +112,7 @@ class GraphUtil {
    * 全エッジの削除
    * @param edges
    */
-  removeAllEdges(edges: any[]) {
+  removeAllEdges(edges: {v:string, w:string, name:string}[]) {
     edges.forEach((edge) => {
       const from = edge.v
       const to = edge.w
@@ -133,14 +133,23 @@ class GraphUtil {
    * @returns {{width, height}}
    */
 
-  getGraph(GraphType) {
-    const { nodes, zoom } = GraphType
+  getGraph(nodes:AllNodeType[], zoom:number) {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
-    if (nodes) {
-      const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
-      const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
+    if (nodes.length > 0) {
+      const width = nodes.map(node =>
+        node.position.x + node.size!.width || 0
+      ).reduce((prevX, x) =>
+        Math.max(prevX,x)
+      );
+
+      const height = nodes.map(node =>
+        node.position.y + node.size!.height || 0
+      ).reduce((prevY, y) =>
+        Math.max(prevY,y)
+      );
+
       return { width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges }
     }
 
@@ -157,49 +166,51 @@ class GraphUtil {
    * @param nodes
    * @returns {*}
    */
-  refreshPosition(nodes: any[]) {
-    const self = this
-    this.layout()
+  refreshPosition(nodes: AllNodeType[]) {
+    const self = this;
+    this.layout();
     this.g.nodes().forEach((v) => {
-      let graph_node = self.g.node(v)
+      const graph_node = self.g.node(v);
       if (graph_node) {
-        const key = graph_node.label //グラフ構造のlabelにidを設定しています
-        let node = GraphUtil.getNode(nodes, key)
-        if (node) {
-          node.setFrame({
-            x: graph_node.x,
-            y: graph_node.y,
-            width: graph_node.width,
-            height: graph_node.height,
-          })
+        const id = graph_node.label; //グラフ構造のlabelにidを設定しています
+        if(GraphUtil.NodeExists(nodes, id)){
+          const node = GraphUtil.getNode(nodes, id);
+          node.position = {x:graph_node.x, y:graph_node.y};
+          node.size = {width:graph_node.width, height:graph_node.height};
         }
       }
     })
-    return nodes
+    return nodes;
+  }
+
+  // 指定したidのノードが存在する場合はtrue
+  static NodeExists(nodes:AllNodeType[], id:string){
+    return nodes.findIndex(node => node.id === id) >= 0;
   }
 
   /**
    * ノードの取得
    * @param nodes
-   * @param key
+   * @param id
    * @returns {*}
    */
-  static getNode(nodes: any[], key: string) {
-    let node = nodes.find((node) => {
-      return node.id === key
-    })
-    return node
+  static getNode(nodes: AllNodeType[], id: string) {
+    const node = nodes.find(node => node.id === id);
+    if(!node){
+      throw new Error(`${id} is not found in nodes`);
+    }
+    return node;
   }
 
   /**
    * ノードの置き換え
-   * @returns {any[]}
+   * @returns {AllNodeType[]}
    * @param parameters
    */
-  static updateNode(parameters: { nodes: any[], key: string, new_node: any }) {
-    let { nodes, key, new_node } = parameters
-    let new_nodes = nodes.map((node: any) => {
-      if (node.id === key) {
+  static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
+    let { nodes, id, new_node } = parameters
+    let new_nodes = nodes.map(node => {
+      if (node.id === id) {
         return new_node
       } else {
         return node
@@ -211,25 +222,12 @@ class GraphUtil {
   /**
    * ノードの取得
    * @param nodes
-   * @param keySet
+   * @param idSet
    * @returns {*}
    */
-  static getNewNodesWithIncludeKeys(nodes: any[], keySet: Set<string>) {
+  static getNewNodesWithExculudeKeys(nodes: AllNodeType[], idSet: Set<string>) {
     let node = nodes.filter((node) => {
-      return (keySet.has(node.id))
-    })
-    return node
-  }
-
-  /**
-   * ノードの取得
-   * @param nodes
-   * @param keySet
-   * @returns {*}
-   */
-  static getNewNodesWithExculudeKeys(nodes: any[], keySet: Set<string>) {
-    let node = nodes.filter((node) => {
-      return !(keySet.has(node.id))
+      return !(idSet.has(node.id))
     })
     return node
   }
@@ -239,125 +237,59 @@ class GraphUtil {
    * @param json
    * @returns {*}
    */
-  load(json: any) {
+  load(json: Flow) {
     const self = this
-    let hasPosition = false
 
-    if (!json || !json.nodes) return new FlowModel()
+    // if (!json || !json.nodes) return new FlowModel()
+    // if (!json || !json.nodes) {
+    //   return {
+    //     label: '',
+    //     nodes: [],
+    //     params:[],
+    //     ports: [[], []],
+    //     description: '',
+    //   }
+    // }
 
-    let newNodes: DataFrameStepModel[] = [];
-    json.nodes.forEach((node) => {
-      self.addNode(node.id)
-      const type = node.type
-      switch (type) {
-        //データフレーム
-        case Constants.step.type.frame:
-          const frame = node
-          newNodes.push(new DataFrameStepModel({
-            id: frame.id,
-            type: Constants.step.type.frame,
-            uuid: frame.uuid,
-            label: frame.label,
-            dataSource: Constants.data.dataSource.csv,
-            position: frame.position,
-            size: frame.size,
-            makeCache: frame.makeCache,
-            cacheCreatedAt: frame.cacheCreatedAt
-          }))
-          if (frame.position && frame.size) {
-            hasPosition = true
-          }
-          break
-        case Constants.step.type.command:
-        case Constants.step.type.subflow:
-          //コマンド
-          const step = node
-          let model = {
-            id: step.id,
-            name: step.name,
-            label: step.label,
-            type: step.type,
-            commandId: step.commandId,
-            uuid: step.uuid,
-            srcs: step.srcs,
-            dsts: step.dsts,
-            args: step.args,
-            position: step.position,
-            size: step.size,
-            masked: step.masked,
-            srcsOrder: step.srcsOrder,
-            getSrcsSteps: step.getSrcsSteps,
-            getDstsSteps: step.getDstsSteps,
-            getCommand: step.getCommand
-          }
-          if (type === Constants.step.type.command) {
-            model.type = Constants.step.type.command
-            model.commandId = step.commandId
-            node = new CommandStepModel(model)
-            node.loadArgs()
-          } else if (step.flow && step.classification === "data_source") {
-            node = new DataSrcStepModel({ ...step })
-          } else if (step.flow && step.classification === "data_dest") {
-            node = new DataDstStepModel({ ...step })
-          } else if (type === Constants.step.type.subflow) {
-            model.type = Constants.step.type.subflow
-            model.uuid = step.uuid
-            node = new SubFlowStepModel(model);
-          } else {
-          }
-
-          newNodes.push(node)
-
-          const hasSrcs = (Object.keys(step.srcs).length)
-          const hasDsts = (Object.keys(step.dsts).length)
-
-          if (hasSrcs) {
-            Object.keys(step.srcs).forEach((portLabel) => {
-              const src = step.srcs[portLabel]
-              const from = src
-              const to = node.id
-              const label = GraphUtil.edgeName(from, to, portLabel)//src
-              self.addEdge(from, to, label)
-            })
-          }
-          if (hasDsts) {
-            Object.keys(step.dsts).forEach((portLabel) => {
-              const dst = step.dsts[portLabel]
-              const from = node.id
-              const to = dst
-              const label = GraphUtil.edgeName(from, to, portLabel)//dst
-              self.addEdge(from, to, label)
-            })
-          }
-          if (step.position && step.size) {
-            hasPosition = true
-          }
-          break
-        case Constants.step.type.note:
-          const note = node
-
-          const model2 = {
-            id: note.id,
-            type: note.type,
-            label: note.label,
-            position: note.position,
-            size: note.size,
-            title: note.title,
-            content: note.content,
-            color: note.color,
-            fontSize: note.fontSize
-          }
-          node = new NoteStepModel(model2)
-          newNodes.push(node)
-
-          break
-
-        default:
+    const connectEdge = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
+      if (node.srcs) {
+        Object.keys(node.srcs).forEach((portLabel) => {
+          const src = node.srcs![portLabel]
+          const from = src
+          const to = node.id
+          const label = GraphUtil.edgeName(from, to, portLabel)//src
+          self.addEdge(from, to, label)
+        })
       }
-    })
+      if (node.dsts) {
+        Object.keys(node.dsts).forEach((portLabel) => {
+          const dst = node.dsts![portLabel]
+          const from = node.id
+          const to = dst
+          const label = GraphUtil.edgeName(from, to, portLabel)//dst
+          self.addEdge(from, to, label)
+        })
+      }
+    }
 
-    json.nodes = newNodes
-    if (!hasPosition) this.refreshPosition(json.nodes)
+    // positionプロパティを持たないNodeが存在する場合はtrue
+    let noPosition = false;
+
+    json.nodes = json.nodes.map(node => {
+      // 
+      self.addNode(node.id);
+      // 
+      if(!node.position){
+        noPosition = true;
+      }
+      if(node.type === 'command' || node.type === 'flow'){
+        connectEdge(node as CommandNodeType | FlowNodeType | InlineFlowNodeType);
+      }
+      return node;
+    });
+
+    // positionプロパティを持たないNodeが存在する場合は全Nodeを整列する
+    noPosition && this.refreshPosition(json.nodes);
 
     return json
 

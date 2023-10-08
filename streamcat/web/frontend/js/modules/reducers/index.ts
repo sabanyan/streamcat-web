@@ -1,1 +1,0 @@
-export {default as CommonReducer} from './common/index'

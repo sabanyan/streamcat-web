@@ -41,93 +41,94 @@ export default class ModalManager extends React.Component<Props> {
 
        render() {
               return <>
-                     <Modal key={Constants.modal.ADD_COMMAND}
+                     {/* <Modal key={Constants.modal.ADD_COMMAND}
                             id={Constants.modal.ADD_COMMAND} title="" dynamic={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.IMPORT_DATASOURCE}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.IMPORT_DATASOURCE}
                             id={Constants.modal.IMPORT_DATASOURCE} title="" dynamic={true}
                             done={"追加する"}>
-                     </Modal>
+                     </Modal> */}
                      <Modal key={Constants.modal.PREVIEW_DATASOURCE}
                             id={Constants.modal.PREVIEW_DATASOURCE} title="" dynamic={true}
                             preview={true} footer={false}>
                      </Modal>
-                     <Modal key={Constants.modal.SHOW_MESSAGE}
+                     {/* <Modal key={Constants.modal.SHOW_MESSAGE}
                             id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true}
                             ok={true}>
                             <div ref={Constants.modal.SHOW_MESSAGE} />
-                     </Modal>
+                     </Modal> */}
                      <Modal key={Constants.modal.CONFIRM}
                             id={Constants.modal.CONFIRM} title="" dynamic={true}>
                             <div ref={Constants.modal.CONFIRM} />
                      </Modal>
-                     <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
+                     {/* <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
                             title="プロジェクトの新規作成" dynamic={true} done={"作成する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.IMPORT_FLOW} id={Constants.modal.IMPORT_FLOW}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.IMPORT_FLOW} id={Constants.modal.IMPORT_FLOW}
                             title="フローのアップロード" dynamic={true} done={"アップロードする"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW}
                             title="フローの新規作成" dynamic={true} done={"作成する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_FOLDER} id={Constants.modal.ADD_FOLDER}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_FOLDER} id={Constants.modal.ADD_FOLDER}
                             title="フォルダの作成" dynamic={true} done={"作成する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_DATABASE} id={Constants.modal.ADD_DATABASE}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_DATABASE} id={Constants.modal.ADD_DATABASE}
                             title="新しいデータベースを追加" dynamic={true} done={"追加する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.EDIT_DATABASE} id={Constants.modal.EDIT_DATABASE}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.EDIT_DATABASE} id={Constants.modal.EDIT_DATABASE}
                             title="データベースを設定" dynamic={true} done={"設定する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_REMOTE_FOLDER} id={Constants.modal.ADD_REMOTE_FOLDER}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_REMOTE_FOLDER} id={Constants.modal.ADD_REMOTE_FOLDER}
                             title="新しいリモートフォルダを追加" dynamic={true} done={"追加する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.EDIT_REMOTE_FOLDER} id={Constants.modal.EDIT_REMOTE_FOLDER}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.EDIT_REMOTE_FOLDER} id={Constants.modal.EDIT_REMOTE_FOLDER}
                             title="リモートフォルダを設定" dynamic={true} done={"設定する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.EDIT_ENCODING} id={Constants.modal.EDIT_ENCODING}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.EDIT_ENCODING} id={Constants.modal.EDIT_ENCODING}
                             title="文字コードを編集" dynamic={true} done={"編集する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_DOCUMENT} id={Constants.modal.ADD_DOCUMENT}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_DOCUMENT} id={Constants.modal.ADD_DOCUMENT}
                             title="ファイルをアップロード" dynamic={true} done={"追加する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_FRAME} id={Constants.modal.ADD_FRAME}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_FRAME} id={Constants.modal.ADD_FRAME}
                             title="CSVをアップロード" dynamic={true} done={"追加する"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.SHOW_RUN_RESULT} id={Constants.modal.SHOW_RUN_RESULT}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.SHOW_RUN_RESULT} id={Constants.modal.SHOW_RUN_RESULT}
                             title="実行完了" dynamic={true} cancel={"OK"} done={"ライブラリを開く"} primary={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.SHOW_RUN_ERROR} id={Constants.modal.SHOW_RUN_ERROR}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.SHOW_RUN_ERROR} id={Constants.modal.SHOW_RUN_ERROR}
                             title="実行エラー" dynamic={true} ok={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW}
                             title="選択されたフローを実行します" dynamic={true} footer={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_USER} id={Constants.modal.ADD_USER}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_USER} id={Constants.modal.ADD_USER}
                             title="ユーザーの新規作成" dynamic={true} footer={true} overflow={false}>
-                     </Modal>
-                     <Modal key={Constants.modal.ADD_USER_CONFIRM} id={Constants.modal.ADD_USER_CONFIRM}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.ADD_USER_CONFIRM} id={Constants.modal.ADD_USER_CONFIRM}
                             title="ユーザーの新規作成" dynamic={true} ok={true} overflow={false}>
-                     </Modal>
-                     <Modal key={Constants.modal.RESET_USER_PASSWORD} id={Constants.modal.RESET_USER_PASSWORD}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.RESET_USER_PASSWORD} id={Constants.modal.RESET_USER_PASSWORD}
                             title="" dynamic={true} footer={true}>
                      </Modal>
                      <Modal key={Constants.modal.MEMBER_INFO} id={Constants.modal.MEMBER_INFO}
                             title="" dynamic={true} footer={true}>
-                     </Modal>
+                     </Modal> */}
 
-                     <Modal key={Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN} id={Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN}
+                     {/* <Modal key={Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN} id={Constants.modal.CONFIRM_UPDATE_STREAMCAT_SYSTEM_ADMIN}
                             title="StreamCat 管理権限の設定" dynamic={true} footer={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN} id={Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN} id={Constants.modal.CONFIRM_UPDATE_STREAMCAT_USER_ADMIN}
                             title="StreamCat 管理権限の設定" dynamic={true} footer={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN} id={Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN} id={Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN}
                             title="StreamCat 管理権限の設定" dynamic={true} footer={true}>
-                     </Modal>
-                     <Modal key={Constants.modal.CONFIRM_UNDELETE_USER} id={Constants.modal.CONFIRM_UNDELETE_USER}
+                     </Modal> */}
+                     {/* <Modal key={Constants.modal.CONFIRM_UNDELETE_USER} id={Constants.modal.CONFIRM_UNDELETE_USER}
                             title="" dynamic={true} footer={true}>
-                     </Modal>
+                     </Modal> */}
+
                      <Modal key={Constants.modal.CONFIRM_RELOAD_FLOW} id={Constants.modal.CONFIRM_RELOAD_FLOW}
                             title="" close={false} dynamic={true} footer={true} >
                      </Modal>

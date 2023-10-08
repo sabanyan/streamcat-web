@@ -1,35 +1,35 @@
 import React, { useEffect, useState } from "react";
 import Constants from "Constants/index";
 import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from "Model/index";
 import style from "./style.scss";
 import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
-import { DragType, MastType, StepModelType } from "Types/index";
-import { FlowType } from "Model/Library";
+import { DragType, GraphType, RunnablesType } from "Types/index";
+import { AllNodeType, Flow, FrameType } from "Model/Library";
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
+import { graphUtil } from "Modules/flowEditor";
 
 let mouseMoveEvent;
 let mouseUpEvent;
 
 interface Props {
-    model: StepModelType;
+    step: AllNodeType;
     position: { x: number, y: number };
-    type: string;
     selected: boolean;
-    text: string;
-    invalid: {};
-    error: {};
-    mast: MastType;
-    flow: FlowType;
-    selected_step_ids: string[];
+    invalid?: {};
+    error?: {};
+    runnables: RunnablesType;
+    flowData: Flow;
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
+    selectedStepIds: string[];
     zoom: number;
-    drag: DragType;
-    addSelectStep: Function;
-    deleteSelectStep: Function;
-    selectSteps: Function;
-    updateDataFrameDetail: Function;
-    updateStep: Function;
-    moveSteps: Function;
+    dragRange: DragType | null;
+    addSelectStep: (selected_step_id: string) => void;
+    deleteSelectStep: (selected_step_id: string) => void;
+    selectSteps: (selected_steps: any[]) => void;
+    selectFrame: (frame?:FrameType) => void;
+    updateStep: (step: AllNodeType) => void;
+    addHistory: () => void;
     readOnly: boolean;
 }
 
@@ -40,8 +40,20 @@ let setCoords = (_coords: { x: number, y: number } | null) => {
 };
 
 const Step = (props: Props) => {
+    const { step } = props;
 
     const [hover, setHover] = useState<boolean>(false);
+
+    const isSelected = () => {
+        const { selectedStepIds } = props;
+        let selected = false;
+        selectedStepIds.map((id) => {
+            if (id === step.id) {
+                selected = true;
+            }
+        });
+        return selected;
+    };
 
     /**
      * mouse down ステップ選択処理
@@ -58,21 +70,10 @@ const Step = (props: Props) => {
             x: e.pageX,
             y: e.pageY
         });
-        mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(e);
         mouseUpEvent = (e: React.MouseEvent<SVGElement>) => handleMouseUp(e);
+        mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(e);
         document.addEventListener("mousemove", mouseMoveEvent, { passive: true });
         document.addEventListener("mouseup", mouseUpEvent, { passive: true });
-    };
-
-    const isSelected = () => {
-        const { selected_step_ids, model } = props;
-        let selected = false;
-        selected_step_ids.map((id) => {
-            if (id === model.id) {
-                selected = true;
-            }
-        });
-        return selected;
     };
 
     /**
@@ -80,11 +81,9 @@ const Step = (props: Props) => {
      * @param e
      */
     const handleMouseUp = (e: React.MouseEvent<SVGElement>) => {
-
         setCoords(null);
 
-        const { model, addSelectStep, deleteSelectStep, selectSteps, updateDataFrameDetail } = props;
-        let step = model;
+        const { addSelectStep, deleteSelectStep, selectSteps, selectFrame, addHistory } = props;
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected()) {
@@ -94,39 +93,47 @@ const Step = (props: Props) => {
             }
         } else {
             //一度選択状態をクリアする（#71）
-            selectSteps();
+            selectSteps([]);
             selectSteps([step]);
 
             //データフレームの詳細を取得する
-            const selected_step: StepModelType = step;//this.getSelectedStep()
-            if (selected_step instanceof DataFrameStepModel) {
-                if (selected_step.hasData() && selected_step.uuid) {
+            const selected_step: AllNodeType = step;//this.getSelectedStep()
+            if (selected_step.type === 'frame') {
+                const frameNode = selected_step as FrameNodeType;
+                if (frameNode.hasData() && frameNode.uuid) {
                     //TODO 将来的にはページングなどの対応が必要
-                    Api.findFrame(selected_step.uuid).then(frame => {
-                        updateDataFrameDetail(frame);
+                    Api.findFrame(frameNode.uuid).then(frame => {
+                        selectFrame(frame);
                     });
                 } else {
-                    updateDataFrameDetail({});
+                    selectFrame();
                 }
             } else {
-                updateDataFrameDetail({});
+                selectFrame();
             }
         }
 
         document.removeEventListener("mousemove", mouseMoveEvent);
         document.removeEventListener("mouseup", mouseUpEvent);
+
+        // Undoスタックに履歴を追加する
+        addHistory();
     };
+
     /**
      * mouse move ステップのドラッグ処理
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-        const { selected_step_ids, readOnly } = props;
+        const { selectedStepIds, readOnly } = props;
         if (readOnly) return; // 読み取り専用の場合は移動不可
-        if (selected_step_ids.length > 1) {
+
+        if (selectedStepIds.length > 1) {
+            // 複数のStepを一括して移動させる
             onMoveSteps(e);
         } else {
-            onUpdateStep(e);
+            // 単一のStepを移動させる
+            onMoveStep(e);
         }
         //一時保存された位置を更新
         setCoords({
@@ -153,26 +160,37 @@ const Step = (props: Props) => {
         return { new_x: new_x, new_y: new_y };
     };
 
+    const moveSteps = (flowData:Flow, x: number, y: number, selectedStepIds:string[]) => {
+        const [graph, setGraph] = props.graphState;
+        const { zoom } = props;
 
-    const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
-        const { model, selected_step_ids, moveSteps } = props;
-        if (selected_step_ids.includes(model.id)) {
-            const { new_x, new_y } = calcNewPosition(e);
-            moveSteps(new_x, new_y, model);
-        }
+        // 移動距離を算出する
+        const dx = (step.position.x - x);
+        const dy = (step.position.y - y);
+
+        // 選択中の全てのStepを移動する
+        // 複数のStepを一括で移動させる場合は、そのStepの中に自Stepが含まれていること
+        flowData.nodes.filter(node => selectedStepIds.includes(node.id)).forEach(node => {
+            // Stepの位置を変更する
+            node.position.x = node.position.x - dx;
+            node.position.y = node.position.y - dy;
+        });
+
+        // Canvasへ反映させる
+        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
 
-    const onUpdateStep = (e: React.MouseEvent<SVGElement>) => {
-        const { selected_step_ids, model, updateStep } = props;
-        if (selected_step_ids.length > 1) {
-            onMoveSteps(e);
-            return;
-        }
+    const onMoveStep = (e: React.MouseEvent<SVGElement>) => {
         const { new_x, new_y } = calcNewPosition(e);
-        //移動に応じてStepの位置を更新
-        let step = model;
-        step.setPosition({ x: new_x, y: new_y });
-        updateStep(step);
+        moveSteps(flowData, new_x, new_y, [step.id]);
+    };
+
+    const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
+        const { selectedStepIds } = props;
+        if (selectedStepIds.includes(step.id)) {
+            const { new_x, new_y } = calcNewPosition(e);
+            moveSteps(flowData, new_x, new_y, selectedStepIds);
+        }
     };
 
     /**
@@ -199,7 +217,7 @@ const Step = (props: Props) => {
      * 範囲選択との衝突判定
      */
     const selectorIntersect = () => {
-        const { zoom, position, drag } = props;
+        const { zoom, position, dragRange } = props;
         const operator = {
             x: position.x,
             y: position.y,
@@ -207,8 +225,9 @@ const Step = (props: Props) => {
             height: Constants.default.step.height
         };
 
-        const { start, end } = drag;
-        if (start && end) {
+        if(dragRange){
+            const { start, end } = dragRange;
+
             //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 
             let sx = (start.x <= end.x) ? start.x : end.x;
@@ -245,20 +264,22 @@ const Step = (props: Props) => {
     };
 
 
-    const isCommandStep = (model): boolean => {
-        return (model instanceof CommandStepModel);
+    const isCommandStep = (step): boolean => {
+        // return (step instanceof CommandStepModel);
+        return step.type === 'command';
     };
 
-    const isDataFrame = (model): boolean => {
-        return (model instanceof DataFrameStepModel);
+    const isDataFrame = (step): boolean => {
+        return step.type === 'frame';
     };
 
-    const isSubFlow = (model): boolean => {
-        return (model instanceof SubFlowStepModel);
+    const isSubFlow = (step): boolean => {
+        return step.type === 'flow';
     };
 
-    const isNote = (model): boolean => {
-        return (model instanceof NoteStepModel);
+    const isNote = (step): boolean => {
+        // return (step instanceof NoteStepModel);
+        return step.type === 'note';
     };
 
     const getFilter = () => {
@@ -266,25 +287,23 @@ const Step = (props: Props) => {
         return filter;
     };
     useEffect(() => {
-        const { model, addSelectStep, deleteSelectStep } = props;
+        const { addSelectStep, deleteSelectStep } = props;
         // componentDidUpdate
         if (selectorIntersect()) {
             if (!isSelected()) {
-                addSelectStep(model.id);
+                addSelectStep(step.id);
             }
 
         } else {
             if (isSelected()) {
-                deleteSelectStep(model.id);
+                deleteSelectStep(step.id);
             }
         }
     });
 
-    const { position, mast, flow, invalid, error, model } = props;
+    const { position, runnables, flowData, invalid, error } = props;
     const { x, y } = position;
     let icon: JSX.Element | null;
-
-    let step: StepModelType = model;
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -294,12 +313,13 @@ const Step = (props: Props) => {
 
     const selected = selectorIntersect();
 
-    const flowIn = flow.flow.ports[0].exists(step.id);
-    const flowOut = flow.flow.ports[1].exists(step.id);
+    const flowIn = flowData.ports[0].exists(step.id);
+    const flowOut = flowData.ports[1].exists(step.id);
 
     let stepLabel = step.label;
 
     if (isDataFrame(step)) {
+        const frameNode = step as FrameNodeType;
         // データノード
         let innerIcon: JSX.Element;
         if (flowIn || flowOut) {
@@ -312,7 +332,7 @@ const Step = (props: Props) => {
                                    fill={"#CCCCCC"} />;
         } else {
             // IN、OUT指定のない場合
-            innerIcon = <FileIcon fillColor={(step.hasData()) ? "#63CFFD" : "#CCCCCC"}
+            innerIcon = <FileIcon fillColor={(frameNode.hasData()) ? "#63CFFD" : "#CCCCCC"}
                                   width={16}
                                   height={20} />;
         }
@@ -324,35 +344,40 @@ const Step = (props: Props) => {
             {innerIcon}
         </Rect>;
     } else if (isSubFlow(step)) {
-        // サブフローノード
-        icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
-        stepLabel = step.getLabel();
+        const flowNode = step as FlowNodeType | InlineFlowNodeType;
+        if (flowNode.hasOwnProperty('flow') && flowNode.classification === "data_source") {
+            icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+        } else if (flowNode.hasOwnProperty('flow') && flowNode.classification === "data_dest") {
+            icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+        } else {
+            // サブフローノード
+            icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
+            stepLabel = flowNode.label;
+        }
     } else if (isCommandStep(step)) {
+        const commandNode = step as CommandNodeType;
         // コマンドノード
         let command;
-        if (mast.commands) {
-            mast.commands.forEach(c => {
-                if (c.id === step.commandId) command = c;
+        if (runnables.commands) {
+            runnables.commands.forEach(c => {
+                if (c.id === commandNode.commandId) command = c;
             });
             icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />;
         } else {
             icon = null;
         }
-        stepLabel = step.getLabel();
+        stepLabel = commandNode.label;
     } else if (isNote(step)) {
-        icon = <NoteIcon hover={hover} selected={selected} model={step} />;
-        stepLabel = step.getLabel();
-    } else if (step.flow && step.classification === "data_source") {
-        icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
-    } else if (step.flow && step.classification === "data_dest") {
-        icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
+        const noteNode = step as NoteNodeType;
+        icon = <NoteIcon hover={hover} selected={selected} model={noteNode} />;
+        stepLabel = noteNode.label;
     } else {
         icon = null;
     }
 
 
-    const invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
-    const error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
+    const invalid_icon = (invalid && Object.keys(invalid).length) ? <ErrorIcon /> : null;
+    const error_icon = (error && Object.keys(error).length) ? <ErrorIcon /> : null;
     const label_text = (!!stepLabel) ? 
                         <g className={style.labelContainer}>
                             <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>

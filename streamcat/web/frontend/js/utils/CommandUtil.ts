@@ -1,21 +1,21 @@
 //@flow
 import type { CommandParamType } from 'Types/index'
-import CommandModel from 'Model/Command/CommandModel'
+import { Command } from 'Model/Library';
 
 export default class CommandUtil {
 
-  static getCommand (id: string){
+  static getCommand (commands: Command[], id: string){
     // windowオブジェクトに格納されているCommand配列を取得する
-    const commands = window.commands as any[];
+    // const commands = window.commands as any[];
     // command配列が無い、または配列型で無い場合はnullを返す
     if(!commands || !(commands instanceof Array)){
       return null;
     }
     // idに一致するcommandを取得する
-    return commands.find(command => command.id === id) as CommandModel;
+    return commands.find(command => command.id === id) as Command;
   }
 
-  static getCommandParamLabel (command: CommandModel | null, name: string): string | null{
+  static getCommandParamLabel (command: Command | null, name: string): string | null{
     if(!command){
       return null;
     }

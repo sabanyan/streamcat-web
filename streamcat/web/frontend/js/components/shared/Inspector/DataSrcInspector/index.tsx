@@ -6,6 +6,8 @@ import { Loader } from 'Shared/Base'
 import Constants from 'Constants/index'
 
 import style from '../style.scss'
+import { AllNodeType } from 'Model/Library';
+import { RunnablesType } from 'Types/index';
 
 
 type State = {
@@ -13,17 +15,18 @@ type State = {
 }
 
 type Props = {
-  nodes: [];
+  nodes: AllNodeType[];
 
-  selected_step_ids: string[];
+  selectedNodeId: string;
   baseInspectorDisabled: boolean;
 
+  runnables: RunnablesType;
   parentUUID?: string;
 
-  updateStep: Function;
-  addHistory: Function;
-  selectSteps: Function;
-  deleteSteps: Function;
+  updateStep: (step: AllNodeType) => void;
+  addHistory: () => void;
+  selectSteps: (selected_steps: any[]) => void;
+  deleteSteps: (step_ids: string[]) => void;
 }
 
 
@@ -38,13 +41,12 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   getSelectedStep(): any {
-    let { selected_step_ids, nodes } = this.props
-    return GraphUtil.getNode(nodes, selected_step_ids[0])
+    let { selectedNodeId, nodes } = this.props
+    return GraphUtil.getNode(nodes, selectedNodeId)
   }
 
   renderActions() {
     const { baseInspectorDisabled } = this.props;
-    let result = [];
 
     return <React.Fragment>
       <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
@@ -55,10 +57,10 @@ export class DataSrcInspector extends React.Component<Props, State> {
   onClickDelete(e: any) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        let { selected_step_ids, nodes } = this.props
-        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
+        let { selectedNodeId, nodes } = this.props
+        const selected_step = GraphUtil.getNode(nodes, selectedNodeId)
         this.props.deleteSteps([selected_step.id])
-        this.props.selectSteps()
+        this.props.selectSteps([])
         this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
@@ -75,7 +77,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateStep, nodes, baseInspectorDisabled, parentUUID } = this.props;
+    const { updateStep, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
     const selected_step = this.getSelectedStep();
 
     let libraryPlace: any = null;
@@ -87,6 +89,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
         selectedStep={selected_step}
         updateStep={updateStep}
         nodes={nodes}
+        runnables={runnables}
         disabled={baseInspectorDisabled}
       />;
     }

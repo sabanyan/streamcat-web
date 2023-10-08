@@ -9,11 +9,6 @@ declare const inject_is_project: boolean;
 declare const inject_is_trash: boolean;
 
 declare interface Window {
-    nodes: {}
-    commands: {}
-    visualizers: {}
-    subflows: {}
     emitter: any
     devToolsExtension: any
-    __REDUX_DEVTOOLS_EXTENSION__: any
 }

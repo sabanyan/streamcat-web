@@ -178,6 +178,7 @@ export const UserList = (props: Props) => {
                             <div className={style.searchBarContainer}>
                                 <TextField2 key='search'
                                             label='ユーザー名、E-mail で絞り込む'
+                                            type='search'
                                             state={[keyword,setKeyword]} />
                             </div>
                             <Spacer height={20}/>

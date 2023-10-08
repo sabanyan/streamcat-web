@@ -5,16 +5,15 @@ import { Api } from 'Api';
 import {StateUtil} from 'Utils/index';
 import style from './style.scss';
 
-import {VisualizeModel, VisualizeModelProps} from "Model/index";
 
 import {EmptyState, Loader} from 'Shared/Base';
 import { PreviewInspector} from 'Shared/Inspector';
-import { ActivityType } from 'Model/Library';
+import { ActivityType, VCommand } from 'Model/Library';
 
 
 type Props = {
     index: number;
-    visualize: VisualizeModel<VisualizeModelProps>;
+    visualize: VCommand;
     flowUuid: string;
     stepIds: (string | null | undefined)[];
     frameUuid: string | null;
@@ -51,7 +50,7 @@ export default class Visualizer extends React.Component<Props, State> {
         };
     }
 
-    initArgs(visualize: VisualizeModel<VisualizeModelProps>, args: {}) {
+    initArgs(visualize: VCommand, args: {}) {
         let result = {};
         try {
             const command = {...visualize};
@@ -78,7 +77,7 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     // 入力必須の引数に値が入力されているかチェックする
-    requiredArgsIsEmpty(visualize: VisualizeModel<VisualizeModelProps>, args: {}) {
+    requiredArgsIsEmpty(visualize: VCommand, args: {}) {
         const command = {...visualize};
         const rules = (command.rules) ? command.rules : {};
 

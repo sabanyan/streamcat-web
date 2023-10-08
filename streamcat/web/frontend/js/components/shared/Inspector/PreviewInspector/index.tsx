@@ -1,7 +1,7 @@
 //@flow
 import React from 'react';
 import {useState} from 'react';
-import {BaseInspector, ParamsForm, Resizer} from 'Shared/Inspector';
+import {BaseInspector, Param, ParamsForm, Resizer} from 'Shared/Inspector';
 import style from './style.scss';
 import {Button} from 'Shared/Input';
 import classnames from 'classnames';
@@ -9,12 +9,19 @@ import classnames from 'classnames';
 interface Props {
     // children?: React.ReactNode,
     label: string,
-    params: [],
+    params: {
+        name: string;
+        type: string;
+        label?: string;
+        optional?: boolean;
+        options?: any;
+        default?: string | number;
+    }[],
     args: {},
     headers: string[],
     groups: [],
     // event
-    onApply: Function
+    onApply: (args:{}) => void
 }
 
 const PreviewInspector = (props: Props) => {

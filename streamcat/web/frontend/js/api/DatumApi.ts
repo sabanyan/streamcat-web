@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
     DatumType,
     ParentProjectType,
@@ -13,14 +14,28 @@ import {
     FrameType,
     DocumentType,
     ActivityType,
-    Port,
     Flow,
-    Command
+    Port,
+    AllNodeType,
+    InlineFlowCommand,
+    Command,
+    VCommand,
+    Commands,
+    FlowCommands
 } from 'Model/Library';
 import {
     ConnectivityType,
     NavigationType
 } from 'Model/Navigation/NavigationModel';
+import {
+    FrameNodeType,
+    CommandNodeType,
+    FlowNodeType,
+    InlineFlowNodeType,
+    NoteNodeType,
+    calcSize,
+    addInPort,
+} from 'Model/Step/NodeTypes';
 import {
     toJsonOrRaise,
     getBase as get,
@@ -311,18 +326,88 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
 });
 
 /**
- * PortArrayにhasPort関数を付与する
+ * NodeArrayのコンストラクタ関数を作成する
+ */
+export const NodeArray = makeArrayCtor<AllNodeType>(node => {
+    if(node.type === 'frame'){
+        const n = node as FrameNodeType;
+        n.hasData = () => !!n.uuid;
+        n.isCached = () => !!n.cacheCreatedAt;
+        n.deleteCache = () => {
+            n.cacheCreatedAt = null;
+            n.uuid = null;
+        };
+    }else if(node.type === 'command'){
+        const c = node as CommandNodeType;
+        c.deleteInPort = (label:string) => {
+            c.srcs && delete c.srcs[label];
+            if(c.srcsOrder){
+                c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
+            }
+        };
+        c.addInPort = (label:string, nodeId:string) => addInPort(c, label, nodeId);
+        c.getInPortIndex = () => {
+            const srcKeys = Object.keys(c.srcs || {});
+
+            const filterKeys = srcKeys.filter((key) => {
+                return (key.indexOf("*") != -1);
+            });
+    
+            let max = 0;
+            filterKeys.forEach((key) => {
+                const value = key.replace("*", "");
+                max = (parseInt(value) > max) ? parseInt(value) : max;
+            });
+    
+            return max;
+        };
+        c.addableInPort = (command: Command) => {
+            // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
+            const filterKeys = command.ports[0].filter((inPort) => {
+                return (inPort.label.indexOf("*") >= 0);
+            });
+            return filterKeys.length > 0;
+        };
+    }else if(node.type === 'flow'){
+        if(node.hasOwnProperty('uuid')){
+            const f = node as FlowNodeType;
+            f.addableInPort = () => false;
+        }else if(node.hasOwnProperty('flow')){
+            const f = node as InlineFlowNodeType;
+            f.addableInPort = () => false;
+        }else{
+            throw new Error('Flow node has not neither uuid nor flow property');
+        }
+    }else if(node.type === 'note'){
+        const n = node as NoteNodeType;
+        n.setTitle = (title) => {
+            n.title = title;
+            n.size = calcSize(title, n.fontSize || 16);
+        };
+        n.setFontSize = (fontSize) => {
+            n.fontSize = fontSize;
+            n.size = calcSize(n.title, fontSize);
+        };
+    }else{
+        // TODO: 他のNodeTpeを追加予定
+    }
+});
+
+/**
+ * PortArrayのコンストラクタ関数を作成する
  */
 const PortArray = function(this: any, ports: Port[]){
     Array.prototype.push.apply(this, ports);
-}
+    // JsonStringify()でlengthプロパティをJSON文字列から除外するために設定しておく
+    this.__allAPIFuncSet = true;
+};
 PortArray.prototype = Object.create(Array.prototype);
 PortArray.prototype.constructor = PortArray;
 
 PortArray.prototype.exists = function(portId: string){
     // TODO: Portの識別子はnodeIdからlabelに変更予定
     return !!PortArray.prototype.find.apply(this, [p => p.nodeId === portId]);
-}
+};
 
 PortArray.prototype.upsert = function(port: Port){
     const findPort = PortArray.prototype.find.apply(this, [p => p.nodeId === port.nodeId]);
@@ -334,7 +419,7 @@ PortArray.prototype.upsert = function(port: Port){
         // 存在しない場合は追加する
         this.push(port);
     }
-}
+};
 
 PortArray.prototype.removeByNodeId = function(nodeId: string){
     const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === nodeId]);
@@ -344,12 +429,7 @@ PortArray.prototype.removeByNodeId = function(nodeId: string){
     }
     // 存在する場合は削除する
     PortArray.prototype.splice.apply(this, [index, 1]);
-}
-
-// PortArrayをJSON文字列に変換する
-PortArray.prototype.toJSON = function(){
-    return PortArray.prototype.map.apply(this, [port => {return {...port};}]);
-}
+};
 
 /**
  * 引数を追加する共通関数
@@ -472,19 +552,26 @@ export const DatumApi = {
         return get<FlowType>(`/api/v0/flows/${uuid}`).then(flow => {
             flow = (new DatumArray([flow])).shift() as any;
             const flowJson = flow.flow;
+            flowJson.nodes = new NodeArray(flowJson.nodes);
             // 配列プロパティがない場合は空値を格納する
-            if(!flowJson.nodes){
-                flowJson.nodes = [];
-            }
             if(!flowJson.params){
                 flowJson.params = [];
             }
             if(!flowJson.ports){
-                flowJson.ports =[new PortArray([]), new PortArray([])];
+                flowJson.ports = [new PortArray([]), new PortArray([])];
             }else if(flow.flow.ports.length === 2) {
                 flowJson.ports[0] = new PortArray(flowJson.ports[0]);
                 flowJson.ports[1] = new PortArray(flowJson.ports[1]);
             }
+            // Flowオブジェクトを複製するclone関数を設定する
+            const cloneFunc = (f:Flow) => {
+                const clonedFlowJson = _.cloneDeepWith(f);
+                clonedFlowJson.nodes = new NodeArray(clonedFlowJson.nodes);
+                clonedFlowJson.ports = [new PortArray(clonedFlowJson.ports[0]), new PortArray(clonedFlowJson.ports[1])];
+                clonedFlowJson.clone = () => cloneFunc(clonedFlowJson);
+                return clonedFlowJson;
+            };
+            flowJson.clone = () => cloneFunc(flowJson);
             return flow;
         });
     },
@@ -557,7 +644,10 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findSubflows: () => {
-        return get<Flow[]>('/api/v0/subflows');
+        return get<FlowCommands>('/api/v0/subflows').then(commands => {
+            commands.getCommand = (uuid:string|null) => commands.find(command => command.uuid === uuid) || null;
+            return commands;
+        });
     },
 
     /**
@@ -565,7 +655,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findDataSrcs: () => {
-        return get<Flow[]>('/api/v0/datasrcs');
+        return get<InlineFlowCommand[]>('/api/v0/datasrcs');
     },
 
     /**
@@ -573,7 +663,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findDataDsts: () => {
-        return get<Flow[]>('/api/v0/datadsts');
+        return get<InlineFlowCommand[]>('/api/v0/datadsts');
     },
 
     /**
@@ -581,7 +671,10 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findCommands: () => {
-        return get<Command[]>('/api/v0/commands');
+        return get<Commands>('/api/v0/commands').then(commands => {
+            commands.getCommand = (commandId:string) => commands.find(command => command.id === commandId) || null;
+            return commands;
+        });
     },
 
     /**
@@ -589,7 +682,7 @@ export const DatumApi = {
      * @throws {ErrorResponse}
      */
     findVCommands: () => {
-        return get<Command[]>('/api/v0/vcommands');
+        return get<VCommand[]>('/api/v0/vcommands');
     },
 
     /**

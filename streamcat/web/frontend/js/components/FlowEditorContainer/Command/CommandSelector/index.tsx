@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import style from "./style.scss";
-import { Command } from "FlowEditorContainer/Command";
+import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import { CommandModelType, MastType } from "Types/index";
+import { RunnablesType } from "Types/index";
 import { TextField } from "Shared/Input";
+import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 
 type Props = {
-    mast: MastType;
-    nodes:any[];
+    runnables: RunnablesType;
+    nodes:AllNodeType[];
     numberOfInput: number;
-    selected_step_ids: string[];
-    addStep: Function;
-    selectSteps: Function;
-    addHistory: Function;
+    selectedStepIds: string[];
+    zoom: number;
+    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    selectSteps: (selected_steps: any[]) => void;
+    addHistory: () => void;
     disabled?: boolean;
-    addDataDstStep: Function
-    addDataSrcStep: Function
+    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
 };
 
 const CommandSelector = (props: Props) => {
@@ -26,7 +28,7 @@ const CommandSelector = (props: Props) => {
         setKeyword(e.target.value);
     };
 
-    const sortArray = (array: any[], key: string): any[] => {
+    const sortArray = <T,>(array: T[], key: string): T[] => {
         return array.sort((objectA, objectB) => {
             const a = objectA[key];
             const b = objectB[key];
@@ -51,9 +53,9 @@ const CommandSelector = (props: Props) => {
         return (command.ports[0][0].label === "*");
     };
 
-    const { numberOfInput, selected_step_ids, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, mast, nodes } = props;
-    const { commands, subflows, datasrcs, datadsts } = mast;
+    const { numberOfInput, selectedStepIds, zoom, addStep, addDataDstStep, addDataSrcStep,
+        selectSteps, addHistory, runnables, nodes } = props;
+    const { commands, subflows, datasrcs, datadsts } = runnables;
 
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;
@@ -69,7 +71,7 @@ const CommandSelector = (props: Props) => {
     ...sortedCommands.subflows, ...sortedCommands.commands];
 
     //コマンドの絞り込み
-    operators = operators.filter((command: any): boolean => {
+    operators = operators.filter((command): boolean => {
         if (isMultiInPorts(command)) {
             return true;
         } else if (command.ports[0].length === numberOfInput) {
@@ -77,31 +79,34 @@ const CommandSelector = (props: Props) => {
         }
         //}
         return false;
-    }).filter((command: any) => {
+    }).filter((command) => {
         noOperators = false;
         if (isNoKeyword) {
             return true;
         }
         const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1);
         const foundDescriptionWithKeyword = (command.description && command.description.indexOf(keyword) != -1);
-        const foundCommandIdWithKeyword = (command.id && command.id.indexOf(keyword) != -1);
+        const foundCommandIdWithKeyword = ((command as Command).id && (command as Command).id.indexOf(keyword) != -1);
 
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });
     let operatorsContainer: React.ReactNode[] = [];
-    let beforeCommand: CommandModelType = null;
-    operators.map((command: CommandModelType, index) => {
+    let beforeCommand: Command | FlowCommand | InlineFlowCommand;
+    operators.map((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
-            //区切りを表示
-            let label = Constants.lang.classification[command.classification];
-            if (!label) label = command.classification;
-            operatorsContainer.push(<div key={command.classification + index} className={style.command_separator}>{label}</div>);
+            // 区切りを表示
+            // classificationがない場合はSubFlowのはず
+            const label = Constants.lang.classification[command.classification || 'subflow'] || command.classification;
+            operatorsContainer.push(
+                <div key={`separator-${index}`} className={style.command_separator}>{label}</div>
+            );
         }
-        operatorsContainer.push(<Command
+        operatorsContainer.push(<CommandItem
             nodes={nodes}
             key={index}
             command={command}
-            selected_step_ids={selected_step_ids}
+            selectedStepIds={selectedStepIds}
+            zoom={zoom}
             addStep={addStep}
             addDataDstStep={addDataDstStep}
             addDataSrcStep={addDataSrcStep}

@@ -3,22 +3,23 @@ import {useAsyncResource} from 'use-async-resource';
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
-import {SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
-import {CommandParamType, MastType, StepModelType} from "Types/index";
-import CommandModel from "Model/Command/CommandModel";
+import { AllNodeType, Command, FlowCommand } from 'Model/Library';
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { RunnablesType } from 'Types/index';
 
 type Props = {
-    selected_step_ids: string[];
-    mast: MastType;
-    nodes: [];
-    updateStep: Function;
-    addHistory: Function;
-    selectSteps: Function;
-    deleteSteps: Function;
-    children?: React.ReactNode;
+    selectedNodeId: string;
+    // runnables: RunnablesType;
+    nodes: AllNodeType[];
+    runnables: RunnablesType;
+    updateStep: (step: AllNodeType) => void;
+    addHistory: () => void;
+    selectSteps: (selected_steps: any[]) => void;
+    deleteSteps: (step_ids: string[]) => void;
+    // children?: React.ReactNode;
     baseInspectorDisabled: boolean;
 }
 
@@ -34,12 +35,12 @@ const getFlow = (uuid: string) => {
 const CommandInspector = (props: Props) => {
 
     const getSelectedStep = () => {
-        let {selected_step_ids, nodes} = props;
-        return GraphUtil.getNode(nodes, (selected_step_ids as any)[0]);
+        const {selectedNodeId, nodes} = props;
+        return GraphUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
     };
 
     // 選択中のステップを取得する
-    const selected_step: StepModelType = getSelectedStep();
+    const selected_step = getSelectedStep();
 
     // ここでFlowの取得を開始する
     const [flowReader] = useAsyncResource(getFlow, (selected_step as any).uuid);
@@ -52,7 +53,7 @@ const CommandInspector = (props: Props) => {
         const {deleteSteps, selectSteps, addHistory} = props;
         let selected_step = getSelectedStep();
         deleteSteps([selected_step.id]);
-        selectSteps();
+        selectSteps([]);
         addHistory()
     };
 
@@ -115,35 +116,37 @@ const CommandInspector = (props: Props) => {
     };
 
 
-    const {updateStep, baseInspectorDisabled, nodes} = props;
+    const {updateStep, baseInspectorDisabled, nodes, runnables} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
+        const commandNode = selected_step as CommandNodeType;
         //指定されたステップの元コマンドを取得
-        const command: CommandModel = selected_step.getCommand();
+        const command = runnables.commands.getCommand(commandNode.commandId);
         //選択されたステップのラベルを取得
-        label = selected_step.getLabel();
+        label = commandNode.label;
         //コマンドのラベルを取得
-        subLabel = command.label;
-        const params: CommandParamType[] = command.params;
-        const args: {} = selected_step.args;
-        const invalids: {} = selected_step.invalid;
+        subLabel = command?.label || '';
+        const params = command?.params || [];
+        const args = commandNode.args;
+        const invalids = commandNode.invalid;
 
-        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command}
-                                onChange={(e, param, value) => onArgChange(e, param, value)} groups={command.groups} />;
+        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command || undefined}
+                                onChange={(e, param, value) => onArgChange(e, param, value)} groups={command?.groups || []} />;
 
     } else if (selected_step.type === Constants.step.type.subflow) {
-        const subflowCommand: SubflowCommandModel = selected_step.getCommand();
-        label = selected_step.getLabel();
-        if (subflowCommand) {
-            subLabel = subflowCommand.label;
-            const params: CommandParamType[] = subflowCommand.params;
-            const args: {} = selected_step.args;
-            const invalids: {} = selected_step.invalid;
+        label = selected_step.label;
+        if (selected_step.hasOwnProperty('uuid')) {
+            const flowNode = selected_step as FlowNodeType;
+            const subflowCommand = runnables.subflows.getCommand(flowNode.uuid);
+            subLabel = subflowCommand?.label || '';
+            const params = subflowCommand?.params || [];
+            const args = flowNode.args;
+            const invalids = flowNode.invalid;
 
             inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids}
                                     onChange={(e, param, value) => onArgChange(e, param, value)}/>;
-            subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>;
+            subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, flowNode.uuid)}>フローを開く</Button>;
 
             // サブフローがライブラリに存在する場合(リテラルでない場合)はそのサブフローの格納フォルダへのリンクを表示する
             const flow = flowReader();
@@ -179,6 +182,7 @@ const CommandInspector = (props: Props) => {
         <InOutConnector
             updateStep={updateStep}
             nodes={nodes}
+            runnables={runnables}
             selectedStep={selected_step}
             disabled={baseInspectorDisabled}
         />

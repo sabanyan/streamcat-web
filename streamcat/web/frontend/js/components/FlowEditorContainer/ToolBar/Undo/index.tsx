@@ -2,7 +2,7 @@ import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 
 type Props = {
-    undo: Function;
+    undo: () => void;
     children: React.ReactNode;
     disabled: boolean;
 };

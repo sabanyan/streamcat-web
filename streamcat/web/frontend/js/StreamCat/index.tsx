@@ -1,9 +1,7 @@
 import React from 'react';
-import {useEffect} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import { createTheme, ThemeProvider } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import {useDispatch} from 'react-redux';
 import {NotificationsProvider} from 'reapop';
 import style from './style.scss';
 import {ModalManager} from 'Shared/Modal';
@@ -14,8 +12,6 @@ import {UserList} from 'Components/admin/UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
-import {setNetworkStatusAction} from 'Modules/flowEditor';
-import {NetworkStatusValue} from 'Model/Flow/FlowModel';
 import {Api} from 'Api';
 import HttpUtil from 'Utils/HttpUtil';
 
@@ -45,34 +41,10 @@ const getNavigation = (viewId: ViewId) => {
 }
 
 const StreamCat = (props: Props) => {
-
-    const dispatch = useDispatch();
     const {viewId} = props;
 
     // Navigationの取得を開始する
     const [readNavigation] = useAsyncResource(getNavigation, viewId);
-
-    const addNetworkStatusHandler = () => {
-        const getNavigatorNetworkStatus = () => {
-            if(navigator.onLine){
-                return NetworkStatusValue.Online;
-            }else{
-                return NetworkStatusValue.Offline;
-            }
-        }
-        const dispatchNetworkStatus = ()=>{
-            dispatch(setNetworkStatusAction(getNavigatorNetworkStatus()));
-        }
-        dispatchNetworkStatus();
-        window.addEventListener("online",dispatchNetworkStatus);
-        window.addEventListener("offline",dispatchNetworkStatus);
-    }
-
-    // 初回レンダリング時のみ実行する
-    useEffect(() => {
-        // if(viewId !== ViewId.Undefined)getNavigation();
-        if(viewId === ViewId.Flow_Editor)addNetworkStatusHandler();
-    }, []);
 
     // Webブラウザの設定に従って、ライト/ダークテーマを設定する
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');

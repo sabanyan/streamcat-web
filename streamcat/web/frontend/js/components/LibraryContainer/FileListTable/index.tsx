@@ -148,9 +148,9 @@ export const FileListTable = (props: Props) => {
                 onClickApply(datum);
                 return;
             }
-            window.open(WebUtil.webURL('/flows/' + datum.uuid + dialogOption));
+            window.open(WebUtil.webURL('/flows/' + datum.uuid, true));
         }else if (datum.type==='activity') {
-            window.open(WebUtil.webURL('/flows/' + (datum as ActivityType).flowUuid + dialogOption));
+            window.open(WebUtil.webURL('/flows/' + (datum as ActivityType).flowUuid, true));
         }
     };
 

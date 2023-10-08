@@ -1,3 +1,11 @@
+import {
+    CommandNodeType,
+    FlowNodeType,
+    FrameNodeType,
+    InlineFlowNodeType,
+    NoteNodeType
+} from 'Model/Step/NodeTypes';
+
 /**
  * Datumの種別
  */
@@ -37,7 +45,7 @@ type Allowlist = {
     export: boolean;
     findMember: boolean;
     updateMember: boolean;
-    lock: boolean
+    lock: boolean;
 };
 
 /**
@@ -231,28 +239,59 @@ export type DatabaseType = DatumType & {
     ) => Promise<DatabaseType>;
 };
 
+type Param = {
+    name: string;
+    type: string;
+    label?: string;
+    optional?: boolean;
+};
+
 export type Port = {
     label: string;
     nodeId: string;
     type: string;
 };
 
-type PortArray = [] & {
-    exists: (portId: string) => boolean,
-    upsert: (port: Port) => void,
-    removeByNodeId: (nodeId: string) => void,
-    toJSON: () => string
+type PortArray = Port[] & {
+    exists: (portId: string) => boolean;
+    upsert: (port: Port) => void;
+    removeByNodeId: (nodeId: string) => void;
 };
 
+export type AllNodeType = FrameNodeType | CommandNodeType | FlowNodeType | InlineFlowNodeType | NoteNodeType;
+
 export type Flow = {
-    label?: string,
-    description?: string,
-    creator?: string,
-    createdAt?: string,
-    projectId?: number,
-    nodes: any[]
-    params: any[]
-    ports: [PortArray,PortArray]
+    label?: string;
+    description?: string;
+    nodes: AllNodeType[];
+    params: Param[];
+    ports: [PortArray,PortArray];
+    clone: () => Flow;
+};
+
+type BaseFlowCommand =  {
+    label: string;
+    // GET /subflowsはclassificationを返さない
+    classification?: string;
+    description: string;
+    params: Param[];
+    ports: [PortArray,PortArray];
+    creator: string;
+    createdAt: string;
+};
+
+// GET /subflows が返すデータ型
+export type FlowCommand = BaseFlowCommand & {
+    uuid: string;
+};
+
+// GET /datasrcs, GET /dtatdsts が返すデータ型
+export type InlineFlowCommand = BaseFlowCommand & {
+    // 
+    flow: Flow & {
+        creator: string;
+        createdAt: string;
+    };
 };
 
 export type Command = {
@@ -261,20 +300,41 @@ export type Command = {
     label: string;
     classification: string;
     description: string;
-    groups:[]
-    params:[{
+    groups: [];
+    params: {
         name: string;
         type: string;
-        label: string;
+        label?: string;
         optional?: boolean;
-        options: any;
+        options?: any;
         default?: string | number;
-    }];
-    ports:[{
-        name: string;
-        type: string;
-    }];
+    }[];
+    ports: [
+        {
+            label: string;
+            type: string;
+        }[],
+        {
+            label: string;
+            type: string;
+        }[]
+    ];
+    // TODO: コマンド引数の検証機能は無効にしているが
+    // 型不整合のエラーを回避するためにrulesを残しておく
+    rules: {};
 };
+
+export type VCommand = Command & {
+    order: number;
+};
+
+export type FlowCommands = {
+    getCommand: (uuid:string|null) => FlowCommand | null;
+} & FlowCommand[];
+
+export type Commands = {
+    getCommand: (commandId:string) => Command | null;
+} & Command[];
 
 /**
  * Flowを格納するオブジェクト型

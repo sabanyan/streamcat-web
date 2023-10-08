@@ -10,7 +10,7 @@ let mouseUpEvent
 
 type Props = {
   children?: React.ReactNode;
-  inspector?: {width:number};
+  inspectorWidth?: number;
   width?: number;
   resizeInspector?: Function
 }
@@ -124,14 +124,14 @@ class Resizer extends React.Component<Props, State> {
   }
 
   render () {
-    const {children, inspector} = this.props
+    const {children, inspectorWidth} = this.props
     const {isClosed, isDragging, willClosed} = this.state
     let childrendElement = children
     if (isClosed) {
       childrendElement = null
     }
 
-    let width = (inspector) ? inspector.width : this.state.width 
+    let width = (inspectorWidth!==undefined)? inspectorWidth : this.state.width
     let styleName = (this.isDialog()) ? style.property_dialog : style.property
 
     return <div className={classnames(styleName, style.in,
