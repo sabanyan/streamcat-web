@@ -193,6 +193,13 @@ export default class FlowUtil {
     return step
   }
 
+  static shiftPosition (position: {x:number,y:number}){
+    return {
+      x: position.x + Constants.default.graph.nodeSeparator,
+      y: position.y + Constants.default.graph.rankSeparator
+    };
+  }
+
   static setModelType (nodes:AllNodeType[], json: any): AllNodeType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) {
       const newId = ModelUtil.getNewId(nodes, 'flow');

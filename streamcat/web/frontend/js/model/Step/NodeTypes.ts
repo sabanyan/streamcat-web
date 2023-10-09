@@ -103,7 +103,7 @@ export const CommandNode = function(this: CommandNodeType, id:string, commandId:
     setCommandNodeFunc(this);
 };
 
-export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, position:{x:number, y:number}) {
+export const FlowNode = function(this: FlowNodeType, id:string, uuid:string|null, position:{x:number, y:number}) {
     (this as any).id = id;
     (this as any).type = 'flow';
     this.label = id;
@@ -121,7 +121,7 @@ export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, pos
 
 export const InlineFlowNode = function( this: InlineFlowNodeType,
                                         id: string, 
-                                        classification: string,
+                                        classification: string|undefined,
                                         flow:Flow & {creator:string; createdAt:string;},
                                         position:{x:number, y:number}) {
     (this as any).id = id;
