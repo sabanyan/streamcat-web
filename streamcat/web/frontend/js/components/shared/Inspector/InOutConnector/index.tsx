@@ -1,8 +1,8 @@
 import React from 'react';
-import style from "../style.scss";
-import {AddButton} from "Shared/Input";
-import {FlowUtil, ModalUtil} from "Utils/index";
-import Constants from "Constants/index";
+import style from '../style.scss';
+import {AddButton} from 'Shared/Input';
+import {FlowUtil, ModalUtil} from 'Utils/index';
+import Constants from 'Constants/index';
 import { InConnector } from '../inConnector';
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType, addInPort } from 'Model/Step/NodeTypes';
 import { AllNodeType } from 'Model/Library';
@@ -34,7 +34,7 @@ export const InOutConnector = (props: Props) => {
             // データデストの場合は何故かsrcsOrderに値が格納されていないので
             // srcsプロパティから入力ポートを取得する
             portlabels = Object.entries(flowNode.srcs || {}).map(src => {
-                const portLabel = src[0]
+                const portLabel = src[0];
                 // NOTE: サブフローの変更によってポートが減った場合に備えている?
                 if(flowNode.hasOwnProperty('flow') && (flowNode as InlineFlowNodeType).flow.ports[0].find(port => port.label===portLabel)){
                     return portLabel;
@@ -150,7 +150,7 @@ export const InOutConnector = (props: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.CONFIRM,
             visible: true,
-            done: "追加する",
+            done: '追加する',
             content: <div>
                 入力を追加しますか？
             </div>
@@ -172,7 +172,7 @@ export const InOutConnector = (props: Props) => {
     // https://github.com/JedWatson/classnames/issues/115
     return <div className={'streamcat-form'}>
         <label>入力</label>
-        <ul className="inPorts" >{inConnectors}</ul>
+        <ul className='inPorts' >{inConnectors}</ul>
         {addEdgeContainer(selectedStep)}
         <label>出力</label>
         {outConnectors}

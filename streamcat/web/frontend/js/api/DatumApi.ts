@@ -15,10 +15,7 @@ import {
     DocumentType,
     ActivityType,
     Flow,
-    Port,
-    AllNodeType,
     InlineFlowCommand,
-    Command,
     VCommand,
     Commands,
     FlowCommands
@@ -28,15 +25,6 @@ import {
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
-    FrameNodeType,
-    CommandNodeType,
-    FlowNodeType,
-    InlineFlowNodeType,
-    NoteNodeType,
-    calcSize,
-    addInPort,
-} from 'Model/Step/NodeTypes';
-import {
     toJsonOrRaise,
     getBase as get,
     postBase,
@@ -44,6 +32,8 @@ import {
     delBase,
     makeArrayCtor
 } from './ApiBase';
+import { NodeArray } from './Nodes';
+import { PortArray } from './Ports';
 
 const post = <TDatumType>(url: string, body: {}) => {
     return postBase<TDatumType>(url, body).then<TDatumType>(datum => {
@@ -324,112 +314,6 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         // Activityの変更・削除はできない
     }
 });
-
-/**
- * NodeArrayのコンストラクタ関数を作成する
- */
-export const NodeArray = makeArrayCtor<AllNodeType>(node => {
-    if(node.type === 'frame'){
-        const n = node as FrameNodeType;
-        n.hasData = () => !!n.uuid;
-        n.isCached = () => !!n.cacheCreatedAt;
-        n.deleteCache = () => {
-            n.cacheCreatedAt = null;
-            n.uuid = null;
-        };
-    }else if(node.type === 'command'){
-        const c = node as CommandNodeType;
-        c.deleteInPort = (label:string) => {
-            c.srcs && delete c.srcs[label];
-            if(c.srcsOrder){
-                c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
-            }
-        };
-        c.addInPort = (label:string, nodeId:string) => addInPort(c, label, nodeId);
-        c.getInPortIndex = () => {
-            const srcKeys = Object.keys(c.srcs || {});
-
-            const filterKeys = srcKeys.filter((key) => {
-                return (key.indexOf("*") != -1);
-            });
-    
-            let max = 0;
-            filterKeys.forEach((key) => {
-                const value = key.replace("*", "");
-                max = (parseInt(value) > max) ? parseInt(value) : max;
-            });
-    
-            return max;
-        };
-        c.addableInPort = (command: Command) => {
-            // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
-            const filterKeys = command.ports[0].filter((inPort) => {
-                return (inPort.label.indexOf("*") >= 0);
-            });
-            return filterKeys.length > 0;
-        };
-    }else if(node.type === 'flow'){
-        if(node.hasOwnProperty('uuid')){
-            const f = node as FlowNodeType;
-            f.addableInPort = () => false;
-        }else if(node.hasOwnProperty('flow')){
-            const f = node as InlineFlowNodeType;
-            f.addableInPort = () => false;
-        }else{
-            throw new Error('Flow node has not neither uuid nor flow property');
-        }
-    }else if(node.type === 'note'){
-        const n = node as NoteNodeType;
-        n.setTitle = (title) => {
-            n.title = title;
-            n.size = calcSize(title, n.fontSize || 16);
-        };
-        n.setFontSize = (fontSize) => {
-            n.fontSize = fontSize;
-            n.size = calcSize(n.title, fontSize);
-        };
-    }else{
-        // TODO: 他のNodeTpeを追加予定
-    }
-});
-
-/**
- * PortArrayのコンストラクタ関数を作成する
- */
-const PortArray = function(this: any, ports: Port[]){
-    Array.prototype.push.apply(this, ports);
-    // JsonStringify()でlengthプロパティをJSON文字列から除外するために設定しておく
-    this.__allAPIFuncSet = true;
-};
-PortArray.prototype = Object.create(Array.prototype);
-PortArray.prototype.constructor = PortArray;
-
-PortArray.prototype.exists = function(portId: string){
-    // TODO: Portの識別子はnodeIdからlabelに変更予定
-    return !!PortArray.prototype.find.apply(this, [p => p.nodeId === portId]);
-};
-
-PortArray.prototype.upsert = function(port: Port){
-    const findPort = PortArray.prototype.find.apply(this, [p => p.nodeId === port.nodeId]);
-    if(findPort){
-        // 既に存在する場合は更新する
-        findPort.label = port.label;
-        findPort.type = port.type;
-    }else{
-        // 存在しない場合は追加する
-        this.push(port);
-    }
-};
-
-PortArray.prototype.removeByNodeId = function(nodeId: string){
-    const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === nodeId]);
-    if(index === -1){
-        // 存在しない場合は何もしない
-        return;
-    }
-    // 存在する場合は削除する
-    PortArray.prototype.splice.apply(this, [index, 1]);
-};
 
 /**
  * 引数を追加する共通関数
