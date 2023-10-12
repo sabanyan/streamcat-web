@@ -144,7 +144,7 @@ export const setFlowNodeFunc = (node:BaseFlowNodeType) => {
         setFlowNodeFunc(ret);
         return ret;
     };
-    node.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
+    node.addInPort = (label:string, nodeId:string) => addInPort(node, label, nodeId);
     node.addableInPort = () => false;
 };
 
