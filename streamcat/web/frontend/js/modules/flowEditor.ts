@@ -5,6 +5,7 @@ import { CommandPortType, RunnablesType } from "../types";
 import _ from "lodash";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
+import { NodeArray } from "Api";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -565,77 +566,58 @@ export const deleteStepsAction = (flowData:Flow, step_ids:string[]) => {
  * ステップのペースト
  * @returns {{type: string, step: *}}
  */
-export const pasteStepsAction = (flowData:Flow, paste_nodes:string) => {
-    const add_nodes = JSON.parse(paste_nodes);
+export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
+    // 文字列からNodeオブジェクトを生成する
+    const jsonNodes = JSON.parse(stringifiedNodes);
 
-    //ペースト時に
-    //IDが新規に振られるので、旧のIDを新規のIDに置き換え
-    //コマンドのノード間の関連(srcs,dsts)を維持する
-    //let convertMap = {}
-    //newState.selected_step_ids = []
-    add_nodes.forEach((json) => {
-        const cacheId = json.id;
-        let label = (json.label) ? json.label : cacheId;
-        json.id = null;
-        json.label = "コピー " + label;
-        let newNode: AllNodeType = FlowUtil.setModelType(flowData.nodes, json);
+    // 全てのNodeに新規idを設定する
+    jsonNodes.forEach(jsonNode =>{
+        jsonNode.id = ModelUtil.getNewId(flowData.nodes, jsonNode.type);
+        jsonNode.label = 'コピー ' + jsonNode.label;
+    });
 
-        //ノード本体をコピー
+    // Nodeオブジェクトに関数を付与する
+    const copiedNodes = new NodeArray(jsonNodes).slice();
+
+    copiedNodes.forEach(newNode => {
+        // 複製したNodeをgraphに追加
         graphUtil.addNode(newNode.id);
-        //newState.selected_step_ids.push(newNode.id);
 
-        //入力値をコピー
+        // 複製したNodeは表示位置をずらす
         newNode = FlowUtil.copyPositionWithOffsetX(newNode);
 
+        // CommandまたはFlowの出力先FrameNodeを生成する
         if(newNode.type === 'command' || newNode.type === 'flow'){
-            let commandOrFlowNode = newNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
-            commandOrFlowNode = FlowUtil.clearSrcs(commandOrFlowNode);
-            let newDsts = {};
+            const commandOrFlowNode = newNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
+            // 入力元FrameNodeとの接続を全て切断する
+            FlowUtil.clearSrcs(commandOrFlowNode);
+            const newDsts = {};
             commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
                 //出力先を作成し、接続先を変更する
-                const copiedStep = FlowUtil.getNodeFromID(flowData.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
-                // const props: any = {
-                //   id: null,
-                //   type: Constants.step.type.frame,
-                //   uuid: null,
-                //   label: "コピー " + copiedStep.label,
-                //   dataSource: copiedStep.dataSource,
-                //   // srcs: newNode.id,
-                //   // dsts: [],
-                //   position: copiedStep.position
-                // };
-                // let add_step = new DataFrameStepModel(props);
-                const newId = ModelUtil.getNewId(flowData.nodes, 'frame');
-                let add_node:FrameNodeType = new FrameNode(newId, copiedStep.position);
-                add_node.label = 'コピー ' + copiedStep.label;
-                add_node = FlowUtil.copyPositionWithOffsetX(add_node) as FrameNodeType;
-                flowData.nodes.push(add_node);
-                //ノード本体をコピー
-                graphUtil.addNode(add_node.id);
-                //newState.selected_step_ids.push(add_step.id);
-                newDsts[key] = add_node.id;
+                const dstFrame = FlowUtil.getNodeFromID(flowData.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
+                // 出力先Frameを複製する
+                const newDstFrame = dstFrame.clone<FrameNodeType>(
+                    ModelUtil.getNewId(flowData.nodes, 'frame'),
+                    FlowUtil.shiftPosition(dstFrame.position)
+                );
+                newDstFrame.label = newDstFrame.id;
+                // 複製したFrameをFlowに追加
+                flowData.nodes.push(newDstFrame);
+                // 複製したFrameをgraphに追加
+                graphUtil.addNode(newDstFrame.id);
+                newDsts[key] = newDstFrame.id;
             });
-            //convertMap[cacheId] = newNode.id
-            commandOrFlowNode.dsts = {};
-
+            // 複製したNodeをCanvasに反映させる
             flowData.nodes.push(commandOrFlowNode);
-
-            const action_step = _.cloneDeep(commandOrFlowNode);
-            action_step.dsts = newDsts;
-            
             flowData.nodes = rebuildNodesEdges(
                 flowData.nodes,
-                action_step.id,
-                action_step.srcs || {},
+                commandOrFlowNode.id,
+                commandOrFlowNode.srcs || {},
                 newDsts,
-                action_step.srcsOrder || []
+                commandOrFlowNode.srcsOrder || []
             );
-            // newState.flow!.nodes = newState.nodes;
         }
     });
-    //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
-
-    // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
 };
 
 export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowCommand | InlineFlowCommand) => {

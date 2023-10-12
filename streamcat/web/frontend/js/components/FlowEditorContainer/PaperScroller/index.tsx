@@ -32,31 +32,11 @@ const PaperScroller = (props: Props) => {
     const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
 
-    // const [coords, setCoords] = useState<{x:number, y:number}>();
-    const pasteSteps = () => {
+    const stringifyNodes = (selectedStepIds:string[]): string => {
         const {flowData} = props;
-        const [flow, setFlow] = props.flowState;
-        const pasteSteps = (paste_nodes:string) => {
-            // コピーするJSONが空の場合はペースト処理をしない
-            if(paste_nodes === ''){
-                return;
-            }
-            pasteStepsAction(flowData, paste_nodes);
-            setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
-            setFlow({...flow});
-        };
-        navigator.clipboard.readText().then(data => {
-            pasteSteps(data);
-        }, (err) => {
-            alert('クリップボードが利用できません');
-        });
-    };
-
-    const getCopyNodes = (): string => {
-        const {selectedStepIds, flowData} = props;
-        return JSON.stringify(selectedStepIds.map((id) => {
-            return GraphUtil.getNode(flowData.nodes, id);
-        }));
+        return JSON.stringify(
+            selectedStepIds.map(id => GraphUtil.getNode(flowData.nodes, id))
+        );
     };
 
     /**
@@ -86,18 +66,36 @@ const PaperScroller = (props: Props) => {
     };
 
     const copySteps = () => {
+        const {selectedStepIds} = props;
+
         if (!stepIsCopyable()) {
             navigator.clipboard.writeText("");
             return;
         }
 
-        const {selectedStepIds} = props;
-        const copyData = getCopyNodes();
-        navigator.clipboard.writeText(copyData).then(() => {
-            // copySteps(selectedStepIds);
-        }, (err) => {
-            alert("クリップボードが利用できません");
-        });
+        const stringifiedNodes = stringifyNodes(selectedStepIds);
+        navigator.clipboard.writeText(stringifiedNodes).then(
+            () => {},
+            () => alert("クリップボードが利用できません")
+        );
+    };
+
+    const pasteSteps = () => {
+        const {flowData} = props;
+        const [flow, setFlow] = props.flowState;
+
+        navigator.clipboard.readText().then(
+            stringifiedNodes => {
+                // コピーするJSONが空の場合はペースト処理をしない
+                if(stringifiedNodes === ''){
+                    return;
+                }
+                pasteStepsAction(flowData, stringifiedNodes);
+                setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
+                setFlow({...flow});
+            },
+            () => alert("クリップボードが利用できません")
+        );
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
