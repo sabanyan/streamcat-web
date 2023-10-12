@@ -38,7 +38,12 @@ const cloneCommonNodeProps = (node:NodeType) => {
 };
 
 const cloneCommandNodeProps = (node:CommandNodeType|BaseFlowNodeType) => {
-    let ret;
+    let ret:{
+        args?: { [name:string]:any },
+        srcs?: { [port:string]:string },
+        dsts?: { [port:string]:string },
+        srcsOrder?: string[]
+    } = {};
     if(node.args){
         ret.args = node.args;
     }
@@ -129,9 +134,9 @@ export const setFlowNodeFunc = (node:BaseFlowNodeType) => {
         if(node.hasOwnProperty('uuid')){
             ret = new FlowNode(id, (node as FlowNodeType).uuid, newPosition);
         }else{
+            // NOTE: インラインFlowは変更されないので複製を取る必要はないだろう
             const flow = (node as InlineFlowNodeType).flow;
-            const clonedFlow = {...flow.clone(), creator:flow.creator, createdAt:flow.createdAt};
-            ret = new InlineFlowNode(id, node.classification, clonedFlow, newPosition)
+            ret = new InlineFlowNode(id, node.classification, flow, newPosition)
         }
         ret.label = node.label;
         Object.assign(ret, cloneCommonNodeProps(node));
