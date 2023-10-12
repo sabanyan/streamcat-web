@@ -616,6 +616,10 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
                 newDsts,
                 commandOrFlowNode.srcsOrder || []
             );
+        }else{
+            // NoteNodeの場合
+            // 複製したNodeをCanvasに反映させる
+            flowData.nodes.push(newNode);
         }
     });
 };

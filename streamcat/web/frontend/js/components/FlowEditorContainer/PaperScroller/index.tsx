@@ -7,7 +7,6 @@ import {
     pasteStepsAction
 } from 'Modules/flowEditor';
 import { Flow, FlowType } from 'Model/Library';
-import { FlowNodeType } from 'Model/Step/NodeTypes';
 
 type Props = {
     canvasWidth: number;
@@ -28,7 +27,6 @@ type Props = {
 }
 
 const PaperScroller = (props: Props) => {
-
     const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
 
@@ -43,40 +41,31 @@ const PaperScroller = (props: Props) => {
      * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
      * @returns {boolean}
      */
-    const stepIsCopyable = () => {
-        const {selectedStepIds, flowData} = props;
+    const stepIsCopyable = (selectedStepIds:string[]) => {
+        const {flowData} = props;
 
         // 複数のノードをコピーさせない
         if(selectedStepIds.length !== 1){
-            return false
-        }
-
-        const copyNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
-        if(copyNode.type === 'flow'){
-            const flowNode = copyNode as FlowNodeType;
-            if(flowNode.classification === 'data_source' || flowNode.classification === 'data_dest'){
-                return false;
-            }
-        }else if(copyNode.type !== 'command'){
             return false;
         }
 
-        // Command、またはデータソース/デスト以外のFlow
-        return true;
+        // 以下のtypeのNodeを複製可能とする
+        const copyNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
+        return copyNode.type === 'command' || copyNode.type === 'flow' || copyNode.type === 'note';
     };
 
     const copySteps = () => {
         const {selectedStepIds} = props;
 
-        if (!stepIsCopyable()) {
-            navigator.clipboard.writeText("");
+        if (!stepIsCopyable(selectedStepIds)) {
+            navigator.clipboard.writeText('');
             return;
         }
 
         const stringifiedNodes = stringifyNodes(selectedStepIds);
         navigator.clipboard.writeText(stringifiedNodes).then(
             () => {},
-            () => alert("クリップボードが利用できません")
+            () => alert('クリップボードが利用できません')
         );
     };
 
@@ -94,7 +83,7 @@ const PaperScroller = (props: Props) => {
                 setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
                 setFlow({...flow});
             },
-            () => alert("クリップボードが利用できません")
+            () => alert('クリップボードが利用できません')
         );
     };
 
@@ -102,42 +91,42 @@ const PaperScroller = (props: Props) => {
         const {redo, undo, selectedStepIds, deleteSteps, addHistory} = props;
 
         if (DetectUtil.isMac()) {
-            if (e.metaKey && e.key === "c") {
+            if (e.metaKey && e.key === 'c') {
                 copySteps();
                 return;
             }
-            if (e.metaKey && e.key === "v") {
+            if (e.metaKey && e.key === 'v') {
                 pasteSteps();
                 return;
             }
-            if (e.metaKey && e.shiftKey && e.key === "z") {
+            if (e.metaKey && e.shiftKey && e.key === 'z') {
                 redo();
                 return;
             }
-            if (e.metaKey && e.key === "z") {
+            if (e.metaKey && e.key === 'z') {
                 undo();
                 return;
             }
         } else {
-            if (e.ctrlKey && e.key === "c") {
+            if (e.ctrlKey && e.key === 'c') {
                 copySteps();
                 return;
             }
-            if (e.ctrlKey && e.key === "v") {
+            if (e.ctrlKey && e.key === 'v') {
                 pasteSteps();
                 return;
             }
-            if (e.ctrlKey && e.shiftKey && e.key === "z") {
+            if (e.ctrlKey && e.shiftKey && e.key === 'z') {
                 redo();
                 return;
             }
-            if (e.ctrlKey && e.key === "z") {
+            if (e.ctrlKey && e.key === 'z') {
                 undo();
                 return;
             }
         }
 
-        if (e.key === "Backspace" || e.key === "Delete") {
+        if (e.key === 'Backspace' || e.key === 'Delete') {
             deleteSteps(selectedStepIds);
             addHistory();
         }
