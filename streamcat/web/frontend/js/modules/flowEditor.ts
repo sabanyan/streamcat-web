@@ -178,10 +178,13 @@ const defaultNodePositionAndSize = (): PositionAndSize => {
 };
 
 const newNodesPositionAndSize = (nodes: AllNodeType[], srcNodeIds: string[] = [], dstNodeIds: string[] = []) => {
-    let result = {
+    const result: {
+        newNodePositionAndSize: PositionAndSize,
+        dstNodesPositionAndSize: { [nodeId:string]:PositionAndSize }
+    } = {
         newNodePositionAndSize: defaultNodePositionAndSize(),
         dstNodesPositionAndSize: {}
-    }
+    };
 
     let totalSX = 0;
     let totalSY = 0;
@@ -593,18 +596,21 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
             FlowUtil.clearSrcs(commandOrFlowNode);
             const newDsts = {};
             commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
-                //出力先を作成し、接続先を変更する
-                const dstFrame = FlowUtil.getNodeFromID(flowData.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
-                // 出力先Frameを複製する
-                const newDstFrame = dstFrame.clone<FrameNodeType>(
+                // 新規作成する出力先Frameの配置位置を算出する
+                const { dstNodesPositionAndSize } = newNodesPositionAndSize(flowData.nodes, [], ['NEW-FRAME']);
+
+                // 出力先Frameを新規作成する
+                const newDstFrame = new FrameNode(
                     ModelUtil.getNewId(flowData.nodes, 'frame'),
-                    FlowUtil.shiftPosition(dstFrame.position)
+                    dstNodesPositionAndSize['NEW-FRAME'].position
                 );
+
                 newDstFrame.label = newDstFrame.id;
                 // 複製したFrameをFlowに追加
                 flowData.nodes.push(newDstFrame);
                 // 複製したFrameをgraphに追加
                 graphUtil.addNode(newDstFrame.id);
+                // 複製したCommandの出力先を複製したFrameに変更する
                 newDsts[key] = newDstFrame.id;
             });
             // 複製したNodeをCanvasに反映させる
