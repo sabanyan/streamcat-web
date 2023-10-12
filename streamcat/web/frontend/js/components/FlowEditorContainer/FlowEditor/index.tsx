@@ -851,7 +851,7 @@ export const FlowEditor = () => {
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}
                 updateStep={updateStep}
-                updateNodeEdges={updateNodeEdges}
+                // updateNodeEdges={updateNodeEdges}
                 // refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}

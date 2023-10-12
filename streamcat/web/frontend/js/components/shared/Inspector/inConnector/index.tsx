@@ -2,10 +2,11 @@ import React from 'react';
 import style from '../style.scss';
 import Constants from 'Constants/index';
 import {DropDownList} from 'Shared/Input';
-import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
+import {FlowUtil, ModalUtil} from 'Utils/index';
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
+import { addNodeEdges, removeNodeEdge } from 'Modules/flowEditor';
 
 type Props = {
     portLabel: string;
@@ -13,7 +14,8 @@ type Props = {
     nodes: AllNodeType[];
     runnables: RunnablesType;
     selectedStep: CommandNodeType | FlowNodeType | InlineFlowNodeType;
-    updateNodeEdges: (node: AllNodeType) => void;
+    updateStep: (updatedNode: AllNodeType) => void;
+    // updateNodeEdges: (node: AllNodeType) => void;
     disabled: boolean;
 };
 
@@ -23,7 +25,7 @@ type Props = {
  * @returns 
  */
 export const InConnector = (props: Props) => {
-    const {portLabel, index, nodes, runnables, selectedStep, updateNodeEdges, disabled} = props;
+    const {portLabel, index, nodes, runnables, selectedStep, updateStep, disabled} = props;
 
     const nodeSrcs = selectedStep?.srcs || {};
     const nodeId = nodeSrcs[portLabel] || '';
@@ -34,23 +36,30 @@ export const InConnector = (props: Props) => {
         object: dataFrame
     }));
 
-    const onChangeInEdge = (e, data, label) => {
-        // let newStep = StateUtil.deepCopy(selectedStep);
-        const newStep = selectedStep.clone<CommandNodeType>(selectedStep.id);
-        //labelにポート名
-        //data.objectにデータフレームが格納されている
-        if (data.object) {
-            //ノードが選択されたとき
-            const dataSource: FrameNodeType = data.object;
-            if(!newStep.srcs){
-                newStep.srcs = {};
+    const onChangeInEdge = (e, data, portLabel) => {
+        // data.objectにデータフレームが格納されている
+        const srcNode: FrameNodeType = data.object;
+        if (srcNode) {
+            // Canvasから対象のEdgeを削除する
+            removeNodeEdge(selectedStep, portLabel);
+            // NodeのPortを変更する
+            if(!selectedStep.srcs){
+                selectedStep.srcs = {};
             }
-            newStep.srcs[label] = dataSource.id;
-            updateNodeEdges(newStep);
+            selectedStep.srcs[portLabel] = srcNode.id;
+            // Canvasに対象のEdgeを追加する
+            addNodeEdges(selectedStep);
+            // Flowオブジェクトに反映する
+            updateStep(selectedStep);
         } else {
+            // Canvasから対象のEdgeを削除する
+            removeNodeEdge(selectedStep, portLabel);
             //「選択してください」が選択されたときはノードのつながりを削除する
-            newStep.srcs && delete newStep.srcs[label];
-            updateNodeEdges(newStep);
+            if(selectedStep.srcs){
+                selectedStep.srcs[portLabel] = '';
+            }
+            // Flowオブジェクトに反映する
+            updateStep(selectedStep);
         }
     };
 
@@ -68,13 +77,13 @@ export const InConnector = (props: Props) => {
 
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                // const newStep:CommandNodeType = StateUtil.deepCopy(step);
-
-                // updateNodeEdges()から呼び出されるrebuildNodesEdges()が機能するためには
-                // flow.nodesが含むNodeとは別のNodeオブジェクトを渡す必要がある
-                const newStep = step.clone<CommandNodeType>(step.id);
-                deleteInPort(newStep, portLabel);
-                updateNodeEdges(newStep);
+                // Canvasから対象のEdgeを削除する
+                removeNodeEdge(step, portLabel);
+                // NodeからPortを削除する
+                deleteInPort(step, portLabel);
+                // Flowオブジェクトに反映する
+                updateStep(step);
+                // ダイアログを閉じる
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });

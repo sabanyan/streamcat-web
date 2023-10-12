@@ -4,7 +4,7 @@ import { FlowUtil, GraphUtil, ModelUtil, ZoomUtil } from "Utils/index";
 import { CommandPortType, RunnablesType } from "../types";
 import _ from "lodash";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
-import { CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
+import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
 import { NodeArray } from "Api";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
@@ -47,6 +47,43 @@ const ADD_DATADST_ACTION = "add_datadst_action";
 const ADD_DATASRC_ACTION = "add_datasrc_action";
 
 export const graphUtil: GraphUtil = new GraphUtil();
+
+/**
+ * CanvasからEdgeを削除する
+ * @param node 
+ * @param portLabel 
+ */
+export const removeNodeEdge = (node:CommandNodeType|BaseFlowNodeType, portLabel:string) => {
+    const remove = (fromNodeId:string, toNodeId:string) => {
+        if(fromNodeId && toNodeId && graphUtil.existsNode(fromNodeId) && graphUtil.existsNode(toNodeId)){
+            graphUtil.removeEdge(fromNodeId, toNodeId, GraphUtil.edgeName(fromNodeId, toNodeId, portLabel));
+        }
+    };
+    // nodeに入るEdgeを削除する
+    node.srcs && remove(node.srcs[portLabel], node.id);
+    // nodeから出るEdgeを削除する
+    node.dsts && remove(node.id, node.dsts[portLabel]);
+};
+
+/**
+ * CanvasにEdgeを追加する
+ * @param newNode 
+ */
+export const addNodeEdges = (newNode:CommandNodeType|BaseFlowNodeType) => {
+    const add = (fromNodeId:string, toNodeId:string, portLabel:string) => {
+        if(fromNodeId && toNodeId && graphUtil.existsNode(fromNodeId) && graphUtil.existsNode(toNodeId)){
+            graphUtil.addEdge(fromNodeId, toNodeId, GraphUtil.edgeName(fromNodeId, toNodeId, portLabel));
+        }
+    };
+    // nodeに入るEdgeを追加する  
+    newNode.srcs && Object.entries(newNode.srcs).forEach(([portLabel, srcNodeId]) => {
+        add(srcNodeId, newNode.id, portLabel);
+    });
+    // nodeから出るEdgeを追加する
+    newNode.dsts && Object.entries(newNode.dsts).forEach(([portLabel, dstNodeId]) => {
+        add(newNode.id, dstNodeId, portLabel);
+    });
+};
 
 /**
  * エッジのつなぎ直し処理
@@ -613,15 +650,12 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
                 // 複製したCommandの出力先を複製したFrameに変更する
                 newDsts[key] = newDstFrame.id;
             });
+            // Nodeの出力先を変更する
+            commandOrFlowNode.dsts = newDsts;
+            // CanvasにEdgeを追加する
+            addNodeEdges(commandOrFlowNode);
             // 複製したNodeをCanvasに反映させる
             flowData.nodes.push(commandOrFlowNode);
-            flowData.nodes = rebuildNodesEdges(
-                flowData.nodes,
-                commandOrFlowNode.id,
-                commandOrFlowNode.srcs || {},
-                newDsts,
-                commandOrFlowNode.srcsOrder || []
-            );
         }else{
             // NoteNodeの場合
             // 複製したNodeをCanvasに反映させる

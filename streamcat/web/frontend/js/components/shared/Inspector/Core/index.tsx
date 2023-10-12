@@ -40,7 +40,7 @@ type InspectorProps = {
   deleteSteps: (step_ids: string[]) => void;
   addHistory: () => void;
   updateStep: (node:AllNodeType) => void;
-  updateNodeEdges: (node:AllNodeType) => void;
+  // updateNodeEdges: (node:AllNodeType) => void;
   updateLastSavedFlow: (lastSavedFlow:FlowType) => void;
   addFlowVariableHidden: boolean;
   previewDisabled: boolean;
@@ -85,7 +85,7 @@ export const Inspector = (props:InspectorProps) => {
 
     const { selectedStepIds, lockUUID, runnables, lastSavedFlow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
-      previewDisabled, zoom, addStep,updateStep,updateNodeEdges,selectSteps,addHistory,
+      previewDisabled, zoom, addStep,updateStep,selectSteps,addHistory,
       selectedFrameState, deleteSteps,updateLastSavedFlow } = props
 
     let property
@@ -171,7 +171,7 @@ export const Inspector = (props:InspectorProps) => {
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
             updateStep={updateStep}
-            updateNodeEdges={updateNodeEdges}
+            // updateNodeEdges={updateNodeEdges}
             addHistory={addHistory}
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
@@ -186,7 +186,7 @@ export const Inspector = (props:InspectorProps) => {
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
             updateStep={updateStep}
-            updateNodeEdges={updateNodeEdges}
+            // updateNodeEdges={updateNodeEdges}
             addHistory={addHistory}
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
@@ -199,7 +199,7 @@ export const Inspector = (props:InspectorProps) => {
           runnables={runnables}
           nodes={flowData.nodes}
           updateStep={updateStep}
-          updateNodeEdges={updateNodeEdges}
+          // updateNodeEdges={updateNodeEdges}
           addHistory={addHistory}
           selectSteps={selectSteps}
           deleteSteps={deleteSteps}

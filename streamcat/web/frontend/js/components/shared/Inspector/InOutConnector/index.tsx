@@ -1,7 +1,7 @@
 import React from 'react';
 import style from '../style.scss';
 import {AddButton} from 'Shared/Input';
-import {FlowUtil, ModalUtil, StateUtil} from 'Utils/index';
+import {FlowUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { InConnector } from '../inConnector';
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType, addInPort } from 'Model/Step/NodeTypes';
@@ -12,7 +12,8 @@ type Props = {
     // TODO: 型指定をしたいがエラーになる箇所があるので保留する
     // selectedStep: SubFlowStepModel | CommandStepModel;
     selectedStep: CommandNodeType | FlowNodeType | InlineFlowNodeType;
-    updateNodeEdges: (node: AllNodeType) => void;
+    updateStep: (updatedNode: AllNodeType) => void;
+    // updateNodeEdges: (node: AllNodeType) => void;
     nodes: AllNodeType[];
     runnables: RunnablesType;
     // FIXIT: 使用していないプロパティ?
@@ -21,7 +22,7 @@ type Props = {
 }
 
 export const InOutConnector = (props: Props) => {
-    const {nodes, runnables, selectedStep, updateNodeEdges, disabled} = props;
+    const {nodes, runnables, selectedStep, updateStep, disabled} = props;
     
     // 
     // 入力コネクタリストを作成する
@@ -58,7 +59,8 @@ export const InOutConnector = (props: Props) => {
             nodes={nodes}
             runnables={runnables}
             selectedStep={selectedStep}
-            updateNodeEdges={updateNodeEdges}
+            updateStep={updateStep}
+            // updateNodeEdges={updateNodeEdges}
             disabled={!!disabled}
         />
     );
@@ -140,10 +142,11 @@ export const InOutConnector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 const nextIndex = step.getInPortIndex() + 1;
-                // const newStep:CommandNodeType = StateUtil.deepCopy(step);
-                const newStep = step.clone<CommandNodeType>(step.id);
-                addInPort(newStep, '*' + nextIndex, '');
-                updateNodeEdges(newStep);
+                // NodeにPortを新規追加する
+                addInPort(step, '*' + nextIndex, '');
+                // Flowオブジェクトに反映する
+                updateStep(step);
+                // ダイアログを閉じる
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });

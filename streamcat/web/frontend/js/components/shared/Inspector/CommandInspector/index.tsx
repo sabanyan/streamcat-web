@@ -6,8 +6,8 @@ import {Button} from "Shared/Input";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
-import { AllNodeType, Command, FlowCommand } from 'Model/Library';
-import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
+import { CommandNodeType, FlowNodeType } from 'Model/Step/NodeTypes';
 import { RunnablesType } from 'Types/index';
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
     nodes: AllNodeType[];
     runnables: RunnablesType;
     updateStep: (step: AllNodeType) => void;
-    updateNodeEdges: (node:AllNodeType) => void;
+    // updateNodeEdges: (node:AllNodeType) => void;
     addHistory: () => void;
     selectSteps: (selected_steps: any[]) => void;
     deleteSteps: (step_ids: string[]) => void;
@@ -117,7 +117,7 @@ const CommandInspector = (props: Props) => {
     };
 
 
-    const {updateNodeEdges, baseInspectorDisabled, nodes, runnables} = props;
+    const {updateStep, baseInspectorDisabled, nodes, runnables} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
@@ -181,7 +181,8 @@ const CommandInspector = (props: Props) => {
         <div><label>場所</label></div>
         {detail}
         <InOutConnector
-            updateNodeEdges={updateNodeEdges}
+            updateStep={updateStep}
+            // updateNodeEdges={updateNodeEdges}
             nodes={nodes}
             runnables={runnables}
             selectedStep={selected_step}

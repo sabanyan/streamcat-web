@@ -24,7 +24,7 @@ type Props = {
   parentUUID?: string;
 
   updateStep: (step: AllNodeType) => void;
-  updateNodeEdges: (node: AllNodeType) => void;
+  // updateNodeEdges: (node: AllNodeType) => void;
   addHistory: () => void;
   selectSteps: (selected_steps: any[]) => void;
   deleteSteps: (step_ids: string[]) => void;
@@ -78,7 +78,7 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateNodeEdges, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
+    const { updateStep, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
     const selected_step = this.getSelectedStep();
 
     let libraryPlace: any = null;
@@ -88,7 +88,8 @@ export class DataDstInspector extends React.Component<Props, State> {
     if (selected_step.srcs || selected_step.dsts) {
       inOutConnector = <InOutConnector
         selectedStep={selected_step}
-        updateNodeEdges={updateNodeEdges}
+        updateStep={updateStep}
+        // updateNodeEdges={updateNodeEdges}
         nodes={nodes}
         runnables={runnables}
         disabled={baseInspectorDisabled}

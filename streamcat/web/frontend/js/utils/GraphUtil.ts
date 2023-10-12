@@ -2,7 +2,7 @@
 import dagre from 'dagre'
 import Constants from 'Constants/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
-import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType, addInPort, calcSize } from 'Model/Step/NodeTypes'
+import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes'
 import { AllNodeType, Flow } from 'Model/Library'
 
 export const defaultNodeProps = {
@@ -35,6 +35,16 @@ class GraphUtil {
         labelpos: 'l',
       }
     })
+  }
+
+
+  /**
+   * 指定するidのノードの有無を調べる
+   * @param id 
+   * @returns 
+   */
+  existsNode(id:string) {
+    return this.g.nodes().some(nodeId => nodeId === id);
   }
 
   /**
