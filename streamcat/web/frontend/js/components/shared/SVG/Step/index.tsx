@@ -28,7 +28,6 @@ interface Props {
     deleteSelectStep: (selected_step_id: string) => void;
     selectSteps: (selected_steps: any[]) => void;
     selectFrame: (frame?:FrameType) => void;
-    updateStep: (step: AllNodeType) => void;
     addHistory: () => void;
     readOnly: boolean;
 }

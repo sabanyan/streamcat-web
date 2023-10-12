@@ -102,7 +102,7 @@ export const InConnector = (props: Props) => {
                 key={'in_edge'}
                 label={portLabel}
                 list={dataSourceOptions}
-                defaultValue={nodeId}
+                value={nodeId}
                 hiddenNoSelect={false}
                 disabled={disabled}
                 onChange={(e, data, label) => onChangeInEdge(e, data, label)}

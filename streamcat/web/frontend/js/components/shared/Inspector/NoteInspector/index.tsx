@@ -152,7 +152,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
-                defaultValue={fontSize?.toString() || '16'}
+                value={fontSize?.toString() || '16'}
                 disabled={baseInspectorDisabled}
                 list={getFontSizeList()}
                 label={'文字'}
@@ -162,7 +162,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='color'
                 onChange={(e, data, label) => onChangeColor(e, data, label)}
-                defaultValue={color || Constants.default.note.color.green}
+                value={color || Constants.default.note.color.green}
                 disabled={baseInspectorDisabled}
                 list={getColorList()}
                 label={'色'}

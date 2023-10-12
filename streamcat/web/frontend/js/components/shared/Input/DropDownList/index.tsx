@@ -8,7 +8,7 @@ type Props = {
     onChange: Function;
     label?: string;
     list: dropDownListItem[];
-    defaultValue: string;
+    value: string;
     hiddenNoSelect?: boolean;
     onClickAction?: Function;
     actionLabel?: string;
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export const DropDownList = (props: Props) => {
-    const {label, list, onChange, defaultValue, disabled, hiddenNoSelect, onClickAction, actionLabel} = props
+    const {label, list, onChange, value, disabled, hiddenNoSelect, onClickAction, actionLabel} = props
 
     /**
      * 選択されたoptionを返す
@@ -59,7 +59,8 @@ export const DropDownList = (props: Props) => {
         {labelElement}
         <select className={classnames(style.dropdownList, {[style.hasLabel]: (label)})}
                 disabled={disabled}
-                defaultValue={defaultValue}
+                // defaultValue={defaultValue}
+                value={value}
                 onChange={(e) => onChange(e, getDataFromList(e.target.value), label)}>{options}</select>
         {action}
     </div>;

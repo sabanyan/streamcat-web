@@ -580,7 +580,7 @@ export const pasteStepsAction = (flowData:Flow, paste_nodes:string) => {
 
         if(newNode.type === 'command' || newNode.type === 'flow'){
             let commandOrFlowNode = newNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
-            commandOrFlowNode = FlowUtil.copySrcs(commandOrFlowNode);
+            commandOrFlowNode = FlowUtil.clearSrcs(commandOrFlowNode);
             let newDsts = {};
             commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
                 //出力先を作成し、接続先を変更する

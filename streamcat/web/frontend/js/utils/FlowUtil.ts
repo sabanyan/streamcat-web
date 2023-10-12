@@ -172,9 +172,9 @@ export default class FlowUtil {
   }
 
   /**
-   * Srcsをコピーする
+   * Srcsをクリアする
    */
-  static copySrcs (step: CommandNodeType | FlowNodeType | InlineFlowNodeType): CommandNodeType | FlowNodeType | InlineFlowNodeType {
+  static clearSrcs (step: CommandNodeType | FlowNodeType | InlineFlowNodeType): CommandNodeType | FlowNodeType | InlineFlowNodeType {
     step.srcs && Object.keys(step.srcs).forEach((key) => {
       if(step.srcs){
         //入力はポートは残して、接続先を空にする
