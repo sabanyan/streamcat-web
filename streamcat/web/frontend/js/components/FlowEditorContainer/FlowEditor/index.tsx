@@ -402,9 +402,17 @@ export const FlowEditor = () => {
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
-    const updateStep = (step: AllNodeType) => {
-        // dispatch(updateStepAction(flow.flow, step, zoom));
-        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, {step:step});
+    const updateStep = (updatedNode: AllNodeType) => {
+        // 更新後のNodeに置き換える
+        flow.flow.nodes = flow.flow.nodes.map(node =>
+            node.id === updatedNode.id? updatedNode: node
+        );
+        setFlow({...flow});
+        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
+    };
+    const updateNodeEdges = (node:AllNodeType) => {
+        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, {step:node});
+        // flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, node.id, (node as any).srcs, (node as any).dsts, (node as any).srcsOrder);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
@@ -691,8 +699,7 @@ export const FlowEditor = () => {
         dragRange,
         addSelectStep,
         deleteSelectStep,
-        selectSteps,
-        updateStep]);
+        selectSteps]);
 
     const renderEdges = useCallback(() => {
         const edges:React.JSX.Element[] = [];
@@ -845,6 +852,7 @@ export const FlowEditor = () => {
                 deleteSteps={deleteSteps}
                 addHistory={addHistory}
                 updateStep={updateStep}
+                updateNodeEdges={updateNodeEdges}
                 // refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}

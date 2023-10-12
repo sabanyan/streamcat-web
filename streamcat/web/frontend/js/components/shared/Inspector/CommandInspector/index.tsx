@@ -16,6 +16,7 @@ type Props = {
     nodes: AllNodeType[];
     runnables: RunnablesType;
     updateStep: (step: AllNodeType) => void;
+    updateNodeEdges: (node:AllNodeType) => void;
     addHistory: () => void;
     selectSteps: (selected_steps: any[]) => void;
     deleteSteps: (step_ids: string[]) => void;
@@ -116,7 +117,7 @@ const CommandInspector = (props: Props) => {
     };
 
 
-    const {updateStep, baseInspectorDisabled, nodes, runnables} = props;
+    const {updateNodeEdges, baseInspectorDisabled, nodes, runnables} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
@@ -180,7 +181,7 @@ const CommandInspector = (props: Props) => {
         <div><label>場所</label></div>
         {detail}
         <InOutConnector
-            updateStep={updateStep}
+            updateNodeEdges={updateNodeEdges}
             nodes={nodes}
             runnables={runnables}
             selectedStep={selected_step}

@@ -13,7 +13,7 @@ type Props = {
     nodes: AllNodeType[];
     runnables: RunnablesType;
     selectedStep: CommandNodeType | FlowNodeType | InlineFlowNodeType;
-    updateStep: (step: AllNodeType) => void;
+    updateNodeEdges: (node: AllNodeType) => void;
     disabled: boolean;
 };
 
@@ -23,7 +23,7 @@ type Props = {
  * @returns 
  */
 export const InConnector = (props: Props) => {
-    const {portLabel, index, nodes, runnables, selectedStep, updateStep, disabled} = props;
+    const {portLabel, index, nodes, runnables, selectedStep, updateNodeEdges, disabled} = props;
 
     const nodeSrcs = selectedStep?.srcs || {};
     const nodeId = nodeSrcs[portLabel] || '';
@@ -35,18 +35,22 @@ export const InConnector = (props: Props) => {
     }));
 
     const onChangeInEdge = (e, data, label) => {
-        let newSelectedStep = StateUtil.deepCopy(selectedStep);
+        // let newStep = StateUtil.deepCopy(selectedStep);
+        const newStep = selectedStep.clone<CommandNodeType>(selectedStep.id);
         //labelにポート名
         //data.objectにデータフレームが格納されている
         if (data.object) {
             //ノードが選択されたとき
             const dataSource: FrameNodeType = data.object;
-            newSelectedStep.srcs[label] = dataSource.id;
-            updateStep(newSelectedStep);
+            if(!newStep.srcs){
+                newStep.srcs = {};
+            }
+            newStep.srcs[label] = dataSource.id;
+            updateNodeEdges(newStep);
         } else {
             //「選択してください」が選択されたときはノードのつながりを削除する
-            newSelectedStep.srcs[label] = null;
-            updateStep(newSelectedStep);
+            newStep.srcs && delete newStep.srcs[label];
+            updateNodeEdges(newStep);
         }
     };
 
@@ -65,9 +69,12 @@ export const InConnector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 // const newStep:CommandNodeType = StateUtil.deepCopy(step);
-                const newStep:CommandNodeType = {...step, srcs:{...step.srcs}, srcsOrder:[...(step.srcsOrder || [])]};
+
+                // updateNodeEdges()から呼び出されるrebuildNodesEdges()が機能するためには
+                // flow.nodesが含むNodeとは別のNodeオブジェクトを渡す必要がある
+                const newStep = step.clone<CommandNodeType>(step.id);
                 deleteInPort(newStep, portLabel);
-                updateStep(newStep);
+                updateNodeEdges(newStep);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
