@@ -28,7 +28,6 @@ import {
     addStepAction,
     deleteStepsAction,
     graphUtil,
-    rebuildNodesEdges,
     allRebuildNodesEdges
 } from 'Modules/flowEditor';
 
@@ -407,11 +406,6 @@ export const FlowEditor = () => {
         flow.flow.nodes = flow.flow.nodes.map(node =>
             node.id === updatedNode.id? updatedNode: node
         );
-        setFlow({...flow});
-        setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
-    };
-    const updateNodeEdges = (node:AllNodeType) => {
-        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, node.id, (node as any).srcs, (node as any).dsts, (node as any).srcsOrder);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
