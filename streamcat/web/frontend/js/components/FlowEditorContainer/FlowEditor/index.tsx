@@ -411,8 +411,7 @@ export const FlowEditor = () => {
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
     const updateNodeEdges = (node:AllNodeType) => {
-        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, {step:node});
-        // flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, node.id, (node as any).srcs, (node as any).dsts, (node as any).srcsOrder);
+        flow.flow.nodes = rebuildNodesEdges(flow.flow.nodes, node.id, (node as any).srcs, (node as any).dsts, (node as any).srcsOrder);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };

@@ -50,18 +50,23 @@ export const graphUtil: GraphUtil = new GraphUtil();
 /**
  * エッジのつなぎ直し処理
  * @param newState
- * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
+ * @param newNode newNodeに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-export const rebuildNodesEdges = (nodes:AllNodeType[], action:{step:any}) => {
+export const rebuildNodesEdges = (
+    nodes: AllNodeType[],
+    newNodeId: string,
+    newNodeSrcs: {[port:string]:string},
+    newNodeDsts: {[port:string]:string},
+    newNodeSrcsOrder: string[]) => {
     return nodes.map((node: any, index) => {
         //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
-        if (node.id === action.step.id) {
+        if (node.id === newNodeId) {
             if (node.type === 'command' ||
                 node.type === 'flow' ||
                 node.classification === "data_source" ||
                 node.classification === "data_dest") {
-                if (!_.isEqual(node.srcs, action.step.srcs)) {
+                if (!_.isEqual(node.srcs, newNodeSrcs)) {
                     //ノードのつながりを削除
                     Object.keys(node.srcs).forEach(portLabel => {
                         const id = node.srcs[portLabel];
@@ -72,16 +77,16 @@ export const rebuildNodesEdges = (nodes:AllNodeType[], action:{step:any}) => {
                         }
                     });
                     //ノードのつながりを再構築
-                    Object.keys(action.step.srcs).forEach(portLabel => {
-                        const id = action.step.srcs[portLabel];
+                    Object.keys(newNodeSrcs).forEach(portLabel => {
+                        const id = newNodeSrcs[portLabel];
                         const from = id;
-                        const to = action.step.id;
+                        const to = newNodeId;
                         if (GraphUtil.NodeExists(nodes, id)) {
                             graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
                         }
                     });
                 }
-                if (!_.isEqual(node.dsts, action.step.dsts)) {
+                if (!_.isEqual(node.dsts, newNodeDsts)) {
                     //ノードのつながりを削除
                     Object.keys(node.dsts).forEach(portLabel => {
                         const id = node.dsts[portLabel];
@@ -92,9 +97,9 @@ export const rebuildNodesEdges = (nodes:AllNodeType[], action:{step:any}) => {
                         }
                     });
                     //ノードのつながりを再構築
-                    Object.keys(action.step.dsts).forEach(portLabel => {
-                        const id = action.step.dsts[portLabel];
-                        const from = action.step.id;
+                    Object.keys(newNodeDsts).forEach(portLabel => {
+                        const id = newNodeDsts[portLabel];
+                        const from = newNodeId;
                         const to = id;
                         if (GraphUtil.NodeExists(nodes, id)) {
                             graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
@@ -102,7 +107,11 @@ export const rebuildNodesEdges = (nodes:AllNodeType[], action:{step:any}) => {
                     });
                 }
             }
-            return action.step;
+            // return {...node, srcs:newNodeSrcs, dsts:newNodeDsts, srcsOrder:newNodeSrcsOrder};
+            node.srcs = newNodeSrcs;
+            node.dsts = newNodeDsts;
+            node.srcsOrder = newNodeSrcsOrder;
+            return node;
         }
         return node;
     });
@@ -614,7 +623,13 @@ export const pasteStepsAction = (flowData:Flow, paste_nodes:string) => {
             const action_step = _.cloneDeep(commandOrFlowNode);
             action_step.dsts = newDsts;
             
-            flowData.nodes = rebuildNodesEdges(flowData.nodes, { step: action_step });
+            flowData.nodes = rebuildNodesEdges(
+                flowData.nodes,
+                action_step.id,
+                action_step.srcs || {},
+                newDsts,
+                action_step.srcsOrder || []
+            );
             // newState.flow!.nodes = newState.nodes;
         }
     });
