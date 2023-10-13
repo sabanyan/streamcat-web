@@ -605,7 +605,7 @@ export const FlowEditor = () => {
     const onClickSaveFlow = () => {
         const targetFlow = lastSavedFlow as FlowType;
         return saveFlowPromise(targetFlow);
-    }
+    };
 
     /**
      * lock の延長処理
@@ -626,7 +626,7 @@ export const FlowEditor = () => {
         }).finally(() => {
             setIsLoading(false);
         });
-    }
+    };
 
     /**
      * lock の再取得処理
@@ -654,14 +654,14 @@ export const FlowEditor = () => {
         }).finally(() => {
             setIsLoading(false);
         });
-    }  
+    };
 
     const renderSteps = useCallback(() => {
         let steps: any = [];
         if (flow.flow.nodes) {
             steps = flow.flow.nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
-                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly ;
+                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
                 return <Step
                     key={step.id}
                     step={step}
@@ -753,28 +753,31 @@ export const FlowEditor = () => {
     // 読み取り専用モードの場合は disabled にする
     // ☁️保存 ☁️データソース追加 💬メモ ↩︎もとに戻す ↪︎繰り返す の制御
     const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
-        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || serverConnectivity === Connectivity.Disconnected || readOnly
+        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     // 編集可能で実行可能な場合のみフロー以外は disabled にする
     // ▶︎このフローを実行の制御
-    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
+    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
+
+    // Canvasのペースト機能の可否
+    const paperReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
     // プレビューを開くリンクの制御
-    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     // 編集モード以外は、フロー変数の追加機能を hidden にする
-    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
+    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     // 編集モード以外は、コマンドセレクター機能を hidden にする
-    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
+    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
-    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly
+    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     const onClickRunFlowPromise = () => {
         return onClickSaveFlow();
-    }
+    };
 
     // ロックのUUID(ロックの取得に失敗した場合はundefined)
     const lockUUID = (!lockIsAcquired)? undefined: lock.uuid;
@@ -818,6 +821,7 @@ export const FlowEditor = () => {
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
                 zoom={zoom}
+                readOnly={paperReadOnly}
                 dragRangeState={[dragRange, setDragRange]}
             >
                 <Paper graph={graph} zoom={zoom}>

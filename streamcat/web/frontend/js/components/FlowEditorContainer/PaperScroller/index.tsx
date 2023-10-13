@@ -18,13 +18,14 @@ type Props = {
     selectedStepIds: string[];
     // nodes: AllNodeType[];
     flowData: Flow;
-    zoom: number
+    zoom: number;
+    readOnly: boolean;
     // drag: DragType | {};
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     children: React.ReactNode;
-}
+};
 
 const PaperScroller = (props: Props) => {
     const [graph, setGraph] = props.graphState;
@@ -67,18 +68,25 @@ const PaperScroller = (props: Props) => {
     };
 
     const pasteSteps = () => {
-        const {flowData} = props;
+        const {flowData, readOnly, addHistory} = props;
         const [flow, setFlow] = props.flowState;
+
+        // 読み取り専用の場合はペースト不可
+        if(readOnly){
+            return;
+        }
 
         navigator.clipboard.readText().then(
             stringifiedNodes => {
                 // コピーするJSONが空の場合はペースト処理をしない
-                if(stringifiedNodes === ''){
+                if(!stringifiedNodes){
                     return;
                 }
                 pasteStepsAction(flowData, stringifiedNodes);
                 setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
                 setFlow({...flow});
+                // Undoスタックに履歴を追加する
+                addHistory();
             },
             () => alert('クリップボードが利用できません')
         );
