@@ -218,15 +218,14 @@ class GraphUtil {
    * @param parameters
    */
   static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
-    let { nodes, id, new_node } = parameters
-    let new_nodes = nodes.map(node => {
+    const { nodes, id, new_node } = parameters
+    return nodes.map(node => {
       if (node.id === id) {
         return new_node
       } else {
         return node
       }
-    })
-    return new_nodes
+    });
   }
 
   /**
@@ -236,10 +235,9 @@ class GraphUtil {
    * @returns {*}
    */
   static getNewNodesWithExculudeKeys(nodes: AllNodeType[], idSet: Set<string>) {
-    let node = nodes.filter((node) => {
+    return nodes.filter((node) => {
       return !(idSet.has(node.id))
-    })
-    return node
+    });
   }
 
   /**

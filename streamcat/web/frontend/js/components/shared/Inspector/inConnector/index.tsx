@@ -2,7 +2,7 @@ import React from 'react';
 import style from '../style.scss';
 import Constants from 'Constants/index';
 import {DropDownList} from 'Shared/Input';
-import {FlowUtil, ModalUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
@@ -30,7 +30,7 @@ export const InConnector = (props: Props) => {
     const nodeSrcs = selectedStep?.srcs || {};
     const nodeId = nodeSrcs[portLabel] || '';
 
-    const dataSourceOptions = FlowUtil.getAllDataFrame(nodes).map(dataFrame => ({
+    const dataSourceOptions = nodes.filter(node => node.type==='frame').map(dataFrame => ({
         value: dataFrame.id,
         label: dataFrame.label || '',
         object: dataFrame

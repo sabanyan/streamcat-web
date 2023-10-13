@@ -1,7 +1,7 @@
 import React from 'react';
 import style from '../style.scss';
 import {AddButton} from 'Shared/Input';
-import {FlowUtil, ModalUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { InConnector } from '../inConnector';
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType, addInPort } from 'Model/Step/NodeTypes';
@@ -76,8 +76,8 @@ export const InOutConnector = (props: Props) => {
         if(flowNode.classification === 'data_source') {
             const commandStepDsts = flowNode.dsts || {};
             outConnectors = Object.keys(commandStepDsts).map((key, index) => {
-                let dataFrameId: string = commandStepDsts[key]
-                const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+                const dataFrameId: string = commandStepDsts[key];
+                const node = nodes.find(node => node.id===dataFrameId);
                 if(!node){
                     return <></>;
                 }
@@ -97,9 +97,8 @@ export const InOutConnector = (props: Props) => {
                 const commandStepDsts = flowNode.dsts || {};
                 const subflowOutPorts = flowCommand.ports[1];
                 outConnectors = Object.keys(commandStepDsts).map((key, index) => {
-                    let dataFrameId: string;
-                    dataFrameId = commandStepDsts[key];
-                    const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
+                    const dataFrameId = commandStepDsts[key];
+                    const node = nodes.find(node => node.id===dataFrameId);
                     const subflowOutPort = subflowOutPorts.find((outPort) => {
                         return (outPort.label == key);
                     });
@@ -121,9 +120,8 @@ export const InOutConnector = (props: Props) => {
         const commandStep = selectedStep;
         const commandStepDsts = commandStep.dsts || {};
         outConnectors = Object.keys(commandStepDsts).map((key, index) => {
-            let dataFrameId: string;
-            dataFrameId = commandStepDsts[key];
-            const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
+            const dataFrameId = commandStepDsts[key];
+            const node = nodes.find(node => node.id===dataFrameId);
             if(!node){
                 return <></>;
             }

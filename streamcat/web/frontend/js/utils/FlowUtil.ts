@@ -2,93 +2,10 @@
 import Constants from 'Constants/index'
 import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
-import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
 import { AllNodeType } from 'Model/Library';
-import ModelUtil from './ModelUtil';
 
 export default class FlowUtil {
-
-  static getAllDataFrame (nodes: AllNodeType[]) {
-    return nodes.filter((node) => {
-      if (node.type === 'frame') {
-        return true
-      }
-      return false
-    })
-  }
-
-  static getNodeFromID (nodes: AllNodeType[], id: string) {
-    return nodes.find((node) => {
-      if (node.type === 'frame') {
-        return (node.id === id)
-      }
-      return false
-    })
-  }
-
-  // static getCommandParam (paramName: string, command: Command): (CommandParamType | {}) {
-  //   let param = {}
-  //   if (command && command.params) {
-  //     command.params.map((_param) => {
-  //       if (_param.name === paramName) {
-  //         param = _param
-  //       }
-  //     })
-  //   }
-  //   return param
-  // }
-
-  // static getFlowJson (nodes: BaseStepModel[], projectId: string, projectName: string): {} {
-  //   const flow_json = {
-  //     projectId: projectId,
-  //     name: projectName,
-  //     nodes: nodes,
-  //   }
-  //   return flow_json
-  // }
-
-  /**
-   * ノードのdsts,srcsのNodeIdをすべて書き換える
-   * @param replaceKeyPairs
-   * @param nodes
-   */
-  // static replaceNodeIds (replaceKeyPairs: {}, nodes: []) {
-  //   nodes.map((node) => {
-  //     if (node.dsts) {
-  //       let newDsts = {}
-  //       Object.keys(node.dsts).forEach((from) => {
-  //         const newFromId = this.replaceNodeId(replaceKeyPairs, from)
-  //         const to = node.dsts[from]
-  //         const newToId = this.replaceNodeId(replaceKeyPairs, to)
-  //         newDsts[newFromId] = newToId
-  //       })
-  //       node.dsts = newDsts
-  //     }
-
-  //     if (node.srcs) {
-  //       let newSrcs = {}
-  //       Object.keys(node.srcs).forEach((from) => {
-  //         const newFromId = this.replaceNodeId(replaceKeyPairs, from)
-  //         const to = node.srcs[from]
-  //         const newToId = this.replaceNodeId(replaceKeyPairs, to)
-  //         newSrcs[newFromId] = newToId
-  //       })
-  //       node.srcs = newSrcs
-  //     }
-  //     return node
-  //   })
-  //   return nodes
-  // }
-
-  // static replaceNodeId (replaceKeyPairs: {}, nodeId: string): string {
-  //   let newNodeId = nodeId
-  //   Object.keys(replaceKeyPairs).forEach((key) => {
-  //     if (nodeId === key) {
-  //       newNodeId = replaceKeyPairs[key]
-  //     }
-  //   })
-  //   return newNodeId
-  // }
 
   static removeNodeId (nodes: CommandNodeType[], node_ids: string[]) {
     node_ids.forEach((removeId) => {
@@ -193,62 +110,5 @@ export default class FlowUtil {
       y: position.y + Constants.default.graph.rankSeparator
     };
   }
-
-  static setModelType (nodes:AllNodeType[], json: any): AllNodeType {
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) {
-      const newId = ModelUtil.getNewId(nodes, 'flow');
-      const node:FlowNodeType = new FlowNode(newId, json.uuid, json.position);
-      node.label = json.label;
-      node.args = json.args;
-      node.srcs = json.srcs;
-      node.dsts = json.dsts;
-      node.srcsOrder = json.srcsOrder;
-
-      return node;
-    }
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
-      // let node = new CommandStepModel(json)
-      // node.loadArgs()
-      const newId = ModelUtil.getNewId(nodes, 'command');
-      const node:CommandNodeType = new CommandNode(newId, json.commandId, json.position);
-      node.label = json.label;
-      node.args = json.args;
-      node.srcs = json.srcs;
-      node.dsts = json.dsts;
-      node.srcsOrder = json.srcsOrder;
-
-      return node;
-    }
-    if (json['uuid'] !== undefined && json['dataSource'] !== undefined){
-      const newId = ModelUtil.getNewId(nodes, 'frame');
-      const newNode:FrameNodeType = new FrameNode(newId, {x:0, y:0});
-      newNode.label = json.label;
-      newNode.uuid = json.uuid;
-      newNode.makeCache = json.makeCache;
-      newNode.cacheCreatedAt = json.cacheCreatedAt;
-      return newNode;
-    }
-    return json
-  }
-
-  /**
-   * フローの比較
-   * @param flowA
-   * @param flowB
-   * @returns {boolean}
-   */
-  // static isSameFlow (flowA: {}, flowB: {}) {
-  //   return JSON.stringify(flowA) === JSON.stringify(flowB)
-  // }
-
-  /**
-   * ノードの集合体の比較
-   * @param nodesA
-   * @param nodesB
-   * @returns {boolean}
-   */
-  // static isSameNodes (nodesA: [], nodesB: []) {
-  //   return JSON.stringify(nodesA) === JSON.stringify(nodesB)
-  // }
 
 }
