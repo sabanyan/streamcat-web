@@ -437,7 +437,7 @@ export const FlowEditor = () => {
     // };
 
     // FlowDataを比較する
-    const compareFlowData =(flow1:Flow, flow2:Flow) => {
+    const compareFlowData = (flow1:Flow, flow2:Flow) => {
         // compareが出力する差分には関数の差分も含まれるためこれらを除外する
         return jsonpatch.compare(flow1, flow2).filter(patch => {
             if(patch.path === '/nodes/__allAPIFuncSet'){

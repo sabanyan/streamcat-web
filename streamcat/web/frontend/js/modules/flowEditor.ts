@@ -71,7 +71,9 @@ export const removeNodeEdge = (node:CommandNodeType|BaseFlowNodeType, portLabel:
  */
 export const addNodeEdges = (newNode:CommandNodeType|BaseFlowNodeType) => {
     const add = (fromNodeId:string, toNodeId:string, portLabel:string) => {
-        if(fromNodeId && toNodeId && graphUtil.existsNode(fromNodeId) && graphUtil.existsNode(toNodeId)){
+        // NOTE: Nodeの追加前にEdgeを追加できるようだ
+        // if(fromNodeId && toNodeId && graphUtil.existsNode(fromNodeId) && graphUtil.existsNode(toNodeId)){
+        if(fromNodeId && toNodeId){
             graphUtil.addEdge(fromNodeId, toNodeId, GraphUtil.edgeName(fromNodeId, toNodeId, portLabel));
         }
     };
