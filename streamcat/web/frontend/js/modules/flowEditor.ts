@@ -548,7 +548,18 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
     };
 
     // 文字列からNodeオブジェクトを生成する
-    const jsonNodes = JSON.parse(stringifiedNodes);
+    let jsonNodes;
+    try{
+        jsonNodes = JSON.parse(stringifiedNodes);
+    } catch (e) {
+        // 文字列がJSONでない場合はペースト処理を行わない
+        if(e instanceof SyntaxError){
+            console.warn(`pasete warning: ${e.message}`);
+            return;
+        }else{
+            throw e;
+        }
+    }
 
     // getNewIdで採番したIdが複製Nodeと重複しないよう
     // 既存のNodeと複製Nodeを併せて保持する
@@ -561,7 +572,6 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
         const newId = ModelUtil.getNewId(allNodes, jsonNode.type);
         // idとlabelを置き換える
         jsonNode.id = newId;
-        jsonNode.label = 'コピー ' + jsonNode.label;
         // 表示位置をずらす
         jsonNode.position = FlowUtil.shiftPosition(jsonNode.position || {x:0,y:0});
         // 新旧のidの対応を控えておく
