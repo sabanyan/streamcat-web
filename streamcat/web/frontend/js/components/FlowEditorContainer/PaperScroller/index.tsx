@@ -43,15 +43,12 @@ const PaperScroller = (props: Props) => {
      */
     const stepIsCopyable = (selectedStepIds:string[]) => {
         const {flowData} = props;
-
-        // 複数のノードをコピーさせない
-        if(selectedStepIds.length !== 1){
-            return false;
-        }
-
+        // 全てのNodeが複製可能なtypeであること
+        const copyNodes = selectedStepIds.map(nodeId => GraphUtil.getNode(flowData.nodes, nodeId));
         // 以下のtypeのNodeを複製可能とする
-        const copyNode = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
-        return copyNode.type === 'command' || copyNode.type === 'flow' || copyNode.type === 'note';
+        return copyNodes.every(node =>
+            node.type==='command' || node.type==='flow' || node.type==='note' || node.type==='frame'
+        );
     };
 
     const copySteps = () => {

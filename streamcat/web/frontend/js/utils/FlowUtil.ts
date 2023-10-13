@@ -187,12 +187,6 @@ export default class FlowUtil {
   /**
    * Positionを少しずらしてコピーする
    */
-  static copyPositionWithOffsetX (step: AllNodeType): AllNodeType {
-    step.position.x = step.position.x + Constants.default.graph.nodeSeparator
-    step.position.y = step.position.y + Constants.default.graph.rankSeparator
-    return step
-  }
-
   static shiftPosition (position: {x:number,y:number}){
     return {
       x: position.x + Constants.default.graph.nodeSeparator,

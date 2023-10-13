@@ -537,60 +537,120 @@ export const deleteStepsAction = (flowData:Flow, step_ids:string[]) => {
  * @returns {{type: string, step: *}}
  */
 export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
+
+    // 入出力Portに紐づくNodeのidを置き換える
+    const replaceNodeIdInPorts = (ports: {[port:string]:string}, oldNodeId:string, newNodeId:string) => {
+        ports && Object.entries(ports).forEach(([portLabel, nodeId]) => {
+            if(nodeId === oldNodeId){
+                ports[portLabel] = newNodeId;
+            }
+        });
+    };
+
     // 文字列からNodeオブジェクトを生成する
     const jsonNodes = JSON.parse(stringifiedNodes);
 
+    // getNewIdで採番したIdが複製Nodeと重複しないよう
+    // 既存のNodeと複製Nodeを併せて保持する
+    const allNodes = [...flowData.nodes];
+
     // 全てのNodeに新規idを設定する
-    jsonNodes.forEach(jsonNode =>{
-        jsonNode.id = ModelUtil.getNewId(flowData.nodes, jsonNode.type);
+    const convIdTable:{[port:string]:string} = {};
+    jsonNodes.forEach(jsonNode => {
+        const oldId = jsonNode.id;
+        const newId = ModelUtil.getNewId(allNodes, jsonNode.type);
+        // idとlabelを置き換える
+        jsonNode.id = newId;
         jsonNode.label = 'コピー ' + jsonNode.label;
+        // 表示位置をずらす
+        jsonNode.position = FlowUtil.shiftPosition(jsonNode.position || {x:0,y:0});
+        // 新旧のidの対応を控えておく
+        convIdTable[oldId] = newId;
+        // 採番したidを控えておく
+        allNodes.push(jsonNode);
     });
+
+    // 全ての複製Nodeについて入出力Portに紐づくidを置き換える
+    jsonNodes.forEach(jsonNode =>
+        Object.entries(convIdTable).forEach(([oldId, newId]) => {
+            replaceNodeIdInPorts(jsonNode.srcs, oldId, newId);
+            replaceNodeIdInPorts(jsonNode.dsts, oldId, newId);
+        })
+    );
 
     // Nodeオブジェクトに関数を付与する
     const copiedNodes = new NodeArray(jsonNodes).slice();
-
-    copiedNodes.forEach(newNode => {
-        // 複製したNodeをgraphに追加
-        graphUtil.addNode(newNode.id);
-
-        // 複製したNodeは表示位置をずらす
-        newNode = FlowUtil.copyPositionWithOffsetX(newNode);
-
-        // CommandまたはFlowの出力先FrameNodeを生成する
-        if(newNode.type === 'command' || newNode.type === 'flow'){
-            const commandOrFlowNode = newNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
-            // 入力元FrameNodeとの接続を全て切断する
-            FlowUtil.clearSrcs(commandOrFlowNode);
-            const newDsts = {};
-            commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
-                // 新規作成する出力先Frameの配置位置を算出する
-                const { dstNodesPositionAndSize } = newNodesPositionAndSize(flowData.nodes, [], ['NEW-FRAME']);
-
-                // 出力先Frameを新規作成する
-                const newDstFrame = new FrameNode(
-                    ModelUtil.getNewId(flowData.nodes, 'frame'),
-                    dstNodesPositionAndSize['NEW-FRAME'].position
-                );
-
-                newDstFrame.label = newDstFrame.id;
-                // 複製したFrameをFlowに追加
-                flowData.nodes.push(newDstFrame);
-                // 複製したFrameをgraphに追加
-                graphUtil.addNode(newDstFrame.id);
-                // 複製したCommandの出力先を複製したFrameに変更する
-                newDsts[key] = newDstFrame.id;
-            });
-            // Nodeの出力先を変更する
-            commandOrFlowNode.dsts = newDsts;
-            // CanvasにEdgeを追加する
-            addNodeEdges(commandOrFlowNode);
-            // 複製したNodeをCanvasに反映させる
-            flowData.nodes.push(commandOrFlowNode);
-        }else{
-            // NoteNodeの場合
-            // 複製したNodeをCanvasに反映させる
-            flowData.nodes.push(newNode);
+    
+    const newDstFrames:FrameNodeType[] = [];
+    copiedNodes.forEach(copiedNode => {
+        // CommandでもFlowでもない場合は何もしない
+        if(copiedNode.type!=='command' && copiedNode.type!=='flow'){
+            return;
         }
+
+        // 複製したCommandまたはFlow
+        const copiedCmd = copiedNode as CommandNodeType|BaseFlowNodeType;
+
+        // CommandまたはFlowの入力元Frameが複製Nodeに含まれていない場合
+        // 入力元Frameへの紐付けを削除する
+        const removeSrcs:string[] = [];
+        copiedCmd.srcs && Object.entries(copiedCmd.srcs).forEach(([portLabel, nodeId]) => {
+            // 入力元Frameがコピーに含まれていればFrameを削除処理をしない
+            if(copiedNodes.some(copiedNode => copiedNode.id === nodeId)){
+                return;
+            }
+            // 紐付けを削除するPortを保持する
+            removeSrcs.push(portLabel);
+        });
+
+        // 入力元Frameへの紐付けを削除する
+        copiedCmd.srcs && removeSrcs.forEach(removeSrc => {
+            delete copiedCmd.srcs![removeSrc];
+        });
+
+        // CommandまたはFlowの出力先Frameが複製Nodeに含まれていない場合
+        // その出力先Frameを新規作成する
+        const newDsts = {};
+        copiedCmd.dsts && Object.entries(copiedCmd.dsts).forEach(([portLabel, nodeId]) => {
+            // 出力先Frameがコピーに含まれていればFrameを新規作成しない
+            if(copiedNodes.some(copiedNode => copiedNode.id === nodeId)){
+                return;
+            }
+
+            // 新規作成する出力先Frameの配置位置を算出する
+            const { dstNodesPositionAndSize } = newNodesPositionAndSize(flowData.nodes, [], ['NEW-FRAME']);
+
+            // 出力先Frameを新規作成する
+            const newDstFrame = new FrameNode(
+                // NOTE: 複製Nodeとidが重複しないよう留意すること
+                ModelUtil.getNewId([...allNodes, ...newDstFrames], 'frame'),
+                dstNodesPositionAndSize['NEW-FRAME'].position
+            );
+
+            // 新規作成したFrameを保持する
+            newDstFrames.push(newDstFrame);
+
+            // Portラベルと出力先Frameを保持する
+            newDsts[portLabel] = newDstFrame.id;
+        });
+
+        // Commandの出力先に新規作成した出力先Frameを追加する
+        copiedCmd.dsts = {...copiedCmd.dsts, ...newDsts};
+    });
+
+    // copiedNodesに新規作成したFrameを追加する
+    copiedNodes.push(...newDstFrames);
+
+    // Edgeの追加前に全ての複製NodeをCanvasに追加する
+    copiedNodes.forEach(copiedNode => graphUtil.addNode(copiedNode.id));
+
+    // 全ての複製Node間のEdgeを追加する
+    copiedNodes.forEach(copiedNode => {
+        if(copiedNode.type==='command' || copiedNode.type==='flow'){
+            addNodeEdges(copiedNode as CommandNodeType|BaseFlowNodeType);
+        }
+        // 全ての複製NodeをflowDataに保存する
+        flowData.nodes.push(copiedNode);
     });
 };
 
