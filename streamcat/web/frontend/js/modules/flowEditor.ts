@@ -91,32 +91,16 @@ export const addNodeEdges = (newNode:CommandNodeType|BaseFlowNodeType) => {
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-export const allRebuildNodesEdges = (nodes:AllNodeType[], edges:{v:string,w:string,name:string}[]) => {
-    //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
+export const redrawAllEdges = (nodes:AllNodeType[], edges:{v:string,w:string,name:string}[]) => {
+    // 全てのEdgeを削除する
     graphUtil.removeAllEdges(edges);
-    return nodes.map(node => {
-        if (node.type === 'command' || node.type === 'flow') {
-            const runnableNode = node as CommandNodeType | FlowNodeType | InlineFlowNodeType;
-            // 入力Edgeを再生成する
-            runnableNode.srcs && Object.keys(runnableNode.srcs).forEach(portLabel => {
-                const id = runnableNode.srcs![portLabel];
-                const from = id;
-                const to = runnableNode.id;
-                if (GraphUtil.NodeExists(nodes, id)) {
-                    graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                }
-            });
-            // 出力Edgeを再生成する
-            runnableNode.dsts && Object.keys(runnableNode.dsts).forEach(portLabel => {
-                const id = runnableNode.dsts![portLabel];
-                const from = runnableNode.id;
-                const to = id;
-                if (GraphUtil.NodeExists(nodes, id)) {
-                    graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                }
-            });
+
+    // 全てのCommandまたはFlowのEdgeを追加する
+    nodes.forEach(node => {
+        if(node.type==='command' || node.type==='flow'){
+            const runnableNode = node as CommandNodeType|BaseFlowNodeType;
+            addNodeEdges(runnableNode);
         }
-        return node;
     });
 };
 
@@ -225,26 +209,6 @@ const newDstNodes = (dstNodeIds: string[],
     })
 
     return result;
-};
-
-const addToGraph = (graphUtil: GraphUtil, node: InlineFlowNodeType) => {
-    // node
-    graphUtil.addNode(node.id);
-    // src edges
-    node.srcs && Object.keys(node.srcs).forEach((key) => {
-        const from = node.srcs![key];
-        const to = node.id;
-        const portLabel = key;
-        graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-    })
-    // dst edges
-    node.dsts && Object.keys(node.dsts).forEach((key) => {
-        const to = node.dsts![key];
-        const from = node.id;
-        const portLabel = key;
-        graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-        graphUtil.addNode(to);
-    })
 };
 
 type DataSrcProps = {
@@ -705,10 +669,14 @@ export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowComma
     dstNodes.forEach((dstNode) => {
         nodes.push(dstNode);
     })
-    // newState.flowData!.nodes = [...nodes];
     flowData.nodes = [...nodes];
-    addToGraph(graphUtil, newNode);
-    // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
+
+    // CanvasにNodeを追加する
+    graphUtil.addNode(newNode.id);
+    // Canvasに出力Nodeを追加する
+    dstNodes.forEach(dstNode => graphUtil.addNode(dstNode.id));
+    // NodeにEdgeを繋げる
+    addNodeEdges(newNode);
 };
 
 export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
@@ -754,8 +722,9 @@ export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowComma
     let nodes = flowData.nodes;
     nodes.push(newNode);
     flowData.nodes = [...nodes];
-    // newState.nodes = [...nodes]
-    // graph
-    addToGraph(graphUtil, newNode);
-    // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
+
+    // CanvasにNodeを追加する
+    graphUtil.addNode(newNode.id);
+    // NodeにEdgeを繋げる
+    addNodeEdges(newNode);
 };

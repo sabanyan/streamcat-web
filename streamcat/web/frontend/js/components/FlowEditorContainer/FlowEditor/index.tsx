@@ -28,7 +28,7 @@ import {
     addStepAction,
     deleteStepsAction,
     graphUtil,
-    allRebuildNodesEdges
+    redrawAllEdges
 } from 'Modules/flowEditor';
 
 const getRunnables = () => {
@@ -500,7 +500,7 @@ export const FlowEditor = () => {
         redoStack.push(reversePatches);
 
         // エッジを繋ぎ直す
-        allRebuildNodesEdges(prevFlowData.nodes, graph.edges);
+        redrawAllEdges(prevFlowData.nodes, graph.edges);
         // graphの更新
         setGraph(graphUtil.getGraph(prevFlowData.nodes, zoom));
         // Flowの更新
@@ -528,7 +528,7 @@ export const FlowEditor = () => {
         undoStack.push(reversePatches);
 
         // エッジを繋ぎ直す
-        allRebuildNodesEdges(nextFlowData.nodes, graph.edges);
+        redrawAllEdges(nextFlowData.nodes, graph.edges);
         // graphの更新
         setGraph(graphUtil.getGraph(nextFlowData.nodes, zoom));
         // flowの更新
