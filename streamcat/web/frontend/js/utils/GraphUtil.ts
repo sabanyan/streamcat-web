@@ -234,11 +234,11 @@ class GraphUtil {
    * @param idSet
    * @returns {*}
    */
-  static getNewNodesWithExculudeKeys(nodes: AllNodeType[], idSet: Set<string>) {
-    return nodes.filter((node) => {
-      return !(idSet.has(node.id))
-    });
-  }
+  // static getNewNodesWithExculudeKeys(nodes: AllNodeType[], idSet: Set<string>) {
+  //   return nodes.filter((node) => {
+  //     return !(idSet.has(node.id))
+  //   });
+  // }
 
   /**
    * JSONからの読み出し

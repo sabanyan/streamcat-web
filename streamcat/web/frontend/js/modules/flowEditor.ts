@@ -488,7 +488,10 @@ export const deleteStepsAction = (flowData:Flow, step_ids:string[]) => {
         deleteKeySet.add(id);
     });
 
-    flowData.nodes = GraphUtil.getNewNodesWithExculudeKeys(flowData.nodes, deleteKeySet);
+    // flowData.nodes = GraphUtil.getNewNodesWithExculudeKeys(flowData.nodes, deleteKeySet);
+
+    // 削除対象のNodeを削除する
+    flowData.nodes = flowData.nodes.filter(node => !deleteKeySet.has(node.id));
     // newState.flow!.nodes = newState.nodes;
     // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
 
