@@ -811,12 +811,12 @@ export const FlowEditor = () => {
                 message={'フローを構築中です'} />
             <PaperScroller
                 canvasWidth={canvasWidth}
-                deleteSteps={deleteSteps}
-                selectSteps={selectSteps}
+                deleteNodes={deleteSteps}
+                selectNodes={selectSteps}
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
-                selectedStepIds={selectedStepIds}
+                selectedNodeIds={selectedStepIds}
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}

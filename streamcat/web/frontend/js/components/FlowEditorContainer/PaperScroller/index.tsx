@@ -10,12 +10,12 @@ import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type Props = {
     canvasWidth: number;
-    deleteSteps: (step_ids: string[]) => void;
-    selectSteps: (selected_steps: AllNodeType[]) => void;
+    deleteNodes: (nodeIds: string[]) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     redo: () => void;
     undo: () => void;
-    selectedStepIds: string[];
+    selectedNodeIds: string[];
     // nodes: AllNodeType[];
     flowData: Flow;
     zoom: number;
@@ -31,10 +31,10 @@ const PaperScroller = (props: Props) => {
     const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
 
-    const stringifyNodes = (selectedStepIds:string[]): string => {
+    const stringifyNodes = (selectedNodeIds:string[]): string => {
         const {flowData} = props;
         return JSON.stringify(
-            selectedStepIds.map(id => GraphUtil.getNode(flowData.nodes, id))
+            selectedNodeIds.map(id => GraphUtil.getNode(flowData.nodes, id))
         );
     };
 
@@ -42,33 +42,33 @@ const PaperScroller = (props: Props) => {
      * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
      * @returns {boolean}
      */
-    const stepIsCopyable = (selectedStepIds:string[]) => {
+    const nodeIsCopyable = (selectedNodeIds:string[]) => {
         const {flowData} = props;
         // 全てのNodeが複製可能なtypeであること
-        const copyNodes = selectedStepIds.map(nodeId => GraphUtil.getNode(flowData.nodes, nodeId));
+        const copyNodes = selectedNodeIds.map(nodeId => GraphUtil.getNode(flowData.nodes, nodeId));
         // 以下のtypeのNodeを複製可能とする
         return copyNodes.every(node =>
             node.type==='command' || node.type==='flow' || node.type==='note' || node.type==='frame'
         );
     };
 
-    const copySteps = () => {
-        const {selectedStepIds} = props;
+    const copyNodes = () => {
+        const {selectedNodeIds: selectedNodeIds} = props;
 
-        if (!stepIsCopyable(selectedStepIds)) {
+        if (!nodeIsCopyable(selectedNodeIds)) {
             navigator.clipboard.writeText('');
             return;
         }
 
-        const stringifiedNodes = stringifyNodes(selectedStepIds);
+        const stringifiedNodes = stringifyNodes(selectedNodeIds);
         navigator.clipboard.writeText(stringifiedNodes).then(
             () => {},
             () => alert('クリップボードが利用できません')
         );
     };
 
-    const pasteSteps = () => {
-        const {flowData, readOnly, addHistory, selectSteps} = props;
+    const pasteNodes = () => {
+        const {flowData, readOnly, addHistory, selectNodes: selectNodes} = props;
         const [flow, setFlow] = props.flowState;
 
         // 読み取り専用の場合はペースト不可
@@ -89,22 +89,22 @@ const PaperScroller = (props: Props) => {
                 // Undoスタックに履歴を追加する
                 addHistory();
                 // ペーストしたノードを選択状態にする
-                selectSteps(pastedNodes);
+                selectNodes(pastedNodes);
             },
             () => alert('クリップボードが利用できません')
         );
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const {redo, undo, selectedStepIds, deleteSteps, addHistory} = props;
+        const {redo, undo, selectedNodeIds: selectedNodeIds, deleteNodes, addHistory} = props;
 
         if (DetectUtil.isMac()) {
             if (e.metaKey && e.key === 'c') {
-                copySteps();
+                copyNodes();
                 return;
             }
             if (e.metaKey && e.key === 'v') {
-                pasteSteps();
+                pasteNodes();
                 return;
             }
             if (e.metaKey && e.shiftKey && e.key === 'z') {
@@ -117,11 +117,11 @@ const PaperScroller = (props: Props) => {
             }
         } else {
             if (e.ctrlKey && e.key === 'c') {
-                copySteps();
+                copyNodes();
                 return;
             }
             if (e.ctrlKey && e.key === 'v') {
-                pasteSteps();
+                pasteNodes();
                 return;
             }
             if (e.ctrlKey && e.shiftKey && e.key === 'z') {
@@ -135,13 +135,13 @@ const PaperScroller = (props: Props) => {
         }
 
         if (e.key === 'Backspace' || e.key === 'Delete') {
-            deleteSteps(selectedStepIds);
+            deleteNodes(selectedNodeIds);
             addHistory();
         }
     };
 
     const onMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const {selectSteps} = props;
+        const {selectNodes} = props;
         const dragStart = (x: number, y: number) => {
             // dispatch(dragStartAction(x, y));
             setGraph({
@@ -167,7 +167,7 @@ const PaperScroller = (props: Props) => {
             const x = e.clientX - target_rect.left;
             const y = e.clientY - target_rect.top;
 
-            selectSteps([]);
+            selectNodes([]);
             dragStart(x, y);
             // setCoords({
             //     x: x,
@@ -233,7 +233,7 @@ const PaperScroller = (props: Props) => {
     };
 
     const isOnClickPaper = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        //e._dispatchListeners.length は step がクリックされた場合は 2 それ以外は 1
+        //e._dispatchListeners.length は node がクリックされた場合は 2 それ以外は 1
         // return (e._dispatchListeners.length == 1);
 
         // TODO: _dispatchListenersが存在しなくなったので応急的に対応した
