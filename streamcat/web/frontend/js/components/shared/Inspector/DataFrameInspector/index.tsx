@@ -8,9 +8,10 @@ import {Button, DownloadButton} from "Shared/Input";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { FrameNodeType } from "Model/Node/NodeTypes";
+import { useAsyncResource } from "use-async-resource";
 
 type Props = {
     // selected_data_source_detail: FrameType;
@@ -22,7 +23,7 @@ type Props = {
     // Flowの更新に用いる
     lastSavedFlow?: FlowType;
     selectedNodeIds: string[];
-    selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
+    // selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
     // nodes: AllNodeType[];
     zoom: number;
@@ -55,6 +56,14 @@ type Contents = {
     afterViz: Function;
 }
 
+const getFrame = (frameUuid?:string|null) => {
+    if(frameUuid){
+        return Api.findFrame(frameUuid);
+    }else{
+        return Api.findNull();
+    }
+};
+
 const DataFrameInspector = (props: Props) => {
 
     const {notifyLoading, notifyError, dismissNotify} = useStreamCatNotifications();
@@ -75,6 +84,15 @@ const DataFrameInspector = (props: Props) => {
             }
         });
     }, []);
+
+    const getSelectedNode = () => {
+        let {selectedNodeIds, flowData} = props;
+        return GraphUtil.getNode(flowData.nodes, selectedNodeIds[0]) as FrameNodeType;
+    };
+
+    // ここでFrameの取得を開始する
+    const selectedNode = getSelectedNode();
+    const [flowReader] = useAsyncResource(getFrame, selectedNode.uuid);
 
     const saveFlow = () => {
         const {flowData, lastSavedFlow, lockUUID, updateLastSavedFlow} = props;
@@ -191,12 +209,6 @@ const DataFrameInspector = (props: Props) => {
         updateFlow(flowData, zoom);
     };
 
-
-    const getSelectedNode = () => {
-        let {selectedNodeIds, flowData} = props;
-        return GraphUtil.getNode(flowData.nodes, selectedNodeIds[0]) as FrameNodeType;
-    };
-
     const onChangeCacheCheck = () => {
         const {updateFlow, flowData} = props;
         const selectedNode = getSelectedNode();
@@ -229,13 +241,13 @@ const DataFrameInspector = (props: Props) => {
 
     const deleteCache = () => {
         const {lastSavedFlow, selectedNodeIds, deleteCache} = props;
-        const [, setSelectedFrame] = props.selectedFrameState;
+        // const [, setSelectedFrame] = props.selectedFrameState;
         const id = selectedNodeIds[0];
 
         // キャッシュを削除する
         lastSavedFlow && lastSavedFlow.deleteCache(id).then(() => {
             deleteCache(id);
-            setSelectedFrame(undefined);
+            // setSelectedFrame(undefined);
         });
     };
 
@@ -277,7 +289,6 @@ const DataFrameInspector = (props: Props) => {
             previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
-    const selectedNode = getSelectedNode();
     if (selectedNode.type === 'frame') {
         preview = <Button onClick={() => onClickPreview()}
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
@@ -317,8 +328,8 @@ const DataFrameInspector = (props: Props) => {
     if (loading) {
         content = <Loader center={true} absolute={true} fixed={false} visible={true} />;
     } else {
-
-        const [selectedFrame, ] = props.selectedFrameState;
+        // Frameを取得する
+        const selectedFrame = flowReader();
 
         const fileSize = selectedFrame && selectedFrame.fileSize ? selectedFrame.fileSize : 0;
         const fileSizeStr = StringUtil.convertToFileSize(fileSize);

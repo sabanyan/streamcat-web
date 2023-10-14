@@ -6,7 +6,7 @@ import style from './style.scss';
 import { Api, ErrorResponse, NodeArray } from 'Api';
 import { MessageModel } from 'Model/index';
 import { LockType } from 'Model/Locks';
-import { AllNodeType, Flow, FlowType, FrameType } from 'Model/Library';
+import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
 import Constants from 'Constants/index';
 import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, WebUtil} from 'Utils/index';
@@ -149,7 +149,7 @@ export const FlowEditor = () => {
     // 選択中のNodeのId
     const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
     // 選択中のDataFrameNodeのFrame
-    const [selectedFrame, setSelectedFrame] = useState<FrameType>();
+    // const [selectedFrame, setSelectedFrame] = useState<FrameType>();
     // Canvasでの選択範囲
     const [dragRange, setDragRange] = useState<DragType | null>(null);
     // Canvasの拡大率
@@ -672,7 +672,7 @@ export const FlowEditor = () => {
                     addSelectNode={addSelectNode}
                     deleteSelectNode={deleteSelectNode}
                     selectNodes={selectNodes}
-                    selectFrame={frame => setSelectedFrame(frame)}
+                    // selectFrame={frame => setSelectedFrame(frame)}
                     addHistory={addHistory}
                     readOnly={nodeReadOnly}
                 />;
@@ -839,7 +839,7 @@ export const FlowEditor = () => {
                 inspectorWidthState={[inspectorWidth, setInspectorWidth]}
                 // selected_data_source_detail={selected_data_source_detail!}
                 // updateDataFrameDetail={updateDataFrameDetail}
-                selectedFrameState={[selectedFrame, setSelectedFrame]}
+                // selectedFrameState={[selectedFrame, setSelectedFrame]}
                 deleteNodes={deleteNodes}
                 addHistory={addHistory}
                 updateNode={updateNode}

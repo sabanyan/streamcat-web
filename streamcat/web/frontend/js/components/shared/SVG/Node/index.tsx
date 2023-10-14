@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import Constants from "Constants/index";
 import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import style from "./style.scss";
-import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
 import { DragType, GraphType, RunnablesType } from "Types/index";
-import { AllNodeType, Flow, FrameType } from "Model/Library";
+import { AllNodeType, Flow } from "Model/Library";
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Node/NodeTypes";
 import { graphUtil } from "Modules/flowEditor";
 
@@ -27,7 +26,7 @@ interface Props {
     addSelectNode: (selectedNodeId: string) => void;
     deleteSelectNode: (selectedNodeId: string) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
-    selectFrame: (frame?:FrameType) => void;
+    // selectFrame: (frame?:FrameType) => void;
     addHistory: () => void;
     readOnly: boolean;
 }
@@ -82,7 +81,7 @@ export const Node = (props: Props) => {
     const handleMouseUp = (e: React.MouseEvent<SVGElement>) => {
         setCoords(null);
 
-        const { addSelectNode, deleteSelectNode, selectNodes, selectFrame, addHistory } = props;
+        const { addSelectNode, deleteSelectNode, selectNodes, addHistory } = props;
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected()) {
@@ -94,22 +93,6 @@ export const Node = (props: Props) => {
             //一度選択状態をクリアする（#71）
             selectNodes([]);
             selectNodes([node]);
-
-            //データフレームの詳細を取得する
-            const selectedNode: AllNodeType = node;//this.getSelectedStep()
-            if (selectedNode.type === 'frame') {
-                const frameNode = selectedNode as FrameNodeType;
-                if (frameNode.hasData() && frameNode.uuid) {
-                    //TODO 将来的にはページングなどの対応が必要
-                    Api.findFrame(frameNode.uuid).then(frame => {
-                        selectFrame(frame);
-                    });
-                } else {
-                    selectFrame();
-                }
-            } else {
-                selectFrame();
-            }
         }
 
         document.removeEventListener("mousemove", mouseMoveEvent);

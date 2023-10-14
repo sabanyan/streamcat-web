@@ -12,7 +12,7 @@ import {
 } from 'Shared/Inspector'
 import { GraphUtil } from 'Utils/index'
 import { GraphType, RunnablesType } from "Types/index";
-import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand } from 'Model/Library';
 import {
   addDataDstNodeAction,
   addDataSrcNodeAction,
@@ -30,7 +30,7 @@ type InspectorProps = {
   // nodes: AllNodeType[];
   runnables: RunnablesType;
   // selected_data_source_detail: FrameType;
-  selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
+  // selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
   lockUUID: string | undefined;
   // updateDataFrameDetail: Function
   zoom: number
@@ -85,7 +85,7 @@ export const Inspector = (props:InspectorProps) => {
     const { selectedNodeIds, lockUUID, runnables, lastSavedFlow,
       addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       previewDisabled, zoom, addNode,updateNode,selectNodes,addHistory,
-      selectedFrameState, deleteNodes,updateLastSavedFlow } = props
+      deleteNodes,updateLastSavedFlow } = props
 
     let property
 
@@ -139,7 +139,7 @@ export const Inspector = (props:InspectorProps) => {
           // nodes={flow.nodes}
           // selected_data_source_detail={selected_data_source_detail}
           // updateDataFrameDetail={updateDataFrameDetail}
-          selectedFrameState={selectedFrameState}
+          // selectedFrameState={selectedFrameState}
           runnables={runnables}
           lockUUID={lockUUID}
           deleteNodes={deleteNodes}
