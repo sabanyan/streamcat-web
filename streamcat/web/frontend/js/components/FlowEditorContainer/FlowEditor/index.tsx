@@ -409,9 +409,10 @@ export const FlowEditor = () => {
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
     const selectNodes = (selectedNodes: AllNodeType[]) => {
-        setSelectedNodeIds(
-            selectedNodes.map(node => node.id)
-        );
+        // ArrayCtor型オブジェクトをstring[]型に代入すると
+        // __allAPIFuncSetとlengthプロパティも要素として扱われるのでstring[]に変換する
+        const nodeIdsArray = [...selectedNodes.map(node => node.id)];
+        setSelectedNodeIds(nodeIdsArray);
     };
     const addSelectNode = (selectedNodeId: string) => {
         setSelectedNodeIds([...selectedNodeIds, selectedNodeId])
