@@ -146,8 +146,8 @@ export const FlowEditor = () => {
 
     const [graph, setGraph] = useState<GraphType>(graphUtil.getGraph(flow.flow.nodes, 100))
 
-    // 選択中のStepのId
-    const [selectedStepIds, setSelectedStepIds] = useState<string[]>([]);
+    // 選択中のNodeのId
+    const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
     // 選択中のDataFrameNodeのFrame
     const [selectedFrame, setSelectedFrame] = useState<FrameType>();
     // Canvasでの選択範囲
@@ -396,12 +396,12 @@ export const FlowEditor = () => {
     // const addMaster = (flow: {}) => {
     //     dispatch(addMasterAction(flow));
     // };
-    const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
-        addNodeAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnablesReader(), zoom);
+    const addNode = (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => {
+        addNodeAction(flow.flow, addNode, srcNodeIds, dstNodeIds, runnablesReader(), zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
-    const updateStep = (updatedNode: AllNodeType) => {
+    const updateNode = (updatedNode: AllNodeType) => {
         // 更新後のNodeに置き換える
         flow.flow.nodes = flow.flow.nodes.map(node =>
             node.id === updatedNode.id? updatedNode: node
@@ -409,32 +409,26 @@ export const FlowEditor = () => {
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
-    const selectSteps = (selected_steps: AllNodeType[]) => {
-        // dispatch(selectStepsAction(selected_steps));
-        setSelectedStepIds(
-            selected_steps.map(step => step.id)
+    const selectNodes = (selectedNodes: AllNodeType[]) => {
+        setSelectedNodeIds(
+            selectedNodes.map(node => node.id)
         );
     };
-    const addSelectStep = (selected_step_id: string) => {
-        // dispatch(addSelectStepAction(selected_step_id));
-        setSelectedStepIds([...selectedStepIds, selected_step_id])
+    const addSelectNode = (selectedNodeId: string) => {
+        setSelectedNodeIds([...selectedNodeIds, selectedNodeId])
     };
-    const deleteSelectStep = (selected_step_id: string) => {
-        // dispatch(deleteSelectStepAction(selected_step_id));
-        setSelectedStepIds(
-            selectedStepIds.filter(stepId => stepId !== selected_step_id)
+    const deleteSelectNode = (selectedNodeId: string) => {
+        setSelectedNodeIds(
+            selectedNodeIds.filter(nodeId => nodeId !== selectedNodeId)
         );
     };
-    const deleteSteps = (step_ids: string[]) => {
-        deleteNodesAction(flow.flow, step_ids);
+    const deleteNodes = (nodeIds: string[]) => {
+        deleteNodesAction(flow.flow, nodeIds);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
         //削除後は非選択状態にする
-        setSelectedStepIds([]);
+        setSelectedNodeIds([]);
     };
-    // const cutSteps = (step_ids: []) => {
-    //     dispatch(cutStepsAction(step_ids));
-    // };
 
     // FlowDataを比較する
     const compareFlowData = (flow1:Flow, flow2:Flow) => {
@@ -656,43 +650,43 @@ export const FlowEditor = () => {
         });
     };
 
-    const renderSteps = useCallback(() => {
-        let steps: any = [];
+    const renderNodes = useCallback(() => {
+        let nodes:React.JSX.Element[] = [];
         if (flow.flow.nodes) {
-            steps = flow.flow.nodes.map((step: AllNodeType) => {
-                let selected = (step.id === selectedStepIds[0]);
-                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
+            nodes = flow.flow.nodes.map(node => {
+                let selected = (node.id === selectedNodeIds[0]);
+                const nodeReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
                 return <Node
-                    key={step.id}
-                    node={step}
-                    position={step.position}
+                    key={node.id}
+                    node={node}
+                    position={node.position}
                     selected={selected}
-                    invalid={step.invalid}
-                    error={step.error}
+                    invalid={node.invalid}
+                    error={node.error}
                     runnables={runnablesReader()}
                     flowData={flow.flow}
                     graphState={[graph, setGraph]}
-                    selectedNodeIds={selectedStepIds}
+                    selectedNodeIds={selectedNodeIds}
                     zoom={zoom}
                     dragRange={dragRange}
-                    addSelectNode={addSelectStep}
-                    deleteSelectNode={deleteSelectStep}
-                    selectNodes={selectSteps}
+                    addSelectNode={addSelectNode}
+                    deleteSelectNode={deleteSelectNode}
+                    selectNodes={selectNodes}
                     selectFrame={frame => setSelectedFrame(frame)}
                     addHistory={addHistory}
-                    readOnly={stepReadOnly}
+                    readOnly={nodeReadOnly}
                 />;
             });
         }
-        return steps;
+        return nodes;
     }, [ //nodes,
-        selectedStepIds,
+        selectedNodeIds,
         flow,
         zoom,
         dragRange,
-        addSelectStep,
-        deleteSelectStep,
-        selectSteps]);
+        addSelectNode,
+        deleteSelectNode,
+        selectNodes]);
 
     const renderEdges = useCallback(() => {
         const edges:React.JSX.Element[] = [];
@@ -798,7 +792,7 @@ export const FlowEditor = () => {
                 notifyError={notifyError}
                 notifyComplete={notifyComplete}
                 dismissNotify={dismissNotify}
-                addNode={addStep}
+                addNode={addNode}
                 addHistory={addHistory}
                 undo={undo}
                 redo={redo}
@@ -811,12 +805,12 @@ export const FlowEditor = () => {
                 message={'フローを構築中です'} />
             <PaperScroller
                 canvasWidth={canvasWidth}
-                deleteNodes={deleteSteps}
-                selectNodes={selectSteps}
+                deleteNodes={deleteNodes}
+                selectNodes={selectNodes}
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
-                selectedNodeIds={selectedStepIds}
+                selectedNodeIds={selectedNodeIds}
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
@@ -826,17 +820,17 @@ export const FlowEditor = () => {
             >
                 <Paper graph={graph} zoom={zoom}>
                     {renderEdges()}
-                    {renderSteps()}
+                    {renderNodes()}
                     {renderSelector()}
                 </Paper>
             </PaperScroller>
             <Inspector
-                selectedNodeIds={selectedStepIds}
+                selectedNodeIds={selectedNodeIds}
                 // nodes={flow?.nodes || []}
                 runnables={runnablesReader()}
                 zoom={zoom}
-                addNode={addStep}
-                selectNodes={selectSteps}
+                addNode={addNode}
+                selectNodes={selectNodes}
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
@@ -846,9 +840,9 @@ export const FlowEditor = () => {
                 // selected_data_source_detail={selected_data_source_detail!}
                 // updateDataFrameDetail={updateDataFrameDetail}
                 selectedFrameState={[selectedFrame, setSelectedFrame]}
-                deleteNodes={deleteSteps}
+                deleteNodes={deleteNodes}
                 addHistory={addHistory}
-                updateNode={updateStep}
+                updateNode={updateNode}
                 // updateNodeEdges={updateNodeEdges}
                 // refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
