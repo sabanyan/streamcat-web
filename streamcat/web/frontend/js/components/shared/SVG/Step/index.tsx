@@ -38,7 +38,7 @@ let setCoords = (_coords: { x: number, y: number } | null) => {
     coords = _coords;
 };
 
-const Step = (props: Props) => {
+export const Node = (props: Props) => {
     const { step } = props;
 
     const [hover, setHover] = useState<boolean>(false);
@@ -379,12 +379,12 @@ const Step = (props: Props) => {
     const error_icon = (error && Object.keys(error).length) ? <ErrorIcon /> : null;
     const label_text = (!!stepLabel) ? 
                         <g className={style.labelContainer}>
-                            <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>
+                            <foreignObject {...NodeTextStyle} transform={"translate(" + (-1 * NodeTextStyle.width) + ",0)"}>
                                 <div style={{
                                     display: "table",
                                     width: "100%",
-                                    height: StepTextStyle.height,
-                                    paddingRight: StepTextStyle.padding + "px"
+                                    height: NodeTextStyle.height,
+                                    paddingRight: NodeTextStyle.padding + "px"
                                 }}>
                                     <p style={{
                                         display: "table-cell",
@@ -411,8 +411,6 @@ const Step = (props: Props) => {
     );
 };
 
-export { Step };
-
 export const RectStyle = {
     x: 0,
     y: 0,
@@ -436,7 +434,7 @@ export const CircleStyle = {
     strokeWidth: 2
 };
 
-export const StepTextStyle = {
+export const NodeTextStyle = {
     width: 80,
     height: 50,
     fontSize: 10,

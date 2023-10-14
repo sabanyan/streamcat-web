@@ -1,6 +1,6 @@
 import React from "react";
 import style from "./style.scss";
-import {Arrow, Port, StepTextStyle} from "Shared/SVG";
+import {Arrow, Port, NodeTextStyle} from "Shared/SVG";
 import Constants from "Constants/index";
 import {StringUtil} from "Utils/index";
 
@@ -107,7 +107,7 @@ const Edge = (props: EdgeProps) => {
     const arrowPosition = edgeOfRect(arrowRect, rectOfEdgeAngle);
 
     // ポートのラベルの位置計算（ラベルの長さに応じた調整付き）
-    let offsetWidth = StringUtil.getTextWidth(outPortLabel, StepTextStyle.fontSize);
+    let offsetWidth = StringUtil.getTextWidth(outPortLabel, NodeTextStyle.fontSize);
     let offsetHeight = 10;
     const outPortRect = {
         x: vx,
@@ -115,7 +115,7 @@ const Edge = (props: EdgeProps) => {
         width: Constants.default.step.width + Constants.default.step.borderWidth * 2 + offsetWidth,
         height: Constants.default.step.height + Constants.default.step.borderWidth * 2 + offsetHeight
     };
-    offsetWidth = StringUtil.getTextWidth(inPortLabel, StepTextStyle.fontSize);
+    offsetWidth = StringUtil.getTextWidth(inPortLabel, NodeTextStyle.fontSize);
     const inPortRect = {
         x: wx,
         y: wy,

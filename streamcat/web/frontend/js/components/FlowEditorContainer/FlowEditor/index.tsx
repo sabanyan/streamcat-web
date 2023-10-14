@@ -18,7 +18,7 @@ import {
 } from 'Shared/Notification';
 import { Inspector } from 'Shared/Inspector';
 import { Loader } from 'Shared/Base';
-import { Edge, Selector, Step } from 'Shared/SVG';
+import { Edge, Selector, Node } from 'Shared/SVG';
 import { TextField } from 'Shared/Input';
 import { NotAllowed } from 'Components/NotAllowedContainer';
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
@@ -662,7 +662,7 @@ export const FlowEditor = () => {
             steps = flow.flow.nodes.map((step: AllNodeType) => {
                 let selected = (step.id === selectedStepIds[0]);
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
-                return <Step
+                return <Node
                     key={step.id}
                     step={step}
                     position={step.position}
