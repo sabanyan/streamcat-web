@@ -524,7 +524,7 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
         // 文字列がJSONでない場合はペースト処理を行わない
         if(e instanceof SyntaxError){
             console.warn(`pasete warning: ${e.message}`);
-            return;
+            return [];
         }else{
             throw e;
         }
@@ -539,6 +539,10 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
     jsonNodes.forEach(jsonNode => {
         const oldId = jsonNode.id;
         const newId = ModelUtil.getNewId(allNodes, jsonNode.type);
+        // Frameのlabelがidと同じ場合は、labelを新規idに変更する
+        if(jsonNode.type==='frame' && jsonNode.id===jsonNode.label){
+            jsonNode.label = newId;
+        }
         // idとlabelを置き換える
         jsonNode.id = newId;
         // 表示位置をずらす
@@ -631,6 +635,8 @@ export const pasteStepsAction = (flowData:Flow, stringifiedNodes:string) => {
         // 全ての複製NodeをflowDataに保存する
         flowData.nodes.push(copiedNode);
     });
+
+    return copiedNodes;
 };
 
 export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowCommand | InlineFlowCommand) => {

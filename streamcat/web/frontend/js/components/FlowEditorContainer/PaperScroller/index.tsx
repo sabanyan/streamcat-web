@@ -68,7 +68,7 @@ const PaperScroller = (props: Props) => {
     };
 
     const pasteSteps = () => {
-        const {flowData, readOnly, addHistory} = props;
+        const {flowData, readOnly, addHistory, selectSteps} = props;
         const [flow, setFlow] = props.flowState;
 
         // 読み取り専用の場合はペースト不可
@@ -82,11 +82,14 @@ const PaperScroller = (props: Props) => {
                 if(!stringifiedNodes){
                     return;
                 }
-                pasteStepsAction(flowData, stringifiedNodes);
+                // ペーストする
+                const pastedNodes = pasteStepsAction(flowData, stringifiedNodes);
                 setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
                 setFlow({...flow});
                 // Undoスタックに履歴を追加する
                 addHistory();
+                // ペーストしたノードを選択状態にする
+                selectSteps(pastedNodes);
             },
             () => alert('クリップボードが利用できません')
         );
