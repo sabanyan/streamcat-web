@@ -49,7 +49,7 @@ const PreviewModal = (props: Props) => {
     const renderTabContent = (selected_tab_id) => {
         const {title} = props
         const contents = props.contents
-        const {flowUuid, stepIds, frameUuid, lockUuid, visualize} = contents[selected_tab_id].content
+        const {flowUuid, nodeIds, frameUuid, lockUuid, visualize} = contents[selected_tab_id].content
         const {id, afterViz} = contents[selected_tab_id]
 
         const result = results[selected_tab_id]
@@ -64,7 +64,7 @@ const PreviewModal = (props: Props) => {
                             flowUuid={flowUuid}
                             frameUuid={frameUuid}
                             lockUuid={lockUuid}
-                            nodeIds={stepIds}
+                            nodeIds={nodeIds}
                             visualize={visualize} 
                             afterViz={afterViz}
                             result={result}
