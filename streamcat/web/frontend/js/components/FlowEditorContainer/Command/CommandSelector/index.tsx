@@ -10,14 +10,14 @@ type Props = {
     runnables: RunnablesType;
     nodes:AllNodeType[];
     numberOfInput: number;
-    selectedStepIds: string[];
+    selectedNodeIds: string[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    selectSteps: (selected_steps: AllNodeType[]) => void;
+    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     disabled?: boolean;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
 };
 
 const CommandSelector = (props: Props) => {
@@ -53,8 +53,8 @@ const CommandSelector = (props: Props) => {
         return (command.ports[0][0].label === "*");
     };
 
-    const { numberOfInput, selectedStepIds, zoom, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, runnables, nodes } = props;
+    const { numberOfInput, selectedNodeIds, zoom, addNode, addDataDstNode, addDataSrcNode,
+        selectNodes, addHistory, runnables, nodes } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
     const isNoKeyword = (keyword.length == 0);
@@ -105,12 +105,12 @@ const CommandSelector = (props: Props) => {
             nodes={nodes}
             key={index}
             command={command}
-            selectedStepIds={selectedStepIds}
+            selectedNodeIds={selectedNodeIds}
             zoom={zoom}
-            addStep={addStep}
-            addDataDstStep={addDataDstStep}
-            addDataSrcStep={addDataSrcStep}
-            selectSteps={selectSteps}
+            addNode={addNode}
+            addDataDstNode={addDataDstNode}
+            addDataSrcNode={addDataSrcNode}
+            selectNodes={selectNodes}
             addHistory={addHistory}
         />);
         beforeCommand = command;

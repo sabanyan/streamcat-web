@@ -9,19 +9,19 @@ import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameN
 type Props = {
     nodes: AllNodeType[];
     command: Command | FlowCommand | InlineFlowCommand;
-    selectedStepIds: string[];
+    selectedNodeIds: string[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    selectSteps: (selected_steps: AllNodeType[]) => void;
+    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
 };
 
 export const CommandItem = (props: Props) => {
     const {nodes} = props;
 
-    const getNewStepWithArgs = (command: Command | FlowCommand, args) => {
+    const getNewNodeWithArgs = (command: Command | FlowCommand, args) => {
         let node:CommandNodeType | FlowNodeType ;
 
         // if (command instanceof CommandModel) {
@@ -50,17 +50,17 @@ export const CommandItem = (props: Props) => {
     };
 
     const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: Command | FlowCommand | InlineFlowCommand) => {
-        const { selectedStepIds, zoom, addStep, selectSteps, addHistory, addDataDstStep, addDataSrcStep } = props;
+        const { selectedNodeIds, zoom, addNode, selectNodes, addHistory, addDataDstNode, addDataSrcNode } = props;
 
         if (command.hasOwnProperty('flow') && command.classification === "data_source") {
-            addDataSrcStep(command);
+            addDataSrcNode(command);
         } else if (command.hasOwnProperty('flow') && command.classification === "data_dest") {
-            addDataDstStep(command, selectedStepIds[0]);
+            addDataDstNode(command, selectedNodeIds[0]);
         } else {
             const args = {};
-            const added_command_step = getNewStepWithArgs(command as Command|FlowCommand, args);
+            const addedCommandNode = getNewNodeWithArgs(command as Command|FlowCommand, args);
 
-            const output_steps = command.ports[1].map(() => {
+            const outputNodes = command.ports[1].map(() => {
                 // const output_step = new DataFrameStepModel({
                 //     id: '',
                 //     label: null,
@@ -69,17 +69,17 @@ export const CommandItem = (props: Props) => {
                 //     dataSource: Constants.data.dataSource.csv
                 // });
                 const newId = ModelUtil.getNewId(nodes, 'frame');
-                const output_step:FrameNodeType = new FrameNode(newId, {x:0, y:0});
-                addStep(output_step, [], [], zoom);
-                return output_step;
+                const outputNode:FrameNodeType = new FrameNode(newId, {x:0, y:0});
+                addNode(outputNode, [], [], zoom);
+                return outputNode;
             });
 
-            const output_step_ids = output_steps.map(step => step.id);
+            const outputNodeIds = outputNodes.map(node => node.id);
 
-            addStep(added_command_step, selectedStepIds, output_step_ids, zoom);
+            addNode(addedCommandNode, selectedNodeIds, outputNodeIds, zoom);
         }
         //ステップの選択をキャンセル
-        selectSteps([]);
+        selectNodes([]);
         addHistory();
     };
 

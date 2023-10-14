@@ -76,12 +76,12 @@ const MultiInspector = (props: Props) => {
                 nodes={nodes}
                 runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
-                selectedStepIds={selectedStepIds}
+                selectedNodeIds={selectedStepIds}
                 zoom={zoom}
-                addStep={addStep}
-                addDataSrcStep={addDataSrcStep}
-                addDataDstStep={addDataDstStep}
-                selectSteps={selectSteps}
+                addNode={addStep}
+                addDataSrcNode={addDataSrcStep}
+                addDataDstNode={addDataDstStep}
+                selectNodes={selectSteps}
                 addHistory={addHistory} />
         </div>;
     }

@@ -153,12 +153,12 @@ const FlowSettingsInspector = (props: Props) => {
                         nodes={flowData.nodes}
                         runnables={runnables}
                         numberOfInput={0}
-                        selectedStepIds={selectedStepIds}
+                        selectedNodeIds={selectedStepIds}
                         zoom={zoom}
-                        addStep={addStep}
-                        addDataSrcStep={addDataSrcStep}
-                        addDataDstStep={addDataDstStep}
-                        selectSteps={selectSteps}
+                        addNode={addStep}
+                        addDataSrcNode={addDataSrcStep}
+                        addDataDstNode={addDataDstStep}
+                        selectNodes={selectSteps}
                         addHistory={addHistory}
                     />
                 </Fragment>
