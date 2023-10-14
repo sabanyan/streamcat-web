@@ -181,11 +181,11 @@ const CommandInspector = (props: Props) => {
         <div><label>場所</label></div>
         {detail}
         <InOutConnector
-            updateStep={updateStep}
+            updateNode={updateStep}
             // updateNodeEdges={updateNodeEdges}
             nodes={nodes}
             runnables={runnables}
-            selectedStep={selected_step}
+            selectedNode={selected_step}
             disabled={baseInspectorDisabled}
         />
         {form}

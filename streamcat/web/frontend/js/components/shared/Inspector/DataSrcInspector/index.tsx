@@ -87,8 +87,8 @@ export class DataSrcInspector extends React.Component<Props, State> {
 
     if (selected_step.srcs || selected_step.dsts) {
       inOutConnector = <InOutConnector
-        selectedStep={selected_step}
-        updateStep={updateStep}
+        selectedNode={selected_step}
+        updateNode={updateStep}
         // updateNodeEdges={updateNodeEdges}
         nodes={nodes}
         runnables={runnables}

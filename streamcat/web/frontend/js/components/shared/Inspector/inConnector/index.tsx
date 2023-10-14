@@ -13,8 +13,8 @@ type Props = {
     index: number;
     nodes: AllNodeType[];
     runnables: RunnablesType;
-    selectedStep: CommandNodeType | FlowNodeType | InlineFlowNodeType;
-    updateStep: (updatedNode: AllNodeType) => void;
+    selectedNode: CommandNodeType | FlowNodeType | InlineFlowNodeType;
+    updateNode: (updatedNode: AllNodeType) => void;
     // updateNodeEdges: (node: AllNodeType) => void;
     disabled: boolean;
 };
@@ -25,9 +25,9 @@ type Props = {
  * @returns 
  */
 export const InConnector = (props: Props) => {
-    const {portLabel, index, nodes, runnables, selectedStep, updateStep, disabled} = props;
+    const {portLabel, index, nodes, runnables, selectedNode, updateNode, disabled} = props;
 
-    const nodeSrcs = selectedStep?.srcs || {};
+    const nodeSrcs = selectedNode?.srcs || {};
     const nodeId = nodeSrcs[portLabel] || '';
 
     const dataSourceOptions = nodes.filter(node => node.type==='frame').map(dataFrame => ({
@@ -41,48 +41,48 @@ export const InConnector = (props: Props) => {
         const srcNode: FrameNodeType = data.object;
         if (srcNode) {
             // Canvasから対象のEdgeを削除する
-            removeNodeEdge(selectedStep, portLabel);
+            removeNodeEdge(selectedNode, portLabel);
             // NodeのPortを変更する
-            if(!selectedStep.srcs){
-                selectedStep.srcs = {};
+            if(!selectedNode.srcs){
+                selectedNode.srcs = {};
             }
-            selectedStep.srcs[portLabel] = srcNode.id;
+            selectedNode.srcs[portLabel] = srcNode.id;
             // Canvasに対象のEdgeを追加する
-            addNodeEdges(selectedStep);
+            addNodeEdges(selectedNode);
             // Flowオブジェクトに反映する
-            updateStep(selectedStep);
+            updateNode(selectedNode);
         } else {
             // Canvasから対象のEdgeを削除する
-            removeNodeEdge(selectedStep, portLabel);
+            removeNodeEdge(selectedNode, portLabel);
             //「選択してください」が選択されたときはノードのつながりを削除する
-            if(selectedStep.srcs){
-                selectedStep.srcs[portLabel] = '';
+            if(selectedNode.srcs){
+                selectedNode.srcs[portLabel] = '';
             }
             // Flowオブジェクトに反映する
-            updateStep(selectedStep);
+            updateNode(selectedNode);
         }
     };
 
-    const deletePort = (step:CommandNodeType, portLabel:string) => {
+    const deletePort = (node:CommandNodeType, portLabel:string) => {
         // FIXME:
-        // dispatch(updateStepAction(step, zoom)) の処理ではStateと入力Nodeのsrcsに差異がある場合に限りCanvasのエッジ描画に反映させる
+        // dispatch(updateNodeAction(node, zoom)) の処理ではStateと入力Nodeのsrcsに差異がある場合に限りCanvasのエッジ描画に反映させる
         // そのため、Stateが参照するNodeではなくこれを複製して、iPortを削除したものを渡す必要がある
         // 複製したNodeのdeleteinPort関数は複製元のiPortを削除するので、複製したNodeのinPortを削除するためのdeleteInPort関数を用意する
-        const deleteInPort = (step:CommandNodeType, label:string) => {
-            step.srcs && delete step.srcs[label];
-            if(step.srcsOrder){
-                step.srcsOrder = step.srcsOrder.filter(srcLabel => srcLabel !== label);
+        const deleteInPort = (node:CommandNodeType, label:string) => {
+            node.srcs && delete node.srcs[label];
+            if(node.srcsOrder){
+                node.srcsOrder = node.srcsOrder.filter(srcLabel => srcLabel !== label);
             }
         };
 
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 // Canvasから対象のEdgeを削除する
-                removeNodeEdge(step, portLabel);
+                removeNodeEdge(node, portLabel);
                 // NodeからPortを削除する
-                deleteInPort(step, portLabel);
+                deleteInPort(node, portLabel);
                 // Flowオブジェクトに反映する
-                updateStep(step);
+                updateNode(node);
                 // ダイアログを閉じる
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -122,7 +122,7 @@ export const InConnector = (props: Props) => {
                 hiddenNoSelect={false}
                 disabled={disabled}
                 onChange={(e, data, label) => onChangeInEdge(e, data, label)}
-                {...actionProps(selectedStep)}
+                {...actionProps(selectedNode)}
             />
         </div>
     </li>;
