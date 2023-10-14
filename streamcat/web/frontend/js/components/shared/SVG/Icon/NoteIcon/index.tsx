@@ -1,7 +1,7 @@
 import React from 'react';
 import {CSSProperties} from "react";
 import Constants from "Constants/index";
-import { NoteNodeType } from 'Model/Step/NodeTypes';
+import { NoteNodeType } from 'Model/Node/NodeTypes';
 
 type Props = {
     hover: boolean,

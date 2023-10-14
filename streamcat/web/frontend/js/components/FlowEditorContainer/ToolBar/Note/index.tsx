@@ -3,7 +3,7 @@ import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
 import Constants from 'Constants/index';
 import { FlowUtil, ModelUtil, PositionUtil, ZoomUtil } from 'Utils/index';
 import { defaultGraphProps } from 'Utils/GraphUtil';
-import { NoteNode, NoteNodeType } from 'Model/Step/NodeTypes';
+import { NoteNode, NoteNodeType } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 
 type Props = {

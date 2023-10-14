@@ -5,7 +5,7 @@ import {Button, DropDownList} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
-import { NoteNodeType } from 'Model/Step/NodeTypes';
+import { NoteNodeType } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 
 interface Props {

@@ -4,7 +4,7 @@ import { FlowUtil, GraphUtil, ModelUtil, ZoomUtil } from "Utils/index";
 import { CommandPortType, RunnablesType } from "../types";
 import _ from "lodash";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
-import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
+import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Node/NodeTypes";
 import { NodeArray } from "Api";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";

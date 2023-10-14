@@ -4,7 +4,7 @@ import {
     FrameNodeType,
     InlineFlowNodeType,
     NoteNodeType
-} from 'Model/Step/NodeTypes';
+} from 'Model/Node/NodeTypes';
 
 /**
  * Datumの種別

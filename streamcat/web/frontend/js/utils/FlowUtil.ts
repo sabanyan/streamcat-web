@@ -2,7 +2,7 @@
 import Constants from 'Constants/index'
 import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
-import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes';
 
 export default class FlowUtil {
 

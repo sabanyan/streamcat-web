@@ -3,7 +3,7 @@ import style from '../style.scss';
 import Constants from 'Constants/index';
 import {DropDownList} from 'Shared/Input';
 import {ModalUtil} from 'Utils/index';
-import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
 import { addNodeEdges, removeNodeEdge } from 'Modules/flowEditor';

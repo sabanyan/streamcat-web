@@ -6,7 +6,7 @@ import { Api } from 'Api';
 import { ZoomUtil } from "Utils/index";
 import { DragType, GraphType, RunnablesType } from "Types/index";
 import { AllNodeType, Flow, FrameType } from "Model/Library";
-import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Step/NodeTypes";
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Node/NodeTypes";
 import { graphUtil } from "Modules/flowEditor";
 
 let mouseMoveEvent;

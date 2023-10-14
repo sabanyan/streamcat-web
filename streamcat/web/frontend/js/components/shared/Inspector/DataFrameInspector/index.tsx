@@ -10,7 +10,7 @@ import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
 import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
-import { FrameNodeType } from "Model/Step/NodeTypes";
+import { FrameNodeType } from "Model/Node/NodeTypes";
 
 type Props = {
     // selected_data_source_detail: FrameType;

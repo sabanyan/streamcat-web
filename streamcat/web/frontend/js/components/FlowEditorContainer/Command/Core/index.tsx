@@ -4,7 +4,7 @@ import classnames from "classnames";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { ModelUtil, WebUtil } from "Utils/index";
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
-import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from "Model/Step/NodeTypes";
+import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNodeType } from "Model/Node/NodeTypes";
 
 type Props = {
     nodes: AllNodeType[];

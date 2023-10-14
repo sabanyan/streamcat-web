@@ -7,7 +7,7 @@ import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
 import { AllNodeType } from 'Model/Library';
-import { CommandNodeType, FlowNodeType } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FlowNodeType } from 'Model/Node/NodeTypes';
 import { RunnablesType } from 'Types/index';
 
 type Props = {

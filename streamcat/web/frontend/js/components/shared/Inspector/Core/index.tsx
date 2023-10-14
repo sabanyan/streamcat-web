@@ -18,7 +18,7 @@ import {
   addDataSrcStepAction,
   graphUtil,
 } from 'Modules/flowEditor';
-import { FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { FrameNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes';
 
 type InspectorProps = {
   inspectorWidthState: [number, (value:React.SetStateAction<number>)=>void];

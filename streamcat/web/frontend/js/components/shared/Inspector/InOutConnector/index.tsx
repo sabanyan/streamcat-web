@@ -4,7 +4,7 @@ import {AddButton} from 'Shared/Input';
 import {ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { InConnector } from '../inConnector';
-import { CommandNodeType, FlowNodeType, InlineFlowNodeType, addInPort } from 'Model/Step/NodeTypes';
+import { CommandNodeType, FlowNodeType, InlineFlowNodeType, addInPort } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
 

@@ -15,7 +15,7 @@ import {
     NoteNode,
     calcSize,
     addInPort
-} from 'Model/Step/NodeTypes';
+} from 'Model/Node/NodeTypes';
 import { makeArrayCtor } from './ApiBase';
 
 /**
