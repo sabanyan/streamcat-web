@@ -664,7 +664,7 @@ export const FlowEditor = () => {
                 const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
                 return <Node
                     key={step.id}
-                    step={step}
+                    node={step}
                     position={step.position}
                     selected={selected}
                     invalid={step.invalid}
@@ -672,12 +672,12 @@ export const FlowEditor = () => {
                     runnables={runnablesReader()}
                     flowData={flow.flow}
                     graphState={[graph, setGraph]}
-                    selectedStepIds={selectedStepIds}
+                    selectedNodeIds={selectedStepIds}
                     zoom={zoom}
                     dragRange={dragRange}
-                    addSelectStep={addSelectStep}
-                    deleteSelectStep={deleteSelectStep}
-                    selectSteps={selectSteps}
+                    addSelectNode={addSelectStep}
+                    deleteSelectNode={deleteSelectStep}
+                    selectNodes={selectSteps}
                     selectFrame={frame => setSelectedFrame(frame)}
                     addHistory={addHistory}
                     readOnly={stepReadOnly}
