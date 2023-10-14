@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "Shared/SVG";
-import * as Step from "Shared/SVG/Step";
+import * as Step from "Shared/SVG/Node";
 
 type Props = {
     hover?: boolean;

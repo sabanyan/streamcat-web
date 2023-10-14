@@ -1,7 +1,7 @@
 import React from "react";
 import {Icon} from "Shared/SVG/Icon";
 import {Rect} from "Shared/SVG";
-import * as Step from "Shared/SVG/Step";
+import * as Step from "Shared/SVG/Node";
 import { Command } from "Model/Library";
 
 type Props = {
