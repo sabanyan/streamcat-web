@@ -493,6 +493,12 @@ export const FlowEditor = () => {
         const reversePatches = compareFlowData(prevFlowData, flow.flow);
         redoStack.push(reversePatches);
 
+        // 選択中Nodeが無くなった場合は選択を解除する
+        const allSelectedNodeExists = selectedNodeIds.every(selectedNodeId =>
+            GraphUtil.NodeExists(prevFlowData.nodes, selectedNodeId)
+        );
+        allSelectedNodeExists || setSelectedNodeIds([]);
+
         // エッジを繋ぎ直す
         redrawAllEdges(prevFlowData.nodes, graph.edges);
         // graphの更新
@@ -520,6 +526,12 @@ export const FlowEditor = () => {
         // Redo用の差分を作成してRedoスタックに乗せる
         const reversePatches = compareFlowData(nextFlowData, flow.flow);
         undoStack.push(reversePatches);
+
+        // 選択中Nodeが無くなった場合は選択を解除する
+        const allSelectedNodeExists = selectedNodeIds.every(selectedNodeId =>
+            GraphUtil.NodeExists(nextFlowData.nodes, selectedNodeId)
+        );
+        allSelectedNodeExists || setSelectedNodeIds([]);
 
         // エッジを繋ぎ直す
         redrawAllEdges(nextFlowData.nodes, graph.edges);
