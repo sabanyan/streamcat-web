@@ -831,12 +831,12 @@ export const FlowEditor = () => {
                 </Paper>
             </PaperScroller>
             <Inspector
-                selectedStepIds={selectedStepIds}
+                selectedNodeIds={selectedStepIds}
                 // nodes={flow?.nodes || []}
                 runnables={runnablesReader()}
                 zoom={zoom}
-                addStep={addStep}
-                selectSteps={selectSteps}
+                addNode={addStep}
+                selectNodes={selectSteps}
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
@@ -846,9 +846,9 @@ export const FlowEditor = () => {
                 // selected_data_source_detail={selected_data_source_detail!}
                 // updateDataFrameDetail={updateDataFrameDetail}
                 selectedFrameState={[selectedFrame, setSelectedFrame]}
-                deleteSteps={deleteSteps}
+                deleteNodes={deleteSteps}
                 addHistory={addHistory}
-                updateStep={updateStep}
+                updateNode={updateStep}
                 // updateNodeEdges={updateNodeEdges}
                 // refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
