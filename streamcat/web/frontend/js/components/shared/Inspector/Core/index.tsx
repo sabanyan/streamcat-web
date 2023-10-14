@@ -198,11 +198,11 @@ export const Inspector = (props:InspectorProps) => {
           selectedNodeId={selectedNode.id}
           runnables={runnables}
           nodes={flowData.nodes}
-          updateStep={updateStep}
+          updateNode={updateStep}
           // updateNodeEdges={updateNodeEdges}
           addHistory={addHistory}
-          selectSteps={selectSteps}
-          deleteSteps={deleteSteps}
+          selectNodes={selectSteps}
+          deleteNodes={deleteSteps}
           baseInspectorDisabled={baseInspectorDisabled}
         />
       }else if(selectedNode.type === 'note'){
