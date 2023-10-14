@@ -117,15 +117,15 @@ export const Inspector = (props:InspectorProps) => {
       // 複数のNodeを選択している場合
       property = <MultiInspector
         key={selectedStepIds.join(',')}
-        deleteSteps={deleteSteps}
-        selectSteps={selectSteps}
+        deleteNodes={deleteSteps}
+        selectNodes={selectSteps}
         nodes={flowData.nodes}
         runnables={runnables}
-        selectedStepIds={selectedStepIds}
+        selectedNodeIds={selectedStepIds}
         zoom={zoom}
-        addStep={addStep}
-        addDataSrcStep={addDataSrcStep}
-        addDataDstStep={addDataDstStep}
+        addNode={addStep}
+        addDataSrcNode={addDataSrcStep}
+        addDataDstNode={addDataDstStep}
         addHistory={addHistory}
         baseInspectorDisabled={baseInspectorDisabled}
         commandSelectorHidden={commandSelectorHidden}

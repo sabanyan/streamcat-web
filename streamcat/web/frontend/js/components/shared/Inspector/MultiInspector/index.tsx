@@ -9,15 +9,15 @@ import { RunnablesType } from 'Types/index';
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 
 type Props = {
-    deleteSteps: (step_ids: string[]) => void;
-    selectSteps: (selected_steps: AllNodeType[]) => void;
+    deleteNodes: (nodeIds: string[]) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     nodes: AllNodeType[];
     runnables: RunnablesType;
-    selectedStepIds: string[];
+    selectedNodeIds: string[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
+    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
     addHistory: () => void;
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;
@@ -25,13 +25,13 @@ type Props = {
 
 const MultiInspector = (props: Props) => {
     const onClickDelete = () => {
-        const {deleteSteps, selectSteps} = props;
+        const {deleteNodes, selectNodes} = props;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selectedStepIds} = props;
-                deleteSteps(selectedStepIds);
-                selectSteps([]);
+                const {selectedNodeIds} = props;
+                deleteNodes(selectedNodeIds);
+                selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -47,11 +47,13 @@ const MultiInspector = (props: Props) => {
         });
     };
 
+    const {runnables, selectedNodeIds, zoom, nodes, addNode, addDataSrcNode, addDataDstNode,
+        selectNodes, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
+
     const getNumberOfSelectedDataSources = () => {
-        const {nodes, selectedStepIds} = props;
         let cnt = 0;
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
-        selectedStepIds.forEach((id) => {
+        selectedNodeIds.forEach((id) => {
             const node = GraphUtil.getNode(nodes, id);
             if (node.type === 'frame') {
                 cnt++;
@@ -65,8 +67,6 @@ const MultiInspector = (props: Props) => {
         return cnt;
     };
 
-    const {runnables, selectedStepIds, zoom, nodes, addStep, addDataSrcStep, addDataDstStep,
-           selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
     const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
 
     let commandSelector;
@@ -76,12 +76,12 @@ const MultiInspector = (props: Props) => {
                 nodes={nodes}
                 runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
-                selectedNodeIds={selectedStepIds}
+                selectedNodeIds={selectedNodeIds}
                 zoom={zoom}
-                addNode={addStep}
-                addDataSrcNode={addDataSrcStep}
-                addDataDstNode={addDataDstStep}
-                selectNodes={selectSteps}
+                addNode={addNode}
+                addDataSrcNode={addDataSrcNode}
+                addDataDstNode={addDataDstNode}
+                selectNodes={selectNodes}
                 addHistory={addHistory} />
         </div>;
     }
@@ -91,9 +91,9 @@ const MultiInspector = (props: Props) => {
         commandSelector = null;
     }
 
-    return <BaseInspector key={JSON.stringify(selectedStepIds)}
+    return <BaseInspector key={JSON.stringify(selectedNodeIds)}
                           header={''}
-                          title={selectedStepIds.length + ' files'}
+                          title={selectedNodeIds.length + ' files'}
                           disabled={baseInspectorDisabled}>
         <div className='streamcat-form'>
             <Button onClick={() => onClickDelete()} danger={true} disabled={baseInspectorDisabled}>
