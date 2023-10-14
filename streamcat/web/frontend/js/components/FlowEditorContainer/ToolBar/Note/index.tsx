@@ -9,14 +9,14 @@ import { AllNodeType } from 'Model/Library';
 type Props = {
     zoom: number;
     nodes: AllNodeType[];
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addNote: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
     addHistory: () => void;
     children: React.ReactNode;
     disabled: boolean;
 };
 
 export const Note = (props: Props) => {
-    const {zoom, nodes, addStep, addHistory, children, disabled} = props;
+    const {zoom, nodes, addNote, addHistory, children, disabled} = props;
 
     const onClick = () => {
         let position = PositionUtil.getCenterPosition('#flow_editor>div');
@@ -42,7 +42,7 @@ export const Note = (props: Props) => {
         const newId = ModelUtil.getNewId(nodes, 'note');
         const note = new NoteNode(newId, notOverlapNodePosition) as NoteNodeType;
 
-        addStep(note, [], [], zoom);
+        addNote(note, [], [], zoom);
         addHistory();
     };
 

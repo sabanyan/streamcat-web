@@ -23,7 +23,7 @@ type ToolBarProps = {
     notifyError: (title: string, message: string) => string;
     notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
     dismissNotify: (id:string) => void;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
     addHistory: () => void;
     undo: () => void;
     redo: () => void;
@@ -46,7 +46,7 @@ export const ToolBar = (props: ToolBarProps) => {
             notifyError,
             notifyComplete,
             dismissNotify,
-            addStep,
+            addNode,
             addHistory, 
             undo,
             redo, 
@@ -103,7 +103,7 @@ export const ToolBar = (props: ToolBarProps) => {
                 disabled={runDisabled}>このフローを実行</Run>
             <Note zoom={zoom}
                   nodes={flowData.nodes}
-                  addStep={addStep}
+                  addNote={addNode}
                   addHistory={addHistory}
                   disabled={baseDisabled}>メモ</Note>
             <Undo undo={undo}

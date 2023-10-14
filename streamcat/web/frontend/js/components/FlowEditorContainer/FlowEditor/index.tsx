@@ -798,7 +798,7 @@ export const FlowEditor = () => {
                 notifyError={notifyError}
                 notifyComplete={notifyComplete}
                 dismissNotify={dismissNotify}
-                addStep={addStep}
+                addNode={addStep}
                 addHistory={addHistory}
                 undo={undo}
                 redo={redo}
