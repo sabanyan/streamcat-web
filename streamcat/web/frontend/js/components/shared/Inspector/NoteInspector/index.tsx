@@ -11,7 +11,7 @@ import { AllNodeType } from 'Model/Library';
 interface Props {
     selectedNodeId: string;
     nodes: AllNodeType[];
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     updateStep: (node:NoteNodeType) => void;
     deleteSteps: (step_ids: string[]) => void;
     baseInspectorDisabled: boolean;

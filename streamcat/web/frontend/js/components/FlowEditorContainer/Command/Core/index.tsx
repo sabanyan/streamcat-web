@@ -12,7 +12,7 @@ type Props = {
     selectedStepIds: string[];
     zoom: number;
     addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     addHistory: () => void;
     addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;

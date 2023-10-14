@@ -6,12 +6,12 @@ import {
     graphUtil,
     pasteStepsAction
 } from 'Modules/flowEditor';
-import { Flow, FlowType } from 'Model/Library';
+import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type Props = {
     canvasWidth: number;
     deleteSteps: (step_ids: string[]) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     addHistory: () => void;
     redo: () => void;
     undo: () => void;

@@ -16,7 +16,7 @@ type Props = {
     // selected_data_source_detail: FrameType;
     runnables: RunnablesType;
     deleteSteps: (step_ids: string[]) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     addHistory: () => void;
     flowData: Flow;
     // Flowの更新に用いる

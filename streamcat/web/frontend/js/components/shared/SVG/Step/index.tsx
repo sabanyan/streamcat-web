@@ -26,7 +26,7 @@ interface Props {
     dragRange: DragType | null;
     addSelectStep: (selected_step_id: string) => void;
     deleteSelectStep: (selected_step_id: string) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     selectFrame: (frame?:FrameType) => void;
     addHistory: () => void;
     readOnly: boolean;

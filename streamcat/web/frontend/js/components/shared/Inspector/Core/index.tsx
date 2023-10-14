@@ -35,7 +35,7 @@ type InspectorProps = {
   // updateDataFrameDetail: Function
   zoom: number
   addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-  selectSteps: (selected_steps: any[]) => void;
+  selectSteps: (selected_steps: AllNodeType[]) => void;
   // refreshFlow: (context: FlowType) => void;
   deleteSteps: (step_ids: string[]) => void;
   addHistory: () => void;

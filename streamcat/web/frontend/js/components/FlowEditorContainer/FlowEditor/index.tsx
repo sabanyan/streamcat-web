@@ -409,7 +409,7 @@ export const FlowEditor = () => {
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
-    const selectSteps = (selected_steps: any[]) => {
+    const selectSteps = (selected_steps: AllNodeType[]) => {
         // dispatch(selectStepsAction(selected_steps));
         setSelectedStepIds(
             selected_steps.map(step => step.id)

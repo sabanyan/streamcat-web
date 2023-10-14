@@ -18,7 +18,7 @@ type Props = {
     updateStep: (step: AllNodeType) => void;
     // updateNodeEdges: (node:AllNodeType) => void;
     addHistory: () => void;
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     deleteSteps: (step_ids: string[]) => void;
     // children?: React.ReactNode;
     baseInspectorDisabled: boolean;

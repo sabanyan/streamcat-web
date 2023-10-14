@@ -10,7 +10,7 @@ import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Libr
 
 type Props = {
     deleteSteps: (step_ids: string[]) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    selectSteps: (selected_steps: AllNodeType[]) => void;
     nodes: AllNodeType[];
     runnables: RunnablesType;
     selectedStepIds: string[];
