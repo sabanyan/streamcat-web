@@ -64,7 +64,7 @@ const PreviewModal = (props: Props) => {
                             flowUuid={flowUuid}
                             frameUuid={frameUuid}
                             lockUuid={lockUuid}
-                            stepIds={stepIds}
+                            nodeIds={stepIds}
                             visualize={visualize} 
                             afterViz={afterViz}
                             result={result}

@@ -15,7 +15,7 @@ type Props = {
     index: number;
     visualize: VCommand;
     flowUuid: string;
-    stepIds: (string | null | undefined)[];
+    nodeIds: (string | null | undefined)[];
     frameUuid: string | null;
     lockUuid?: string;
     result: {
@@ -191,22 +191,22 @@ export default class Visualizer extends React.Component<Props, State> {
     postActivity() {
         const {index, flowUuid, frameUuid, lockUuid, visualize} = this.props;
         const {onSaveResult, notify} = this.props;
-        let stepIds = this.props.stepIds;
+        let nodeIds = this.props.nodeIds;
         
-        if(!stepIds){
+        if(!nodeIds){
             // datasourceによるプレビューでは対象Pointのidは'd'である
-            stepIds = ['d'];
+            nodeIds = ['d'];
         }
 
-        // stepIdのリストから、stepIdをプロパティに持つオブジェクトへ変換する
-        const stepIdsArgs = stepIds.reduce((stepIdObj, stepId) => {
-            if(stepId){
-                stepIdObj[stepId] = {
+        // nodeIdのリストから、nodeIdをプロパティに持つオブジェクトへ変換する
+        const nodeIdsArgs = nodeIds.reduce((nodeIdObj, nodeId) => {
+            if(nodeId){
+                nodeIdObj[nodeId] = {
                     command_id: visualize.id,
                     args: this.state.args
                 };
             }
-            return stepIdObj;
+            return nodeIdObj;
         }, {});
 
         let promise: Promise<ActivityType>;
@@ -216,7 +216,7 @@ export default class Visualizer extends React.Component<Props, State> {
                 frameUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
-                    vis: stepIdsArgs
+                    vis: nodeIdsArgs
                 }
             )
         }else{
@@ -225,7 +225,7 @@ export default class Visualizer extends React.Component<Props, State> {
                 flowUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
-                    vis: stepIdsArgs
+                    vis: nodeIdsArgs
                 },
                 lockUuid
             )
