@@ -185,11 +185,11 @@ export const Inspector = (props:InspectorProps) => {
             runnables={runnables}
             selectedNodeId={selectedNode.id}
             baseInspectorDisabled={baseInspectorDisabled}
-            updateStep={updateStep}
+            updateNode={updateStep}
             // updateNodeEdges={updateNodeEdges}
             addHistory={addHistory}
-            selectSteps={selectSteps}
-            deleteSteps={deleteSteps}
+            selectNodes={selectSteps}
+            deleteNodes={deleteSteps}
             parentUUID={lastSavedFlow?.folderUuid || undefined}
           />
       }else if(selectedNode.type === 'command' || selectedNode.type === 'flow'){

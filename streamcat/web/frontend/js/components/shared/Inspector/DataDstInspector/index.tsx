@@ -23,11 +23,11 @@ type Props = {
   runnables: RunnablesType;
   parentUUID?: string;
 
-  updateStep: (step: AllNodeType) => void;
+  updateNode: (node: AllNodeType) => void;
   // updateNodeEdges: (node: AllNodeType) => void;
   addHistory: () => void;
-  selectSteps: (selected_steps: AllNodeType[]) => void;
-  deleteSteps: (step_ids: string[]) => void;
+  selectNodes: (selectedNodes: AllNodeType[]) => void;
+  deleteNodes: (nodeIds: string[]) => void;
 }
 
 
@@ -41,7 +41,7 @@ export class DataDstInspector extends React.Component<Props, State> {
     }
   }
 
-  getSelectedStep(): any {
+  getSelectedNode(): any {
     let { selectedNodeId, nodes } = this.props
     return GraphUtil.getNode(nodes, selectedNodeId)
   }
@@ -59,9 +59,9 @@ export class DataDstInspector extends React.Component<Props, State> {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         let { selectedNodeId, nodes } = this.props
-        const selected_step = GraphUtil.getNode(nodes, selectedNodeId)
-        this.props.deleteSteps([selected_step.id])
-        this.props.selectSteps([])
+        const selectedNode = GraphUtil.getNode(nodes, selectedNodeId)
+        this.props.deleteNodes([selectedNode.id])
+        this.props.selectNodes([])
         this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
@@ -78,17 +78,17 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateStep, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
-    const selected_step = this.getSelectedStep();
+    const { updateNode, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
+    const selectedNode = this.getSelectedNode();
 
     let libraryPlace: any = null;
     let inOutConnector: any = null;
     let paramsForm: any = null;
 
-    if (selected_step.srcs || selected_step.dsts) {
+    if (selectedNode.srcs || selectedNode.dsts) {
       inOutConnector = <InOutConnector
-        selectedNode={selected_step}
-        updateNode={updateStep}
+        selectedNode={selectedNode}
+        updateNode={updateNode}
         // updateNodeEdges={updateNodeEdges}
         nodes={nodes}
         runnables={runnables}
@@ -96,15 +96,15 @@ export class DataDstInspector extends React.Component<Props, State> {
       />;
     }
 
-    if (selected_step.flow.params) {
-      paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}} parentUUID={parentUUID}
+    if (selectedNode.flow.params) {
+      paramsForm = <ParamsForm params={selectedNode.flow.params} args={selectedNode.args} invalids={{}} parentUUID={parentUUID}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
 
     return <React.Fragment>
       <div><label>場所</label></div>
       <div>
-        <a href={'/folders/' + selected_step.folderUuid} target={'_blank'}>{selected_step.folderPath}</a>
+        <a href={'/folders/' + selectedNode.folderUuid} target={'_blank'}>{selectedNode.folderPath}</a>
       </div>
       {libraryPlace}
       {inOutConnector}
@@ -125,28 +125,28 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   onArgChange(e, param, value) {
-    this.update((step) => {
-      if (step.args) {
-        step.args[param.name] = value
-        if (!value) delete step.args[param.name]
+    this.update(node => {
+      if (node.args) {
+        node.args[param.name] = value
+        if (!value) delete node.args[param.name]
       }
-      return step
+      return node
     })
   }
 
-  update(getNewStep: Function) {
-    let selectedStep = this.getSelectedStep()
-    const newStep = getNewStep(selectedStep)
-    this.props.updateStep(newStep)
+  update(getNewNode: Function) {
+    const selectedNode = this.getSelectedNode()
+    const newNode = getNewNode(selectedNode)
+    this.props.updateNode(newNode)
   }
 
   render() {
     const { baseInspectorDisabled } = this.props;
-    const selected_step = this.getSelectedStep();
+    const selectedNode = this.getSelectedNode();
 
     if (this.state.isLoading) return <Loader center={true} absolute={true} fixed={false} visible={true} />
 
-    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label}
+    return <BaseInspector key={selectedNode.uuid} header={''} label={selectedNode.label}
       onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
       <div className={style.property_overview}>
         <div className={style.actions}>
@@ -154,16 +154,16 @@ export class DataDstInspector extends React.Component<Props, State> {
         </div>
         <div className={style.full_hr} />
         <div className={style.overviews}>
-          {(selected_step.flow.params) ? this.renderContents() : null}
+          {(selectedNode.flow.params) ? this.renderContents() : null}
         </div>
       </div>
     </BaseInspector >
   }
 
   onBlurTitle(e: any) {
-    const selectedStep = this.getSelectedStep()
-    let newSelectedStep = StateUtil.deepCopy(selectedStep)
-    newSelectedStep.label = e.target.value
-    this.props.updateStep(newSelectedStep)
+    const selectedNode = this.getSelectedNode()
+    const newSelectedNode = StateUtil.deepCopy(selectedNode)
+    newSelectedNode.label = e.target.value
+    this.props.updateNode(newSelectedNode)
   }
 }
