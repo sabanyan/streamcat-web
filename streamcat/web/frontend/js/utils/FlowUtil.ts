@@ -3,7 +3,6 @@ import Constants from 'Constants/index'
 import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
-import { AllNodeType } from 'Model/Library';
 
 export default class FlowUtil {
 
@@ -91,14 +90,14 @@ export default class FlowUtil {
   /**
    * Srcsをクリアする
    */
-  static clearSrcs (step: CommandNodeType | FlowNodeType | InlineFlowNodeType): CommandNodeType | FlowNodeType | InlineFlowNodeType {
-    step.srcs && Object.keys(step.srcs).forEach((key) => {
-      if(step.srcs){
+  static clearSrcs (node: CommandNodeType | FlowNodeType | InlineFlowNodeType): CommandNodeType | FlowNodeType | InlineFlowNodeType {
+    node.srcs && Object.keys(node.srcs).forEach((key) => {
+      if(node.srcs){
         //入力はポートは残して、接続先を空にする
-        step.srcs[key] = ''
+        node.srcs[key] = ''
       }
     })
-    return step
+    return node
   }
 
   /**

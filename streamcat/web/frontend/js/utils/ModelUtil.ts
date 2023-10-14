@@ -18,13 +18,13 @@ export default class ModelUtil {
   static getTypePrefix (type: string): string {
     let prefix: string = ''
     switch (type) {
-      case Constants.step.type.frame:
+      case Constants.node.type.frame:
         prefix = 'd'
         break
-      case Constants.step.type.subflow:
+      case Constants.node.type.subflow:
         prefix = 'f'
         break
-      case Constants.step.type.command:
+      case Constants.node.type.command:
         prefix = 'c'
         break
       case 'datasrc':
@@ -33,7 +33,7 @@ export default class ModelUtil {
       case 'datadst':
         prefix = 'o';
         break;
-      case Constants.step.type.note:
+      case Constants.node.type.note:
         prefix = 'n'
         break
       default:

@@ -479,7 +479,7 @@ export const deleteStepsAction = (flowData:Flow, step_ids:string[]) => {
         //削除対象のノードがIn・OutPortの場合、Portから削除する
         // newState.flow.deleteInPortWithId(id);
         // newState.flow.deleteOutPortWithId(id);
-        if(step.type === Constants.step.type.frame){
+        if(step.type === Constants.node.type.frame){
             flowData.ports[0].removeByNodeId(id);
             flowData.ports[1].removeByNodeId(id);
         }

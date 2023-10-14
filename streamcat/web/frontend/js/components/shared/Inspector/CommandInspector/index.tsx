@@ -120,7 +120,7 @@ const CommandInspector = (props: Props) => {
     const {updateStep, baseInspectorDisabled, nodes, runnables} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
-    if (selected_step.type === Constants.step.type.command) {
+    if (selected_step.type === Constants.node.type.command) {
         const commandNode = selected_step as CommandNodeType;
         //指定されたステップの元コマンドを取得
         const command = runnables.commands.getCommand(commandNode.commandId);
@@ -135,7 +135,7 @@ const CommandInspector = (props: Props) => {
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command || undefined}
                                 onChange={(e, param, value) => onArgChange(e, param, value)} groups={command?.groups || []} />;
 
-    } else if (selected_step.type === Constants.step.type.subflow) {
+    } else if (selected_step.type === Constants.node.type.subflow) {
         label = selected_step.label;
         if (selected_step.hasOwnProperty('uuid')) {
             const flowNode = selected_step as FlowNodeType;

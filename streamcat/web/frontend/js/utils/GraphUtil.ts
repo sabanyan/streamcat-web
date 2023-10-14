@@ -172,7 +172,7 @@ class GraphUtil {
   }
 
   /**
-   * 各ノードとエッジの関係から計算された位置をstepに設定する
+   * 各ノードとエッジの関係から計算された位置をNodeに設定する
    * @param nodes
    * @returns {*}
    */
