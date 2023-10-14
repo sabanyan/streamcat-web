@@ -99,12 +99,12 @@ export const Inspector = (props:InspectorProps) => {
         key={lastSavedFlow?.uuid || ''}
         // nodes={flow.flow.nodes}
         runnables={runnables}
-        selectedStepIds={selectedStepIds}
+        selectedNodeIds={selectedStepIds}
         zoom={zoom}
-        addStep={addStep}
-        addDataSrcStep={addDataSrcStep}
-        addDataDstStep={addDataDstStep}
-        selectSteps={selectSteps}
+        addNode={addStep}
+        addDataSrcNode={addDataSrcStep}
+        addDataDstNode={addDataDstStep}
+        selectNodes={selectSteps}
         flowData={flowData}
         flowUuid={lastSavedFlow?.uuid || ''}
         updateFlow={updateFlow}

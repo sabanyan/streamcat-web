@@ -10,13 +10,13 @@ import { RunnablesType } from 'Types/index';
 
 type Props = {
     runnables: RunnablesType;
-    selectedStepIds: string[];
+    selectedNodeIds: string[];
     // nodes: any[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
-    selectSteps: (selected_steps: AllNodeType[]) => void;
+    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     flowData: Flow;
     flowUuid: string;
     updateFlow: (flowData:Flow, zoom:number) => void;
@@ -95,8 +95,8 @@ const FlowSettingsInspector = (props: Props) => {
         });
     };
 
-    const { flowUuid, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
-            selectSteps, selectedStepIds, addHistory, addFlowVariableHidden,
+    const { flowUuid, runnables, zoom, addNode, addDataDstNode, addDataSrcNode,
+            selectNodes, selectedNodeIds, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
     let inputParamsContainer, addFlowParams;
@@ -153,12 +153,12 @@ const FlowSettingsInspector = (props: Props) => {
                         nodes={flowData.nodes}
                         runnables={runnables}
                         numberOfInput={0}
-                        selectedNodeIds={selectedStepIds}
+                        selectedNodeIds={selectedNodeIds}
                         zoom={zoom}
-                        addNode={addStep}
-                        addDataSrcNode={addDataSrcStep}
-                        addDataDstNode={addDataDstStep}
-                        selectNodes={selectSteps}
+                        addNode={addNode}
+                        addDataSrcNode={addDataSrcNode}
+                        addDataDstNode={addDataDstNode}
+                        selectNodes={selectNodes}
                         addHistory={addHistory}
                     />
                 </Fragment>
