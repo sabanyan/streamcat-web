@@ -1,6 +1,6 @@
 import React from "react";
 import { Rect } from "Shared/SVG";
-import * as Step from "Shared/SVG/Node";
+import {RectStyle} from "Shared/SVG/Node";
 
 type Props = {
     hover?: boolean;
@@ -15,7 +15,7 @@ class DataSrcIcon extends React.Component<Props> {
         const { hover, selected, filter, style } = this.props;
         const baseUrl = "/front_static/";
         const src = baseUrl + "images/icon/icon-data-src.svg";
-        const defaultStyle = { ...Step.RectStyle, rx: 12, ry: 12 }
+        const defaultStyle = { ...RectStyle, rx: 12, ry: 12 }
 
         return (
             <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}

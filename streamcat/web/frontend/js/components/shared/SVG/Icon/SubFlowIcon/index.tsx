@@ -1,7 +1,7 @@
 import React from "react";
 import {Icon} from "../index";
 import {Rect} from "Shared/SVG";
-import * as Step from "Shared/SVG/Node";
+import {RectStyle} from "Shared/SVG/Node";
 
 interface Props {
     hover?: boolean;
@@ -15,7 +15,7 @@ const SubFlowIcon = (props: Props) => {
         <Rect selectedOutlineColor={"#B0E273"} fillColor={"#FFFFFF"}
               hoverFillColor={"#F3FEE8"} selectedFillColor={"#F3FEE8"}
               hover={hover} selected={selected} stroke={"#7ED321"}
-              filter={filter} style={{ ...Step.RectStyle, rx: 12, ry: 12 }}>
+              filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }}>
             <Icon fillColor={"#8BCD42"}
                   width={18} height={20} paddingLeft={8} paddingTop={10}>
                 <path
