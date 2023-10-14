@@ -11,9 +11,9 @@ import { AllNodeType } from 'Model/Library';
 interface Props {
     selectedNodeId: string;
     nodes: AllNodeType[];
-    selectSteps: (selected_steps: AllNodeType[]) => void;
-    updateStep: (node:NoteNodeType) => void;
-    deleteSteps: (step_ids: string[]) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
+    updateNode: (node:NoteNodeType) => void;
+    deleteNodes: (nodeIds: string[]) => void;
     baseInspectorDisabled: boolean;
     addHistory: () => void;
 }
@@ -24,7 +24,7 @@ const NoteInspector = (props: Props) => {
         if (element) element.focus();
     }, []);
 
-    const getSelectedStep = () => {
+    const getSelectedNode = () => {
         const {selectedNodeId, nodes} = props;
         return GraphUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
     };
@@ -33,9 +33,9 @@ const NoteInspector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selectedNodeId, deleteSteps, selectSteps, addHistory} = props;
-                deleteSteps([selectedNodeId]);
-                selectSteps([]);
+                const {selectedNodeId, deleteNodes, selectNodes, addHistory} = props;
+                deleteNodes([selectedNodeId]);
+                selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -51,43 +51,43 @@ const NoteInspector = (props: Props) => {
         });
     };
 
-    const update = (getNewStep:(step:NoteNodeType) => NoteNodeType) => {
-        const {updateStep} = props;
-        const selectedStep = getSelectedStep();
-        if(selectedStep){
-            const newStep = getNewStep(selectedStep);
-            updateStep(newStep);
+    const update = (getNewNode:(node:NoteNodeType) => NoteNodeType) => {
+        const {updateNode: updateNode} = props;
+        const selectedNode = getSelectedNode();
+        if(selectedNode){
+            const newNote = getNewNode(selectedNode);
+            updateNode(newNote);
         }
     };
 
     const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        update((step) => {
+        update(node => {
             if (e.target) {
-                step.setTitle(e.target.value);
+                node.setTitle(e.target.value);
             }
-            return step;
+            return node;
         });
     };
 
     const onContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        update((step) => {
-            step.content = e.target.value;
-            return step;
+        update(node => {
+            node.content = e.target.value;
+            return node;
         });
     };
 
     const onChangeFontSize = (e: React.ChangeEvent<HTMLInputElement>, data, label) => {
-        update((step) => {
+        update(node => {
             const fontSize = parseInt(e.target.value);
-            step.setFontSize(fontSize);
-            return step;
+            node.setFontSize(fontSize);
+            return node;
         });
     };
 
     const onChangeColor = (e: React.ChangeEvent<HTMLInputElement>, data, label) => {
-        update((step) => {
-            step.color = e.target.value;
-            return step;
+        update(node => {
+            node.color = e.target.value;
+            return node;
         });
     };
 
@@ -120,12 +120,12 @@ const NoteInspector = (props: Props) => {
 
     const {baseInspectorDisabled} = props;
 
-    const selected_step = getSelectedStep();
-    if (!selected_step) return null;
-    const noteTitle = selected_step.title;
-    const noteContent = selected_step.content;
-    const fontSize = selected_step.fontSize;
-    const color = selected_step.color;
+    const selectedNode = getSelectedNode();
+    if (!selectedNode) return null;
+    const noteTitle = selectedNode.title;
+    const noteContent = selectedNode.content;
+    const fontSize = selectedNode.fontSize;
+    const color = selectedNode.color;
     const content = <div className='property_body'>
         <div>
             <input
@@ -175,7 +175,7 @@ const NoteInspector = (props: Props) => {
         </div>
     </div>;
 
-    return <BaseInspector key={selected_step.id} header={''} label={null} disabled={baseInspectorDisabled} >
+    return <BaseInspector key={selectedNode.id} header={''} label={null} disabled={baseInspectorDisabled} >
         {content}
     </BaseInspector>;
 };

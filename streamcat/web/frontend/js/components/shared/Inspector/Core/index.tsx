@@ -211,9 +211,9 @@ export const Inspector = (props:InspectorProps) => {
           selectedNodeId={selectedNode.id}
           nodes={flowData.nodes}
           addHistory={addHistory}
-          selectSteps={selectSteps}
-          updateStep={updateStep}
-          deleteSteps={deleteSteps}
+          selectNodes={selectSteps}
+          updateNode={updateStep}
+          deleteNodes={deleteSteps}
           baseInspectorDisabled={baseInspectorDisabled} />
       }
     }else{
