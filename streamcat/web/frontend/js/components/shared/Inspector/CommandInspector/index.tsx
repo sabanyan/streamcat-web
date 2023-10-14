@@ -40,7 +40,7 @@ const CommandInspector = (props: Props) => {
         return GraphUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
     };
 
-    // 選択中のステップを取得する
+    // 選択中のNodeを取得する
     const selectedNode = getSelectedNode();
 
     // ここでFlowの取得を開始する
@@ -71,7 +71,7 @@ const CommandInspector = (props: Props) => {
             done: "削除する",
             danger: true,
             content: <div>
-                選択されたステップを削除しますか？
+                選択されたノードを削除しますか？
             </div>
         });
     };
@@ -120,9 +120,9 @@ const CommandInspector = (props: Props) => {
     let subFlowLink, label, subLabel, detail;
     if (selectedNode.type === Constants.node.type.command) {
         const commandNode = selectedNode as CommandNodeType;
-        //指定されたステップの元コマンドを取得
+        //指定されたNodeの元コマンドを取得
         const command = runnables.commands.getCommand(commandNode.commandId);
-        //選択されたステップのラベルを取得
+        //選択されたNodeのラベルを取得
         label = commandNode.label;
         //コマンドのラベルを取得
         subLabel = command?.label || '';

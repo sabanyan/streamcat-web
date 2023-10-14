@@ -78,7 +78,7 @@ export const CommandItem = (props: Props) => {
 
             addNode(addedCommandNode, selectedNodeIds, outputNodeIds, zoom);
         }
-        //ステップの選択をキャンセル
+        // Nodeの選択をキャンセル
         selectNodes([]);
         addHistory();
     };

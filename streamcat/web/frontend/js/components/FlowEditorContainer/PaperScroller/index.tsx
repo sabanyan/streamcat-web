@@ -39,7 +39,7 @@ const PaperScroller = (props: Props) => {
     };
 
     /**
-     * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
+     * コピー可能なNodeの判断（コマンド or サブフロー を1つのみ）
      * @returns {boolean}
      */
     const nodeIsCopyable = (selectedNodeIds:string[]) => {

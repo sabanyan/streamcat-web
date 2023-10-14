@@ -31,7 +31,7 @@ type Props = {
 }
 
 
-// データソースステップのペイン
+// データソースNodeのペイン
 export class DataSrcInspector extends React.Component<Props, State> {
 
   constructor(props: Props) {

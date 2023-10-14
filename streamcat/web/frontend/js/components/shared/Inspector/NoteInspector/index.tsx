@@ -46,7 +46,7 @@ const NoteInspector = (props: Props) => {
             done: '削除する',
             danger: true,
             content: <div>
-                選択されたステップを削除しますか？
+                選択されたノードを削除しますか？
             </div>
         });
     };

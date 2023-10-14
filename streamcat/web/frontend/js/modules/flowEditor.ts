@@ -306,7 +306,7 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
         if (totalDX) totalDX = totalDX - defaultGraphProps.nodeSeparator;
 
         if (srcNodeIds || dstNodeIds) {
-            //追加したステップの位置調整
+            //追加したNodeの位置調整
             let average = {
                 sx: totalSX / srcNodeIds.length,
                 sy: totalSY / srcNodeIds.length,
@@ -356,7 +356,7 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
                 new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
                 flowData.nodes = GraphUtil.updateNode({ nodes: flowData.nodes, id: id, new_node: new_node });
             });
-            //出力先ステップの位置調整
+            //出力先Nodeの位置調整
 
             //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
             let isAddable = false;

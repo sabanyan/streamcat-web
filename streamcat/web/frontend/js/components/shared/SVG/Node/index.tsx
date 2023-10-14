@@ -55,7 +55,7 @@ export const Node = (props: Props) => {
     };
 
     /**
-     * mouse down ステップ選択処理
+     * mouse down Node選択処理
      * @param e
      */
     const handleMouseDown = (e: React.MouseEvent<SVGElement>) => {
@@ -120,7 +120,7 @@ export const Node = (props: Props) => {
     };
 
     /**
-     * mouse move ステップのドラッグ処理
+     * mouse move Nodeのドラッグ処理
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
