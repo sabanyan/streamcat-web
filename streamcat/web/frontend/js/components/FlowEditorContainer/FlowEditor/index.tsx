@@ -403,9 +403,8 @@ export const FlowEditor = () => {
     };
     const updateNode = (updatedNode: AllNodeType) => {
         // 更新後のNodeに置き換える
-        flow.flow.nodes = flow.flow.nodes.map(node =>
-            node.id === updatedNode.id? updatedNode: node
-        );
+        const index = flow.flow.nodes.findIndex(node => node.id===updatedNode.id);
+        flow.flow.nodes[index] = updatedNode;
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };

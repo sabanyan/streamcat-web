@@ -35,14 +35,13 @@ const InputFlowForm = (props: Props) => {
             const uuid = selected_data.uuid;
             // update
             let {runArgs, updateRunArgs} = props;
-            const flows = runArgs.flows.map((f) => {
+            runArgs.flows.forEach((f) => {
                 if (f.label == name) {
                     f.value = label;
                     f.uuid = uuid;
                 }
                 return f;
             });
-            runArgs.flows = flows;
             updateRunArgs(runArgs);
             forceUpdate();
         });

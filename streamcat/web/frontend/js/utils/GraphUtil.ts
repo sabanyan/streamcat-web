@@ -219,13 +219,9 @@ class GraphUtil {
    */
   static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
     const { nodes, id, new_node } = parameters
-    return nodes.map(node => {
-      if (node.id === id) {
-        return new_node
-      } else {
-        return node
-      }
-    });
+    const index = nodes.findIndex(node => node.id===id);
+    nodes[index] = new_node;
+    return nodes;
   }
 
   /**
@@ -283,7 +279,7 @@ class GraphUtil {
     // positionプロパティを持たないNodeが存在する場合はtrue
     let noPosition = false;
 
-    json.nodes = json.nodes.map(node => {
+    json.nodes.forEach(node => {
       // 
       self.addNode(node.id);
       // 
@@ -293,7 +289,6 @@ class GraphUtil {
       if(node.type === 'command' || node.type === 'flow'){
         connectEdge(node as CommandNodeType | FlowNodeType | InlineFlowNodeType);
       }
-      return node;
     });
 
     // positionプロパティを持たないNodeが存在する場合は全Nodeを整列する

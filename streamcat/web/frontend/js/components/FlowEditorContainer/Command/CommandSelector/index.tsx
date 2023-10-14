@@ -92,7 +92,7 @@ const CommandSelector = (props: Props) => {
     });
     let operatorsContainer: React.ReactNode[] = [];
     let beforeCommand: Command | FlowCommand | InlineFlowCommand;
-    operators.map((command, index) => {
+    operators.forEach((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             // 区切りを表示
             // classificationがない場合はSubFlowのはず
