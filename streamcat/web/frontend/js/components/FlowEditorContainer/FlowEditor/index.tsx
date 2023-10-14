@@ -25,8 +25,8 @@ import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { ToolBar } from 'FlowEditorContainer/ToolBar/Core';
 import {
-    addStepAction,
-    deleteStepsAction,
+    addNodeAction,
+    deleteNodesAction,
     graphUtil,
     redrawAllEdges
 } from 'Modules/flowEditor';
@@ -397,7 +397,7 @@ export const FlowEditor = () => {
     //     dispatch(addMasterAction(flow));
     // };
     const addStep = (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => {
-        addStepAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnablesReader(), zoom);
+        addNodeAction(flow.flow, add_step, src_step_ids, dst_step_ids, runnablesReader(), zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
@@ -426,7 +426,7 @@ export const FlowEditor = () => {
         );
     };
     const deleteSteps = (step_ids: string[]) => {
-        deleteStepsAction(flow.flow, step_ids);
+        deleteNodesAction(flow.flow, step_ids);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
         //削除後は非選択状態にする

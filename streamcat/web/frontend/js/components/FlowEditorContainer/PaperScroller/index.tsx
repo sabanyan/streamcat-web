@@ -4,7 +4,7 @@ import {DetectUtil, GraphUtil} from 'Utils/index';
 import {DragType, GraphType} from 'Types/index';
 import {
     graphUtil,
-    pasteStepsAction
+    pasteNodesAction
 } from 'Modules/flowEditor';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
@@ -83,7 +83,7 @@ const PaperScroller = (props: Props) => {
                     return;
                 }
                 // ペーストする
-                const pastedNodes = pasteStepsAction(flowData, stringifiedNodes);
+                const pastedNodes = pasteNodesAction(flowData, stringifiedNodes);
                 setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
                 setFlow({...flow});
                 // Undoスタックに履歴を追加する

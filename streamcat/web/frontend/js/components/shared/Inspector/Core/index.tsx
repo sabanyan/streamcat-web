@@ -14,8 +14,8 @@ import { GraphUtil } from 'Utils/index'
 import { GraphType, RunnablesType } from "Types/index";
 import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand } from 'Model/Library';
 import {
-  addDataDstStepAction,
-  addDataSrcStepAction,
+  addDataDstNodeAction,
+  addDataSrcNodeAction,
   graphUtil,
 } from 'Modules/flowEditor';
 import { FrameNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes';
@@ -56,12 +56,12 @@ export const Inspector = (props:InspectorProps) => {
 
 
     const addDataDstStep = (dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
-        addDataDstStepAction(flowData, dataDst, selectedDataNodeId);
+        addDataDstNodeAction(flowData, dataDst, selectedDataNodeId);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const addDataSrcStep = (dataSrc: Command | FlowCommand | InlineFlowCommand) => {
-        addDataSrcStepAction(flowData, dataSrc);
+        addDataSrcNodeAction(flowData, dataSrc);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
