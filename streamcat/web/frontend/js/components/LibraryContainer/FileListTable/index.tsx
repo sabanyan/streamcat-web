@@ -139,7 +139,7 @@ export const FileListTable = (props: Props) => {
                 onClickApply(datum);
                 return;
             }
-            window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + datum.uuid + '&title=' + StringUtil.urlEncode(datum.label)));
+            window.open(WebUtil.webURL('/preview?node_id=null&dialog=false&frame_uuid=' + datum.uuid + '&title=' + StringUtil.urlEncode(datum.label)));
         }else if (datum.type === 'document') {
             window.open(WebUtil.webURL('/documents/' + datum.uuid));
         }else if (datum.type === 'flow') {

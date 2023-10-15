@@ -41,15 +41,15 @@ const Preview = () => {
                 viz["frameUuid"] = frameUuid;
             } else {
                 // データが存在しなくて生成する必要あり（フローエディターからのプレビュー）
-                const frame_id = HttpUtil.getURLParam("step_id");
+                const frame_id = HttpUtil.getURLParam("node_id");
                 const flowUuid = HttpUtil.getURLParam("flow_uuid");
                 const lockUuid = HttpUtil.getURLParam("lock_uuid");
-                let step_ids = JSON.parse(StringUtil.urlDecode((HttpUtil.getURLParam("step_ids"))));
+                const nodeIds = JSON.parse(StringUtil.urlDecode((HttpUtil.getURLParam("node_ids"))));
                 content = {title: v.label, content: viz, id: frame_id};
                 viz["frameUuid"] = frameUuid;
                 viz["flowUuid"] = flowUuid;
                 viz["lockUuid"] = lockUuid;
-                viz["stepIds"] = step_ids;
+                viz["nodeIds"] = nodeIds;
             }
             contents.push(content);
         }

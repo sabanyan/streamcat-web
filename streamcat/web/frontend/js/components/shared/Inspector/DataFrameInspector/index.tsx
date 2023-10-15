@@ -126,18 +126,18 @@ const DataFrameInspector = (props: Props) => {
             // preview
             if (selectedNode.uuid) {
                 // uuidだけでプレビュー
-                window.open("/preview?step_id=" + id +
+                window.open("/preview?node_id=" + id +
                             "&dialog=true" +
                             "&title=" + StringUtil.urlEncode(selectedNode.label || '') +
                             "&frame_uuid=" + selectedNode.uuid);
             } else {
                 // 新規生成するので、step_id と flowUuid と step_ids でデータを生成する
-                window.open("/preview?step_id=" + id +
+                window.open("/preview?node_id=" + id +
                             "&dialog=true" +
                             "&title=" + StringUtil.urlEncode(selectedNode.label || '') +
                             "&flow_uuid=" + flowUuid +
                             "&lock_uuid=" + lockUUID +
-                            "&step_ids=" + StringUtil.urlEncode(JSON.stringify(nodeIds)));
+                            "&node_ids=" + StringUtil.urlEncode(JSON.stringify(nodeIds)));
             }
         }).catch((message) => {
             console.log(message);
