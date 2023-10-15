@@ -244,10 +244,14 @@ const DataFrameInspector = (props: Props) => {
         // const [, setSelectedFrame] = props.selectedFrameState;
         const id = selectedNodeIds[0];
 
-        // キャッシュを削除する
+        // キャッシュファイルを削除する
         lastSavedFlow && lastSavedFlow.deleteCache(id).then(() => {
+            // NodeのuuidとcacheCreatedAtプロパティをクリアする
             deleteCache(id);
-            // setSelectedFrame(undefined);
+        }).catch(e => {
+            // NOTE: キャッシュが他のNodeからも参照されている場合にAPIはエラーを返すが
+            // その場合でもNodeのプロパティをクリアしてキャッシュとの紐付けを解除する
+            deleteCache(id);
         });
     };
 
