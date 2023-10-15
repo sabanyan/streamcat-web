@@ -15,7 +15,8 @@ export default class FlowUtil {
             //if (from === removeId || to === removeId)
             if (to === removeId)
             //node.dsts[from] = null;
-            delete node.dsts![from]
+            // delete node.dsts![from]
+            node.dsts![from] = '';
           })
         }
         if (node.srcs) {
@@ -24,7 +25,8 @@ export default class FlowUtil {
             //if (from === removeId || to === removeId)
             if (to === removeId)
               //node.srcs[from] = null;
-              delete node.srcs![from]
+              // delete node.srcs![from]
+              node.srcs![from] = '';
           })
         }
       })

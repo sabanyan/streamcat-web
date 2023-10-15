@@ -704,6 +704,10 @@ export const FlowEditor = () => {
         const edges:React.JSX.Element[] = [];
         if (Array.isArray(graph.edges)) {
             graph.edges.forEach((edge, index) => {
+                // Nodeのsrcsまたはdstsにおいてポートに対するノードが未設定(空文字)の場合はEdgeを描画しない
+                if(!edge.v || !edge.w){
+                    return;
+                }
                 const v_node = GraphUtil.getNode(flow.flow.nodes || [], edge.v); // 入力元ノード
                 const w_node = GraphUtil.getNode(flow.flow.nodes || [], edge.w); // 出力元ノード
 

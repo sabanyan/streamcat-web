@@ -593,7 +593,7 @@ export const pasteNodesAction = (flowData:Flow, stringifiedNodes:string) => {
 
         // 入力元Frameへの紐付けを削除する
         copiedCmd.srcs && removeSrcs.forEach(removeSrc => {
-            delete copiedCmd.srcs![removeSrc];
+            copiedCmd.srcs![removeSrc] = '';
         });
 
         // CommandまたはFlowの出力先Frameが複製Nodeに含まれていない場合
