@@ -77,7 +77,9 @@ export const InOutConnector = (props: Props) => {
                 const dataFrameId: string = commandNodeDsts[key];
                 const node = nodes.find(node => node.id===dataFrameId);
                 if(!node){
-                    return <></>;
+                    // Reactからのkey重複警告を抑止するためkeyを指定する必要がある
+                    // そのため、空タグ(<></>)の代わりにReact.Fragmentタグを用いる
+                    return <React.Fragment key={index} />;
                 }
                 return <div key={index} className={style.outPort_}>
                     <div className={style.outPort_Port}>
@@ -101,7 +103,7 @@ export const InOutConnector = (props: Props) => {
                         return (outPort.label == key);
                     });
                     if(!node){
-                        return <></>;
+                        return <React.Fragment key={index} />;
                     }
                     return <div key={index} className={style.outPort_}>
                         <div className={style.outPort_Port}>
@@ -121,7 +123,7 @@ export const InOutConnector = (props: Props) => {
             const dataFrameId = commandNodeDsts[key];
             const node = nodes.find(node => node.id===dataFrameId);
             if(!node){
-                return <></>;
+                return <React.Fragment key={index} />;
             }
             return <div key={index} className={style.outPort_}>
                 <div className={style.outPort_Port}>
