@@ -31,6 +31,26 @@ const PaperScroller = (props: Props) => {
     const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
 
+    const getFromStrage = () => {
+        return window.localStorage.getItem('SCat-Nodes');
+    };
+
+    const setToStrage = (storedText:string) => {
+        try{
+            return window.localStorage.setItem('SCat-Nodes', storedText);
+        }catch(e){
+            if(e instanceof DOMException){
+                console.warn(`web storage warning: ${e.message}`);
+            }
+            throw e;
+        }
+    };
+
+    /**
+     * JSON文字列に変換する
+     * @param selectedNodeIds 
+     * @returns 
+     */
     const stringifyNodes = (selectedNodeIds:string[]): string => {
         const {flowData} = props;
         return JSON.stringify(
@@ -53,18 +73,16 @@ const PaperScroller = (props: Props) => {
     };
 
     const copyNodes = () => {
-        const {selectedNodeIds: selectedNodeIds} = props;
+        const {selectedNodeIds} = props;
 
         if (!nodeIsCopyable(selectedNodeIds)) {
-            navigator.clipboard.writeText('');
+            setToStrage('');
             return;
         }
-
+        // 選択中のノードをノードJSON文字列に変換する
         const stringifiedNodes = stringifyNodes(selectedNodeIds);
-        navigator.clipboard.writeText(stringifiedNodes).then(
-            () => {},
-            () => alert('クリップボードが利用できません')
-        );
+        // WebストレージにノードJSONを保存する
+        setToStrage(stringifiedNodes);
     };
 
     const pasteNodes = () => {
@@ -75,28 +93,26 @@ const PaperScroller = (props: Props) => {
         if(readOnly){
             return;
         }
+        
+        // WebストレージからノードJSONを取得する
+        const stringifiedNodes = getFromStrage();
+        // コピーするJSONが空の場合はペースト処理をしない
+        if(!stringifiedNodes){
+            return;
+        }
 
-        navigator.clipboard.readText().then(
-            stringifiedNodes => {
-                // コピーするJSONが空の場合はペースト処理をしない
-                if(!stringifiedNodes){
-                    return;
-                }
-                // ペーストする
-                const pastedNodes = pasteNodesAction(flowData, stringifiedNodes);
-                setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
-                setFlow({...flow});
-                // Undoスタックに履歴を追加する
-                addHistory();
-                // ペーストしたノードを選択状態にする
-                selectNodes(pastedNodes);
-            },
-            () => alert('クリップボードが利用できません')
-        );
+        // ペーストする
+        const pastedNodes = pasteNodesAction(flowData, stringifiedNodes);
+        setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
+        setFlow({...flow});
+        // Undoスタックに履歴を追加する
+        addHistory();
+        // ペーストしたノードを選択状態にする
+        selectNodes(pastedNodes);    
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const {redo, undo, selectedNodeIds: selectedNodeIds, deleteNodes, addHistory} = props;
+        const {redo, undo, selectedNodeIds, deleteNodes, addHistory} = props;
 
         if (DetectUtil.isMac()) {
             if (e.metaKey && e.key === 'c') {
