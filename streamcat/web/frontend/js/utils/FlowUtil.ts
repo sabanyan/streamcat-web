@@ -1,7 +1,7 @@
 //@flow
 import Constants from 'Constants/index'
-import { MessageModel} from 'Model/index'
 import { Api } from 'Api';
+import { MessageModel} from 'Model/index'
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes';
 
 export default class FlowUtil {
@@ -11,27 +11,29 @@ export default class FlowUtil {
             nodes.forEach((node) => {
                 if (node.dsts) {
                     Object.keys(node.dsts).forEach((from) => {
-                        const to = node.dsts![from]
+                        const to = node.dsts![from];
                         //if (from === removeId || to === removeId)
-                        if (to === removeId)
+                        if (to === removeId){
                             //node.dsts[from] = null;
                             // delete node.dsts![from]
                             node.dsts![from] = '';
+                        }
                     })
                 }
                 if (node.srcs) {
                     Object.keys(node.srcs).forEach((from) => {
-                        const to = node.srcs![from]
+                        const to = node.srcs![from];
                         //if (from === removeId || to === removeId)
-                        if (to === removeId)
+                        if (to === removeId){
                             //node.srcs[from] = null;
                             // delete node.srcs![from]
                             node.srcs![from] = '';
+                        }
                     })
                 }
             })
         })
-        return nodes
+        return nodes;
     }
 
     static runWithArgs (runArgs:any, notifyLoading:Function, notifyWarning:Function, notifyError:Function, dismissNotify:Function) {
@@ -39,10 +41,10 @@ export default class FlowUtil {
         notifyLoading && (notoficationId = notifyLoading('フローを実行しています'));
 
         // フロー実行ではキャッシュ作成を許可する
-        let args = {use_cache: true}
+        let args = {use_cache: true};
 
         runArgs.variables.map((v) => {
-            args[v.name] = v.value
+            args[v.name] = v.value;
         })
 
         // フローを実行する
@@ -60,7 +62,7 @@ export default class FlowUtil {
             // NOTE: then句の中で送出した例外がその後のcatch句で捕捉されてしまう
             // そのため、catch句の後にthen句を記述する
             if(activity.outs.length === 0){
-                const errorMessage = '実行結果は出力されませんでした'
+                const errorMessage = '実行結果は出力されませんでした';
                 notifyWarning('警告', errorMessage);
                 throw new Error(errorMessage);
             }
@@ -74,8 +76,8 @@ export default class FlowUtil {
      * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
      */
     static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: {position:{x:number,y:number}}[]) {
-        let result = {x: x, y: y}
-        const threshold = 3
+        let result = {x: x, y: y};
+        const threshold = 3;
         nodes.forEach((node) => {
             //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
             if (node.position.x >= x - threshold &&
@@ -83,10 +85,10 @@ export default class FlowUtil {
                 node.position.y >= y - threshold &&
                 node.position.y <= y + threshold) {
                 //合致していた場合新しい座標を計算
-                result = FlowUtil.getNotOverlapNodePosition({x: x + 10, y: y + 10}, nodes)
+                result = FlowUtil.getNotOverlapNodePosition({x: x + 10, y: y + 10}, nodes);
             }
         })
-        return result
+        return result;
     }
 
     /**
@@ -99,7 +101,7 @@ export default class FlowUtil {
                 node.srcs[key] = ''
             }
         })
-        return node
+        return node;
     }
 
     /**

@@ -19,22 +19,22 @@ export const defaultGraphProps = {
 }
 
 class GraphUtil {
-    g: any
+    g: any;
 
     constructor() {
-        this.g = new dagre.graphlib.Graph({ multigraph: true })
+        this.g = new dagre.graphlib.Graph({ multigraph: true });
         this.g.setGraph({
             marginx: defaultGraphProps.marginX,
             marginy: defaultGraphProps.marginY,
             nodesep: defaultGraphProps.nodeSeparator,
             edgesep: defaultGraphProps.edgeSeparator,
             ranksep: defaultGraphProps.rankSeparator
-        })
+        });
         this.g.setDefaultEdgeLabel(function () {
             return {
                 labelpos: 'l',
             }
-        })
+        });
     }
 
 
@@ -53,12 +53,11 @@ class GraphUtil {
      * @param from_id
      */
     addNode(id: string) {
-        const self = this
         this.g.setNode(id, {
             label: id,
             width: defaultNodeProps.width,
             height: defaultNodeProps.height,
-        })
+        });
         // if (Array.isArray(from_id)) {
         //   from_id.forEach((fid) => {
         //     self.addEdge(fid, id,GraphUtil.edgeName(fid,id))
@@ -70,19 +69,19 @@ class GraphUtil {
     }
 
     outEdges(id: string) {
-        return this.g.outEdges(id)
+        return this.g.outEdges(id);
     }
 
     inEdges(id: string) {
-        return this.g.inEdges(id)
+        return this.g.inEdges(id);
     }
 
     nodeEdges(id: string) {
-        return this.g.nodeEdges(id)
+        return this.g.nodeEdges(id);
     }
 
     static edgeName(v: string, w: string, port_name: string) {
-        return JSON.stringify({ v: v, w: w, port_name: port_name })
+        return JSON.stringify({ v: v, w: w, port_name: port_name });
     }
 
     /**
@@ -90,14 +89,14 @@ class GraphUtil {
      * @param id
      */
     removeNode(nodes: any[], id: string): any[] {
-        const edges = this.g.nodeEdges(id)
+        const edges = this.g.nodeEdges(id);
         if (Array.isArray(edges)) {
             edges.forEach((edge) => {
-                this.g.removeEdge(edge)
+                this.g.removeEdge(edge);
             })
         }
-        this.g.removeNode(id)
-        return FlowUtil.removeNodeId(nodes, [id])
+        this.g.removeNode(id);
+        return FlowUtil.removeNodeId(nodes, [id]);
     }
 
     /**
@@ -106,7 +105,7 @@ class GraphUtil {
      * @param to_id
      */
     addEdge(from_id: string, to_id: string, name: string) {
-        this.g.setEdge({ v: from_id, w: to_id, name: name })
+        this.g.setEdge({ v: from_id, w: to_id, name: name });
     }
 
     /**
@@ -115,7 +114,7 @@ class GraphUtil {
      * @param to_id
      */
     removeEdge(from_id: string, to_id: string, name: string) {
-        this.g.removeEdge({ v: from_id, w: to_id, name: name })
+        this.g.removeEdge({ v: from_id, w: to_id, name: name });
     }
 
     /**
@@ -128,14 +127,14 @@ class GraphUtil {
             const to = edge.w
             const portLabel = edge.name
             this.removeEdge(from, to, portLabel)
-        })
+        });
     }
 
     /**
      * dagreによるレイアウト
      */
     layout() {
-        dagre.layout(this.g)
+        dagre.layout(this.g);
     }
 
     /**
@@ -144,9 +143,9 @@ class GraphUtil {
      */
 
     getGraph(nodes:AllNodeType[], zoom:number) {
-        const graph = this.g.graph()
-        const graph_nodes = this.g.nodes()
-        const edges = this.g.edges()
+        const graph = this.g.graph();
+        const graph_nodes = this.g.nodes();
+        const edges = this.g.edges();
         if (nodes.length > 0) {
             const width = nodes.map(node =>
                 node.position.x + node.size!.width || 0
@@ -160,7 +159,7 @@ class GraphUtil {
                 Math.max(prevY,y)
             );
 
-            return { width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges }
+            return { width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges };
         }
 
         return {
@@ -168,7 +167,7 @@ class GraphUtil {
             height: ZoomUtil.zoom(graph.height, zoom),
             nodes: graph_nodes,
             edges: edges
-        }
+        };
     }
 
     /**
@@ -218,7 +217,7 @@ class GraphUtil {
      * @param parameters
      */
     static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
-        const { nodes, id, new_node } = parameters
+        const { nodes, id, new_node } = parameters;
         const index = nodes.findIndex(node => node.id===id);
         nodes[index] = new_node;
         return nodes;
@@ -242,7 +241,7 @@ class GraphUtil {
      * @returns {*}
      */
     load(json: Flow) {
-        const self = this
+        const self = this;
 
         // if (!json || !json.nodes) return new FlowModel()
         // if (!json || !json.nodes) {
@@ -258,9 +257,9 @@ class GraphUtil {
         const connectEdge = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
         if (node.srcs) {
             Object.keys(node.srcs).forEach((portLabel) => {
-                const src = node.srcs![portLabel]
-                const from = src
-                const to = node.id
+                const src = node.srcs![portLabel];
+                const from = src;
+                const to = node.id;
                 if(from){
                     // fromがundefinedの場合にEdgeを描画すると
                     // Nodeの整列時にposition.xがNaNになりエラーが発生する
@@ -271,9 +270,9 @@ class GraphUtil {
         }
         if (node.dsts) {
             Object.keys(node.dsts).forEach((portLabel) => {
-                const dst = node.dsts![portLabel]
-                const from = node.id
-                const to = dst
+                const dst = node.dsts![portLabel];
+                const from = node.id;
+                const to = dst;
                 if(to){
                     // toがundefinedの場合にEdgeを描画すると
                     // Nodeの整列時にposition.xがNaNになりエラーが発生する
@@ -302,7 +301,7 @@ class GraphUtil {
         // positionプロパティを持たないNodeが存在する場合は全Nodeを整列する
         noPosition && this.refreshPosition(json.nodes);
 
-        return json
+        return json;
 
     }
 }
