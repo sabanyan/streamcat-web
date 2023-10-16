@@ -261,8 +261,12 @@ class GraphUtil {
           const src = node.srcs![portLabel]
           const from = src
           const to = node.id
-          const label = GraphUtil.edgeName(from, to, portLabel)//src
-          self.addEdge(from, to, label)
+          if(from){
+            // fromがundefinedの場合にEdgeを描画すると
+            // Nodeの整列時にposition.xがNaNになりエラーが発生する
+            const label = GraphUtil.edgeName(from, to, portLabel);
+            self.addEdge(from, to, label);
+          }
         })
       }
       if (node.dsts) {
