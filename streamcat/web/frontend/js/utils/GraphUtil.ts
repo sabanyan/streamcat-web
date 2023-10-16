@@ -182,44 +182,13 @@ class GraphUtil {
             const graph_node = self.g.node(v);
             if (graph_node) {
                 const id = graph_node.label; //グラフ構造のlabelにidを設定しています
-                if(GraphUtil.NodeExists(nodes, id)){
-                    const node = GraphUtil.getNode(nodes, id);
+                if(FlowUtil.NodeExists(nodes, id)){
+                    const node = FlowUtil.getNode(nodes, id);
                     node.position = {x:graph_node.x, y:graph_node.y};
                     node.size = {width:graph_node.width, height:graph_node.height};
                 }
             }
         })
-        return nodes;
-    }
-
-    // 指定したidのノードが存在する場合はtrue
-    static NodeExists(nodes:AllNodeType[], id:string){
-        return nodes.findIndex(node => node.id === id) >= 0;
-    }
-
-    /**
-     * ノードの取得
-     * @param nodes
-     * @param id
-     * @returns {*}
-     */
-    static getNode(nodes: AllNodeType[], id: string) {
-        const node = nodes.find(node => node.id === id);
-        if(!node){
-            throw new Error(`${id} is not found in nodes`);
-        }
-        return node;
-    }
-
-    /**
-     * ノードの置き換え
-     * @returns {AllNodeType[]}
-     * @param parameters
-     */
-    static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
-        const { nodes, id, new_node } = parameters;
-        const index = nodes.findIndex(node => node.id===id);
-        nodes[index] = new_node;
         return nodes;
     }
 

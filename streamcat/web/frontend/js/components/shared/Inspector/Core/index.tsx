@@ -10,7 +10,7 @@ import {
   NoteInspector,
   Resizer
 } from 'Shared/Inspector'
-import { GraphUtil } from 'Utils/index'
+import { FlowUtil } from 'Utils/index'
 import { GraphType, RunnablesType } from "Types/index";
 import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand } from 'Model/Library';
 import {
@@ -70,11 +70,11 @@ export const Inspector = (props:InspectorProps) => {
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const deleteCache = (selectedNodeId: string) => {
-        const node = GraphUtil.getNode(flowData.nodes, selectedNodeId);
+        const node = FlowUtil.getNode(flowData.nodes, selectedNodeId);
         if (node.type === 'frame') {
           (node as FrameNodeType).deleteCache();
         }
-        flowData.nodes = GraphUtil.updateNode({ nodes: flowData.nodes, id: selectedNodeId, new_node: node });
+        flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: selectedNodeId, new_node: node });
         setFlow({...flow});
     };
     // const resizeInspector = (width: number) => {
@@ -129,9 +129,9 @@ export const Inspector = (props:InspectorProps) => {
         baseInspectorDisabled={baseInspectorDisabled}
         commandSelectorHidden={commandSelectorHidden}
       />
-    }else if(GraphUtil.NodeExists(flowData.nodes, selectedNodeIds[0])){
+    }else if(FlowUtil.NodeExists(flowData.nodes, selectedNodeIds[0])){
       // 一つのNodeを選択している場合
-      const selectedNode = GraphUtil.getNode(flowData.nodes, selectedNodeIds[0]);
+      const selectedNode = FlowUtil.getNode(flowData.nodes, selectedNodeIds[0]);
 
       if(selectedNode.type === 'frame'){
         property = <DataFrameInspector

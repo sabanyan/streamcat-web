@@ -3,7 +3,7 @@ import React from 'react';
 import {BaseInspector} from 'Shared/Inspector';
 import {Button} from 'Shared/Input';
 import {CommandSelector} from 'FlowEditorContainer/Command';
-import {GraphUtil, ModalUtil} from 'Utils/index';
+import {FlowUtil, ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { RunnablesType } from 'Types/index';
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
@@ -54,7 +54,7 @@ const MultiInspector = (props: Props) => {
         let cnt = 0;
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
         selectedNodeIds.forEach((id) => {
-            const node = GraphUtil.getNode(nodes, id);
+            const node = FlowUtil.getNode(nodes, id);
             if (node.type === 'frame') {
                 cnt++;
             } else if (node.type === 'flow') {

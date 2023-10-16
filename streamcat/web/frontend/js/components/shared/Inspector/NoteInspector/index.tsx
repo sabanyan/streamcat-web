@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {BaseInspector} from 'Shared/Inspector';
-import {GraphUtil, ModalUtil} from 'Utils/index';
+import {FlowUtil, ModalUtil} from 'Utils/index';
 import {Button, DropDownList} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {dropDownListItem} from 'Types/index';
@@ -26,7 +26,7 @@ const NoteInspector = (props: Props) => {
 
     const getSelectedNode = () => {
         const {selectedNodeId, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
+        return FlowUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
     };
 
     const onClickDelete = () => {

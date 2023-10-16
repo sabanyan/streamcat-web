@@ -1,10 +1,42 @@
 //@flow
-import Constants from 'Constants/index'
+import Constants from 'Constants/index';
 import { Api } from 'Api';
-import { MessageModel} from 'Model/index'
+import { MessageModel} from 'Model/index';
+import { AllNodeType } from 'Model/Library';
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes';
 
 export default class FlowUtil {
+
+    // 指定したidのノードが存在する場合はtrue
+    static NodeExists(nodes:AllNodeType[], id:string){
+        return nodes.findIndex(node => node.id === id) >= 0;
+    }
+
+    /**
+     * ノードの取得
+     * @param nodes
+     * @param id
+     * @returns {*}
+     */
+    static getNode(nodes: AllNodeType[], id: string) {
+        const node = nodes.find(node => node.id === id);
+        if(!node){
+            throw new Error(`${id} is not found in nodes`);
+        }
+        return node;
+    }
+
+    /**
+     * ノードの置き換え
+     * @returns {AllNodeType[]}
+     * @param parameters
+     */
+    static updateNode(parameters: { nodes: AllNodeType[], id: string, new_node: AllNodeType }) {
+        const { nodes, id, new_node } = parameters;
+        const index = nodes.findIndex(node => node.id===id);
+        nodes[index] = new_node;
+        return nodes;
+    }
 
     static removeNodeId (nodes: CommandNodeType[], node_ids: string[]) {
         node_ids.forEach((removeId) => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import style from './style.scss';
-import {DetectUtil, GraphUtil} from 'Utils/index';
+import {DetectUtil, FlowUtil} from 'Utils/index';
 import {DragType, GraphType} from 'Types/index';
 import {
     graphUtil,
@@ -54,7 +54,7 @@ const PaperScroller = (props: Props) => {
     const stringifyNodes = (selectedNodeIds:string[]): string => {
         const {flowData} = props;
         return JSON.stringify(
-            selectedNodeIds.map(id => GraphUtil.getNode(flowData.nodes, id))
+            selectedNodeIds.map(id => FlowUtil.getNode(flowData.nodes, id))
         );
     };
 
@@ -65,7 +65,7 @@ const PaperScroller = (props: Props) => {
     const nodeIsCopyable = (selectedNodeIds:string[]) => {
         const {flowData} = props;
         // 全てのNodeが複製可能なtypeであること
-        const copyNodes = selectedNodeIds.map(nodeId => GraphUtil.getNode(flowData.nodes, nodeId));
+        const copyNodes = selectedNodeIds.map(nodeId => FlowUtil.getNode(flowData.nodes, nodeId));
         // 以下のtypeのNodeを複製可能とする
         return copyNodes.every(node =>
             node.type==='command' || node.type==='flow' || node.type==='note' || node.type==='frame'

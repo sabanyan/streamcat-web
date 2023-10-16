@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraphUtil, StateUtil, ModalUtil } from 'Utils/index';
+import { StateUtil, ModalUtil, FlowUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
@@ -43,7 +43,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
 
   getSelectedNode(): any {
     let { selectedNodeId, nodes } = this.props
-    return GraphUtil.getNode(nodes, selectedNodeId)
+    return FlowUtil.getNode(nodes, selectedNodeId)
   }
 
   renderActions() {
@@ -59,7 +59,7 @@ export class DataSrcInspector extends React.Component<Props, State> {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         let { selectedNodeId, nodes } = this.props
-        const selectedNode = GraphUtil.getNode(nodes, selectedNodeId)
+        const selectedNode = FlowUtil.getNode(nodes, selectedNodeId)
         this.props.deleteNodes([selectedNode.id])
         this.props.selectNodes([])
         this.props.addHistory()

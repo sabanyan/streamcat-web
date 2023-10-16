@@ -4,7 +4,7 @@ import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
 import Constants from "Constants/index";
-import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
+import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
 import { Api } from 'Api';
 import { AllNodeType } from 'Model/Library';
 import { CommandNodeType, FlowNodeType } from 'Model/Node/NodeTypes';
@@ -37,7 +37,7 @@ const CommandInspector = (props: Props) => {
 
     const getSelectedNode = () => {
         const {selectedNodeId, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
+        return FlowUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
     };
 
     // 選択中のNodeを取得する

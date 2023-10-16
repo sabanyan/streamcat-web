@@ -9,7 +9,7 @@ import { LockType } from 'Model/Locks';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
 import Constants from 'Constants/index';
-import { GraphUtil, ZoomUtil, ModalUtil, StateUtil, WebUtil} from 'Utils/index';
+import { ZoomUtil, ModalUtil, StateUtil, WebUtil, FlowUtil} from 'Utils/index';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
 import {
     NotificationManager,
@@ -495,7 +495,7 @@ export const FlowEditor = () => {
 
         // 選択中Nodeが無くなった場合は選択を解除する
         const allSelectedNodeExists = selectedNodeIds.every(selectedNodeId =>
-            GraphUtil.NodeExists(prevFlowData.nodes, selectedNodeId)
+            FlowUtil.NodeExists(prevFlowData.nodes, selectedNodeId)
         );
         allSelectedNodeExists || setSelectedNodeIds([]);
 
@@ -529,7 +529,7 @@ export const FlowEditor = () => {
 
         // 選択中Nodeが無くなった場合は選択を解除する
         const allSelectedNodeExists = selectedNodeIds.every(selectedNodeId =>
-            GraphUtil.NodeExists(nextFlowData.nodes, selectedNodeId)
+            FlowUtil.NodeExists(nextFlowData.nodes, selectedNodeId)
         );
         allSelectedNodeExists || setSelectedNodeIds([]);
 
@@ -708,8 +708,8 @@ export const FlowEditor = () => {
                 if(!edge.v || !edge.w){
                     return;
                 }
-                const v_node = GraphUtil.getNode(flow.flow.nodes || [], edge.v); // 入力元ノード
-                const w_node = GraphUtil.getNode(flow.flow.nodes || [], edge.w); // 出力元ノード
+                const v_node = FlowUtil.getNode(flow.flow.nodes || [], edge.v); // 入力元ノード
+                const w_node = FlowUtil.getNode(flow.flow.nodes || [], edge.w); // 出力元ノード
 
                 if (v_node && w_node) {
                     const vx = v_node.position.x +

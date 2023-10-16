@@ -1,7 +1,7 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import Constants from "Constants/index";
 import { Api } from 'Api';
-import {GraphUtil, ModalUtil, StateUtil, StringUtil} from "Utils/index";
+import {FlowUtil, ModalUtil, StateUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
@@ -87,7 +87,7 @@ const DataFrameInspector = (props: Props) => {
 
     const getSelectedNode = () => {
         let {selectedNodeIds, flowData} = props;
-        return GraphUtil.getNode(flowData.nodes, selectedNodeIds[0]) as FrameNodeType;
+        return FlowUtil.getNode(flowData.nodes, selectedNodeIds[0]) as FrameNodeType;
     };
 
     // ここでFrameの取得を開始する
@@ -153,7 +153,7 @@ const DataFrameInspector = (props: Props) => {
         let {selectedNodeIds, flowData} = props;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const selectedNode = GraphUtil.getNode(flowData.nodes, selectedNodeIds[0]);
+                const selectedNode = FlowUtil.getNode(flowData.nodes, selectedNodeIds[0]);
                 deleteNodes([selectedNode.id]);
                 selectNodes([]);
                 addHistory();

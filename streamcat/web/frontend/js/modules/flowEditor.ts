@@ -149,7 +149,7 @@ const newNodesPositionAndSize = (nodes: AllNodeType[], srcNodeIds: string[] = []
 
     if (srcNodeIds.length > 0) {
         srcNodeIds.forEach((id: string) => {
-            const node = GraphUtil.getNode(nodes, id);
+            const node = FlowUtil.getNode(nodes, id);
             totalSX = totalSX + node.position.x;
             totalSY = totalSY + node.position.y;
         });
@@ -286,7 +286,7 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
         let totalSY = 0;
 
         srcNodeIds.forEach((id: string) => {
-            const target: AllNodeType = GraphUtil.getNode(flowData.nodes, id);
+            const target: AllNodeType = FlowUtil.getNode(flowData.nodes, id);
             totalSX = totalSX + target.position.x;
             totalSY = totalSY + target.position.y;
         });
@@ -348,13 +348,13 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
 
             //先行して設置されている接続先のノードの位置調整
             dstNodeIds.map((id, index) => {
-                let new_node = GraphUtil.getNode(flowData.nodes, id);
+                let new_node = FlowUtil.getNode(flowData.nodes, id);
                 new_node.position = {
                     x: addNode.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
                     y: addNode.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
                 };
                 new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
-                flowData.nodes = GraphUtil.updateNode({ nodes: flowData.nodes, id: id, new_node: new_node });
+                flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: id, new_node: new_node });
             });
             //出力先Nodeの位置調整
 
@@ -447,12 +447,12 @@ export const deleteNodesAction = (flowData:Flow, nodeIds:string[]) => {
     //ただしsrcが別のデータフレームを複数出力している場合があるので、
     //一つでもデータフレームが残っていると削除は行わない
     nodeIds.forEach(id => {
-        const node = GraphUtil.getNode(flowData.nodes, id) as any;
-        if (GraphUtil.getNode(flowData.nodes, id).type === 'frame') {
+        const node = FlowUtil.getNode(flowData.nodes, id) as any;
+        if (FlowUtil.getNode(flowData.nodes, id).type === 'frame') {
             // 削除対象ノードがFrameの場合、そのFrameを出力先とするCommand(またはFlow)も削除する
             if (graphUtil.g.inEdges(id) && graphUtil.g.inEdges(id).length > 0) {
                 const deleteTargetNodeId = graphUtil.g.inEdges(id)[0].v;
-                const deleteTargetNode = GraphUtil.getNode(flowData.nodes, deleteTargetNodeId) as any;
+                const deleteTargetNode = FlowUtil.getNode(flowData.nodes, deleteTargetNodeId) as any;
                 if (deleteTargetNode.type === 'command' ||
                     deleteTargetNode.type === 'flow' ||
                     (deleteTargetNode.flow && deleteTargetNode.classification === "data_source")) {
