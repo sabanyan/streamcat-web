@@ -449,17 +449,33 @@ export const deleteNodesAction = (flowData:Flow, nodeIds:string[]) => {
     nodeIds.forEach(id => {
         const node = GraphUtil.getNode(flowData.nodes, id) as any;
         if (GraphUtil.getNode(flowData.nodes, id).type === 'frame') {
-            //削除対象のノードの親がある場合、親を調べる
+            // 削除対象ノードがFrameの場合、そのFrameを出力先とするCommand(またはFlow)も削除する
             if (graphUtil.g.inEdges(id) && graphUtil.g.inEdges(id).length > 0) {
                 const deleteTargetNodeId = graphUtil.g.inEdges(id)[0].v;
                 const deleteTargetNode = GraphUtil.getNode(flowData.nodes, deleteTargetNodeId) as any;
                 if (deleteTargetNode.type === 'command' ||
                     deleteTargetNode.type === 'flow' ||
                     (deleteTargetNode.flow && deleteTargetNode.classification === "data_source")) {
-                    //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
-                    const isSingleDsts = (Object.keys(deleteTargetNode.dsts).length === 1 && deleteTargetNode.dsts[Object.keys(deleteTargetNode.dsts)[0]] === id);
+
+                    // Command(またはFlow)の出力先Frameの数を取得する
+                    let lastDstNodeId:string = '';
+                    const dstsLength = Object.values<string>(deleteTargetNode.dsts).map<number>(nodeId => {
+                        if(nodeId){
+                            lastDstNodeId = nodeId;
+                            return 1;
+                        }else{
+                            // Portに紐づくNodeがない場合はカウントしない
+                            return 0;
+                        }
+                    }).reduce((prevDstCount, dstCount) => {
+                        return prevDstCount += dstCount;
+                    });
+
+                    // 削除対象ノードがCommand(またはFlow)の最後の出力先Frameの場合は、CommandまたはFlowを削除する
+                    const isSingleDsts = dstsLength===1 && lastDstNodeId===id;
+
                     if (isSingleDsts) {
-                        //親を削除
+                        // CommandまたはFlowを削除
                         flowData.nodes = graphUtil.removeNode(flowData.nodes, deleteTargetNodeId);
                         deleteKeySet.add(deleteTargetNodeId);
                     }
