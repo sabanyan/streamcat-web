@@ -100,8 +100,8 @@ const DataFrameInspector = (props: Props) => {
 
         return lastSavedFlow && lastSavedFlow.update(flowData, lockUUID).then(result => {
             dismissNotify(notificationId);
-            // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-            updateLastSavedFlow({...result, flow:flowData});
+            // FIXME: PUT /flow の戻り値にflow属性が含まれていない、そのためflow属性の値は複製して格納する
+            updateLastSavedFlow({...result, flow:flowData.clone()});
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
             notifyError('フロー保存エラー', e.message);

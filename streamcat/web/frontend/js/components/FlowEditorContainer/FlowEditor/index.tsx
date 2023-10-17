@@ -562,8 +562,8 @@ export const FlowEditor = () => {
             } else {
                 // フロー保存
                 return await targetFlow.update(flow.flow, lock.uuid).then(result => {
-                    // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-                    setLastSavedFlow({...result, flow:flow.flow});
+                    // FIXME: PUT /flow の戻り値にflow属性が含まれていない、そのためflow属性の値は複製して格納する
+                    setLastSavedFlow({...result, flow:flow.flow.clone()});
                     // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                     reslove(result);
                     return result;
@@ -590,8 +590,8 @@ export const FlowEditor = () => {
         return new Promise(async (reslove, reject) => {
             // フロー保存
             anotherFlow.update(flow.flow, newLockUUID).then(result => {
-                // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-                setLastSavedFlow({...result, flow:flow.flow});
+                // FIXME: PUT /flow の戻り値にflow属性が含まれていない、そのためflow属性の値は複製して格納する
+                setLastSavedFlow({...result, flow:flow.flow.clone()});
                 // resolve()を呼ばないと以降のPromiseチェーンが起動しない
                 reslove(result);
                 return result;
