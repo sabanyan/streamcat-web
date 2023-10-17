@@ -4,7 +4,7 @@ import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIco
 import style from "./style.scss";
 import { ZoomUtil } from "Utils/index";
 import { DragType, GraphType, RunnablesType } from "Types/index";
-import { AllNodeType, Flow } from "Model/Library";
+import { AllNodeType, Flow, FlowType } from "Model/Library";
 import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Node/NodeTypes";
 import { graphUtil } from "Modules/flowEditor";
 
@@ -19,6 +19,7 @@ interface Props {
     error?: {};
     runnables: RunnablesType;
     flowData: Flow;
+    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     selectedNodeIds: string[];
     zoom: number;
@@ -82,6 +83,8 @@ export const Node = (props: Props) => {
         setCoords(null);
 
         const { addSelectNode, deleteSelectNode, selectNodes, addHistory } = props;
+        const [flow, setFlow] = props.flowState;
+
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected()) {
@@ -98,6 +101,8 @@ export const Node = (props: Props) => {
         document.removeEventListener("mousemove", mouseMoveEvent);
         document.removeEventListener("mouseup", mouseUpEvent);
 
+        // flowを更新する
+        setFlow({...flow});
         // Undoスタックに履歴を追加する
         addHistory();
     };

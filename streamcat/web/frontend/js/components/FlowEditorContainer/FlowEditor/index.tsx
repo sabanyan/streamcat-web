@@ -677,6 +677,7 @@ export const FlowEditor = () => {
                     error={node.error}
                     runnables={runnablesReader()}
                     flowData={flow.flow}
+                    flowState={[flow, setFlow]}
                     graphState={[graph, setGraph]}
                     selectedNodeIds={selectedNodeIds}
                     zoom={zoom}

@@ -84,6 +84,7 @@ export const ToolBar = (props: ToolBarProps) => {
         });
         //ノード位置を再計算
         graphUtil.refreshPosition(targets);
+        setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));;
     };
 
