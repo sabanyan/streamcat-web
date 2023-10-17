@@ -67,6 +67,7 @@ export const Inspector = (props:InspectorProps) => {
     };
     const updateFlow = (flowData:Flow, zoom:number) => {
         // dispatch(updateFlowAction(flowData, zoom));
+        setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
     const deleteCache = (selectedNodeId: string) => {

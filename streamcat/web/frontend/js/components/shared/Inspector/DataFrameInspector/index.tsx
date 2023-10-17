@@ -173,8 +173,7 @@ const DataFrameInspector = (props: Props) => {
 
 
     const onChangeFlowInOut = () => {
-        const {updateFlow} = props;
-        let {flowData} = props;
+        const {flowData, updateFlow} = props;
         const flowInChecked = (flowIn && flowIn.current) ? flowIn.current.checked : false;
         const flowOutChecked = (flowOut && flowOut.current) ? flowOut.current.checked : false;
 
@@ -210,14 +209,14 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const onChangeCacheCheck = () => {
-        const {updateFlow, flowData} = props;
+        const {updateNode} = props;
         const selectedNode = getSelectedNode();
         if (selectedNode.makeCache) {
             selectedNode.makeCache = false;
         } else {
             selectedNode.makeCache = true;
         }
-        updateFlow(flowData, zoom);
+        updateNode(selectedNode);
     };
 
     const onClickDeleteCache = () => {
