@@ -12,6 +12,7 @@ type ToolBarProps = {
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     flowData: Flow;
+    flowIsUpdated: boolean;
     // history: HistoryType;
     undoStackLength: number;
     redoStackLength: number;
@@ -35,6 +36,7 @@ type ToolBarProps = {
 
 export const ToolBar = (props: ToolBarProps) => {
     const { flowData,
+            flowIsUpdated,
             // history,
             // zoom,
             undoStackLength,
@@ -91,6 +93,7 @@ export const ToolBar = (props: ToolBarProps) => {
     return <div>
         <div className={classnames(style.flow_toolbar)}>
             <Save disabled={baseDisabled}
+                  flowIsUpdated={flowIsUpdated}
                   onClick={e => onClickSaveFlow()}>保存</Save>
             <Run refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}

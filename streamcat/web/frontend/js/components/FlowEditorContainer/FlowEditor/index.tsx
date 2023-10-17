@@ -804,6 +804,7 @@ export const FlowEditor = () => {
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
+                flowIsUpdated={flowIsUpdated}
                 undoStackLength={undoStack.length}
                 redoStackLength={redoStack.length}
                 notifyLoading={notifyLoading}
