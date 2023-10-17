@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
 import useInterval from 'use-interval';
 import * as jsonpatch from 'fast-json-patch';
@@ -199,6 +199,37 @@ export const FlowEditor = () => {
     const [hasShowSaveAsFlowModal, setHasShowSaveAsFlowModal] = useState<boolean>(false);
     const [hasShowConfirmReloadFlowModal, setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
 
+    // FlowDataを比較する
+    const compareFlowData = (flow1:Flow, flow2:Flow) => {
+        // compareが出力する差分には関数の差分も含まれるためこれらを除外する
+        return jsonpatch.compare(flow1, flow2).filter(patch => {
+            if(patch.path === '/nodes/__allAPIFuncSet'){
+                // ArrayCtor型オブジェクトが内部で使用するフラグは除外する
+                return false;
+            }else if(patch.op === 'replace' && typeof patch.value === 'function'){
+                // 関数は差分として認識させない
+                return false;
+            }else{
+                return true;
+            }
+        }).map(patch => {
+            if(patch.path === '/nodes' && (patch.op === 'add' || patch.op === 'replace')){
+                // nodes配列全体の置き換えの場合
+                // patch.valueはプロパティ名が整数のオブジェクトが格納されるので、これをNodeArrayに変換する
+                const nodes = Object.keys(patch.value).filter(key => Number.isInteger(+key)).map(key => patch.value[key]);
+                patch.value = new NodeArray(nodes);
+            }
+            return patch;
+        });
+    };
+
+    // Flowに未保存の変更があればtrue
+    const flowIsUpdated = useMemo(() => {
+        // 画面表示中のFlowと最後に保存したFlowの差分を取得する
+        const patches = compareFlowData(flow.flow, lastSavedFlow.flow);
+        return patches.length > 0;
+    }, [flow,lastSavedFlow]);
+
     useEffect(() => {
         // 排他ロックが取得できなかった場合は警告メッセージを表示する
         // ロックを試みなかった場合(lock==null)はメッセージを表示しない
@@ -352,13 +383,8 @@ export const FlowEditor = () => {
 
     useEffect(() => {
         const handleLeavePage = (e) => {
-            // 画面表示中のFlowと最後に保存したFlowの差分を取得する
-            const patches = compareFlowData(flow.flow, lastSavedFlow.flow);
-            if(patches.length === 0){
-                // 差分がない場合は警告ダイアログを表示しない
-                return;
-            }else{
-                // 差分がある場合は警告ダイアログを表示する
+            if(flowIsUpdated){
+                // flowに未保存の変更があれば警告ダイアログを表示する
                 e.preventDefault();
                 // カスタムメッセージは動作しない(Chrome)
                 e.returnValue = 'Dialog text here'; 
@@ -386,7 +412,7 @@ export const FlowEditor = () => {
             window.removeEventListener('beforeunload', handleLeavePage);
             window.removeEventListener('unload', handleUnload);
         }
-    }, [lock, flow, lastSavedFlow]);
+    }, [flowIsUpdated, lock]);
 
     const loadFlowJSON = (flow: FlowType) => {
         const flowData = graphUtil.load(flow.flow);
@@ -428,30 +454,6 @@ export const FlowEditor = () => {
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
         //削除後は非選択状態にする
         setSelectedNodeIds([]);
-    };
-
-    // FlowDataを比較する
-    const compareFlowData = (flow1:Flow, flow2:Flow) => {
-        // compareが出力する差分には関数の差分も含まれるためこれらを除外する
-        return jsonpatch.compare(flow1, flow2).filter(patch => {
-            if(patch.path === '/nodes/__allAPIFuncSet'){
-                // ArrayCtor型オブジェクトが内部で使用するフラグは除外する
-                return false;
-            }else if(patch.op === 'replace' && typeof patch.value === 'function'){
-                // 関数は差分として認識させない
-                return false;
-            }else{
-                return true;
-            }
-        }).map(patch => {
-            if(patch.path === '/nodes' && (patch.op === 'add' || patch.op === 'replace')){
-                // nodes配列全体の置き換えの場合
-                // patch.valueはプロパティ名が整数のオブジェクトが格納されるので、これをNodeArrayに変換する
-                const nodes = Object.keys(patch.value).filter(key => Number.isInteger(+key)).map(key => patch.value[key]);
-                patch.value = new NodeArray(nodes);
-            }
-            return patch;
-        });
     };
 
     const addHistory = () => {
