@@ -269,7 +269,12 @@ const newDataDest = (props: DataDestProps) => {
  * @param runnables 
  * @param zoom 
  */
-export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], dstNodeIds:string[], runnables:RunnablesType, zoom:number) => {
+export const addNodeAction = (flowData: Flow,
+                              addNode: AllNodeType,
+                              srcNodeIds: string[],
+                              dstNodeIds: string[],
+                              runnables: RunnablesType,
+                              zoom: number) => {
 
     // let offsetX = 0;
     // let hasNode = (from_step_ids)?(graph.outEdges(from_step_ids[0]).length):false
@@ -281,6 +286,7 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
     graphUtil.addNode(addNode.id);
 
     if (addNode.type === 'command' || addNode.type === 'flow') {
+        const newRunableNode = addNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
 
         let totalSX = 0;
         let totalSY = 0;
@@ -333,25 +339,25 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
             };
 
             //追加されたノードの位置調整
-            addNode.position = {x:newPosition.x, y:newPosition.y};
-            addNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+            newRunableNode.position = {x:newPosition.x, y:newPosition.y};
+            newRunableNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
 
             //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
-            const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...addNode.position }, flowData.nodes);
-            const notOverlapOffsetX = notOverlapNodePosition.x - addNode.position.x;
-            const notOverlapOffsetY = notOverlapNodePosition.y - addNode.position.y;
+            const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...newRunableNode.position }, flowData.nodes);
+            const notOverlapOffsetX = notOverlapNodePosition.x - newRunableNode.position.x;
+            const notOverlapOffsetY = notOverlapNodePosition.y - newRunableNode.position.y;
             if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) {
                 //再調整
-                addNode.position = {x:notOverlapNodePosition.x, y:notOverlapNodePosition.y};
-                addNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+                newRunableNode.position = {x:notOverlapNodePosition.x, y:notOverlapNodePosition.y};
+                newRunableNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
             }
 
             //先行して設置されている接続先のノードの位置調整
             dstNodeIds.map((id, index) => {
                 let new_node = FlowUtil.getNode(flowData.nodes, id);
                 new_node.position = {
-                    x: addNode.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
-                    y: addNode.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
+                    x: newRunableNode.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
+                    y: newRunableNode.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
                 };
                 new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
                 flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: id, new_node: new_node });
@@ -359,72 +365,89 @@ export const addNodeAction = (flowData:Flow, addNode:any, srcNodeIds:string[], d
             //出力先Nodeの位置調整
 
             //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
-            let isAddable = false;
-            let command;
-            if (addNode.type === 'flow') {
-                const node = addNode as FlowNodeType;
-                command = runnables.subflows.getCommand(node.uuid);
-            } else if (addNode.type === 'command') {
-                const node = addNode as CommandNodeType;
-                command = runnables.commands.getCommand(node.commandId);
-                isAddable = (command as Command).ports[0].length > 0 && (command as Command).ports[0][0].label === '*';
+            let command:Command|FlowCommand|null = null;
+            let isAddable:boolean;
+            if (newRunableNode.type === 'flow') {
+                const flowNode = newRunableNode as FlowNodeType;
+                command = runnables.subflows.getCommand(flowNode.uuid);
+                // フローの入力ポートは不変
+                isAddable = flowNode.addableInPort();
+            } else if (newRunableNode.type === 'command') {
+                const commandNode = newRunableNode as CommandNodeType;
+                command = runnables.commands.getCommand(commandNode.commandId);
+                // Command引数に初期値があれば設定する
+                commandNode.args = commandNode.args || {};
+                command && command.params.filter(param => param.default!==undefined).forEach(param => {
+                    commandNode.args![param.name] = param.default;
+                });
+                // コマンドの入力ポートが可変な場合はtrue
+                isAddable = !!command && commandNode.addableInPort(command);
             }
+
+            if(!command){
+                throw new Error('invalid node type at here');
+            }
+
             const inPorts: CommandPortType[] = command.ports[0];
             const outPorts: CommandPortType[] = command.ports[1];
             srcNodeIds.forEach((id, index) => {
                 const newPort = inPorts[index];
                 let portLabel = isAddable ? "*" + index : newPort.label;
-                if (addNode.type === 'flow') {
+                if (newRunableNode.type === 'flow') {
                     portLabel = newPort.label;
                 }
 
-                addNode.addInPort(portLabel, id);
+                newRunableNode.addInPort(portLabel, id);
 
                 //srcsがあった場合は１つ目のポート名につなぐ
                 //srcsがない場合は、デフォルト値（i）のポートにつなぐ
                 const from: string = id;
-                const to: string = addNode.id;
+                const to: string = newRunableNode.id;
                 let inputPortLabel = Constants.default.command.inputPortLabel;
-                if (addNode.srcs !== undefined || !_.isEmpty(addNode.srcs)) {
-                    let object = addNode.srcs;
-                    inputPortLabel = Object.keys(object).find(key => object[key] === id) || "";
+                if (newRunableNode.srcs !== undefined || !_.isEmpty(newRunableNode.srcs)) {
+                    const srcs = newRunableNode.srcs || {};
+                    inputPortLabel = Object.keys(srcs).find(key => srcs[key] === id) || "";
                 }
                 graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
 
             });
+
+            newRunableNode.dsts = newRunableNode.dsts || {};
             dstNodeIds.forEach((id, index) => {
                 const newPort = outPorts[index];
                 let portLabel = newPort.label;
-                if (addNode.type === 'flow') {
+                if (newRunableNode.type === 'flow') {
                     portLabel = newPort.label;
                 }
-                addNode.dsts[portLabel] = id;
+
+                newRunableNode.dsts![portLabel] = id;
 
                 //dstsがあった場合は１つ目のポート名につなぐ
                 //dstsがない場合は、デフォルト値（i）のポートにつなぐ
-                const from: string = addNode.id;
+                const from: string = newRunableNode.id;
                 const to: string = id;
                 let outputPortLabel = Constants.default.command.outputPortLabel;
-                if (addNode.dsts !== undefined || !_.isEmpty(addNode.dsts)) {
-                    let object = addNode.dsts;
-                    outputPortLabel = Object.keys(object).find(key => object[key] === id) || "";
+                if (newRunableNode.dsts !== undefined || !_.isEmpty(newRunableNode.dsts)) {
+                    const dsts = newRunableNode.dsts || {};
+                    outputPortLabel = Object.keys(dsts).find(key => dsts[key] === id) || "";
                 }
                 graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortLabel));
             });
         } else {
-            addNode.srcs = {};
-            addNode.dsts = {};
-            addNode.position = {x:0, y:0};
-            addNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+            newRunableNode.srcs = {};
+            newRunableNode.dsts = {};
+            newRunableNode.position = {x:0, y:0};
+            newRunableNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
         }
     }
 
     if (addNode.type === 'frame') {
-        addNode.position = {
+        const newFrameNode = addNode as FrameNodeType;
+        newFrameNode.position = {
             x: window.innerWidth / 2 - defaultNodeProps.width / 2,
             y: window.innerHeight / 2 - defaultNodeProps.height / 2,
         };
-        addNode.size = {
+        newFrameNode.size = {
             width: defaultNodeProps.width,
             height: defaultNodeProps.height
         };

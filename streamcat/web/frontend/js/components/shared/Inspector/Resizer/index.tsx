@@ -40,6 +40,7 @@ class Resizer extends React.Component<Props, State> {
     }
   }
 
+  // 初回描画時だけ実行される
   componentDidMount () {
 
   }
