@@ -54,8 +54,14 @@ export const CommandItem = (props: Props) => {
 
         if (command.hasOwnProperty('flow') && command.classification === "data_source") {
             addDataSrcNode(command);
+            // Nodeの選択をキャンセル
+            // FIXME: 追加したノードを選択状態にしたい
+            selectNodes([]);
         } else if (command.hasOwnProperty('flow') && command.classification === "data_dest") {
             addDataDstNode(command, selectedNodeIds[0]);
+            // Nodeの選択をキャンセル
+            // FIXME: 追加したノードを選択状態にしたい
+            selectNodes([]);
         } else {
             const args = {};
             const addedCommandNode = getNewNodeWithArgs(command as Command|FlowCommand, args);
@@ -77,9 +83,11 @@ export const CommandItem = (props: Props) => {
             const outputNodeIds = outputNodes.map(node => node.id);
 
             addNode(addedCommandNode, selectedNodeIds, outputNodeIds, zoom);
+
+            // 追加したCommandを選択状態にする
+            selectNodes([addedCommandNode]);
         }
-        // Nodeの選択をキャンセル
-        selectNodes([]);
+        // Undoスタックに履歴を追加する
         addHistory();
     };
 

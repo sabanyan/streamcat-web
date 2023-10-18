@@ -333,9 +333,10 @@ export const addNodeAction = (flowData: Flow,
                 };
             }
 
+            const adjustment = 12;
             const newPosition = {
                 x: average.sx,
-                y: average.sy + Constants.default.step.height + defaultGraphProps.rankSeparator
+                y: average.sy + Constants.default.step.height + defaultGraphProps.rankSeparator - adjustment
             };
 
             //追加されたノードの位置調整
