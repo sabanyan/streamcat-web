@@ -42,7 +42,7 @@ export const CommandItem = (props: Props) => {
             // node = new SubFlowStepModel((model as any));
             const newId = ModelUtil.getNewId(nodes, 'flow');
             node = new FlowNode(newId, (command as FlowCommand).uuid, {x:0, y:0})
-            node.label == command.label
+            node.label = command.label;
         } else {
             throw Error('command or flow node type only!');
         }

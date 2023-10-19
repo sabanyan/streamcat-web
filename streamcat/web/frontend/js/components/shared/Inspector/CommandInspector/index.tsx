@@ -134,10 +134,10 @@ const CommandInspector = (props: Props) => {
                                 onChange={(e, param, value) => onArgChange(e, param, value)} groups={command?.groups || []} />;
 
     } else if (selectedNode.type === Constants.node.type.subflow) {
-        label = selectedNode.label;
         if (selectedNode.hasOwnProperty('uuid')) {
             const flowNode = selectedNode as FlowNodeType;
             const subflowCommand = runnables.subflows.getCommand(flowNode.uuid);
+            label = flowNode?.label || '';
             subLabel = subflowCommand?.label || '';
             const params = subflowCommand?.params || [];
             const args = flowNode.args;
