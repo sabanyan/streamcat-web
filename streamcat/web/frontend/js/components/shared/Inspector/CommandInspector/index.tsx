@@ -125,7 +125,7 @@ const CommandInspector = (props: Props) => {
         //選択されたNodeのラベルを取得
         label = commandNode.label;
         //コマンドのラベルを取得
-        subLabel = command?.label || '';
+        subLabel = `${command?.label || ''} - ${commandNode.commandId || ''}`;
         const params = command?.params || [];
         const args = commandNode.args;
         const invalids = commandNode.invalid;
