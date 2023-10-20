@@ -132,13 +132,13 @@ export const FlowEditor = () => {
     }, extendLockInterval);
 
     // 直近で保存したFlow
-    const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader);
+    const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader().clone());
 
     // Canvasに表示するFlow
-    const [flow, setFlow] = useState<FlowType>(flowReader);
+    const [flow, setFlow] = useState<FlowType>(flowReader());
 
     // 変更後のFlowに対する差分(履歴)を取得するための起点
-    const [prevFlow, setPrevFlow] = useState<FlowType>({...flow, flow:flow.flow.clone()});
+    const [prevFlow, setPrevFlow] = useState<FlowType>(flow.clone());
 
     // UndoとRedo用のStack
     const [undoStack,] = useState<jsonpatch.Operation[][]>([]);
@@ -243,18 +243,21 @@ export const FlowEditor = () => {
         // フローJSONの解析(loadFlowJSON)で、Subflows, Commands, Visualizersを参照するので
         // これらを取得した後に、findFlowを実行する
         // 
-        // HTML headのtitleにフロー名を設定する
-        // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
-        document.title = '📐' + flow.label;
+        const loadFlowJSON = (flow: FlowType) => {
+            const flowData = graphUtil.load(flow.flow);
+            setFlow({...flow, flow:flowData});
+            setGraph(graphUtil.getGraph(flowData.nodes, zoom));
+        };
         // フローJSONを解析する
         loadFlowJSON(flow);
-        // 直近で保存したFlowを保持する
-        setLastSavedFlow(StateUtil.deepCopy(flow));
         // 編集ロックされたフローの場合は通知する
         if (flow.editLock) {
             notifyWarning('警告：読取専用フロー', 'このフローは編集ロック中のため、 編集権限が取得できませんでした');
         }
 
+        // HTML headのtitleにフロー名を設定する
+        // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
+        document.title = '📐' + flow.label;
         // ブラウザバックによってブラウザタブを閉じれるように設定する
         WebUtil.setCloseWindowOnBack();
 
@@ -414,11 +417,6 @@ export const FlowEditor = () => {
         }
     }, [flowIsUpdated, lock]);
 
-    const loadFlowJSON = (flow: FlowType) => {
-        const flowData = graphUtil.load(flow.flow);
-        setFlow({...flow, flow:flowData});
-        setGraph(graphUtil.getGraph(flowData.nodes, zoom));
-    };
     // const addMaster = (flow: {}) => {
     //     dispatch(addMasterAction(flow));
     // };
@@ -472,7 +470,7 @@ export const FlowEditor = () => {
         undoStack.push(patches);
 
         // 差分を保存した後、変更前のFlowと現在のFlowを同じにする
-        setPrevFlow({...flow, flow:flow.flow.clone()});
+        setPrevFlow(flow.clone());
     };
     const undo = () => {
         // Undoスタックから直近の履歴を取り出す

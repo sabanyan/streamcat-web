@@ -269,6 +269,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             post(`/api/v0/flows`, {source:d.uuid});
         d.deleteCache = (nodeId) =>
             del<void>(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
+        d.clone = () => ({...d, flow: d.flow.clone()});
     }else if(datum.type === 'schedule') {
         const d = datum as ScheduleType;
         d.move = (parent) => 

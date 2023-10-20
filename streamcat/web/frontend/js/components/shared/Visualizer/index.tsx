@@ -56,10 +56,10 @@ export default class Visualizer extends React.Component<Props, State> {
             const command = {...visualize};
             if (!command) throw "command is undefined in Visualizer";
             if (!command.params) throw "command.params is undefined in Visualizer";
-            const params = StateUtil.deepCopy(command.params);
+            // const params = StateUtil.deepCopy(command.params);
             const rules = (command.rules) ? command.rules : {};
 
-            params.map((param: CommandParamType) => {
+            command.params.map((param: CommandParamType) => {
                 // 1.ルールの適用
                 const rule = rules[param.name];
                 // rule: 必須項目で空白（""）が許される場合

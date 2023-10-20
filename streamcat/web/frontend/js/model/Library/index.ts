@@ -359,6 +359,7 @@ export type Commands = {
     deleteCache:(
         nodeId: string
     ) => Promise<void>;
+    clone:() =>FlowType;
 };
 
 /**
