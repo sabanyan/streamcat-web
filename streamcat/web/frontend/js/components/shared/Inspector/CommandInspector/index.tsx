@@ -111,9 +111,8 @@ const CommandInspector = (props: Props) => {
 
     const onBlurTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedNode = getSelectedNode();
-        const newSelectedNode = StateUtil.deepCopy(selectedNode);
-        newSelectedNode.label = e.target.value;
-        updateNode(newSelectedNode);
+        selectedNode.label = e.target.value;
+        updateNode(selectedNode);
     };
 
     let inputForm: React.ReactNode = [];

@@ -164,9 +164,8 @@ export class DataSrcInspector extends React.Component<Props, State> {
 
   onBlurTitle(e: any) {
     const selectedNode = this.getSelectedNode()
-    const newSelectedNode = StateUtil.deepCopy(selectedNode)
-    newSelectedNode.label = e.target.value
-    this.props.updateNode(newSelectedNode)
+    selectedNode.label = e.target.value
+    this.props.updateNode(selectedNode)
   }
 }
 

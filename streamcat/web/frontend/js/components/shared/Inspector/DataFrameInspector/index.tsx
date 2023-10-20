@@ -283,9 +283,8 @@ const DataFrameInspector = (props: Props) => {
     const onBlurTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {updateNode} = props;
         const selectedNode = getSelectedNode();
-        const newSelectedNode = StateUtil.deepCopy(selectedNode);
-        newSelectedNode.label = e.target.value;
-        updateNode(newSelectedNode);
+        selectedNode.label = e.target.value;
+        updateNode(selectedNode);
     };
 
     const { runnables, zoom, addNode, addDataSrcNode, addDataDstNode, selectNodes, selectedNodeIds, addHistory,
