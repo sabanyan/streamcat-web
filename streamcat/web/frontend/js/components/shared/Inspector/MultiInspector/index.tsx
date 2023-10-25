@@ -9,13 +9,13 @@ import { RunnablesType } from 'Types/index';
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 
 type Props = {
-    deleteNodes: (nodeIds: string[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     nodes: AllNodeType[];
     runnables: RunnablesType;
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     zoom: number;
-    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
     addHistory: () => void;
@@ -29,8 +29,8 @@ const MultiInspector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selectedNodeIds} = props;
-                deleteNodes(selectedNodeIds);
+                const {selectedNodes} = props;
+                deleteNodes(selectedNodes);
                 selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
@@ -47,19 +47,18 @@ const MultiInspector = (props: Props) => {
         });
     };
 
-    const {runnables, selectedNodeIds, zoom, nodes, addNode, addDataSrcNode, addDataDstNode,
+    const {runnables, selectedNodes, zoom, nodes, addNode, addDataSrcNode, addDataDstNode,
         selectNodes, addHistory, baseInspectorDisabled, commandSelectorHidden} = props;
 
     const getNumberOfSelectedDataSources = () => {
         let cnt = 0;
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
-        selectedNodeIds.forEach((id) => {
-            const node = FlowUtil.getNode(nodes, id);
-            if (node.type === 'frame') {
+        selectedNodes.forEach(selectNode => {
+            if (selectNode.type === 'frame') {
                 cnt++;
-            } else if (node.type === 'flow') {
+            } else if (selectNode.type === 'flow') {
                 hasMixedCommand = true;
-            } else if (node.type === 'command') {
+            } else if (selectNode.type === 'command') {
                 hasMixedCommand = true;
             }
         });
@@ -76,7 +75,7 @@ const MultiInspector = (props: Props) => {
                 nodes={nodes}
                 runnables={runnables}
                 numberOfInput={numberOfSelectedDataSources}
-                selectedNodeIds={selectedNodeIds}
+                selectedNodes={selectedNodes}
                 zoom={zoom}
                 addNode={addNode}
                 addDataSrcNode={addDataSrcNode}
@@ -91,9 +90,9 @@ const MultiInspector = (props: Props) => {
         commandSelector = null;
     }
 
-    return <BaseInspector key={JSON.stringify(selectedNodeIds)}
+    return <BaseInspector key={JSON.stringify(selectedNodes)}
                           header={''}
-                          title={selectedNodeIds.length + ' files'}
+                          title={selectedNodes.length + ' files'}
                           disabled={baseInspectorDisabled}>
         <div className='streamcat-form'>
             <Button onClick={() => onClickDelete()} danger={true} disabled={baseInspectorDisabled}>

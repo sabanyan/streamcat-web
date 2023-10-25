@@ -16,18 +16,18 @@ import { useAsyncResource } from "use-async-resource";
 type Props = {
     // selected_data_source_detail: FrameType;
     runnables: RunnablesType;
-    deleteNodes: (nodeIds: string[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     flowData: Flow;
     // Flowの更新に用いる
     lastSavedFlow?: FlowType;
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     // selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
     deleteCache: Function;
     // nodes: AllNodeType[];
     zoom: number;
-    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
     updateNode: (node: AllNodeType) => void;
@@ -86,8 +86,10 @@ const DataFrameInspector = (props: Props) => {
     }, []);
 
     const getSelectedNode = () => {
-        let {selectedNodeIds, flowData} = props;
-        return FlowUtil.getNode(flowData.nodes, selectedNodeIds[0]) as FrameNodeType;
+        // let {selectedNodes, flowData} = props;
+        // return FlowUtil.getNode(flowData.nodes, selectedNodes[0]) as FrameNodeType;
+        const {selectedNodes} = props;
+        return selectedNodes[0] as FrameNodeType;
     };
 
     // ここでFrameの取得を開始する
@@ -150,11 +152,11 @@ const DataFrameInspector = (props: Props) => {
 
     const onClickDelete = () => {
         const {deleteNodes, selectNodes, addHistory} = props;
-        let {selectedNodeIds, flowData} = props;
+        let {selectedNodes, flowData} = props;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const selectedNode = FlowUtil.getNode(flowData.nodes, selectedNodeIds[0]);
-                deleteNodes([selectedNode.id]);
+                const selectedNode = selectedNodes[0];
+                deleteNodes([selectedNode]);
                 selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
@@ -239,9 +241,9 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const deleteCache = () => {
-        const {lastSavedFlow, selectedNodeIds, deleteCache} = props;
+        const {lastSavedFlow, selectedNodes, deleteCache} = props;
         // const [, setSelectedFrame] = props.selectedFrameState;
-        const id = selectedNodeIds[0];
+        const id = selectedNodes[0].id;
 
         // キャッシュファイルを削除する
         lastSavedFlow && lastSavedFlow.deleteCache(id).then(() => {
@@ -287,7 +289,7 @@ const DataFrameInspector = (props: Props) => {
         updateNode(selectedNode);
     };
 
-    const { runnables, zoom, addNode, addDataSrcNode, addDataDstNode, selectNodes, selectedNodeIds, addHistory,
+    const { runnables, zoom, addNode, addDataSrcNode, addDataDstNode, selectNodes, selectedNodes, addHistory,
             previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
@@ -419,7 +421,7 @@ const DataFrameInspector = (props: Props) => {
                             nodes={flowData.nodes}
                             runnables={runnables}
                             numberOfInput={1}
-                            selectedNodeIds={selectedNodeIds}
+                            selectedNodes={selectedNodes}
                             zoom={zoom}
                             addNode={addNode}
                             addDataSrcNode={addDataSrcNode}

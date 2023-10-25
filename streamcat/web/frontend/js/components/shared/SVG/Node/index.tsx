@@ -21,10 +21,10 @@ interface Props {
     flowData: Flow;
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     zoom: number;
     dragRange: DragType | null;
-    addSelectNode: (selectedNodeId: string) => void;
+    addSelectNode: (selectedNode: AllNodeType) => void;
     unselectNode: (selectedNodeId: string) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     // selectFrame: (frame?:FrameType) => void;
@@ -44,10 +44,10 @@ export const Node = (props: Props) => {
     const [hover, setHover] = useState<boolean>(false);
 
     const isSelected = () => {
-        const { selectedNodeIds } = props;
+        const { selectedNodes } = props;
         let selected = false;
-        selectedNodeIds.map((id) => {
-            if (id === node.id) {
+        selectedNodes.map(selectedNode => {
+            if (selectedNode.id === node.id) {
                 selected = true;
             }
         });
@@ -88,7 +88,7 @@ export const Node = (props: Props) => {
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected()) {
-                addSelectNode(node.id);
+                addSelectNode(node);
             } else {
                 unselectNode(node.id);
             }
@@ -112,10 +112,10 @@ export const Node = (props: Props) => {
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-        const { selectedNodeIds, readOnly } = props;
+        const { selectedNodes, readOnly } = props;
         if (readOnly) return; // 読み取り専用の場合は移動不可
 
-        if (selectedNodeIds.length > 1) {
+        if (selectedNodes.length > 1) {
             // 複数のNodeを一括して移動させる
             onMoveNodes(e);
         } else {
@@ -147,7 +147,7 @@ export const Node = (props: Props) => {
         return { new_x: new_x, new_y: new_y };
     };
 
-    const moveNodes = (flowData:Flow, x: number, y: number, selectedNodeIds:string[]) => {
+    const moveNodes = (flowData:Flow, x: number, y: number, selectedNodes:AllNodeType[]) => {
         const [graph, setGraph] = props.graphState;
         const { zoom } = props;
 
@@ -157,7 +157,7 @@ export const Node = (props: Props) => {
 
         // 選択中の全てのNodeを移動する
         // 複数のNodeを一括で移動させる場合は、そのNodeの中に自Nodeが含まれていること
-        flowData.nodes.filter(node => selectedNodeIds.includes(node.id)).forEach(node => {
+        flowData.nodes.filter(node => selectedNodes.some(selectedNode => selectedNode.id===node.id)).forEach(node => {
             // Nodeの位置を変更する
             node.position.x = node.position.x - dx;
             node.position.y = node.position.y - dy;
@@ -169,14 +169,14 @@ export const Node = (props: Props) => {
 
     const onMoveNode = (e: React.MouseEvent<SVGElement>) => {
         const { new_x, new_y } = calcNewPosition(e);
-        moveNodes(flowData, new_x, new_y, [node.id]);
+        moveNodes(flowData, new_x, new_y, [node]);
     };
 
     const onMoveNodes = (e: React.MouseEvent<SVGElement>) => {
-        const { selectedNodeIds } = props;
-        if (selectedNodeIds.includes(node.id)) {
+        const { selectedNodes } = props;
+        if (selectedNodes.some(selectedNode => selectedNode.id===node.id)) {
             const { new_x, new_y } = calcNewPosition(e);
-            moveNodes(flowData, new_x, new_y, selectedNodeIds);
+            moveNodes(flowData, new_x, new_y, selectedNodes);
         }
     };
 
@@ -278,7 +278,7 @@ export const Node = (props: Props) => {
         // componentDidUpdate
         if (selectorIntersect()) {
             if (!isSelected()) {
-                addSelectNode(node.id);
+                addSelectNode(node);
             }
 
         } else {

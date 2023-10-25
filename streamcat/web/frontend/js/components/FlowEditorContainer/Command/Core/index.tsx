@@ -9,9 +9,9 @@ import { CommandNode, CommandNodeType, FlowNode, FlowNodeType, FrameNode, FrameN
 type Props = {
     nodes: AllNodeType[];
     command: Command | FlowCommand | InlineFlowCommand;
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     zoom: number;
-    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
@@ -50,7 +50,7 @@ export const CommandItem = (props: Props) => {
     };
 
     const onClickCommand = (e: React.MouseEvent<HTMLDivElement>, command: Command | FlowCommand | InlineFlowCommand) => {
-        const { selectedNodeIds, zoom, addNode, selectNodes, addHistory, addDataDstNode, addDataSrcNode } = props;
+        const { selectedNodes, zoom, addNode, selectNodes, addHistory, addDataDstNode, addDataSrcNode } = props;
 
         if (command.hasOwnProperty('flow') && command.classification === "data_source") {
             addDataSrcNode(command);
@@ -58,7 +58,7 @@ export const CommandItem = (props: Props) => {
             // FIXME: 追加したノードを選択状態にしたい
             selectNodes([]);
         } else if (command.hasOwnProperty('flow') && command.classification === "data_dest") {
-            addDataDstNode(command, selectedNodeIds[0]);
+            addDataDstNode(command, selectedNodes[0].id);
             // Nodeの選択をキャンセル
             // FIXME: 追加したノードを選択状態にしたい
             selectNodes([]);
@@ -80,9 +80,7 @@ export const CommandItem = (props: Props) => {
                 return outputNode;
             });
 
-            const outputNodeIds = outputNodes.map(node => node.id);
-
-            addNode(addedCommandNode, selectedNodeIds, outputNodeIds, zoom);
+            addNode(addedCommandNode, selectedNodes, outputNodes, zoom);
 
             // 追加したCommandを選択状態にする
             selectNodes([addedCommandNode]);

@@ -11,7 +11,7 @@ import { CommandNodeType, FlowNodeType } from 'Model/Node/NodeTypes';
 import { RunnablesType } from 'Types/index';
 
 type Props = {
-    selectedNodeId: string;
+    selectedNode: AllNodeType;
     // runnables: RunnablesType;
     nodes: AllNodeType[];
     runnables: RunnablesType;
@@ -19,7 +19,7 @@ type Props = {
     // updateNodeEdges: (node:AllNodeType) => void;
     addHistory: () => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
-    deleteNodes: (nodeIds: string[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     // children?: React.ReactNode;
     baseInspectorDisabled: boolean;
 }
@@ -35,16 +35,16 @@ const getFlow = (uuid: string) => {
 
 const CommandInspector = (props: Props) => {
 
-    const getSelectedNode = () => {
-        const {selectedNodeId, nodes} = props;
-        return FlowUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
-    };
+    // const getSelectedNode = () => {
+    //     const {selectedNode, nodes} = props;
+    //     return FlowUtil.getNode(nodes, selectedNode) as CommandNodeType | FlowNodeType;
+    // };
 
     // 選択中のNodeを取得する
-    const selectedNode = getSelectedNode();
+    const runableNode = props.selectedNode as CommandNodeType|FlowNodeType;
 
     // ここでFlowの取得を開始する
-    const [flowReader] = useAsyncResource(getFlow, (selectedNode as any).uuid);
+    const [flowReader] = useAsyncResource(getFlow, (runableNode as any).uuid);
 
     const onHide = () => {
         //this.props.addHistory()
@@ -52,8 +52,7 @@ const CommandInspector = (props: Props) => {
 
     const deleteNode = () => {
         const {deleteNodes, selectNodes, addHistory} = props;
-        const selectedNode = getSelectedNode();
-        deleteNodes([selectedNode.id]);
+        deleteNodes([runableNode]);
         selectNodes([]);
         addHistory()
     };
@@ -104,21 +103,19 @@ const CommandInspector = (props: Props) => {
     const {updateNode, baseInspectorDisabled, nodes, runnables} = props;
 
     const update = (getNewNode: Function) => {
-        const selectedNode = getSelectedNode();
-        const newNode = getNewNode(selectedNode);
+        const newNode = getNewNode(runableNode);
         updateNode(newNode);
     };
 
     const onBlurTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedNode = getSelectedNode();
-        selectedNode.label = e.target.value;
-        updateNode(selectedNode);
+        runableNode.label = e.target.value;
+        updateNode(runableNode);
     };
 
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
-    if (selectedNode.type === Constants.node.type.command) {
-        const commandNode = selectedNode as CommandNodeType;
+    if (runableNode.type === Constants.node.type.command) {
+        const commandNode = runableNode as CommandNodeType;
         //指定されたNodeの元コマンドを取得
         const command = runnables.commands.getCommand(commandNode.commandId);
         //選択されたNodeのラベルを取得
@@ -132,9 +129,9 @@ const CommandInspector = (props: Props) => {
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command || undefined}
                                 onChange={(e, param, value) => onArgChange(e, param, value)} groups={command?.groups || []} />;
 
-    } else if (selectedNode.type === Constants.node.type.subflow) {
-        if (selectedNode.hasOwnProperty('uuid')) {
-            const flowNode = selectedNode as FlowNodeType;
+    } else if (runableNode.type === Constants.node.type.subflow) {
+        if (runableNode.hasOwnProperty('uuid')) {
+            const flowNode = runableNode as FlowNodeType;
             const subflowCommand = runnables.subflows.getCommand(flowNode.uuid);
             label = flowNode?.label || '';
             subLabel = subflowCommand?.label || '';
@@ -182,14 +179,14 @@ const CommandInspector = (props: Props) => {
             // updateNodeEdges={updateNodeEdges}
             nodes={nodes}
             runnables={runnables}
-            selectedNode={selectedNode}
+            selectedNode={runableNode}
             disabled={baseInspectorDisabled}
         />
         {form}
     </div>;
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector key={selectedNode.id} header={""} label={label} subLabel={subLabel}
+    return <BaseInspector key={runableNode.id} header={""} label={label} subLabel={subLabel}
                           onHide={() => onHide()}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>

@@ -10,10 +10,10 @@ import { RunnablesType } from 'Types/index';
 
 type Props = {
     runnables: RunnablesType;
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     // nodes: any[];
     zoom: number;
-    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
     addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
@@ -96,7 +96,7 @@ const FlowSettingsInspector = (props: Props) => {
     };
 
     const { flowUuid, runnables, zoom, addNode, addDataDstNode, addDataSrcNode,
-            selectNodes, selectedNodeIds, addHistory, addFlowVariableHidden,
+            selectNodes, selectedNodes, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
     let inputParamsContainer, addFlowParams;
@@ -153,7 +153,7 @@ const FlowSettingsInspector = (props: Props) => {
                         nodes={flowData.nodes}
                         runnables={runnables}
                         numberOfInput={0}
-                        selectedNodeIds={selectedNodeIds}
+                        selectedNodes={selectedNodes}
                         zoom={zoom}
                         addNode={addNode}
                         addDataSrcNode={addDataSrcNode}

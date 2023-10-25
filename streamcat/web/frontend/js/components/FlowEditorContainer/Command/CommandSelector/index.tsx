@@ -10,9 +10,9 @@ type Props = {
     runnables: RunnablesType;
     nodes:AllNodeType[];
     numberOfInput: number;
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     zoom: number;
-    addNode: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     disabled?: boolean;
@@ -53,7 +53,7 @@ const CommandSelector = (props: Props) => {
         return (command.ports[0][0].label === "*");
     };
 
-    const { numberOfInput, selectedNodeIds, zoom, addNode, addDataDstNode, addDataSrcNode,
+    const { numberOfInput, selectedNodes, zoom, addNode, addDataDstNode, addDataSrcNode,
         selectNodes, addHistory, runnables, nodes } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
@@ -105,7 +105,7 @@ const CommandSelector = (props: Props) => {
             nodes={nodes}
             key={index}
             command={command}
-            selectedNodeIds={selectedNodeIds}
+            selectedNodes={selectedNodes}
             zoom={zoom}
             addNode={addNode}
             addDataDstNode={addDataDstNode}

@@ -148,6 +148,10 @@ export const FlowEditor = () => {
 
     // 選択中のNodeのId
     const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+
+    // 選択中のNode
+    const [selectedNodes, setSelectedNodes] = useState<AllNodeType[]>([]);
+
     // 選択中のDataFrameNodeのFrame
     // const [selectedFrame, setSelectedFrame] = useState<FrameType>();
     // Canvasでの選択範囲
@@ -420,8 +424,8 @@ export const FlowEditor = () => {
     // const addMaster = (flow: {}) => {
     //     dispatch(addMasterAction(flow));
     // };
-    const addNode = (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => {
-        addNodeAction(flow.flow, addNode, srcNodeIds, dstNodeIds, runnablesReader(), zoom);
+    const addNode = (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => {
+        addNodeAction(flow.flow, addNode, srcNodes, dstNodes, runnablesReader(), zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
@@ -435,23 +439,29 @@ export const FlowEditor = () => {
     const selectNodes = (selectedNodes: AllNodeType[]) => {
         // ArrayCtor型オブジェクトをstring[]型に代入すると
         // __allAPIFuncSetとlengthプロパティも要素として扱われるのでstring[]に変換する
-        const nodeIdsArray = [...selectedNodes.map(node => node.id)];
-        setSelectedNodeIds(nodeIdsArray);
+        // const nodeIdsArray = [...selectedNodes.map(node => node.id)];
+        // setSelectedNodeIds(nodeIdsArray);
+        setSelectedNodes([...selectedNodes]);
     };
-    const addSelectNode = (selectedNodeId: string) => {
-        setSelectedNodeIds([...selectedNodeIds, selectedNodeId])
+    const addSelectNode = (selectedNode: AllNodeType) => {
+        // setSelectedNodeIds([...selectedNodeIds, selectedNodeId])
+        setSelectedNodes([...selectedNodes, selectedNode]);
     };
     const unselectNode = (selectedNodeId: string) => {
-        setSelectedNodeIds(
-            selectedNodeIds.filter(nodeId => nodeId !== selectedNodeId)
+        // setSelectedNodeIds(
+        //     selectedNodeIds.filter(nodeId => nodeId !== selectedNodeId)
+        // );
+        setSelectedNodes(
+            selectedNodes.filter(node => node.id !== selectedNodeId)
         );
     };
-    const deleteNodes = (nodeIds: string[]) => {
-        deleteNodesAction(flow.flow, nodeIds);
+    const deleteNodes = (nodes: AllNodeType[]) => {
+        deleteNodesAction(flow.flow, nodes);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
         //削除後は非選択状態にする
-        setSelectedNodeIds([]);
+        // setSelectedNodeIds([]);
+        setSelectedNodes([]);
     };
 
     const addHistory = () => {
@@ -494,10 +504,10 @@ export const FlowEditor = () => {
         redoStack.push(reversePatches);
 
         // 選択中Nodeが無くなった場合は選択を解除する
-        const allSelectedNodeExists = selectedNodeIds.every(selectedNodeId =>
-            FlowUtil.NodeExists(prevFlowData.nodes, selectedNodeId)
+        const allSelectedNodeExists = selectedNodes.every(selectedNode =>
+            FlowUtil.NodeExists(prevFlowData.nodes, selectedNode.id)
         );
-        allSelectedNodeExists || setSelectedNodeIds([]);
+        allSelectedNodeExists || setSelectedNodes([]);
 
         // エッジを繋ぎ直す
         redrawAllEdges(prevFlowData.nodes, graph.edges);
@@ -528,10 +538,10 @@ export const FlowEditor = () => {
         undoStack.push(reversePatches);
 
         // 選択中Nodeが無くなった場合は選択を解除する
-        const allSelectedNodeExists = selectedNodeIds.every(selectedNodeId =>
-            FlowUtil.NodeExists(nextFlowData.nodes, selectedNodeId)
+        const allSelectedNodeExists = selectedNodes.every(selectedNode =>
+            FlowUtil.NodeExists(nextFlowData.nodes, selectedNode.id)
         );
-        allSelectedNodeExists || setSelectedNodeIds([]);
+        allSelectedNodeExists || setSelectedNodes([]);
 
         // エッジを繋ぎ直す
         redrawAllEdges(nextFlowData.nodes, graph.edges);
@@ -666,7 +676,7 @@ export const FlowEditor = () => {
         let nodes:React.JSX.Element[] = [];
         if (flow.flow.nodes) {
             nodes = flow.flow.nodes.map(node => {
-                let selected = (node.id === selectedNodeIds[0]);
+                let selected = (node.id === selectedNodes[0]?.id);
                 const nodeReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
                 return <Node
                     key={node.id}
@@ -679,7 +689,7 @@ export const FlowEditor = () => {
                     flowData={flow.flow}
                     flowState={[flow, setFlow]}
                     graphState={[graph, setGraph]}
-                    selectedNodeIds={selectedNodeIds}
+                    selectedNodes={selectedNodes}
                     zoom={zoom}
                     dragRange={dragRange}
                     addSelectNode={addSelectNode}
@@ -693,7 +703,7 @@ export const FlowEditor = () => {
         }
         return nodes;
     }, [ //nodes,
-        selectedNodeIds,
+        selectedNodes,
         flow,
         zoom,
         dragRange,
@@ -828,7 +838,7 @@ export const FlowEditor = () => {
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
-                selectedNodeIds={selectedNodeIds}
+                selectedNodes={selectedNodes}
                 flowState={[flow, setFlow]}
                 graphState={[graph, setGraph]}
                 flowData={flow.flow}
@@ -843,7 +853,7 @@ export const FlowEditor = () => {
                 </Paper>
             </PaperScroller>
             <Inspector
-                selectedNodeIds={selectedNodeIds}
+                selectedNodes={selectedNodes}
                 // nodes={flow?.nodes || []}
                 runnables={runnablesReader()}
                 zoom={zoom}

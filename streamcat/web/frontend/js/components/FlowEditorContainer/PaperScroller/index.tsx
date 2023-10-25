@@ -10,12 +10,12 @@ import { AllNodeType, Flow, FlowType } from 'Model/Library';
 
 type Props = {
     canvasWidth: number;
-    deleteNodes: (nodeIds: string[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     redo: () => void;
     undo: () => void;
-    selectedNodeIds: string[];
+    selectedNodes: AllNodeType[];
     // nodes: AllNodeType[];
     flowData: Flow;
     zoom: number;
@@ -48,39 +48,33 @@ const PaperScroller = (props: Props) => {
 
     /**
      * JSON文字列に変換する
-     * @param selectedNodeIds 
+     * @param nodes 
      * @returns 
      */
-    const stringifyNodes = (selectedNodeIds:string[]): string => {
-        const {flowData} = props;
-        return JSON.stringify(
-            selectedNodeIds.map(id => FlowUtil.getNode(flowData.nodes, id))
-        );
+    const stringifyNodes = (nodes:AllNodeType[]): string => {
+        return JSON.stringify(nodes);
     };
 
     /**
      * コピー可能なNodeの判断（コマンド or サブフロー を1つのみ）
      * @returns {boolean}
      */
-    const nodeIsCopyable = (selectedNodeIds:string[]) => {
-        const {flowData} = props;
+    const nodeIsCopyable = (copyNodes:AllNodeType[]) => {
         // 全てのNodeが複製可能なtypeであること
-        const copyNodes = selectedNodeIds.map(nodeId => FlowUtil.getNode(flowData.nodes, nodeId));
-        // 以下のtypeのNodeを複製可能とする
         return copyNodes.every(node =>
             node.type==='command' || node.type==='flow' || node.type==='note' || node.type==='frame'
         );
     };
 
     const copyNodes = () => {
-        const {selectedNodeIds} = props;
+        const {selectedNodes} = props;
 
-        if (!nodeIsCopyable(selectedNodeIds)) {
+        if (!nodeIsCopyable(selectedNodes)) {
             setToStrage('');
             return;
         }
         // 選択中のノードをノードJSON文字列に変換する
-        const stringifiedNodes = stringifyNodes(selectedNodeIds);
+        const stringifiedNodes = stringifyNodes(selectedNodes);
         // WebストレージにノードJSONを保存する
         setToStrage(stringifiedNodes);
     };
@@ -112,7 +106,7 @@ const PaperScroller = (props: Props) => {
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-        const {redo, undo, selectedNodeIds, deleteNodes, addHistory} = props;
+        const {redo, undo, selectedNodes: selectedNodeIds, deleteNodes, addHistory} = props;
 
         if (DetectUtil.isMac()) {
             if (e.metaKey && e.key === 'c') {

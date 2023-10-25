@@ -17,7 +17,7 @@ type State = {
 type Props = {
   nodes: AllNodeType[];
 
-  selectedNodeId: string;
+  selectedNode: AllNodeType;
   baseInspectorDisabled: boolean;
 
   runnables: RunnablesType;
@@ -27,7 +27,7 @@ type Props = {
   // updateNodeEdges: (node: AllNodeType) => void;
   addHistory: () => void;
   selectNodes: (selectedNodes: AllNodeType[]) => void;
-  deleteNodes: (nodeIds: string[]) => void;
+  deleteNodes: (nodes: AllNodeType[]) => void;
 }
 
 
@@ -41,10 +41,10 @@ export class DataSrcInspector extends React.Component<Props, State> {
     }
   }
 
-  getSelectedNode(): any {
-    let { selectedNodeId, nodes } = this.props
-    return FlowUtil.getNode(nodes, selectedNodeId)
-  }
+  // getSelectedNode(): any {
+  //   let { selectedNodeId, nodes } = this.props
+  //   return FlowUtil.getNode(nodes, selectedNodeId)
+  // }
 
   renderActions() {
     const { baseInspectorDisabled } = this.props;
@@ -56,11 +56,10 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   onClickDelete(e: any) {
+    const srcNode = this.props.selectedNode;
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        let { selectedNodeId, nodes } = this.props
-        const selectedNode = FlowUtil.getNode(nodes, selectedNodeId)
-        this.props.deleteNodes([selectedNode.id])
+        this.props.deleteNodes([srcNode])
         this.props.selectNodes([])
         this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
@@ -79,15 +78,15 @@ export class DataSrcInspector extends React.Component<Props, State> {
 
   renderContents() {
     const { updateNode, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
-    const selectedNode = this.getSelectedNode();
+    const srcNode = this.props.selectedNode as any;
 
     let libraryPlace: any = null;
     let inOutConnector: any = null;
     let paramsForm: any = null;
 
-    if (selectedNode.srcs || selectedNode.dsts) {
+    if (srcNode.srcs || srcNode.dsts) {
       inOutConnector = <InOutConnector
-        selectedNode={selectedNode}
+        selectedNode={srcNode}
         updateNode={updateNode}
         // updateNodeEdges={updateNodeEdges}
         nodes={nodes}
@@ -97,16 +96,15 @@ export class DataSrcInspector extends React.Component<Props, State> {
     }
 
  
-    if (selectedNode.flow.params) {
-      
-      paramsForm = <ParamsForm params={selectedNode.flow.params} args={selectedNode.args} invalids={{}} parentUUID={parentUUID}
+    if (srcNode.flow.params) {
+      paramsForm = <ParamsForm params={srcNode.flow.params} args={srcNode.args} invalids={{}} parentUUID={parentUUID}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
 
     return <React.Fragment>
       <div><label>場所</label></div>
       <div>
-        <a href={'/folders/' + selectedNode.folderUuid} target={'_blank'}>{selectedNode.folderPath}</a>
+        <a href={'/folders/' + srcNode.folderUuid} target={'_blank'}>{srcNode.folderPath}</a>
       </div>
       {libraryPlace}
       {inOutConnector}
@@ -137,18 +135,18 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   update(getNewNode: Function) {
-    const selectedNode = this.getSelectedNode()
-    const newNode = getNewNode(selectedNode)
+    const srcNode = this.props.selectedNode;
+    const newNode = getNewNode(srcNode)
     this.props.updateNode(newNode)
   }
 
   render() {
     const { baseInspectorDisabled } = this.props;
-    const selectedNode = this.getSelectedNode();
+    const srcNode = this.props.selectedNode as any;
 
     if (this.state.isLoading) return <Loader center={true} absolute={true} fixed={false} visible={true} />
 
-    return <BaseInspector key={selectedNode.uuid} header={''} label={selectedNode.label}
+    return <BaseInspector key={srcNode.uuid} header={''} label={srcNode.label}
       onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
       <div className={style.property_overview}>
         <div className={style.actions}>
@@ -156,16 +154,16 @@ export class DataSrcInspector extends React.Component<Props, State> {
         </div>
         <div className={style.full_hr} />
         <div className={style.overviews}>
-          {(selectedNode.flow.params) ? this.renderContents() : null}
+          {(srcNode.flow.params) ? this.renderContents() : null}
         </div>
       </div>
     </BaseInspector >
   }
 
   onBlurTitle(e: any) {
-    const selectedNode = this.getSelectedNode()
-    selectedNode.label = e.target.value
-    this.props.updateNode(selectedNode)
+    const srcNode = this.props.selectedNode;
+    srcNode.label = e.target.value
+    this.props.updateNode(srcNode)
   }
 }
 

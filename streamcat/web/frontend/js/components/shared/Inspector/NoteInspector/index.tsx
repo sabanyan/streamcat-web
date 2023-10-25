@@ -9,11 +9,11 @@ import { NoteNodeType } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 
 interface Props {
-    selectedNodeId: string;
+    selectedNode: AllNodeType;
     nodes: AllNodeType[];
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     updateNode: (node:NoteNodeType) => void;
-    deleteNodes: (nodeIds: string[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     baseInspectorDisabled: boolean;
     addHistory: () => void;
 }
@@ -24,17 +24,17 @@ const NoteInspector = (props: Props) => {
         if (element) element.focus();
     }, []);
 
-    const getSelectedNode = () => {
-        const {selectedNodeId, nodes} = props;
-        return FlowUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
-    };
+    // const getSelectedNode = () => {
+    //     const {selectedNodeId, nodes} = props;
+    //     return FlowUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
+    // };
 
     const onClickDelete = () => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selectedNodeId, deleteNodes, selectNodes, addHistory} = props;
-                deleteNodes([selectedNodeId]);
+                const {selectedNode, deleteNodes, selectNodes, addHistory} = props;
+                deleteNodes([selectedNode]);
                 selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
@@ -52,10 +52,10 @@ const NoteInspector = (props: Props) => {
     };
 
     const update = (getNewNode:(node:NoteNodeType) => NoteNodeType) => {
-        const {updateNode: updateNode} = props;
-        const selectedNode = getSelectedNode();
+        const {selectedNode, updateNode} = props;
+        // const selectedNode = getSelectedNode();
         if(selectedNode){
-            const newNote = getNewNode(selectedNode);
+            const newNote = getNewNode(selectedNode as NoteNodeType);
             updateNode(newNote);
         }
     };
@@ -118,14 +118,15 @@ const NoteInspector = (props: Props) => {
         }];
     };
 
-    const {baseInspectorDisabled} = props;
+    const {selectedNode, baseInspectorDisabled} = props;
 
-    const selectedNode = getSelectedNode();
-    if (!selectedNode) return null;
-    const noteTitle = selectedNode.title;
-    const noteContent = selectedNode.content;
-    const fontSize = selectedNode.fontSize;
-    const color = selectedNode.color;
+    // const selectedNode = getSelectedNode();
+    const noteNode = selectedNode as NoteNodeType;
+    if (!noteNode) return null;
+    const noteTitle = noteNode.title;
+    const noteContent = noteNode.content;
+    const fontSize = noteNode.fontSize;
+    const color = noteNode.color;
     const content = <div className='property_body'>
         <div>
             <input

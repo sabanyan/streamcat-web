@@ -264,15 +264,15 @@ const newDataDest = (props: DataDestProps) => {
  * 
  * @param flowData ノードを追加する
  * @param addNode 
- * @param srcNodeIds 
- * @param dstNodeIds 
+ * @param srcNodes 
+ * @param dstNodes 
  * @param runnables 
  * @param zoom 
  */
 export const addNodeAction = (flowData: Flow,
                               addNode: AllNodeType,
-                              srcNodeIds: string[],
-                              dstNodeIds: string[],
+                              srcNodes: AllNodeType[],
+                              dstNodes: AllNodeType[],
                               runnables: RunnablesType,
                               zoom: number) => {
 
@@ -291,15 +291,15 @@ export const addNodeAction = (flowData: Flow,
         let totalSX = 0;
         let totalSY = 0;
 
-        srcNodeIds.forEach((id: string) => {
-            const target: AllNodeType = FlowUtil.getNode(flowData.nodes, id);
-            totalSX = totalSX + target.position.x;
-            totalSY = totalSY + target.position.y;
+        srcNodes.forEach(srcNode => {
+            // const target: AllNodeType = FlowUtil.getNode(flowData.nodes, id);
+            totalSX = totalSX + srcNode.position.x;
+            totalSY = totalSY + srcNode.position.y;
         });
 
         //dsts
         let totalDX = 0;
-        dstNodeIds.forEach((id: string) => {
+        dstNodes.forEach(dstNode => {
             //ノードの数に応じて
             totalDX = totalDX + defaultGraphProps.nodeSeparator;
         });
@@ -311,15 +311,15 @@ export const addNodeAction = (flowData: Flow,
         //
         if (totalDX) totalDX = totalDX - defaultGraphProps.nodeSeparator;
 
-        if (srcNodeIds || dstNodeIds) {
+        if (srcNodes || dstNodes) {
             //追加したNodeの位置調整
             let average = {
-                sx: totalSX / srcNodeIds.length,
-                sy: totalSY / srcNodeIds.length,
+                sx: totalSX / srcNodes.length,
+                sy: totalSY / srcNodes.length,
                 dx: totalDX / 2
             };
 
-            if (!srcNodeIds.length) {
+            if (!srcNodes.length) {
                 //入力がない場合、グラフの中央を基準にする
                 const el = document.querySelector("#flow_editor>div");
                 const leftTopPosition = {
@@ -354,14 +354,13 @@ export const addNodeAction = (flowData: Flow,
             }
 
             //先行して設置されている接続先のノードの位置調整
-            dstNodeIds.map((id, index) => {
-                let new_node = FlowUtil.getNode(flowData.nodes, id);
-                new_node.position = {
+            dstNodes.map((dstNode, index) => {
+                dstNode.position = {
                     x: newRunableNode.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
                     y: newRunableNode.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
                 };
-                new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
-                flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: id, new_node: new_node });
+                dstNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+                flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: dstNode.id, new_node: dstNode });
             });
             //出力先Nodeの位置調整
 
@@ -391,46 +390,46 @@ export const addNodeAction = (flowData: Flow,
 
             const inPorts: CommandPortType[] = command.ports[0];
             const outPorts: CommandPortType[] = command.ports[1];
-            srcNodeIds.forEach((id, index) => {
+            srcNodes.forEach((srcNode, index) => {
                 const newPort = inPorts[index];
                 let portLabel = isAddable ? "*" + index : newPort.label;
                 if (newRunableNode.type === 'flow') {
                     portLabel = newPort.label;
                 }
 
-                newRunableNode.addInPort(portLabel, id);
+                newRunableNode.addInPort(portLabel, srcNode.id);
 
                 //srcsがあった場合は１つ目のポート名につなぐ
                 //srcsがない場合は、デフォルト値（i）のポートにつなぐ
-                const from: string = id;
+                const from: string = srcNode.id;
                 const to: string = newRunableNode.id;
                 let inputPortLabel = Constants.default.command.inputPortLabel;
                 if (newRunableNode.srcs !== undefined || !_.isEmpty(newRunableNode.srcs)) {
                     const srcs = newRunableNode.srcs || {};
-                    inputPortLabel = Object.keys(srcs).find(key => srcs[key] === id) || "";
+                    inputPortLabel = Object.keys(srcs).find(key => srcs[key] === srcNode.id) || "";
                 }
                 graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
 
             });
 
             newRunableNode.dsts = newRunableNode.dsts || {};
-            dstNodeIds.forEach((id, index) => {
+            dstNodes.forEach((dstNode, index) => {
                 const newPort = outPorts[index];
                 let portLabel = newPort.label;
                 if (newRunableNode.type === 'flow') {
                     portLabel = newPort.label;
                 }
 
-                newRunableNode.dsts![portLabel] = id;
+                newRunableNode.dsts![portLabel] = dstNode.id;
 
                 //dstsがあった場合は１つ目のポート名につなぐ
                 //dstsがない場合は、デフォルト値（i）のポートにつなぐ
                 const from: string = newRunableNode.id;
-                const to: string = id;
+                const to: string = dstNode.id;
                 let outputPortLabel = Constants.default.command.outputPortLabel;
                 if (newRunableNode.dsts !== undefined || !_.isEmpty(newRunableNode.dsts)) {
                     const dsts = newRunableNode.dsts || {};
-                    outputPortLabel = Object.keys(dsts).find(key => dsts[key] === id) || "";
+                    outputPortLabel = Object.keys(dsts).find(key => dsts[key] === dstNode.id) || "";
                 }
                 graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortLabel));
             });
@@ -462,20 +461,19 @@ export const addNodeAction = (flowData: Flow,
 /**
  * ノードを削除する
  * @param flowData 
- * @param nodeIds 
+ * @param nodes 
  */
-export const deleteNodesAction = (flowData:Flow, nodeIds:string[]) => {
+export const deleteNodesAction = (flowData:Flow, nodes:AllNodeType[]) => {
 
     let deleteKeySet = new Set<string>();
     //削除対象がデータフレームの場合、srcも削除対象とする
     //ただしsrcが別のデータフレームを複数出力している場合があるので、
     //一つでもデータフレームが残っていると削除は行わない
-    nodeIds.forEach(id => {
-        const node = FlowUtil.getNode(flowData.nodes, id) as any;
-        if (FlowUtil.getNode(flowData.nodes, id).type === 'frame') {
+    nodes.forEach(node => {
+        if (node.type === 'frame') {
             // 削除対象ノードがFrameの場合、そのFrameを出力先とするCommand(またはFlow)も削除する
-            if (graphUtil.g.inEdges(id) && graphUtil.g.inEdges(id).length > 0) {
-                const deleteTargetNodeId = graphUtil.g.inEdges(id)[0].v;
+            if (graphUtil.g.inEdges(node.id) && graphUtil.g.inEdges(node.id).length > 0) {
+                const deleteTargetNodeId = graphUtil.g.inEdges(node.id)[0].v;
                 const deleteTargetNode = FlowUtil.getNode(flowData.nodes, deleteTargetNodeId) as any;
                 if (deleteTargetNode.type === 'command' ||
                     deleteTargetNode.type === 'flow' ||
@@ -496,7 +494,7 @@ export const deleteNodesAction = (flowData:Flow, nodeIds:string[]) => {
                     });
 
                     // 削除対象ノードがCommand(またはFlow)の最後の出力先Frameの場合は、CommandまたはFlowを削除する
-                    const isSingleDsts = dstsLength===1 && lastDstNodeId===id;
+                    const isSingleDsts = dstsLength===1 && lastDstNodeId===node.id;
 
                     if (isSingleDsts) {
                         // CommandまたはFlowを削除
@@ -505,17 +503,21 @@ export const deleteNodesAction = (flowData:Flow, nodeIds:string[]) => {
                     }
                 }
             }
-        } else if (node.flow && node.classification === "data_dest") { // データデスト削除時、OutPortを解除する
-            Object.keys(node.srcs).forEach((key) => {
-                let srcId = node.srcs[key];
+        } else if (node.hasOwnProperty('flow') && (node as InlineFlowNodeType).classification == 'data_dest'){
+            // データデスト削除時、OutPortを解除する
+            const dstNode = node as InlineFlowNodeType;
+            Object.values(dstNode.srcs || {}).forEach(nodeId => {
+                // let srcId = node.srcs[key];
                 // newState.flow.deleteOutPortWithId(srcId);
-                flowData.ports[1].removeByNodeId(srcId);
+                flowData.ports[1].removeByNodeId(nodeId);
             })
-        } else if (node.flow && node.classification === "data_source") {// データソース削除時、InPortを解除する
-            Object.keys(node.dsts).forEach((key) => {
-                let dstId = node.dsts[key];
+        } else if (node.hasOwnProperty('flow') && (node as InlineFlowNodeType).classification == 'data_source'){
+            // データソース削除時、InPortを解除する
+            const srcNode = node as InlineFlowNodeType;
+            Object.values(srcNode.dsts || {}).forEach(nodeId => {
+                // let dstId = node.dsts[key];
                 // newState.flow.deleteInPortWithId(srcId);
-                flowData.ports[0].removeByNodeId(dstId);
+                flowData.ports[0].removeByNodeId(nodeId);
             })
         }
 
@@ -523,14 +525,14 @@ export const deleteNodesAction = (flowData:Flow, nodeIds:string[]) => {
         // newState.flow.deleteInPortWithId(id);
         // newState.flow.deleteOutPortWithId(id);
         if(node.type === Constants.node.type.frame){
-            flowData.ports[0].removeByNodeId(id);
-            flowData.ports[1].removeByNodeId(id);
+            flowData.ports[0].removeByNodeId(node.id);
+            flowData.ports[1].removeByNodeId(node.id);
         }
 
         //選択されたノードを削除
-        flowData.nodes = graphUtil.removeNode(flowData.nodes, id);
+        flowData.nodes = graphUtil.removeNode(flowData.nodes, node.id);
         // newState.flow!.nodes = newState.nodes;
-        deleteKeySet.add(id);
+        deleteKeySet.add(node.id);
     });
 
     // flowData.nodes = GraphUtil.getNewNodesWithExculudeKeys(flowData.nodes, deleteKeySet);

@@ -17,7 +17,7 @@ type State = {
 type Props = {
   nodes: AllNodeType[];
 
-  selectedNodeId: string;
+  selectedNode: AllNodeType;
   baseInspectorDisabled: boolean;
 
   runnables: RunnablesType;
@@ -27,7 +27,7 @@ type Props = {
   // updateNodeEdges: (node: AllNodeType) => void;
   addHistory: () => void;
   selectNodes: (selectedNodes: AllNodeType[]) => void;
-  deleteNodes: (nodeIds: string[]) => void;
+  deleteNodes: (nodes: AllNodeType[]) => void;
 }
 
 
@@ -41,10 +41,10 @@ export class DataDstInspector extends React.Component<Props, State> {
     }
   }
 
-  getSelectedNode(): any {
-    let { selectedNodeId, nodes } = this.props
-    return FlowUtil.getNode(nodes, selectedNodeId)
-  }
+  // getSelectedNode(): any {
+  //   let { selectedNodeId, nodes } = this.props
+  //   return FlowUtil.getNode(nodes, selectedNodeId)
+  // }
 
   renderActions() {
     const { baseInspectorDisabled } = this.props;
@@ -56,11 +56,10 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   onClickDelete(e: any) {
+    const dstNode = this.props.selectedNode;
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        let { selectedNodeId, nodes } = this.props
-        const selectedNode = FlowUtil.getNode(nodes, selectedNodeId)
-        this.props.deleteNodes([selectedNode.id])
+        this.props.deleteNodes([dstNode])
         this.props.selectNodes([])
         this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
@@ -79,15 +78,15 @@ export class DataDstInspector extends React.Component<Props, State> {
 
   renderContents() {
     const { updateNode, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
-    const selectedNode = this.getSelectedNode();
+    const dstNode = this.props.selectedNode as any;
 
     let libraryPlace: any = null;
     let inOutConnector: any = null;
     let paramsForm: any = null;
 
-    if (selectedNode.srcs || selectedNode.dsts) {
+    if (dstNode.srcs || dstNode.dsts) {
       inOutConnector = <InOutConnector
-        selectedNode={selectedNode}
+        selectedNode={dstNode}
         updateNode={updateNode}
         // updateNodeEdges={updateNodeEdges}
         nodes={nodes}
@@ -96,15 +95,15 @@ export class DataDstInspector extends React.Component<Props, State> {
       />;
     }
 
-    if (selectedNode.flow.params) {
-      paramsForm = <ParamsForm params={selectedNode.flow.params} args={selectedNode.args} invalids={{}} parentUUID={parentUUID}
+    if (dstNode.flow.params) {
+      paramsForm = <ParamsForm params={dstNode.flow.params} args={dstNode.args} invalids={{}} parentUUID={parentUUID}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
 
     return <React.Fragment>
       <div><label>場所</label></div>
       <div>
-        <a href={'/folders/' + selectedNode.folderUuid} target={'_blank'}>{selectedNode.folderPath}</a>
+        <a href={'/folders/' + dstNode.folderUuid} target={'_blank'}>{dstNode.folderPath}</a>
       </div>
       {libraryPlace}
       {inOutConnector}
@@ -135,18 +134,18 @@ export class DataDstInspector extends React.Component<Props, State> {
   }
 
   update(getNewNode: Function) {
-    const selectedNode = this.getSelectedNode()
-    const newNode = getNewNode(selectedNode)
+    const dstNode = this.props.selectedNode;
+    const newNode = getNewNode(dstNode)
     this.props.updateNode(newNode)
   }
 
   render() {
     const { baseInspectorDisabled } = this.props;
-    const selectedNode = this.getSelectedNode();
+    const dstNode = this.props.selectedNode as any;
 
     if (this.state.isLoading) return <Loader center={true} absolute={true} fixed={false} visible={true} />
 
-    return <BaseInspector key={selectedNode.uuid} header={''} label={selectedNode.label}
+    return <BaseInspector key={dstNode.uuid} header={''} label={dstNode.label}
       onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
       <div className={style.property_overview}>
         <div className={style.actions}>
@@ -154,15 +153,15 @@ export class DataDstInspector extends React.Component<Props, State> {
         </div>
         <div className={style.full_hr} />
         <div className={style.overviews}>
-          {(selectedNode.flow.params) ? this.renderContents() : null}
+          {(dstNode.flow.params) ? this.renderContents() : null}
         </div>
       </div>
     </BaseInspector >
   }
 
   onBlurTitle(e: any) {
-    const selectedNode = this.getSelectedNode()
-    selectedNode.label = e.target.value
-    this.props.updateNode(selectedNode)
+    const dstNode = this.props.selectedNode;
+    dstNode.label = e.target.value
+    this.props.updateNode(dstNode)
   }
 }

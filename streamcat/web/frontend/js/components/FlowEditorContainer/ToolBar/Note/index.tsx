@@ -9,7 +9,7 @@ import { AllNodeType } from 'Model/Library';
 type Props = {
     zoom: number;
     nodes: AllNodeType[];
-    addNote: (addNode:AllNodeType, srcNodeIds:string[], dstNodeIds:string[], zoom:number) => void;
+    addNote: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     addHistory: () => void;
     children: React.ReactNode;
     disabled: boolean;
