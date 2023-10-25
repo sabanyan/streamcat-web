@@ -441,7 +441,7 @@ export const FlowEditor = () => {
     const addSelectNode = (selectedNodeId: string) => {
         setSelectedNodeIds([...selectedNodeIds, selectedNodeId])
     };
-    const deleteSelectNode = (selectedNodeId: string) => {
+    const unselectNode = (selectedNodeId: string) => {
         setSelectedNodeIds(
             selectedNodeIds.filter(nodeId => nodeId !== selectedNodeId)
         );
@@ -683,7 +683,7 @@ export const FlowEditor = () => {
                     zoom={zoom}
                     dragRange={dragRange}
                     addSelectNode={addSelectNode}
-                    deleteSelectNode={deleteSelectNode}
+                    unselectNode={unselectNode}
                     selectNodes={selectNodes}
                     // selectFrame={frame => setSelectedFrame(frame)}
                     addHistory={addHistory}
@@ -698,7 +698,7 @@ export const FlowEditor = () => {
         zoom,
         dragRange,
         addSelectNode,
-        deleteSelectNode,
+        unselectNode,
         selectNodes]);
 
     const renderEdges = useCallback(() => {

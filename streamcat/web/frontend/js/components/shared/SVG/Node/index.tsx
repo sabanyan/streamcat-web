@@ -25,7 +25,7 @@ interface Props {
     zoom: number;
     dragRange: DragType | null;
     addSelectNode: (selectedNodeId: string) => void;
-    deleteSelectNode: (selectedNodeId: string) => void;
+    unselectNode: (selectedNodeId: string) => void;
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     // selectFrame: (frame?:FrameType) => void;
     addHistory: () => void;
@@ -82,7 +82,7 @@ export const Node = (props: Props) => {
     const handleMouseUp = (e: React.MouseEvent<SVGElement>) => {
         setCoords(null);
 
-        const { addSelectNode, deleteSelectNode, selectNodes, addHistory } = props;
+        const { addSelectNode, unselectNode, selectNodes, addHistory } = props;
         const [flow, setFlow] = props.flowState;
 
         //選択イベントの呼び出し
@@ -90,7 +90,7 @@ export const Node = (props: Props) => {
             if (!isSelected()) {
                 addSelectNode(node.id);
             } else {
-                deleteSelectNode(node.id);
+                unselectNode(node.id);
             }
         } else {
             //一度選択状態をクリアする（#71）
@@ -274,7 +274,7 @@ export const Node = (props: Props) => {
         return filter;
     };
     useEffect(() => {
-        const { addSelectNode, deleteSelectNode } = props;
+        const { addSelectNode, unselectNode } = props;
         // componentDidUpdate
         if (selectorIntersect()) {
             if (!isSelected()) {
@@ -283,7 +283,7 @@ export const Node = (props: Props) => {
 
         } else {
             if (isSelected()) {
-                deleteSelectNode(node.id);
+                unselectNode(node.id);
             }
         }
     });
