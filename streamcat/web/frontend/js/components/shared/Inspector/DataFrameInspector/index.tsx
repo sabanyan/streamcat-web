@@ -24,7 +24,7 @@ type Props = {
     lastSavedFlow?: FlowType;
     selectedNodes: AllNodeType[];
     // selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
-    deleteCache: Function;
+    deleteCache: (node:AllNodeType) => void;
     // nodes: AllNodeType[];
     zoom: number;
     addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
@@ -241,16 +241,17 @@ const DataFrameInspector = (props: Props) => {
     const deleteCache = () => {
         const {lastSavedFlow, selectedNodes, deleteCache} = props;
         // const [, setSelectedFrame] = props.selectedFrameState;
-        const id = selectedNodes[0].id;
+        // const id = selectedNodes[0].id;
+        const selectedNode = selectedNodes[0];
 
         // キャッシュファイルを削除する
-        lastSavedFlow && lastSavedFlow.deleteCache(id).then(() => {
+        lastSavedFlow && lastSavedFlow.deleteCache(selectedNode.id).then(() => {
             // NodeのuuidとcacheCreatedAtプロパティをクリアする
-            deleteCache(id);
+            deleteCache(selectedNode);
         }).catch(e => {
             // NOTE: キャッシュが他のNodeからも参照されている場合にAPIはエラーを返すが
             // その場合でもNodeのプロパティをクリアしてキャッシュとの紐付けを解除する
-            deleteCache(id);
+            deleteCache(selectedNode);
         });
     };
 

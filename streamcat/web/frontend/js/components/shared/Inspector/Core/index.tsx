@@ -70,13 +70,11 @@ export const Inspector = (props:InspectorProps) => {
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));
     };
-    const deleteCache = (selectedNodeId: string) => {
-        const node = FlowUtil.getNode(flowData.nodes, selectedNodeId);
+    const deleteCache = (node:AllNodeType) => {
         if (node.type === 'frame') {
           (node as FrameNodeType).deleteCache();
+          setFlow({...flow});
         }
-        flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: selectedNodeId, new_node: node });
-        setFlow({...flow});
     };
     // const resizeInspector = (width: number) => {
     //     dispatch(resizeInspectorAction(width));
