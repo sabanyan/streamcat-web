@@ -132,7 +132,6 @@ export const Inspector = (props:InspectorProps) => {
       />
     }else if(FlowUtil.NodeExists(flowData.nodes, selectedNodes[0].id)){
       // 一つのNodeを選択している場合
-      // const selectedNode = FlowUtil.getNode(flowData.nodes, selectedNodes[0]);
       const selectedNode = selectedNodes[0];
 
       if(selectedNode.type === 'frame'){

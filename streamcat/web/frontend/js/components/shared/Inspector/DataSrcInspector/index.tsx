@@ -1,5 +1,5 @@
 import React from 'react';
-import { StateUtil, ModalUtil, FlowUtil } from 'Utils/index';
+import { ModalUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
@@ -40,11 +40,6 @@ export class DataSrcInspector extends React.Component<Props, State> {
       isLoading: false
     }
   }
-
-  // getSelectedNode(): any {
-  //   let { selectedNodeId, nodes } = this.props
-  //   return FlowUtil.getNode(nodes, selectedNodeId)
-  // }
 
   renderActions() {
     const { baseInspectorDisabled } = this.props;

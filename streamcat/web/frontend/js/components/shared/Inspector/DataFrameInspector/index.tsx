@@ -1,7 +1,7 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import Constants from "Constants/index";
 import { Api } from 'Api';
-import {FlowUtil, ModalUtil, StateUtil, StringUtil} from "Utils/index";
+import {ModalUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
@@ -86,8 +86,6 @@ const DataFrameInspector = (props: Props) => {
     }, []);
 
     const getSelectedNode = () => {
-        // let {selectedNodes, flowData} = props;
-        // return FlowUtil.getNode(flowData.nodes, selectedNodes[0]) as FrameNodeType;
         const {selectedNodes} = props;
         return selectedNodes[0] as FrameNodeType;
     };

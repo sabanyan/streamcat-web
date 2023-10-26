@@ -4,7 +4,7 @@ import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
 import Constants from "Constants/index";
-import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
+import {ModalUtil} from "Utils/index";
 import { Api } from 'Api';
 import { AllNodeType } from 'Model/Library';
 import { CommandNodeType, FlowNodeType } from 'Model/Node/NodeTypes';
@@ -34,11 +34,6 @@ const getFlow = (uuid: string) => {
 }
 
 const CommandInspector = (props: Props) => {
-
-    // const getSelectedNode = () => {
-    //     const {selectedNode, nodes} = props;
-    //     return FlowUtil.getNode(nodes, selectedNode) as CommandNodeType | FlowNodeType;
-    // };
 
     // 選択中のNodeを取得する
     const runableNode = props.selectedNode as CommandNodeType|FlowNodeType;

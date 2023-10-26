@@ -292,7 +292,6 @@ export const addNodeAction = (flowData: Flow,
         let totalSY = 0;
 
         srcNodes.forEach(srcNode => {
-            // const target: AllNodeType = FlowUtil.getNode(flowData.nodes, id);
             totalSX = totalSX + srcNode.position.x;
             totalSY = totalSY + srcNode.position.y;
         });

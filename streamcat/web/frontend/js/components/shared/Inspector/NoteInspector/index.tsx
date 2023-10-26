@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {BaseInspector} from 'Shared/Inspector';
-import {FlowUtil, ModalUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import {Button, DropDownList} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {dropDownListItem} from 'Types/index';
@@ -23,11 +23,6 @@ const NoteInspector = (props: Props) => {
         const element: HTMLInputElement = document.querySelector('.property_body input:first-child') as HTMLInputElement;
         if (element) element.focus();
     }, []);
-
-    // const getSelectedNode = () => {
-    //     const {selectedNodeId, nodes} = props;
-    //     return FlowUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
-    // };
 
     const onClickDelete = () => {
         ModalUtil.registerModal({
