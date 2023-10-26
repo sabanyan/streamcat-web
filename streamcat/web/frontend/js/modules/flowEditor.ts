@@ -722,13 +722,8 @@ export const addDataSrcNodeAction = (flowData:Flow, dataSrc: Command | FlowComma
         flowData.ports[0].upsert(port);
     });
 
-    let nodes = flowData.nodes;
-    nodes.push(newNode);
-    dstNodes.forEach((dstNode) => {
-        nodes.push(dstNode);
-    })
-    flowData.nodes = [...nodes];
-
+    // データソースと出力ノードを追加する
+    flowData.nodes.push(newNode, ...dstNodes);
     // CanvasにNodeを追加する
     graphUtil.addNode(newNode.id);
     // Canvasに出力Nodeを追加する
@@ -777,10 +772,9 @@ export const addDataDstNodeAction = (flowData:Flow, dataDst: Command | FlowComma
     }
 
     const newNode = newDataDest(props);
-    let nodes = flowData.nodes;
-    nodes.push(newNode);
-    flowData.nodes = [...nodes];
 
+    // データデストを追加する
+    flowData.nodes.push(newNode);
     // CanvasにNodeを追加する
     graphUtil.addNode(newNode.id);
     // NodeにEdgeを繋げる
