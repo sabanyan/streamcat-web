@@ -68,9 +68,14 @@ export default class FlowUtil {
         return nodes;
     }
 
-    static runWithArgs (runArgs:any, notifyLoading:Function, notifyWarning:Function, notifyError:Function, dismissNotify:Function) {
+    static runWithArgs (
+        runArgs: any,
+        notifyLoading: (title:string, message:string) => string,
+        notifyWarning: (title:string, message:string) => string,
+        notifyError: (title:string, message:string) => string,
+        dismissNotify: (id:string) => void) {
         let notoficationId = '';
-        notifyLoading && (notoficationId = notifyLoading('フローを実行しています'));
+        notifyLoading && (notoficationId = notifyLoading('フローを実行しています',''));
 
         // フロー実行ではキャッシュ作成を許可する
         let args = {use_cache: true};
@@ -81,13 +86,13 @@ export default class FlowUtil {
 
         // フローを実行する
         return Api.createActivity(runArgs.flowUuid, args, runArgs.lockUuid).catch(error => {
-            let message = new MessageModel(error);
+            const message = new MessageModel(error);
             console.log(error);
             if(error.code===-4){
                 // code=-4は警告を示す
-                notifyWarning(message.title, error.message);
+                notifyWarning(message.title || '', error.message);
             }else{
-                notifyError(message.title, error.message);
+                notifyError(message.title || '', error.message);
             }
                 throw error;
             }).then(activity => {

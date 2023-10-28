@@ -91,7 +91,6 @@ const MultiInspector = (props: Props) => {
     }
 
     return <BaseInspector key={JSON.stringify(selectedNodes)}
-                          header={''}
                           title={selectedNodes.length + ' files'}
                           disabled={baseInspectorDisabled}>
         <div className='streamcat-form'>

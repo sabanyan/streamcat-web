@@ -43,7 +43,7 @@ type Props = {
 
 type Content = {
     flowUuid: string;
-    nodeIds: (string | null | undefined)[];
+    nodeIds: string[];
     frameUuid: string | null;
     lockUuid?: string;
     visualize: any;
@@ -52,8 +52,8 @@ type Content = {
 type Contents = {
     title: string;
     content: Content;
-    id: string | null | undefined;
-    afterViz: Function;
+    id: string;
+    afterViz: () => void;
 }
 
 const getFrame = (frameUuid?:string|null) => {
@@ -435,9 +435,8 @@ const DataFrameInspector = (props: Props) => {
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector key={selectedNode.uuid} header={''} label={selectedNode.label || ''}
-        onBlurTitle={(e) => onBlurTitle(e)} onHide={() => {
-        }} disabled={baseInspectorDisabled}>
+    return <BaseInspector key={selectedNode.uuid} label={selectedNode.label || ''}
+        onBlurTitle={(e) => onBlurTitle(e)} disabled={baseInspectorDisabled}>
         {content}
     </BaseInspector>;
 };

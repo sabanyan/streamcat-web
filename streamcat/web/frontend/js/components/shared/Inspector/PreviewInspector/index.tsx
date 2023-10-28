@@ -71,7 +71,7 @@ const PreviewInspector = (props: Props) => {
 
     return <Resizer>
         <div className={property_class}>
-            <BaseInspector key={0} header={''} label={label} subLabel={''} disabled={true}>
+            <BaseInspector key={0} label={label} subLabel={''} disabled={true}>
                 {content}
             </BaseInspector>
         </div>

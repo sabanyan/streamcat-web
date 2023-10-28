@@ -137,7 +137,7 @@ const FlowSettingsInspector = (props: Props) => {
         addFlowParams = <AddButton onClick={() => onClickAddFlowParam()}>フロー変数を追加する</AddButton>;
     }
 
-    return <BaseInspector key={flowUuid} header={""} label={flowData.label}
+    return <BaseInspector key={flowUuid} label={flowData.label}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}

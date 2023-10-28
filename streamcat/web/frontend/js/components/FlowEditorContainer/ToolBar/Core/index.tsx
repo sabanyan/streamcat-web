@@ -31,7 +31,7 @@ type ToolBarProps = {
     baseDisabled: boolean
     runDisabled: boolean;
     onClickSaveFlow: () => {};
-    onClickRunFlowPromise: any;
+    onClickRunFlowPromise: () => Promise<void | FlowType>;
 };
 
 export const ToolBar = (props: ToolBarProps) => {

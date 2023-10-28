@@ -9,7 +9,7 @@ import { LockType } from 'Model/Locks';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
 import Constants from 'Constants/index';
-import { ZoomUtil, ModalUtil, StateUtil, WebUtil, FlowUtil} from 'Utils/index';
+import { ZoomUtil, ModalUtil, WebUtil, FlowUtil} from 'Utils/index';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
 import {
     NotificationManager,

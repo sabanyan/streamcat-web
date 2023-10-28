@@ -10,7 +10,7 @@ interface Props {
     title?: (string | React.ReactNode);
     children?: React.ReactNode;
     onBlurTitle?: any;
-    onHide?: Function;
+    onHide?: () => void;
     disabled?: boolean;
 }
 

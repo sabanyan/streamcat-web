@@ -46,7 +46,7 @@ const PreviewModal = (props: Props) => {
         }
     }
 
-    const renderTabContent = (selected_tab_id) => {
+    const renderTabContent = (selected_tab_id:number) => {
         const {title} = props
         const contents = props.contents
         const {flowUuid, nodeIds, frameUuid, lockUuid, visualize} = contents[selected_tab_id].content

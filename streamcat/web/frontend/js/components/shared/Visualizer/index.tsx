@@ -23,7 +23,7 @@ type Props = {
         html: any
     };
     headers: string[];
-    afterViz: Function;
+    afterViz: () => void;
     onSaveResult: Function;
     notify: (title:string, message:string) => string;
     dismissNotify: (id:string) => void;

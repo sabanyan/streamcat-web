@@ -171,7 +171,7 @@ const NoteInspector = (props: Props) => {
         </div>
     </div>;
 
-    return <BaseInspector key={selectedNode.id} header={''} label={null} disabled={baseInspectorDisabled} >
+    return <BaseInspector key={selectedNode.id} label={null} disabled={baseInspectorDisabled} >
         {content}
     </BaseInspector>;
 };

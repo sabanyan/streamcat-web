@@ -141,8 +141,8 @@ export class DataSrcInspector extends React.Component<Props, State> {
 
     if (this.state.isLoading) return <Loader center={true} absolute={true} fixed={false} visible={true} />
 
-    return <BaseInspector key={srcNode.uuid} header={''} label={srcNode.label}
-      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
+    return <BaseInspector key={srcNode.uuid} label={srcNode.label}
+      onBlurTitle={(e) => this.onBlurTitle(e)} disabled={baseInspectorDisabled}>
       <div className={style.property_overview}>
         <div className={style.actions}>
           {this.renderActions()}

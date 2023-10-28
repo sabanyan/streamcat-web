@@ -181,8 +181,8 @@ const CommandInspector = (props: Props) => {
     </div>;
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector key={runableNode.id} header={""} label={label} subLabel={subLabel}
-                          onHide={() => onHide()}
+    return <BaseInspector key={runableNode.id} label={label} subLabel={subLabel}
+                          onHide={onHide}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         {content}
