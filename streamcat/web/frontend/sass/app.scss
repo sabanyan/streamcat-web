@@ -7,6 +7,9 @@
 @import "margins";
 //@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
 
+// ReactFlow
+@import "../../../node_modules/reactflow/dist/style.css";
+
 body {
   padding-top: 64px; //navigation-header-height
   &.dialog{
