@@ -224,32 +224,32 @@ class GraphUtil {
         // }
 
         const connectEdge = (node:CommandNodeType | FlowNodeType | InlineFlowNodeType) => {
-        if (node.srcs) {
-            Object.keys(node.srcs).forEach((portLabel) => {
-                const src = node.srcs![portLabel];
-                const from = src;
-                const to = node.id;
-                if(from){
-                    // fromがundefinedの場合にEdgeを描画すると
-                    // Nodeの整列時にposition.xがNaNになりエラーが発生する
-                    const label = GraphUtil.edgeName(from, to, portLabel);
-                    self.addEdge(from, to, label);
-                }
-            })
-        }
-        if (node.dsts) {
-            Object.keys(node.dsts).forEach((portLabel) => {
-                const dst = node.dsts![portLabel];
-                const from = node.id;
-                const to = dst;
-                if(to){
-                    // toがundefinedの場合にEdgeを描画すると
-                    // Nodeの整列時にposition.xがNaNになりエラーが発生する
-                    const label = GraphUtil.edgeName(from, to, portLabel);
-                    self.addEdge(from, to, label);
-                }
-            })
-        }
+            if (node.srcs) {
+                Object.keys(node.srcs).forEach((portLabel) => {
+                    const src = node.srcs![portLabel];
+                    const from = src;
+                    const to = node.id;
+                    if(from){
+                        // fromがundefinedの場合にEdgeを描画すると
+                        // Nodeの整列時にposition.xがNaNになりエラーが発生する
+                        const label = GraphUtil.edgeName(from, to, portLabel);
+                        self.addEdge(from, to, label);
+                    }
+                })
+            }
+            if (node.dsts) {
+                Object.keys(node.dsts).forEach((portLabel) => {
+                    const dst = node.dsts![portLabel];
+                    const from = node.id;
+                    const to = dst;
+                    if(to){
+                        // toがundefinedの場合にEdgeを描画すると
+                        // Nodeの整列時にposition.xがNaNになりエラーが発生する
+                        const label = GraphUtil.edgeName(from, to, portLabel);
+                        self.addEdge(from, to, label);
+                    }
+                })
+            }
         }
 
         // positionプロパティを持たないNodeが存在する場合はtrue
