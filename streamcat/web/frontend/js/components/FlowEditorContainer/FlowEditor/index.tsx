@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
 import useInterval from 'use-interval';
 import * as jsonpatch from 'fast-json-patch';
@@ -9,7 +9,7 @@ import { LockType } from 'Model/Locks';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
 import Constants from 'Constants/index';
-import { ZoomUtil, ModalUtil, WebUtil, FlowUtil} from 'Utils/index';
+import { ModalUtil, WebUtil, FlowUtil} from 'Utils/index';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
 import {
     NotificationManager,
@@ -18,7 +18,6 @@ import {
 } from 'Shared/Notification';
 import { Inspector } from 'Shared/Inspector';
 import { Loader } from 'Shared/Base';
-import { Edge, Selector, Node } from 'Shared/SVG';
 import { TextField } from 'Shared/Input';
 import { NotAllowed } from 'Components/NotAllowedContainer';
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
@@ -672,97 +671,6 @@ export const FlowEditor = () => {
         });
     };
 
-    const renderNodes = useCallback(() => {
-        let nodes:React.JSX.Element[] = [];
-        if (flow.flow.nodes) {
-            nodes = flow.flow.nodes.map(node => {
-                let selected = (node.id === selectedNodes[0]?.id);
-                const nodeReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
-                return <Node
-                    key={node.id}
-                    node={node}
-                    position={node.position}
-                    selected={selected}
-                    invalid={node.invalid}
-                    error={node.error}
-                    runnables={runnablesReader()}
-                    flowData={flow.flow}
-                    flowState={[flow, setFlow]}
-                    graphState={[graph, setGraph]}
-                    selectedNodes={selectedNodes}
-                    zoom={zoom}
-                    dragRange={dragRange}
-                    addSelectNode={addSelectNode}
-                    unselectNode={unselectNode}
-                    selectNodes={selectNodes}
-                    // selectFrame={frame => setSelectedFrame(frame)}
-                    addHistory={addHistory}
-                    readOnly={nodeReadOnly}
-                />;
-            });
-        }
-        return nodes;
-    }, [ //nodes,
-        selectedNodes,
-        flow,
-        zoom,
-        dragRange,
-        addSelectNode,
-        unselectNode,
-        selectNodes]);
-
-    const renderEdges = useCallback(() => {
-        const edges:React.JSX.Element[] = [];
-        if (Array.isArray(graph.edges)) {
-            graph.edges.forEach((edge, index) => {
-                // Nodeのsrcsまたはdstsにおいてポートに対するノードが未設定(空文字)の場合はEdgeを描画しない
-                if(!edge.v || !edge.w){
-                    return;
-                }
-                const v_node = FlowUtil.getNode(flow.flow.nodes || [], edge.v); // 入力元ノード
-                const w_node = FlowUtil.getNode(flow.flow.nodes || [], edge.w); // 出力元ノード
-
-                if (v_node && w_node) {
-                    const vx = v_node.position.x +
-                        Constants.default.datasource.width / 2;
-                    const vy = v_node.position.y +
-                        Constants.default.datasource.height / 2;
-                    const wx = w_node.position.x +
-                        Constants.default.operator.width / 2;
-                    const wy = w_node.position.y +
-                        Constants.default.operator.height / 2;
-                    let outPortLabel; // 入力元ノードからの出力ポートラベル
-                    let inPortLabel;  // 出力元ノードからの入力ポートラベル
-                    //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
-                    if (w_node.type === 'frame') {
-                        outPortLabel = JSON.parse(edge.name).port_name;
-                    }
-                    //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
-                    if (v_node.type === 'frame') {
-                        inPortLabel = JSON.parse(edge.name).port_name;
-                    }
-
-                    const e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy}
-                        key={index} />;
-                    edges.push(e);
-                }
-            });
-        }
-        
-        return edges;
-    }, [graph]);
-
-    const renderSelector = useCallback(() => {
-        let selector: any = null;
-        if(dragRange!==null){
-            selector = <Selector sx={ZoomUtil.zoomReverse(dragRange.start.x, zoom)}
-                sy={ZoomUtil.zoomReverse(dragRange.start.y, zoom)}
-                ex={ZoomUtil.zoomReverse(dragRange.end.x, zoom)}
-                ey={ZoomUtil.zoomReverse(dragRange.end.y, zoom)} />;
-        }
-        return selector;
-    }, [dragRange, zoom]);
-
     if (editMode === undefined || executeMode === undefined) {
         // モードが設定前はローディング中にする
         return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true} />
@@ -795,6 +703,9 @@ export const FlowEditor = () => {
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
     const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
+
+    // ノードの移動を不可にする
+    const nodeReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     const onClickRunFlowPromise = () => {
         return onClickSaveFlow();
@@ -846,11 +757,19 @@ export const FlowEditor = () => {
                 readOnly={paperReadOnly}
                 dragRangeState={[dragRange, setDragRange]}
             >
-                <Paper graph={graph} zoom={zoom}>
-                    {renderEdges()}
-                    {renderNodes()}
-                    {renderSelector()}
-                </Paper>
+                <Paper
+                    selectedNodes={selectedNodes}
+                    nodeReadOnly={nodeReadOnly}
+                    zoom={zoom}
+                    runnables={runnablesReader()}
+                    flowState={[flow, setFlow]}
+                    graphState={[graph, setGraph]}
+                    dragRangeState={[dragRange, setDragRange]}
+                    selectNodes={selectNodes}
+                    addSelectNode={addSelectNode}
+                    unselectNode={unselectNode}
+                    addHistory={addHistory}
+                />
             </PaperScroller>
             <Inspector
                 selectedNodes={selectedNodes}
