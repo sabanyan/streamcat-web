@@ -4,7 +4,8 @@ import Constants from "Constants/index";
 import {FlowUtil, ZoomUtil} from "Utils/index";
 import { AllNodeType, FlowType } from 'Model/Library';
 import {DragType, GraphType, RunnablesType} from "Types/index";
-import { Edge, Selector, Node, Shadow } from 'Shared/SVG';
+import { Edge, Selector, Shadow } from 'Shared/SVG';
+import { Nodes } from '../Nodes';
 
 type Props = {
     selectedNodes: AllNodeType[];
@@ -44,34 +45,19 @@ export const Paper = (props: Props) => {
     }
 
     const renderNodes = () => {
-        let nodes:React.JSX.Element[] = [];
-        if (flow.flow.nodes) {
-            nodes = flow.flow.nodes.map(node => {
-                let selected = (node.id === selectedNodes[0]?.id);
-                return <Node
-                    key={node.id}
-                    node={node}
-                    position={node.position}
-                    selected={selected}
-                    invalid={node.invalid}
-                    error={node.error}
-                    runnables={runnables}
-                    flowData={flow.flow}
-                    flowState={[flow, setFlow]}
-                    graphState={[graph, setGraph]}
-                    selectedNodes={selectedNodes}
-                    zoom={zoom}
-                    dragRange={dragRange}
-                    addSelectNode={addSelectNode}
-                    unselectNode={unselectNode}
-                    selectNodes={selectNodes}
-                    // selectFrame={frame => setSelectedFrame(frame)}
-                    addHistory={addHistory}
-                    readOnly={nodeReadOnly}
-                />;
-            });
-        }
-        return nodes;
+        return <Nodes
+            selectedNodes={selectedNodes}
+            nodeReadOnly={nodeReadOnly}
+            zoom={zoom}
+            runnables={runnables}
+            flowState={[flow, setFlow]}
+            graphState={[graph, setGraph]}
+            dragRangeState={[dragRange, setDragRange]}
+            selectNodes={selectNodes}
+            addSelectNode={addSelectNode}
+            unselectNode={unselectNode}
+            addHistory={addHistory}
+        />;
     };
 
     const renderEdges = () => {
