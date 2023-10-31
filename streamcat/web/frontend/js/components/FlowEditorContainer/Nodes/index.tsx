@@ -11,9 +11,9 @@ type Props = {
     nodeReadOnly: boolean;
     zoom: number;
     runnables: RunnablesType;
+    dragRange: DragType|null;
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
-    dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     addSelectNode: (selectedNode: AllNodeType) => void;
     unselectNode: (selectedNodeId: string) => void;
@@ -35,20 +35,18 @@ export const Nodes = (props:Props) => {
         nodeReadOnly,
         zoom,
         runnables,
+        dragRange,
         selectNodes,
         addSelectNode,
         unselectNode,
         addHistory} = props;
     const [flow, setFlow] = props.flowState;
     const [graph, setGraph] = props.graphState;
-    const [dragRange, setDragRange] = props.dragRangeState;
-    
 
     /**
      * 範囲選択との衝突判定
      */
     const selectorIntersect = (node:AllNodeType) => {
-        const { zoom } = props;
         const operator = {
             x: node.position.x,
             y: node.position.y,
@@ -94,10 +92,7 @@ export const Nodes = (props:Props) => {
         return isSelected(node);
     };
 
-
-
     const isSelected = (node:AllNodeType) => {
-        const { selectedNodes } = props;
         let selected = false;
         selectedNodes.map(selectedNode => {
             if (selectedNode.id === node.id) {
@@ -107,7 +102,8 @@ export const Nodes = (props:Props) => {
         return selected;
     };
 
-
+    // 範囲選択されたNodeを状態変数selectedNodesに反映する
+    // NOTE: 状態変数の変更はuseEffect内で行わないとReactからWarningが表示される
     useEffect(() => {
         flow.flow.nodes.forEach(node => {
             if (selectorIntersect(node)) {
@@ -151,9 +147,6 @@ export const Nodes = (props:Props) => {
     const handleMouseUp = (node:AllNodeType, e: React.MouseEvent<SVGElement>) => {
         setCoords(null);
 
-        const { addSelectNode, unselectNode, selectNodes, addHistory } = props;
-        const [flow, setFlow] = props.flowState;
-
         //選択イベントの呼び出し
         if (e.shiftKey) {
             if (!isSelected(node)) {
@@ -181,7 +174,6 @@ export const Nodes = (props:Props) => {
      * @param e
      */
     const handleMouseMove = (node:AllNodeType, e: React.MouseEvent<SVGElement>) => {
-        const { selectedNodes, nodeReadOnly } = props;
         if (nodeReadOnly) return; // 読み取り専用の場合は移動不可
 
         if (selectedNodes.length > 1) {
@@ -199,7 +191,6 @@ export const Nodes = (props:Props) => {
     };
 
     const calcNewPosition = (node:AllNodeType, e: React.MouseEvent<SVGElement>): { new_x: number, new_y: number } => {
-        const { zoom } = props;
         let coords_x = e.pageX;
         let coords_y = e.pageY;
 
@@ -217,9 +208,6 @@ export const Nodes = (props:Props) => {
     };
 
     const moveNodes = (flowData:Flow, node:AllNodeType, x: number, y: number, selectedNodes:AllNodeType[]) => {
-        const [graph, setGraph] = props.graphState;
-        const { zoom } = props;
-
         // 移動距離を算出する
         const dx = (node.position.x - x);
         const dy = (node.position.y - y);
@@ -248,30 +236,14 @@ export const Nodes = (props:Props) => {
         }
     };
 
-
     return flow.flow.nodes.map(node => {
         return <Node
             key={node.id}
             node={node}
-            // position={node.position}
+            flowIn ={flow.flow.ports[0].exists(node.id)}
+            flowOut={flow.flow.ports[1].exists(node.id)}
             selected={selectorIntersect(node)}
-            // invalid={node.invalid}
-            // error={node.error}
             runnables={runnables}
-            // flowData={flow.flow}
-            flowIn =  {flow.flow.ports[0].exists(node.id)}
-            flowOut = {flow.flow.ports[1].exists(node.id)}
-            // flowState={[flow, setFlow]}
-            // graphState={[graph, setGraph]}
-            // selectedNodes={selectedNodes}
-            // zoom={zoom}
-            // dragRange={dragRange}
-            // addSelectNode={addSelectNode}
-            // unselectNode={unselectNode}
-            // selectNodes={selectNodes}
-            // selectFrame={frame => setSelectedFrame(frame)}
-            // addHistory={addHistory}
-            // readOnly={nodeReadOnly}
             onMouseDown={onMouseDown}
         />;
     });

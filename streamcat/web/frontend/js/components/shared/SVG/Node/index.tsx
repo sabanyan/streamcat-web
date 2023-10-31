@@ -1,42 +1,24 @@
-import React, { useEffect, useState } from "react";
-import Constants from "Constants/index";
-import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
-import style from "./style.scss";
-import { ZoomUtil } from "Utils/index";
-import { DragType, GraphType, RunnablesType } from "Types/index";
-import { AllNodeType, Flow, FlowType } from "Model/Library";
-import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from "Model/Node/NodeTypes";
-import { graphUtil } from "Modules/flowEditor";
+import React, { useState } from 'react';
+import style from './style.scss';
+import Constants from 'Constants/index';
+import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from 'Shared/SVG';
+import { AllNodeType } from 'Model/Library';
+import { RunnablesType } from 'Types/index';
+import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType, NoteNodeType } from 'Model/Node/NodeTypes';
 
-interface Props {
+type Props = {
     node: AllNodeType;
-    // position: { x: number, y: number };
-    selected: boolean;
-    // invalid?: {};
-    // error?: {};
-    runnables: RunnablesType;
-    // flowData: Flow;
     flowIn: boolean;
     flowOut: boolean;
-    // flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
-    // graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
-    // selectedNodes: AllNodeType[];
-    // zoom: number;
-    // dragRange: DragType | null;
-    // addSelectNode: (selectedNode: AllNodeType) => void;
-    // unselectNode: (selectedNodeId: string) => void;
-    // selectNodes: (selectedNodes: AllNodeType[]) => void;
-    // selectFrame: (frame?:FrameType) => void;
-    // addHistory: () => void;
-    // readOnly: boolean;
+    selected: boolean;
+    runnables: RunnablesType;
     onMouseDown: (node:AllNodeType, e: React.MouseEvent<SVGElement>) => void;
-}
+};
 
 export const Node = (props: Props) => {
     const { node, selected } = props;
 
     const [hover, setHover] = useState<boolean>(false);
-
 
     /**
      * mouse over ホバー処理
@@ -47,7 +29,6 @@ export const Node = (props: Props) => {
         setHover(true);
     };
 
-
     /**
      * mouse leave ホバー終了処理
      * @param e
@@ -56,7 +37,6 @@ export const Node = (props: Props) => {
         //SVGの影をクリア
         setHover(false);
     };
-
 
     const isCommandNode = (node): boolean => {
         // return (step instanceof CommandStepModel);
@@ -77,23 +57,9 @@ export const Node = (props: Props) => {
     };
 
     const getFilter = () => {
-        const filter = "url(#default-shadow)";
+        const filter = 'url(#default-shadow)';
         return filter;
     };
-    // useEffect(() => {
-    //     const { selected, addSelectNode, unselectNode } = props;
-    //     // componentDidUpdate
-    //     if (selected) {
-    //         if (!selected) {
-    //             addSelectNode(node);
-    //         }
-
-    //     } else {
-    //         if (selected) {
-    //             unselectNode(node.id);
-    //         }
-    //     }
-    // });
 
     const { flowIn, flowOut, runnables, onMouseDown } = props;
     const { x, y } = node.position;
@@ -104,11 +70,6 @@ export const Node = (props: Props) => {
      */
 
     const filter = getFilter();
-
-    // const selected = selectorIntersect();
-
-    // const flowIn = flowData.ports[0].exists(node.id);
-    // const flowOut = flowData.ports[1].exists(node.id);
 
     let nodeLabel = node.label;
 
@@ -122,26 +83,26 @@ export const Node = (props: Props) => {
                                    flowOut={flowOut}
                                    width={50}
                                    height={50}
-                                   stroke={"#CCCCCC"}
-                                   fill={"#CCCCCC"} />;
+                                   stroke={'#CCCCCC'}
+                                   fill={'#CCCCCC'} />;
         } else {
             // IN、OUT指定のない場合
-            innerIcon = <FileIcon fillColor={(frameNode.hasData()) ? "#63CFFD" : "#CCCCCC"}
+            innerIcon = <FileIcon fillColor={(frameNode.hasData()) ? '#63CFFD' : '#CCCCCC'}
                                   width={16}
                                   height={20} />;
         }
 
-        icon = <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
-                     hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
-                     hover={hover} selected={selected} stroke={"#63CFFD"}
+        icon = <Rect selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
+                     hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+                     hover={hover} selected={selected} stroke={'#63CFFD'}
                      filter={filter} style={RectStyle}>
             {innerIcon}
         </Rect>;
     } else if (isSubFlow(node)) {
         const flowNode = node as FlowNodeType | InlineFlowNodeType;
-        if (flowNode.hasOwnProperty('flow') && flowNode.classification === "data_source") {
+        if (flowNode.hasOwnProperty('flow') && flowNode.classification === 'data_source') {
             icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
-        } else if (flowNode.hasOwnProperty('flow') && flowNode.classification === "data_dest") {
+        } else if (flowNode.hasOwnProperty('flow') && flowNode.classification === 'data_dest') {
             icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
         } else {
             // サブフローノード
@@ -174,18 +135,18 @@ export const Node = (props: Props) => {
     const error_icon = (node.error && Object.keys(node.error).length) ? <ErrorIcon /> : null;
     const label_text = (!!nodeLabel) ? 
                         <g className={style.labelContainer}>
-                            <foreignObject {...NodeTextStyle} transform={"translate(" + (-1 * NodeTextStyle.width) + ",0)"}>
+                            <foreignObject {...NodeTextStyle} transform={'translate(' + (-1 * NodeTextStyle.width) + ',0)'}>
                                 <div style={{
-                                    display: "table",
-                                    width: "100%",
+                                    display: 'table',
+                                    width: '100%',
                                     height: NodeTextStyle.height,
-                                    paddingRight: NodeTextStyle.padding + "px"
+                                    paddingRight: NodeTextStyle.padding + 'px'
                                 }}>
                                     <p style={{
-                                        display: "table-cell",
-                                        verticalAlign: "middle",
-                                        textAlign: "right",
-                                        wordBreak: "break-all"
+                                        display: 'table-cell',
+                                        verticalAlign: 'middle',
+                                        textAlign: 'right',
+                                        wordBreak: 'break-all'
                                     }}>{nodeLabel}</p>
                                 </div>
                             </foreignObject>
@@ -193,7 +154,7 @@ export const Node = (props: Props) => {
                         : null;
 
     return (
-        <g className={style.operator} transform={"translate(" + x + "," + y + ")"}>
+        <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
             <g className={style.iconContainer}
                 onMouseDown={e => onMouseDown(node, e)}
                 onMouseOver={() => handleMouseOver()}
@@ -224,8 +185,8 @@ export const CircleStyle = {
     cy: Constants.default.operator.cy,
     tx: 0,
     ty: 0,
-    fill: "#ffffff",
-    stroke: "#FC9E28",
+    fill: '#ffffff',
+    stroke: '#FC9E28',
     r: Constants.default.operator.r,
     strokeWidth: 2
 };

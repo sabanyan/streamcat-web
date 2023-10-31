@@ -762,9 +762,9 @@ export const FlowEditor = () => {
                     nodeReadOnly={nodeReadOnly}
                     zoom={zoom}
                     runnables={runnablesReader()}
+                    dragRange={dragRange}
                     flowState={[flow, setFlow]}
                     graphState={[graph, setGraph]}
-                    dragRangeState={[dragRange, setDragRange]}
                     selectNodes={selectNodes}
                     addSelectNode={addSelectNode}
                     unselectNode={unselectNode}

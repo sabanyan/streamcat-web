@@ -12,9 +12,9 @@ type Props = {
     nodeReadOnly: boolean;
     zoom: number;
     runnables: RunnablesType;
+    dragRange: DragType|null;
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
-    dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     selectNodes: (selectedNodes: AllNodeType[]) => void;
     addSelectNode: (selectedNode: AllNodeType) => void;
     unselectNode: (selectedNodeId: string) => void;
@@ -27,13 +27,13 @@ export const Paper = (props: Props) => {
         nodeReadOnly,
         zoom,
         runnables,
+        dragRange,
         selectNodes,
         addSelectNode,
         unselectNode,
         addHistory} = props;
     const [flow, setFlow] = props.flowState;
     const [graph, setGraph] = props.graphState;
-    const [dragRange, setDragRange] = props.dragRangeState;
 
     const paperWidth = graph.width + Constants.paper.padding.right;
     const paperHeight = graph.height + Constants.paper.padding.bottom;
@@ -50,9 +50,9 @@ export const Paper = (props: Props) => {
             nodeReadOnly={nodeReadOnly}
             zoom={zoom}
             runnables={runnables}
+            dragRange={dragRange}
             flowState={[flow, setFlow]}
             graphState={[graph, setGraph]}
-            dragRangeState={[dragRange, setDragRange]}
             selectNodes={selectNodes}
             addSelectNode={addSelectNode}
             unselectNode={unselectNode}
