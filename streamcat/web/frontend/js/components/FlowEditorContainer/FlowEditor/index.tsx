@@ -688,7 +688,7 @@ export const FlowEditor = () => {
     // ▶︎このフローを実行の制御
     const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
-    // Canvasのペースト機能の可否
+    // Canvasのペーストと移動機能の可否
     const paperReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
@@ -703,9 +703,6 @@ export const FlowEditor = () => {
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
     const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
-
-    // ノードの移動を不可にする
-    const nodeReadOnly = !(editMode === FlowEditModeValue.Editable) || serverConnectivity === Connectivity.Disconnected || readOnly;
 
     const onClickRunFlowPromise = () => {
         return onClickSaveFlow();
@@ -743,23 +740,22 @@ export const FlowEditor = () => {
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                 message={'フローを構築中です'} />
             <PaperScroller
+                selectedNodes={selectedNodes}
+                readOnly={paperReadOnly}
                 canvasWidth={canvasWidth}
-                deleteNodes={deleteNodes}
+                zoom={zoom}
+                flowState={[flow, setFlow]}
+                dragRangeState={[dragRange, setDragRange]}
+                graphState={[graph, setGraph]}
                 selectNodes={selectNodes}
+                deleteNodes={deleteNodes}
                 addHistory={addHistory}
                 redo={redo}
                 undo={undo}
-                selectedNodes={selectedNodes}
-                flowState={[flow, setFlow]}
-                graphState={[graph, setGraph]}
-                flowData={flow.flow}
-                zoom={zoom}
-                readOnly={paperReadOnly}
-                dragRangeState={[dragRange, setDragRange]}
             >
                 <Paper
                     selectedNodes={selectedNodes}
-                    nodeReadOnly={nodeReadOnly}
+                    readOnly={paperReadOnly}
                     zoom={zoom}
                     runnables={runnablesReader()}
                     dragRange={dragRange}

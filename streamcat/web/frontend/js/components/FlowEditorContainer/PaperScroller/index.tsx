@@ -1,29 +1,26 @@
 import React from 'react';
 import style from './style.scss';
-import {DetectUtil, FlowUtil} from 'Utils/index';
+import {DetectUtil} from 'Utils/index';
 import {DragType, GraphType} from 'Types/index';
 import {
     graphUtil,
     pasteNodesAction
 } from 'Modules/flowEditor';
-import { AllNodeType, Flow, FlowType } from 'Model/Library';
+import { AllNodeType, FlowType } from 'Model/Library';
 
 type Props = {
+    selectedNodes: AllNodeType[];
+    readOnly: boolean;
     canvasWidth: number;
-    deleteNodes: (nodes: AllNodeType[]) => void;
+    zoom: number;
+    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
+    dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
+    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     selectNodes: (selectedNodes: AllNodeType[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     addHistory: () => void;
     redo: () => void;
     undo: () => void;
-    selectedNodes: AllNodeType[];
-    // nodes: AllNodeType[];
-    flowData: Flow;
-    zoom: number;
-    readOnly: boolean;
-    // drag: DragType | {};
-    flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
-    graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
-    dragRangeState: [DragType|null, (value:React.SetStateAction<DragType|null>)=>void];
     children: React.ReactNode;
 };
 
@@ -80,7 +77,7 @@ const PaperScroller = (props: Props) => {
     };
 
     const pasteNodes = () => {
-        const {flowData, readOnly, addHistory, selectNodes: selectNodes} = props;
+        const {readOnly, addHistory, selectNodes: selectNodes} = props;
         const [flow, setFlow] = props.flowState;
 
         // 読み取り専用の場合はペースト不可
@@ -96,8 +93,8 @@ const PaperScroller = (props: Props) => {
         }
 
         // ペーストする
-        const pastedNodes = pasteNodesAction(flowData, stringifiedNodes);
-        setGraph(graphUtil.getGraph(flowData.nodes, props.zoom));
+        const pastedNodes = pasteNodesAction(flow.flow, stringifiedNodes);
+        setGraph(graphUtil.getGraph(flow.flow.nodes, props.zoom));
         setFlow({...flow});
         // Undoスタックに履歴を追加する
         addHistory();

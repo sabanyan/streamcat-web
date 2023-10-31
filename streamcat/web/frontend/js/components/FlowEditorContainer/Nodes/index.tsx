@@ -8,7 +8,7 @@ import Constants from 'Constants/index';
 
 type Props = {
     selectedNodes: AllNodeType[];
-    nodeReadOnly: boolean;
+    readOnly: boolean;
     zoom: number;
     runnables: RunnablesType;
     dragRange: DragType|null;
@@ -32,7 +32,7 @@ let mouseUpEvent;
 export const Nodes = (props:Props) => {
     const {
         selectedNodes,
-        nodeReadOnly,
+        readOnly,
         zoom,
         runnables,
         dragRange,
@@ -174,7 +174,7 @@ export const Nodes = (props:Props) => {
      * @param e
      */
     const handleMouseMove = (node:AllNodeType, e: React.MouseEvent<SVGElement>) => {
-        if (nodeReadOnly) return; // 読み取り専用の場合は移動不可
+        if (readOnly) return; // 読み取り専用の場合は移動不可
 
         if (selectedNodes.length > 1) {
             // 複数のNodeを一括して移動させる

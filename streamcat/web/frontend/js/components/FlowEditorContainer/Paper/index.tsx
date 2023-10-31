@@ -9,7 +9,7 @@ import { Nodes } from '../Nodes';
 
 type Props = {
     selectedNodes: AllNodeType[];
-    nodeReadOnly: boolean;
+    readOnly: boolean;
     zoom: number;
     runnables: RunnablesType;
     dragRange: DragType|null;
@@ -24,7 +24,7 @@ type Props = {
 export const Paper = (props: Props) => {
     const {
         selectedNodes,
-        nodeReadOnly,
+        readOnly,
         zoom,
         runnables,
         dragRange,
@@ -47,7 +47,7 @@ export const Paper = (props: Props) => {
     const renderNodes = () => {
         return <Nodes
             selectedNodes={selectedNodes}
-            nodeReadOnly={nodeReadOnly}
+            readOnly={readOnly}
             zoom={zoom}
             runnables={runnables}
             dragRange={dragRange}
