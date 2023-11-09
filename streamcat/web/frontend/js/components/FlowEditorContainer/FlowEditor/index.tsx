@@ -30,6 +30,7 @@ import {
     graphUtil,
     redrawAllEdges
 } from 'Modules/flowEditor';
+import { Canvas } from '../Canvas';
 
 const getRunnables = () => {
     const preRequest :Promise<{}>[] = [];
@@ -831,7 +832,8 @@ export const FlowEditor = () => {
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                 message={'フローを構築中です'} />
-            <PaperScroller
+
+            {/* <PaperScroller
                 canvasWidth={canvasWidth}
                 deleteNodes={deleteNodes}
                 selectNodes={selectNodes}
@@ -851,7 +853,9 @@ export const FlowEditor = () => {
                     {renderNodes()}
                     {renderSelector()}
                 </Paper>
-            </PaperScroller>
+            </PaperScroller> */}
+            <Canvas nodes={flow.flow.nodes} />
+
             <Inspector
                 selectedNodes={selectedNodes}
                 // nodes={flow?.nodes || []}
