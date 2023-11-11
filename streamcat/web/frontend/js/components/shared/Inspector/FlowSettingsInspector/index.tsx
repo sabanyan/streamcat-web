@@ -1,11 +1,11 @@
-import React, {Fragment, useRef} from "react";
+import React, {Fragment} from "react";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { RunnablesType } from 'Types/index';
 
 type Props = {
@@ -31,8 +31,6 @@ type Props = {
 */
 const FlowSettingsInspector = (props: Props) => {
     const {flowData} = props;
-
-    const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     const onBlurTitle = (e: React.SyntheticEvent<HTMLInputElement>) => {
         flowData.label = e.currentTarget.value;
@@ -104,8 +102,12 @@ const FlowSettingsInspector = (props: Props) => {
     const inputParams = flowData.params.map((param, index) => {
         return <div key={index} className={style.flow_param}>
             <div className={style.left}>
-                <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
-                       onChange={(e) => {onParamChange(e, index)}} />
+                <input  id={`param${index}`}
+                        type={'text'}
+                        value={param.name}
+                        readOnly={baseInspectorDisabled}
+                        className={'form-control'}
+                        onChange={(e) => {onParamChange(e, index)}} />
             </div>
             <div className={style.right}>
                 <Button danger={true} disabled={baseInspectorDisabled} onClick={e => onClickDeleteParam(e, index)}>削除</Button>
@@ -114,9 +116,12 @@ const FlowSettingsInspector = (props: Props) => {
     });
 
     if (inputParams && inputParams.length) {
+        // Note: ConsoleのIssueを抑制するためラベル文字列とinputタグをlabelタグの中に配置する
         inputParamsContainer = <div key='params' className={"mt-8px"}>
-            <label>フロー変数</label>
-            {inputParams}
+            <label>
+                フロー変数
+                {inputParams}
+            </label>
         </div>;
     } else if (baseInspectorDisabled) {
         inputParamsContainer = <div key='noParams0' className={"mt-8px"}>
@@ -140,9 +145,14 @@ const FlowSettingsInspector = (props: Props) => {
     return <BaseInspector key={flowUuid} label={flowData.label}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
-        <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}
-                  defaultValue={flowData.description} rows={8}
-                  onChange={(e) => onDescriptionChange(e)} disabled={(baseInspectorDisabled)} />
+        {/* Note: ConsoleのIssueを抑制するためid属性を設定する */}
+        <textarea id='flowDesc'
+                  defaultValue={flowData.description}
+                  placeholder={"フローの説明"}
+                  disabled={baseInspectorDisabled}
+                  rows={8}
+                  className={'form-control mb-8px'}
+                  onChange={e => onDescriptionChange(e)} />
         {inputParamsContainer}
         {addFlowParams}
         {

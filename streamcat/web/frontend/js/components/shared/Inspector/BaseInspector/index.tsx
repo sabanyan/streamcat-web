@@ -45,6 +45,7 @@ const BaseInspector = (props: Props) => {
     let labelContainer, subLabelContainer;
     if (onBlurTitle && label !== undefined) {
         labelContainer = <input key={label || undefined}
+                                id='cmdLabel'
                                 type="text" ref={inputEl}
                                 onBlur={(onBlurTitle) ? (e) => {
                                     onBlurTitle(e, props);

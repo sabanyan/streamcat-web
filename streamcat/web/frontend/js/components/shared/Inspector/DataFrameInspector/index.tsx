@@ -304,24 +304,37 @@ const DataFrameInspector = (props: Props) => {
     const {flowData} = props;
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
-            <label><input type="checkbox" checked={!!selectedNode.id && flowData.ports[0].exists(selectedNode.id)} ref={flowIn}
-                onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
+            <label>
+                <input  id='in'
+                        type="checkbox"
+                        checked={!!selectedNode.id && flowData.ports[0].exists(selectedNode.id)}
+                        ref={flowIn}
+                        disabled={baseInspectorDisabled}
+                        onChange={() => onChangeFlowInOut()} />
                 &nbsp;入力
             </label>
         </div>
         <div>
-            <label><input type="checkbox" checked={!!selectedNode.id && flowData.ports[1].exists(selectedNode.id)}
-                ref={flowOut}
-                onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
+            <label>
+                <input  id='out'
+                        type="checkbox"
+                        checked={!!selectedNode.id && flowData.ports[1].exists(selectedNode.id)}
+                        ref={flowOut}
+                        disabled={baseInspectorDisabled}
+                        onChange={() => onChangeFlowInOut()} />
                 &nbsp;出力
             </label>
         </div>
     </div>;
     const cacheCheckForm = <div>
         <div>
-            <label><input type="checkbox" checked={(selectedNode.makeCache)}
-                ref={cache} disabled={baseInspectorDisabled}
-                onChange={() => onChangeCacheCheck()} />
+            <label>
+                <input  id='cache'
+                        type="checkbox"
+                        checked={(selectedNode.makeCache)}
+                        ref={cache}
+                        disabled={baseInspectorDisabled}
+                        onChange={() => onChangeCacheCheck()} />
             </label>
         </div>
     </div>;

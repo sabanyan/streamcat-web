@@ -57,7 +57,9 @@ export const DropDownList = (props: Props) => {
     
     return <div className={classnames(style.dropdownListContainer, {[style.action]: (onClickAction)})}>
         {labelElement}
-        <select className={classnames(style.dropdownList, {[style.hasLabel]: (label)})}
+        {/* Note: ConsoleのIssueを抑制するためid属性を設定する */}
+        <select id={label}
+                className={classnames(style.dropdownList, {[style.hasLabel]: (label)})}
                 disabled={disabled}
                 // defaultValue={defaultValue}
                 value={value}

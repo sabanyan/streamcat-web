@@ -125,6 +125,7 @@ const NoteInspector = (props: Props) => {
     const content = <div className='property_body'>
         <div>
             <input
+                id='noteTitle'
                 type='text'
                 className={'form-control mb-8px'}
                 placeholder={'メモのタイトル'}
@@ -136,6 +137,7 @@ const NoteInspector = (props: Props) => {
             </input>
             <Spacer height={6} />
             <textarea
+                id='noteContents'
                 className={'mb-8px form-control'}
                 placeholder={'メモの詳細'}
                 defaultValue={noteContent}

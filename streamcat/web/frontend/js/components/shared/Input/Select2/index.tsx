@@ -49,6 +49,8 @@ export const Select2 = (props:Props) => {
 
     // 入力値の変更の有無
     const [valueChanged, setValueChanged] = React.useState(false);
+    // labelとinputタグの紐付けで使用する
+    const inputId = React.useId();
 
     // 初期処理
     React.useEffect(() => {
@@ -94,8 +96,10 @@ export const Select2 = (props:Props) => {
                     // 入力値が空の場合はエラーにする
                     // (未入力時はエラー表示をしない)
                     error={valueChanged && isError(value.value)}>
-            <InputLabel>{label}</InputLabel>
+            <InputLabel htmlFor={inputId}>{label}</InputLabel>
             <Select label={label}
+                    // WebブラウザConsoleのIssueを抑制するためlabelとinputを紐付ける
+                    inputProps={{id:inputId}}
                     // 入力値
                     value={value.value}
                     onChange={onChangeValue}>

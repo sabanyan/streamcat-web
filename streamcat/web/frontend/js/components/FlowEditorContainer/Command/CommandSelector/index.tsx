@@ -121,8 +121,11 @@ const CommandSelector = (props: Props) => {
     if (!noOperators) {
 
         commandSelector = <div>
-            <TextField className={"mb-8px"} onChange={(e) => onChangeKeyword(e)}
-                placeholder={"キーワード"} />
+            {/* Note: ConsoleのIssueを抑制するためname属性を設定する */}
+            <TextField  name='cmdKeyword'
+                        className={"mb-8px"} 
+                        placeholder={"キーワード"}
+                        onChange={(e) => onChangeKeyword(e)} />
             <div className={style.command_selector_container}>
                 {(operatorsContainer.length) ? operatorsContainer : <div
                     className={style.command_not_found}>コマンドが見つかりませんでした</div>}

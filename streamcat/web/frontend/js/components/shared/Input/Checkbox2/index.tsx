@@ -18,6 +18,9 @@ export const Checkbox2 = (props:Props) => {
     const [value, setValue] = props.state || [{value:false,isError:false}, () => {}];
     const onChange = props.onChange || (() => {});
 
+    // labelとinputタグの紐付けで使用する
+    const inputId = React.useId();
+
     // 初期処理
     React.useEffect(() => {
         // value.isErrorに誤った初期値が設定された場合は修正する
@@ -33,7 +36,9 @@ export const Checkbox2 = (props:Props) => {
     };
 
     // チェックボックス
-    const checkbox = <Checkbox  // 小さく表示する
+    const checkbox = <Checkbox  // WebブラウザConsoleのIssueを抑制するためlabelとinputを紐付ける
+                                id={inputId}
+                                // 小さく表示する
                                 size='small'
                                 disabled={readOnly}
                                 checked={value.value}
@@ -43,6 +48,7 @@ export const Checkbox2 = (props:Props) => {
         label={<Typography  variant='caption'
                             color='textSecondary'
                             sx={{lineHeight:'0'}}>{label}</Typography>}
+        htmlFor={inputId}
         labelPlacement='end'
         control={checkbox} />;
 };
