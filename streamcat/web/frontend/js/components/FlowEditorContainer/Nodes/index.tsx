@@ -155,10 +155,9 @@ export const Nodes = (props:Props) => {
                 unselectNode(node.id);
             }
         } else {
-            // 複数Nodeの一括移動の後に選択状態を維持したいので
-            // 複数選択時は選択状態を変更しない
-            if(selectedNodes.length <= 1){
-                // ClickしたNodeを選択状態にする
+            // 未選択のNodeを押下した場合にのみそのNodeを選択状態にする
+            // Note: 複数Nodeの一括移動の後は選択状態を維持する
+            if(!isSelected(node)){
                 selectNodes([node]);
             }
         }
