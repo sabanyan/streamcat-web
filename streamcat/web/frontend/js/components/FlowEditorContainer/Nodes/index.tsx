@@ -3,7 +3,7 @@ import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
 import { Node } from 'Shared/SVG';
 import {ZoomUtil} from 'Utils/index';
-import { graphUtil } from "Modules/flowEditor";
+import { graphUtil } from 'Modules/flowEditor';
 import Constants from 'Constants/index';
 
 type Props = {
@@ -134,10 +134,10 @@ export const Nodes = (props:Props) => {
             x: e.pageX,
             y: e.pageY
         });
-        mouseUpEvent = (e: React.MouseEvent<SVGElement>) => handleMouseUp(node, e);
         mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(node, e);
-        document.addEventListener("mousemove", mouseMoveEvent, { passive: true });
-        document.addEventListener("mouseup", mouseUpEvent, { passive: true });
+        mouseUpEvent = (e: React.MouseEvent<SVGElement>) => handleMouseUp(node, e);
+        document.addEventListener('mousemove', mouseMoveEvent, { passive: true });
+        document.addEventListener('mouseup', mouseUpEvent, { passive: true });
     };
 
     /**
@@ -155,13 +155,16 @@ export const Nodes = (props:Props) => {
                 unselectNode(node.id);
             }
         } else {
-            //一度選択状態をクリアする（#71）
-            selectNodes([]);
-            selectNodes([node]);
+            // 複数Nodeの一括移動の後に選択状態を維持したいので
+            // 複数選択時は選択状態を変更しない
+            if(selectedNodes.length <= 1){
+                // ClickしたNodeを選択状態にする
+                selectNodes([node]);
+            }
         }
 
-        document.removeEventListener("mousemove", mouseMoveEvent);
-        document.removeEventListener("mouseup", mouseUpEvent);
+        document.removeEventListener('mousemove', mouseMoveEvent);
+        document.removeEventListener('mouseup', mouseUpEvent);
 
         // flowを更新する
         setFlow({...flow});
