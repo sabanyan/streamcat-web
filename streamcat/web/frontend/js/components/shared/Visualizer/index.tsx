@@ -2,7 +2,6 @@ import React from 'react';
 
 import {CommandParamType} from 'Types/index';
 import { Api } from 'Api';
-import {StateUtil} from 'Utils/index';
 import style from './style.scss';
 
 

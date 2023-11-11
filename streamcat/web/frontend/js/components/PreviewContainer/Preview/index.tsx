@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from "react";
+import * as lodash from 'lodash';
 import Constants from "Constants/index";
 import { Api } from 'Api';
-import {HttpUtil, ModalUtil, SortUtil, StringUtil, WebUtil} from "Utils/index";
+import {HttpUtil, ModalUtil, StringUtil, WebUtil} from "Utils/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
 import {NotificationManager} from "Shared/Notification";
@@ -20,7 +21,9 @@ const Preview = () => {
 
     useEffect(() => {
         Api.findVCommands().then(vcommands => {
-            setVCommands(SortUtil.getSortedContents(vcommands));
+            setVCommands(
+                lodash.orderBy(vcommands, item => item.order)
+            );
         });
         // ブラウザバックによってブラウザタブを閉じれるように設定する
         WebUtil.setCloseWindowOnBack();

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import * as lodash from 'lodash';
 import style from "./style.scss";
 import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
@@ -28,18 +29,9 @@ const CommandSelector = (props: Props) => {
         setKeyword(e.target.value);
     };
 
-    const sortArray = <T,>(array: T[], key: string): T[] => {
-        return array.sort((objectA, objectB) => {
-            const a = objectA[key];
-            const b = objectB[key];
-            let comparison = 0;
-            if (a > b) {
-                comparison = 1;
-            } else if (a < b) {
-                comparison = -1;
-            }
-            return comparison;
-        });
+    // key1とkey2でソートする
+    const sortCommands = <T,>(commands:T[], key1:string, key2:string=''): T[] => {
+        return lodash.orderBy(commands, item => [item[key1],item[key2]]);
     };
 
     /**
@@ -60,10 +52,10 @@ const CommandSelector = (props: Props) => {
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;
     const sortedCommands = {
-        datasrcs: sortArray(datasrcs, "label"),
-        datadsts: sortArray(datadsts, "label"),
-        subflows: sortArray(sortArray(subflows, "label"), "classification"),
-        commands: sortArray(sortArray(commands, "id"), "classification"),
+        datasrcs: sortCommands(datasrcs, 'label'),
+        datadsts: sortCommands(datadsts, 'label'),
+        subflows: sortCommands(subflows, 'classification', 'label'),
+        commands: sortCommands(commands, 'classification', 'id'),
     }
 
 
