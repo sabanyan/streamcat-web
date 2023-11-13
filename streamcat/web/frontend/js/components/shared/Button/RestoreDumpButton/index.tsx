@@ -56,11 +56,12 @@ export const RestoreDumpButton = (props:Props) => {
                 createMode={true}
                 values = {[file]}
                 initValues={initValues}
-                create={() => restoreDump(file.value)}
-                onSuccess={() => {
+                create={() => restoreDump(file.value).then(() => {
                     onSuccess && onSuccess();
                     closeDialog();
-                }}
+                })}
+                // T=voidを指定しているのでonSuccess()は実行されない
+                onSuccess={() => {}}
                 onCancel={closeDialog} >{[
                 // ボタン
                 () => [],

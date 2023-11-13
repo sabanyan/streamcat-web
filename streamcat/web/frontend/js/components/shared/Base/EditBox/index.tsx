@@ -5,7 +5,7 @@ import { ErrorResponse } from 'Api';
 import { DatumType } from 'Model/Library';
 import { UserType } from 'Model/Navigation/NavigationModel';
 import { typeNames } from 'Utils/TypeNames';
-import { Button2 } from 'Shared/Input';
+import { AwaitButton, Button2 } from 'Shared/Input';
 
 // UserTypeを扱う場合は追加のプロパティが必要になる
 export type ExtendedUserType = UserType & {
@@ -103,8 +103,10 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
     const onClickEdit = () => {
         // ペインの変更可能にする
         setEditMode(true);
-        // イベントハンドラを呼び出す
-        onEdit && onEdit();
+        return new Promise<void>(() => {
+            // イベントハンドラを呼び出す
+            onEdit && onEdit();
+        });
     };
 
     // キャンセルボタン押下時の処理
@@ -121,16 +123,16 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
     const submit = () => {
         // エラーの場合は処理を中断する
         if(editBoxError){
-            return;
+            return Promise.resolve();
         }
         // 新規追加、または変更を行う
-        createMode? createDatum(): updateDatum();
+        return createMode? createDatum(): updateDatum();
     };
 
     // Datumの新規作成処理
     const createDatum = () => {
         // Datumを新規作成する
-        create().then(datum => {
+        return create().then(datum => {
             // ペインを変更不可にする
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
@@ -149,10 +151,10 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
     const updateDatum = () => {
         if(!update){
             // updateが指定されていない場合、処理を中断する
-            return;
+            return Promise.resolve();
         }
         // Datumを変更する
-        update().then(datum => {
+        return update().then(datum => {
             // ペインを変更不可にする
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
@@ -176,12 +178,12 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
             return <Box textAlign={align}>
                 {createMode? buttons(!editMode): []}
                 <Button2 onClick={onClickCancel}>キャンセル</Button2>
-                <Button2 disabled={editBoxError} onClick={submit}>確定</Button2>
+                <AwaitButton disabled={editBoxError} onClick={submit}>確定</AwaitButton>
                 {createMode? []: buttons(!editMode)}
             </Box>
         }else{
             return <Box textAlign={align}>
-                <Button2 disabled={!enabled} onClick={onClickEdit}>変更</Button2>
+                <AwaitButton disabled={!enabled} onClick={onClickEdit}>変更</AwaitButton>
                 {buttons(!editMode)}
             </Box>;
         }
