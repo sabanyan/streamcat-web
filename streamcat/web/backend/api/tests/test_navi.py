@@ -17,6 +17,10 @@ class NavigationTestCase(ApiTestCaseBase):
         self.assertGreater(data['storageUsage']['free'], 0)
         self.assertDictEqual(data['user'], self.USER0.to_json())
         self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
+        # システム操作のallowlistを検証する
+        self.assertTrue(data['allowlist']['setSystem'])
+        self.assertTrue(data['allowlist']['downloadDump'])
+        self.assertTrue(data['allowlist']['restoreDump'])
         # ユーザ操作のallowlistを検証する
         self.assertFalse(data['allowlist']['findUsers'])
         self.assertFalse(data['allowlist']['createUser'])
@@ -38,6 +42,10 @@ class NavigationTestCase(ApiTestCaseBase):
         self.assertGreater(data['storageUsage']['free'], 0)
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        # システム操作のallowlistを検証する
+        self.assertFalse(data['allowlist']['setSystem'])
+        self.assertFalse(data['allowlist']['downloadDump'])
+        self.assertFalse(data['allowlist']['restoreDump'])
         # ユーザ操作のallowlistを検証する
         self.assertTrue(data['allowlist']['findUsers'])
         self.assertTrue(data['allowlist']['createUser'])
@@ -45,3 +53,28 @@ class NavigationTestCase(ApiTestCaseBase):
         self.assertTrue(data['allowlist']['updateSelfUser'])
         self.assertTrue(data['allowlist']['readUserPassword'])
         self.assertTrue(data['allowlist']['deleteUser'])
+
+    def test_get_sys_admin_navi(self):
+        """
+        一般ユーザのnavigationを検証する
+        """
+        result = self.get_uri('/api/v0/navigation', self.USER2)
+        data = result
+        self.assertEqual(data['version'], STREAMCAT_VER)
+        self.assertEqual(data['depoName'], 'Unit Test')
+        self.assertGreater(data['storageUsage']['total'], 0)
+        self.assertGreater(data['storageUsage']['used'], 0)
+        self.assertGreater(data['storageUsage']['free'], 0)
+        self.assertDictEqual(data['user'], self.USER2.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER2.get_allowlist())
+        # システム操作のallowlistを検証する
+        self.assertFalse(data['allowlist']['setSystem'])
+        self.assertFalse(data['allowlist']['downloadDump'])
+        self.assertFalse(data['allowlist']['restoreDump'])
+        # ユーザ操作のallowlistを検証する
+        self.assertFalse(data['allowlist']['findUsers'])
+        self.assertFalse(data['allowlist']['createUser'])
+        self.assertFalse(data['allowlist']['updateUser'])
+        self.assertTrue(data['allowlist']['updateSelfUser'])
+        self.assertFalse(data['allowlist']['readUserPassword'])
+        self.assertFalse(data['allowlist']['deleteUser'])

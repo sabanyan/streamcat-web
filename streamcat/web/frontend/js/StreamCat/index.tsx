@@ -8,6 +8,7 @@ import {ModalManager} from 'Shared/Modal';
 import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
+import {System} from 'Components/admin/SystemContainer/System';
 import {UserList} from 'Components/admin/UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
@@ -21,12 +22,11 @@ export type Props = {
 
 export enum ViewId {
     Flow_Editor,
-    Flow_List,
     Library,
     Profile,
-    Project_List,
     Preview,
     TrashCan,
+    System,
     User_List,
     Undefined = -1,
 }
@@ -83,6 +83,9 @@ const StreamCat = (props: Props) => {
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview/>;
+                break;
+            case ViewId.System:
+                viewComponent = (nav && nav.allowlist && nav.allowlist.setSystem)?<System navigation={nav}/>:<NotAllowed/>;
                 break;
             case ViewId.User_List:
                 viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
