@@ -70,7 +70,7 @@ export const RestoreDumpButton = (props:Props) => {
                                 label='システムDump'
                                 required={true}
                                 requiredMessage='システムDumpを指定して下さい'
-                                accepts={['application/gzip']}
+                                accepts={['application/x-gzip']}
                                 state={[file, setFile]}
                                 onErrorChange={onErrorChange} />
                 ]
