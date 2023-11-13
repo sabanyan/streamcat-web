@@ -44,6 +44,9 @@ export const DownloadFlowButton = (props:Props) => {
         prevAllow && allow
     );
 
-    return <Button2 disabled={!enabled || readOnly}
-                    onClick={() => downloadData(targets)}>フローのダウンロード</Button2>;
+    // export権限がない場合はボタンを表示しない
+    return enabled?
+        <Button2 disabled={readOnly}
+                 onClick={() => downloadData(targets)}>フローのダウンロード</Button2>:
+        <></>;
 };
