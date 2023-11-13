@@ -58,7 +58,7 @@ type Props<T> = {
  * 新規追加/変更可能なBox
  * @param props 
  */
-export const EditBox = <T extends DatumType|ExtendedUserType = DatumType>(props:Props<T>) => {
+export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(props:Props<T>) => {
     const { datum, values, initValues, create, update, onSuccess, onEdit, onCancel } = props;
     const readOnly = !!props.readOnly;
     const createMode = !!props.createMode;

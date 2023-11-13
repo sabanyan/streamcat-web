@@ -4,6 +4,9 @@ import { ProjectType } from "Model/Library";
  * Navigationのallowlist
  */
 type NavigationAllowlist = {
+    setSystem: boolean;
+    downloadDump: boolean;
+    restoreDump: boolean;
     findUsers: boolean;
     createUser: boolean;
     updateUser: boolean;
