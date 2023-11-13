@@ -25,11 +25,12 @@ import {
     NavigationType
 } from 'Model/Navigation/NavigationModel';
 import {
-    toJsonOrRaise,
     getBase as get,
     postBase,
     putBase,
     delBase,
+    download,
+    uploadBase,
     makeArrayCtor
 } from './ApiBase';
 import { NodeArray } from './Nodes';
@@ -56,64 +57,8 @@ const del = <TDatumType>(url: string, body={}) => {
     });
 };
 
-/**
- * GET APIを発行してファイルをダウンロードする
- * @param url 
- */
-const download = (url: string, accept: string, fileName: string, params?: {}) => {
-    if(params) {
-        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
-    }
-    return fetch(
-        url,
-        {
-            method: 'GET',
-            headers: {
-                'Accept': accept
-            }
-        }
-    ).then(
-        res => res.blob()
-    ).then(
-        // Fetch API to force download file
-        // https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
-        blob => {
-            const href = window.URL.createObjectURL(blob);
-            Object.assign(
-                document.createElement('a'),
-                {
-                    href,
-                    download: fileName
-                }
-            ).click();
-        }
-    );
-};
-
-/**
- * POST APIを発行してファイルをアップロードする
- * @param url
- * @throws {ErrorResponse}
- */
 const upload = <TDatumType>(url:string, body:{}) => {
-    // FormDataオブジェクトにAPIパラメタを格納する
-    const formData = new FormData();
-    for(const key in body){
-        formData.append(key, body[key])
-    };
-    return fetch(
-        url,
-        {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-                // Content-Typeを指定するとAPI発行に失敗する
-            }
-        }
-    ).then<TDatumType>(
-        json => toJsonOrRaise(json)
-    ).then(datum => {
+    return uploadBase(url, body).then<TDatumType>(datum => {
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift() as any;
     });
