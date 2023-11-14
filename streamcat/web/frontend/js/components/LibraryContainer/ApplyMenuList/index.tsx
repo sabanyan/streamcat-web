@@ -6,12 +6,10 @@ type Props = {
     onClickApply: () => void;
 }
 
-const ApplyMenuList = (props: Props) => {
+export const ApplyMenuList = (props: Props) => {
     const {onClickApply} = props;
 
     return <div className={style.menuList}>
         <FlatButton icon={""} danger={false} onClick={onClickApply}>移動する</FlatButton>
     </div>;
 };
-
-export {ApplyMenuList};

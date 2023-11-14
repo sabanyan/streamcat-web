@@ -18,7 +18,7 @@ import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
     viewId: ViewId
-}
+};
 
 export enum ViewId {
     Flow_Editor,
@@ -29,7 +29,7 @@ export enum ViewId {
     System,
     User_List,
     Undefined = -1,
-}
+};
 
 const getNavigation = (viewId: ViewId) => {
     if(viewId !== ViewId.Undefined){
@@ -38,9 +38,9 @@ const getNavigation = (viewId: ViewId) => {
         // Login画面の場合はAPIを発行しない
         return Api.findNull();
     }
-}
+};
 
-const StreamCat = (props: Props) => {
+export const StreamCat = (props: Props) => {
     const {viewId} = props;
 
     // Navigationの取得を開始する
@@ -121,5 +121,3 @@ const StreamCat = (props: Props) => {
     }
 
 };
-
-export {StreamCat};

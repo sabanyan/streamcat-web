@@ -6,9 +6,9 @@ type Props = {
     sy: number,
     ex: number,
     ey: number
-}
+};
 
-const Selector = (props: Props) => {
+export const Selector = (props: Props) => {
     const {sx, sy, ex, ey} = props;
     return <g>
         <path className={style.selector}
@@ -16,4 +16,3 @@ const Selector = (props: Props) => {
               "," + ey + " " + sx + "," + ey + " z"} fill="none" />
     </g>;
 };
-export {Selector};

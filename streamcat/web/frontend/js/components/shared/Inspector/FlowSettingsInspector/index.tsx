@@ -24,12 +24,12 @@ type Props = {
     addFlowVariableHidden: boolean;
     commandSelectorHidden: boolean;
     baseInspectorDisabled: boolean;
-}
+};
 
 /*
   フローエディタで表示中のフローのInspector
 */
-const FlowSettingsInspector = (props: Props) => {
+export const FlowSettingsInspector = (props: Props) => {
     const {flowData} = props;
 
     const onBlurTitle = (e: React.SyntheticEvent<HTMLInputElement>) => {
@@ -176,6 +176,3 @@ const FlowSettingsInspector = (props: Props) => {
         }
     </BaseInspector>;
 };
-
-
-export {FlowSettingsInspector};

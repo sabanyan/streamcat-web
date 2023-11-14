@@ -22,9 +22,9 @@ type Props = {
     groups: [],
     // event
     onApply: (args:{}) => void
-}
+};
 
-const PreviewInspector = (props: Props) => {
+export const PreviewInspector = (props: Props) => {
 
     const [args, setArgs] = useState<any>(props.args);
 
@@ -77,5 +77,3 @@ const PreviewInspector = (props: Props) => {
         </div>
     </Resizer>;
 };
-
-export {PreviewInspector};

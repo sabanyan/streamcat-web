@@ -8,12 +8,10 @@ type Props = {
     onSuccess: (newDatum:TrashType) => void;
 }
 
-const TrashMenuList = (props: Props) => {
+export const TrashMenuList = (props: Props) => {
     const {trashFolder, onSuccess} = props;
 
     return <div className={style.menuList}>
         <TrashAllButton large={true} trashFolder={trashFolder} onSuccess={()=>onSuccess(trashFolder)}/>
     </div>;
 };
-
-export {TrashMenuList};

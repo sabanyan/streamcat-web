@@ -11,16 +11,16 @@ type EdgeProps = {
     vy: number;
     wx: number;
     wy: number;
-}
+};
 
 type RectProps = {
     x: number;
     y: number;
     width: number;
     height: number;
-}
+};
 
-const Edge = (props: EdgeProps) => {
+export const Edge = (props: EdgeProps) => {
     /**
      * 二点間の角度の計算
      * ref:https://www.s-projects.net/point-to-angle.html
@@ -175,5 +175,3 @@ const Edge = (props: EdgeProps) => {
         {inPort}
     </g>;
 };
-
-export {Edge};

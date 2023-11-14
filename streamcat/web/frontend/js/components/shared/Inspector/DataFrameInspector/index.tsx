@@ -39,7 +39,7 @@ type Props = {
     lockUUID: string | undefined;
     // updateDataFrameDetail: Function;
     // refreshFlow: (context: FlowType) => void;
-}
+};
 
 type Content = {
     flowUuid: string;
@@ -47,14 +47,14 @@ type Content = {
     frameUuid: string | null;
     lockUuid?: string;
     visualize: any;
-}
+};
 
-type Contents = {
+export type Contents = {
     title: string;
     content: Content;
     id: string;
     afterViz: () => void;
-}
+};
 
 const getFrame = (frameUuid?:string|null) => {
     if(frameUuid){
@@ -64,7 +64,7 @@ const getFrame = (frameUuid?:string|null) => {
     }
 };
 
-const DataFrameInspector = (props: Props) => {
+export const DataFrameInspector = (props: Props) => {
 
     const {notifyLoading, notifyError, dismissNotify} = useStreamCatNotifications();
 
@@ -453,6 +453,3 @@ const DataFrameInspector = (props: Props) => {
         {content}
     </BaseInspector>;
 };
-
-
-export {DataFrameInspector, Contents};

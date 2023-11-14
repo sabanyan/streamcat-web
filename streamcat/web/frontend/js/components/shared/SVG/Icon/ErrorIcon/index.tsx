@@ -1,6 +1,6 @@
 import React from "react";
 
-const ErrorIcon = () => {
+export const ErrorIcon = () => {
     return <g transform={"translate(" + 46 + "," + 4 + ")"}>
         <circle r="12" stroke="white" strokeWidth={2} fill="red">
         </circle>
@@ -9,5 +9,3 @@ const ErrorIcon = () => {
         </text>
     </g>;
 };
-
-export {ErrorIcon}

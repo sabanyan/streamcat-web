@@ -8,14 +8,12 @@ type Props = {
     onMouseMove: (e: React.MouseEvent) => void;
     onMouseUp: (e: React.MouseEvent) => void;
     isClosed: boolean;
-}
+};
 
-const InspectorKnob = (props: Props) => {
+export const InspectorKnob = (props: Props) => {
     const {isClosed, onMouseMove, onMouseDown, onMouseUp} = props;
     return <div className={classnames(style.inspector_knob, {[style.isClosed]: isClosed})}
                 onMouseMove={onMouseMove}
                 onMouseDown={onMouseDown}
                 onMouseUp={onMouseUp} />;
 };
-
-export {InspectorKnob};

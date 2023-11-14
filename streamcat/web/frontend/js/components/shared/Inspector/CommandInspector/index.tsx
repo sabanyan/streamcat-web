@@ -22,7 +22,7 @@ type Props = {
     deleteNodes: (nodes: AllNodeType[]) => void;
     // children?: React.ReactNode;
     baseInspectorDisabled: boolean;
-}
+};
 
 const getFlow = (uuid: string) => {
     if(uuid){
@@ -31,9 +31,9 @@ const getFlow = (uuid: string) => {
         // uuidが指定されない場合はAPIを発行しない
         return Api.findNull();
     }
-}
+};
 
-const CommandInspector = (props: Props) => {
+export const CommandInspector = (props: Props) => {
 
     // 選択中のNodeを取得する
     const runableNode = props.selectedNode as CommandNodeType|FlowNodeType;
@@ -189,6 +189,3 @@ const CommandInspector = (props: Props) => {
     </BaseInspector>;
 
 };
-
-
-export {CommandInspector};

@@ -19,7 +19,7 @@ setUpNotifications({
     }
 });
 
-const NotificationManager = () => {
+export const NotificationManager = () => {
     // 1. Retrieve the notifications to display, and the function used to dismiss a notification.
     const {notifications, dismissNotification} = useNotifications();
     return <>
@@ -37,7 +37,7 @@ const NotificationManager = () => {
 /**
  * 通知ダイアログを表示する関数を取得する
  */
-const useStreamCatNotifications = () => {
+export const useStreamCatNotifications = () => {
     const {notify, dismissNotification, dismissNotifications} = useNotifications();
     return {
         // 処理完了通知ダイアログを表示する
@@ -95,7 +95,7 @@ const useStreamCatNotifications = () => {
 /**
  * フロー実行完了通知ダイアログを表示する関数を取得する
  */
-const useStreamCatFlowNotification = () => {
+export const useStreamCatFlowNotification = () => {
     const {notify} = useNotifications();
     return {
         // 処理完了通知ダイアログを表示する
@@ -147,5 +147,3 @@ const useStreamCatFlowNotification = () => {
         }
     };
 };
-
-export {NotificationManager, useStreamCatNotifications, useStreamCatFlowNotification};

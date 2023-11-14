@@ -10,9 +10,9 @@ export type IconProps = {
     paddingLeft?: number;
     paddingTop?: number;
     children?: React.ReactNode;
-}
+};
 
-class Icon extends React.Component<IconProps> {
+export class Icon extends React.Component<IconProps> {
     static defaultProps = {
         fillColor: "#63B8E2",
         width: Constants.default.step.icon.width,
@@ -43,6 +43,4 @@ class Icon extends React.Component<IconProps> {
             </svg>
         </g>;
     }
-}
-
-export {Icon};
+};

@@ -12,7 +12,7 @@ type Props = {
     primary?: boolean;
 }
 
-const FlatButton = (props: Props) => {
+export const FlatButton = (props: Props) => {
     const {onClick, children, disabled, icon, danger, className, primary} = props;
     const buttonClass = classnames(style.button, {
         [style.danger]: danger,
@@ -30,5 +30,3 @@ const FlatButton = (props: Props) => {
         </div>
     </button>;
 };
-
-export {FlatButton};

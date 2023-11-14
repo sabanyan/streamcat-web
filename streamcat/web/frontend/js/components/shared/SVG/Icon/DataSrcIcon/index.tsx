@@ -7,9 +7,9 @@ type Props = {
     selected?: boolean;
     filter?: string;
     style?: any;
-}
+};
 
-class DataSrcIcon extends React.Component<Props> {
+export class DataSrcIcon extends React.Component<Props> {
 
     render() {
         const { hover, selected, filter, style } = this.props;
@@ -26,6 +26,4 @@ class DataSrcIcon extends React.Component<Props> {
             </Rect>
         );
     }
-}
-
-export { DataSrcIcon }
+};

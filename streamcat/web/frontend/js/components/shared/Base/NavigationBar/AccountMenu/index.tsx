@@ -8,9 +8,9 @@ import {StorageUsage} from 'Shared/Input'
 type Props = {
     navigation: NavigationType | null;
     visible: boolean;
-}
+};
 
-const AccountMenu = (props: Props) => {
+export const AccountMenu = (props: Props) => {
     const {navigation, visible} = props;
 
     // 非表示の場合はnullを返す
@@ -91,5 +91,3 @@ const AccountMenu = (props: Props) => {
         </Menu>
     </>;
 }
-
-export {AccountMenu};

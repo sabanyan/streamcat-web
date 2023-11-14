@@ -9,9 +9,9 @@ type Props = {
     hover?: boolean;
     selected?: boolean;
     filter?: string;
-}
+};
 
-class CommandIcon extends React.Component<Props> {
+export class CommandIcon extends React.Component<Props> {
 
     render() {
         let path;
@@ -115,6 +115,4 @@ class CommandIcon extends React.Component<Props> {
         );
 
     }
-}
-
-export {CommandIcon};
+};

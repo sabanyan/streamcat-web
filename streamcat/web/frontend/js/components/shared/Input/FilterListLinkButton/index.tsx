@@ -22,9 +22,9 @@ type Props = {
     list: IFilterCategoryItem[];
     onClickFilterCategoryItem: (item: IFilterCategoryItem)=>void;
     onClickFilterListItem: (categoryId: string, items: IFilterListItem[])=>void;
-}
+};
 
-const FilterListLinkButton = (props: Props) => {
+export const FilterListLinkButton = (props: Props) => {
     const {children, list, onClickFilterCategoryItem, onClickFilterListItem} = props;
     const [hasShown, setHasShown] = useState(false);
     const onClick = (e) => {
@@ -53,5 +53,3 @@ const FilterListLinkButton = (props: Props) => {
         }
     </div>
 };
-
-export {FilterListLinkButton};

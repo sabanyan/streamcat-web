@@ -3,7 +3,7 @@ import React from 'react';
 import {BaseInspector} from 'Shared/Inspector';
 import {Button} from 'Shared/Input';
 import {CommandSelector} from 'FlowEditorContainer/Command';
-import {FlowUtil, ModalUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import Constants from 'Constants/index';
 import { RunnablesType } from 'Types/index';
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
@@ -21,9 +21,9 @@ type Props = {
     addHistory: () => void;
     baseInspectorDisabled: boolean;
     commandSelectorHidden: boolean;
-}
+};
 
-const MultiInspector = (props: Props) => {
+export const MultiInspector = (props: Props) => {
     const onClickDelete = () => {
         const {deleteNodes, selectNodes} = props;
         ModalUtil.registerModal({
@@ -101,6 +101,3 @@ const MultiInspector = (props: Props) => {
         {commandSelector}
     </BaseInspector>;
 };
-
-export {MultiInspector};
-

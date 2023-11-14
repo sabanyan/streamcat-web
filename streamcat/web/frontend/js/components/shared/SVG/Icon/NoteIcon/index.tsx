@@ -8,9 +8,9 @@ type Props = {
     selected: boolean,
     model: NoteNodeType,
     filter?: string | null,
-}
+};
 
-const NoteIcon = (props: Props) => {
+export const NoteIcon = (props: Props) => {
 
     const NoteStyle = {
         x: 0,
@@ -119,5 +119,3 @@ const NoteIcon = (props: Props) => {
         </svg>
     </g>;
 };
-
-export {NoteIcon};

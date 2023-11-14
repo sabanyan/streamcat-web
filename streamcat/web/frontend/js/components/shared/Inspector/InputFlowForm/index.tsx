@@ -23,7 +23,7 @@ type Props = {
     flow: FlowType;
 };
 
-const InputFlowForm = (props: Props) => {
+export const InputFlowForm = (props: Props) => {
     const [, updateState] = React.useState();
     const forceUpdate = React.useCallback(() => updateState(undefined), []);
 
@@ -133,5 +133,3 @@ const InputFlowForm = (props: Props) => {
         {inputVariableForm}
     </div>;
 };
-
-export {InputFlowForm};

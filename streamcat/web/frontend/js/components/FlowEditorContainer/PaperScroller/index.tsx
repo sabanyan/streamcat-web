@@ -24,7 +24,7 @@ type Props = {
     children: React.ReactNode;
 };
 
-const PaperScroller = (props: Props) => {
+export const PaperScroller = (props: Props) => {
     const [graph, setGraph] = props.graphState;
     const [dragRange, setDragRange] = props.dragRangeState;
 
@@ -260,6 +260,3 @@ const PaperScroller = (props: Props) => {
         {children}
     </div>;
 };
-
-
-export {PaperScroller};

@@ -8,7 +8,7 @@ type Props = IconProps & {
     stroke: string;
 };
 
-const InOutIcon = (props: Props) => {
+export const InOutIcon = (props: Props) => {
     const {flowIn, flowOut, width, height, fill, stroke} = props;
     let text;
     if (flowIn && flowOut) {
@@ -39,4 +39,3 @@ const InOutIcon = (props: Props) => {
         </svg>
     </g>);
 };
-export {InOutIcon};

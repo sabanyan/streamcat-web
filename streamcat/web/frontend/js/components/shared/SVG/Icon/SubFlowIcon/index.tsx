@@ -7,9 +7,9 @@ type Props = {
     hover?: boolean;
     selected?: boolean;
     filter?: string;
-}
+};
 
-const SubFlowIcon = (props: Props) => {
+export const SubFlowIcon = (props: Props) => {
     const {hover, selected, filter} = props;
     return (
         <Rect selectedOutlineColor={"#B0E273"} fillColor={"#FFFFFF"}
@@ -25,6 +25,3 @@ const SubFlowIcon = (props: Props) => {
         </Rect>
     );
 };
-
-export {SubFlowIcon};
-

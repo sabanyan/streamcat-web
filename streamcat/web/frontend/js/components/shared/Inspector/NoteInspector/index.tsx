@@ -16,9 +16,9 @@ type Props = {
     deleteNodes: (nodes: AllNodeType[]) => void;
     baseInspectorDisabled: boolean;
     addHistory: () => void;
-}
+};
 
-const NoteInspector = (props: Props) => {
+export const NoteInspector = (props: Props) => {
     useEffect(() => {
         const element: HTMLInputElement = document.querySelector('.property_body input:first-child') as HTMLInputElement;
         if (element) element.focus();
@@ -177,5 +177,3 @@ const NoteInspector = (props: Props) => {
         {content}
     </BaseInspector>;
 };
-
-export {NoteInspector};

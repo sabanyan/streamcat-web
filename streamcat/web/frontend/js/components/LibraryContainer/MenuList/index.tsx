@@ -16,7 +16,7 @@ type Props = {
     onSuccess: (newDatum:DatumType) => void;
 }
 
-const MenuList = (props: Props) => {
+export const MenuList = (props: Props) => {
     const { parent, allowlist, onSuccess: onSuccess } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
@@ -55,5 +55,3 @@ const MenuList = (props: Props) => {
         {importProject}
     </div>;
 };
-
-export { MenuList };

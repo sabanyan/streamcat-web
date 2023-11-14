@@ -11,9 +11,9 @@ type Props = {
     multiple: boolean;
     selected?: boolean;
     checked?: boolean;
-}
+};
 
-const FilterListItem = (props: Props) => {
+export const FilterListItem = (props: Props) => {
     const {onClick, children, multiple, selected, checked, onChecked} = props;
     if (multiple) {
         return <div className={style.listItemMultiple} onClick={() => onChecked(!checked)}>
@@ -39,5 +39,3 @@ const FilterListItem = (props: Props) => {
 
 
 };
-
-export {FilterListItem};

@@ -5,9 +5,9 @@ type Props = {
     fillColor: string;
     width: number;
     height: number;
-}
+};
 
-const FileIcon = (props: Props) => {
+export const FileIcon = (props: Props) => {
     const {fillColor, width, height} = props;
     return (
         <Icon fillColor={fillColor} width={width} height={height} paddingLeft={9} paddingTop={9}>
@@ -18,5 +18,3 @@ const FileIcon = (props: Props) => {
     );
 
 };
-
-export {FileIcon};

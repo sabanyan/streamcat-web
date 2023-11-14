@@ -12,9 +12,9 @@ type Props = {
     onBlurTitle?: any;
     onHide?: () => void;
     disabled?: boolean;
-}
+};
 
-const BaseInspector = (props: Props) => {
+export const BaseInspector = (props: Props) => {
     const inputEl = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -75,6 +75,3 @@ const BaseInspector = (props: Props) => {
         </div>
     </div>;
 };
-
-export {BaseInspector};
-

@@ -14,7 +14,7 @@ import { VCommand } from "Model/Library";
  * ======================================================
  */
 
-const Preview = () => {
+export const Preview = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [vcommands, setVCommands] = useState<VCommand[]>([]);
@@ -76,5 +76,3 @@ const Preview = () => {
         <NotificationManager />
     </div>;
 };
-
-export {Preview};

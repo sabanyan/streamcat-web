@@ -5,15 +5,15 @@ import { InspectorKnob } from 'Shared/Inspector'
 import Constants from 'Constants/index'
 import { HttpUtil  } from "Utils/index";
 
-let mouseMoveEvent
-let mouseUpEvent
+let mouseMoveEvent;
+let mouseUpEvent;
 
 type Props = {
   children?: React.ReactNode;
   inspectorWidth?: number;
   width?: number;
   resizeInspector?: Function
-}
+};
 
 type State = {
   isDragging: boolean;
@@ -21,14 +21,14 @@ type State = {
   willClosed: boolean;
   
   width: number;
-}
+};
 
 
 /*
  *　flowEditor : 
  *　その他      :
  */
-class Resizer extends React.Component<Props, State> {
+ export class Resizer extends React.Component<Props, State> {
   constructor (props: Props) {
     super(props)
     this.state = {
@@ -152,6 +152,4 @@ class Resizer extends React.Component<Props, State> {
     </div>
   }
 
-}
-
-export {Resizer};
+};

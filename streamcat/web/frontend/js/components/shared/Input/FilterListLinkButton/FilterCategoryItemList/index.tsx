@@ -9,9 +9,9 @@ type Props = {
     list: IFilterCategoryItem[];
     onClickFilterCategoryItem: (item: IFilterCategoryItem) => void;
     onClickFilterListItem: (categoryId: string, items: IFilterListItem[]) => void;
-}
+};
 
-const FilterCategoryItemList = (props: Props) => {
+export const FilterCategoryItemList = (props: Props) => {
     const {list, onClickFilterCategoryItem, onClickFilterListItem} = props;
     const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null);
     // const [selectedList, setSelectedList] = useState<IFilterListItem | null>(null);
@@ -113,5 +113,3 @@ const FilterCategoryItemList = (props: Props) => {
         {applyElement}
     </div>
 };
-
-export {FilterCategoryItemList};

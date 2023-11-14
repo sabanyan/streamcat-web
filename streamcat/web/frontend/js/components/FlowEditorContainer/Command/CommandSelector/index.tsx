@@ -21,7 +21,7 @@ type Props = {
     addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
 };
 
-const CommandSelector = (props: Props) => {
+export const CommandSelector = (props: Props) => {
 
     const [keyword, setKeyword] = useState<string>("");
 
@@ -129,5 +129,3 @@ const CommandSelector = (props: Props) => {
         {commandSelector}
     </div>;
 };
-
-export { CommandSelector };

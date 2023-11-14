@@ -17,9 +17,9 @@ type Props = {
     onMouseDown?: ()=>void;
     height?: number | string;
     minHeight?: number | string;
-}
+};
 
-const Flex = (props: Props) => {
+export const Flex = (props: Props) => {
     const {children, justifyContent, alignItems, flexDirection, inline, fluid, width, onClick, height,minHeight, minWidth, onMouseDown} = props;
     return <div className={style.flex}
                 style={{
@@ -38,5 +38,3 @@ const Flex = (props: Props) => {
         {children}
     </div>;
 };
-
-export {Flex};
