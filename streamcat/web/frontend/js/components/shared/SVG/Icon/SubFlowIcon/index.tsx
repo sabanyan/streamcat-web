@@ -3,7 +3,7 @@ import {Icon} from "../index";
 import {Rect} from "Shared/SVG";
 import {RectStyle} from "Shared/SVG/Node";
 
-interface Props {
+type Props = {
     hover?: boolean;
     selected?: boolean;
     filter?: string;

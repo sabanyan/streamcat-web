@@ -3,7 +3,7 @@ import * as style from "./style.scss";
 import { TrashAllButton } from 'Shared/Button/TrashAllButton';
 import { TrashType } from 'Model/Library';
 
-interface Props {
+type Props = {
     trashFolder: TrashType;
     onSuccess: (newDatum:TrashType) => void;
 }

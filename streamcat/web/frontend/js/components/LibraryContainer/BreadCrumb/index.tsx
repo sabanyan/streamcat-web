@@ -3,7 +3,7 @@ import * as style from "./style.scss";
 import { Breadcrumbs, Link } from '@mui/material';
 import {Text} from "Shared/Base/Texts/Text";
 
-export interface IBreadCrumbsLink {
+export type IBreadCrumbsLink = {
     uuid: string | null;
     label: string;
     url: string;
@@ -11,7 +11,7 @@ export interface IBreadCrumbsLink {
     current: boolean;
 };
 
-interface Props {
+type Props = {
     links?: IBreadCrumbsLink[]
 };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as style from "./style.scss";
 
-interface Props{
+type Props = {
     children: React.ReactNode;
 }
 

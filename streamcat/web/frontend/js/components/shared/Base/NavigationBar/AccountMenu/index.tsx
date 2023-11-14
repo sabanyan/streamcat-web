@@ -5,7 +5,7 @@ import {NavigationType} from 'Model/Navigation/NavigationModel';
 import { Spacer } from "Shared/Base";
 import {StorageUsage} from 'Shared/Input'
 
-interface Props {
+type Props = {
     navigation: NavigationType | null;
     visible: boolean;
 }

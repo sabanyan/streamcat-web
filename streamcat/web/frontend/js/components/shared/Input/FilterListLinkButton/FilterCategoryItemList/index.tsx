@@ -5,7 +5,7 @@ import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkB
 import {FilterCategoryItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterCategoryItem';
 import {FilterListItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterListItem';
 
-interface Props {
+type Props = {
     list: IFilterCategoryItem[];
     onClickFilterCategoryItem: (item: IFilterCategoryItem) => void;
     onClickFilterListItem: (categoryId: string, items: IFilterListItem[]) => void;

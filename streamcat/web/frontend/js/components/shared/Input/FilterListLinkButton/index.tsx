@@ -17,7 +17,7 @@ export type IFilterListItem = {
     selected: boolean;
 };
 
-interface Props {
+type Props = {
     children?: string;
     list: IFilterCategoryItem[];
     onClickFilterCategoryItem: (item: IFilterCategoryItem)=>void;

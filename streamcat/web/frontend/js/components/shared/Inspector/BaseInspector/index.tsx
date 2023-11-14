@@ -3,7 +3,7 @@ import {useEffect, useRef} from "react";
 import style from "../style.scss";
 import classnames from "classnames";
 
-interface Props {
+type Props = {
     label?: string | null;
     subLabel?: string;
     header?: string;

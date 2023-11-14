@@ -1,6 +1,6 @@
 import React from "react";
 
-interface Props {
+type Props = {
     height?: number | string;
     width?: number | string;
     minWidth?: number | string;

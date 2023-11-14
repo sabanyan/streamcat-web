@@ -4,7 +4,7 @@ import classnames from "classnames";
 import ImageUtil from "Utils/ImageUtil";
 import {useState} from "react";
 
-interface Props {
+type Props = {
     onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     onChecked: (checked: boolean) => void;
     children: string;

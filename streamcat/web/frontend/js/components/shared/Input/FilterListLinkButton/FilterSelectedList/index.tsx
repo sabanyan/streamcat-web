@@ -3,7 +3,7 @@ import style from './style.scss';
 import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import ImageUtil from "Utils/ImageUtil";
 
-interface Props {
+type Props = {
     list: IFilterCategoryItem[];
     onClickRemove: (selectedCategory: IFilterCategoryItem) => void;
 }

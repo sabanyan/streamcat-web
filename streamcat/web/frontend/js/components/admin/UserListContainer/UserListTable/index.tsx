@@ -10,7 +10,7 @@ import {Badge} from 'Shared/Base/Badge';
 import AdminUtil from 'Utils/AdminUtil';
 import ImageUtil from 'Utils/ImageUtil';
 
-interface Props {
+type Props = {
     allUsers: UserType[];
     selectedUsers: [UserType[], (value:React.SetStateAction<UserType[]>)=>void];
     minWidth?: number | string;

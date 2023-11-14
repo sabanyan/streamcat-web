@@ -10,7 +10,7 @@ import { UploadFileButton } from 'Shared/Button/UploadFileButton';
 import { UploadFlowButton } from 'Shared/Button/UploadFlowButton';
 import { CreateScheduleButton } from 'Shared/Button/CreateScheduleButton';
 
-interface Props {
+type Props = {
     parent: FolderType;
     allowlist: FolderAllowlist;
     onSuccess: (newDatum:DatumType) => void;

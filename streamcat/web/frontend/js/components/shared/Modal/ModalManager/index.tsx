@@ -27,7 +27,7 @@ import { Modal } from "Shared/Modal";
  *
  */
 
-interface Props {
+type Props = {
 }
 
 export default class ModalManager extends React.Component<Props> {

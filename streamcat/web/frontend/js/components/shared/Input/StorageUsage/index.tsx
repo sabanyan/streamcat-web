@@ -3,7 +3,7 @@ import { LinearProgress, Typography, Box} from '@mui/material';
 import {StringUtil} from "Utils/index";
 import { StorageUsageType } from 'Model/Navigation/NavigationModel';
 
-interface Props {
+type Props = {
     // ストレージ使用量情報
     storageUsage?: StorageUsageType
 };

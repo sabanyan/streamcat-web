@@ -2,7 +2,7 @@ import React from 'react';
 import style from './style.scss';
 import classnames from 'classnames';
 
-interface Props {
+type Props = {
     onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
     children: string;
     disabled?: boolean;

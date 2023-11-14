@@ -1,7 +1,7 @@
 import React from "react";
 import {Icon} from "Shared/SVG/Icon";
 
-interface Props {
+type Props = {
     fillColor: string;
     width: number;
     height: number;

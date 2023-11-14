@@ -3,7 +3,7 @@ import style from "./style.scss";
 import classnames from "classnames";
 
 
-interface Props {
+type Props = {
     children?: string;
     color: "darkGreen" | "darkBlue";
 }

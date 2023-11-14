@@ -18,7 +18,7 @@ import { ListTableBodyDnD } from 'Shared/Base/ListTableBodyDnD';
 import { DragPreview } from 'Shared/Base/DragPreview';
 import { useMoveData } from 'Shared/Button/MoveButton/hooks';
 
-interface Props {
+type Props = {
     mode: string;
     allDatas: DatumType[];
     selectedDatas: [DatumType[], (value:React.SetStateAction<DatumType[]>)=>void];

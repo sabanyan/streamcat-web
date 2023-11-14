@@ -8,7 +8,7 @@ import {Spacer} from 'Shared/Base';
 import { NoteNodeType } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 
-interface Props {
+type Props = {
     selectedNode: AllNodeType;
     nodes: AllNodeType[];
     selectNodes: (selectedNodes: AllNodeType[]) => void;
