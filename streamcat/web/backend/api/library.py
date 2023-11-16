@@ -67,6 +67,22 @@ def fecth_library():
     root = g.factory.data.load_root()
     return _add_children_info(root, offset=offset, limit=limit)
 
+@mod.route('/data', methods=['GET'])
+@login_required_api
+@api_base
+@update_projects_info2
+def fecth_data():
+    """
+    全てのDatum、または指定したキーワードを含むDatumを取得する
+    """
+    search_keyword = request.args.get('q')
+    type = request.args.get('type')
+    offset, limit = _get_offset_limit(request.args)
+    return g.factory.data.find_by_keyword(search_keyword,
+                                          type=type,
+                                          except_trash=True,
+                                          offset=offset,
+                                          limit=limit)
 
 @mod.route('/projects')
 @login_required_api
