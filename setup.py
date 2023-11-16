@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='streamcat.web',
     packages=['streamcat.web'],
-    version='3.3.3',
+    version='3.4',
     description='Web Frontend of StreamCat',
     url='https://www.kskp.io',
     include_package_data=True,
