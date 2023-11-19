@@ -20,7 +20,7 @@ export const RemoteFolderDrawer = (props:Props) => {
 
     // 初期表示値
     const initLabel     = {value:createMode? '': remoteFolder.label, isError:createMode};
-    const initProtocol  = {value:createMode? 'smb': remoteFolder.protocol, isError:false}
+    const initProtocol  = {value:createMode? 'smb': remoteFolder.protocol, isError:false};
     const initHostname  = {value:createMode? '': remoteFolder.hostname, isError:createMode};
     const initDomain    = {value:createMode? '': remoteFolder.domain, isError:createMode};
     const initDirectory = {value:createMode? '': remoteFolder.directory, isError:createMode};

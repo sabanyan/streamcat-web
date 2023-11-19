@@ -1,5 +1,5 @@
 import React from "react";
-import * as style from "./style.scss";
+import style from "./style.scss";
 // TODO: Visual Studio Codeではエラーになるが、num run buildは通る
 // エラーになる原因は不明
 import {Property} from 'csstype';

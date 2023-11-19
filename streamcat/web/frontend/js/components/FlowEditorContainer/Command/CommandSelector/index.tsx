@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import * as lodash from 'lodash';
+import lodash from 'lodash';
 import style from "./style.scss";
 import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";

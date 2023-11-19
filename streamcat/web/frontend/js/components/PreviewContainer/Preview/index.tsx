@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import * as lodash from 'lodash';
+import lodash from 'lodash';
 import Constants from "Constants/index";
 import { Api } from 'Api';
 import {HttpUtil, ModalUtil, StringUtil, WebUtil} from "Utils/index";
