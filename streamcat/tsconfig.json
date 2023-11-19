@@ -4,9 +4,11 @@
         // Basic Options
         // 
         "baseUrl": "./",
-        // tsを書くときにどのversionのESが対象か: 'ES3'(default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'
+        // どのversionのJavaScriptを出力するか
+        // 'ES3'(default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'
         "target": "ES2015",
-        // どのversionのESを生成するか: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'
+        // JavaScroptのModule形式
+        // 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'
         "module": "es2015",
         // reactを書くときに必要, 'react-native', or 'react'
         "jsx": "react",
@@ -37,6 +39,7 @@
         // Alias Path
         // (WebPackのAlias設定も忘れずに)
         "paths": {
+            "Api": ["./web/frontend/js/api"],
             "Components/*": ["./web/frontend/js/components/*"],
             "FlowEditorContainer/*": ["./web/frontend/js/components/FlowEditorContainer/*"],
             "LibraryContainer/*"   : ["./web/frontend/js/components/LibraryContainer/*"],
@@ -49,7 +52,6 @@
             "Modules/*": ["./web/frontend/js/modules/*"],
             "Types/*": ["./web/frontend/js/types/*"],
             "Utils/*": ["./web/frontend/js/utils/*"],
-            "Api"    : ["./web/frontend/js/api"]
         },
 
         // 

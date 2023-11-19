@@ -49,6 +49,7 @@ module.exports = (env) => {
             },
             resolve: {
                 alias: {
+                    Api: path.resolve(__dirname, './web/frontend/js/api/'),
                     Components: path.resolve(__dirname, './web/frontend/js/components/'),
                     FlowEditorContainer: path.resolve(__dirname, './web/frontend/js/components/FlowEditorContainer/'),
                     LibraryContainer: path.resolve(__dirname, './web/frontend/js/components/LibraryContainer/'),
@@ -61,7 +62,6 @@ module.exports = (env) => {
                     Modules: path.resolve(__dirname, './web/frontend/js/modules/'),
                     Types: path.resolve(__dirname, './web/frontend/js/types/'),
                     Utils: path.resolve(__dirname, './web/frontend/js/utils/'),
-                    Api  : path.resolve(__dirname, './web/frontend/js/api/'),
                 },
                 modules: ['node_modules'],
                 extensions: ['.js', '.jsx', '.ts', '.tsx'],
