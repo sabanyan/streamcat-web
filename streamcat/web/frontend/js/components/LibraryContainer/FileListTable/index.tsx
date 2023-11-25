@@ -93,8 +93,6 @@ export const FileListTable = (props: Props) => {
                 case 'frame':
                 case 'folder':
                 case 'project':
-                case Constants.library.type.remoteFolder:
-                case Constants.library.type.database:
                     return true;
                 default:
                     return false;
