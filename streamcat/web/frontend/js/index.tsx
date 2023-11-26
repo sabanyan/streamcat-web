@@ -35,7 +35,12 @@ if (document.getElementById('preview')) {
 
 if (document.getElementById('trashcan')) {
     elementId = 'trashcan';
-    viewId = ViewId.TrashCan
+    viewId = ViewId.TrashCan;
+}
+
+if (document.getElementById('admin_sys')) {
+    elementId = 'admin_sys';
+    viewId = ViewId.System;
 }
 
 if (document.getElementById('admin_users')) {

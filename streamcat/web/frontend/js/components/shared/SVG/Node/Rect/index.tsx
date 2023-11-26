@@ -12,9 +12,9 @@ type Props = {
     style: { x: number, y: number, width: number, height: number, rx: number, ry: number },
     hover?: boolean,
     selected?: boolean
-}
+};
 
-const Rect = (props: Props) => {
+export const Rect = (props: Props) => {
 
     let {fillColor, hover, selected, filter, style, stroke, children, selectedOutlineColor, hoverFillColor, selectedFillColor} = props;
 
@@ -63,5 +63,3 @@ const Rect = (props: Props) => {
         {children}
     </g>;
 };
-
-export  {Rect}

@@ -1,9 +1,9 @@
 import React from 'react'
+import style from './style.scss';
+import { Api } from 'Api';
 import { DatumType } from 'Model/Library';
 import { CommandParamType } from 'Types/index'
-import { Api } from 'Api';
 import { HttpUtil } from 'Utils/index';
-import style from './style.scss'
 import { Link2 } from 'Components/shared/Input';
 
 type Props = {
@@ -13,15 +13,19 @@ type Props = {
     parentUUID?: string;
     // event
     onChange?: Function; // onChange(e, param)
-}
+};
 
 type State = {
     path: string;
-}
+    encoding: string;
+    newline: string;
+};
 
 const initialState: State = {
-    path: 'ライブラリ上のファイルを選択する'
-}
+    path: 'ライブラリ上のファイルを選択する',
+    encoding: '',
+    newline: ''
+};
 
 
 // ライブラリーからフレームを選択する
@@ -39,7 +43,11 @@ export class ParamFrame extends React.Component<Props, State> {
         }
         Api.findFrame(value).then(frame => {
             const folderPath = frame.folderPath? frame.folderPath+'/': '';
-            this.setState({ path: folderPath + frame.label });
+            this.setState({
+                path: folderPath + frame.label,
+                encoding: frame.encoding,
+                newline: frame.newline
+            });
         }).catch(e => {
             this.setState(initialState);
         });
@@ -76,7 +84,9 @@ export class ParamFrame extends React.Component<Props, State> {
                             folderPath = selected_frame.folderPath + '/';
                         }
                         this.setState({
-                            path: folderPath + selected_frame.label
+                            path: folderPath + selected_frame.label,
+                            encoding: selected_frame.encoding,
+                            newline: selected_frame.newline
                         })
                     }
                     if(onChange){
@@ -103,7 +113,13 @@ export class ParamFrame extends React.Component<Props, State> {
         return <React.Fragment>
             <div>
                 <Link2 value={this.state.path} onClick={e=>this.onClick(e)} />
+                {
+                    // Frameが選択されている場合は文字コードと改行コードの種別を表示する
+                    this.state.path === initialState.path ?
+                    <></>:
+                    <p className={style.encoding}>{`(${this.state.encoding}, ${this.state.newline})`}</p>
+                }
             </div>
         </React.Fragment>
     }
-}
+};

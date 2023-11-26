@@ -1,5 +1,11 @@
 import { Command, Flow } from 'Model/Library';
 import { StringUtil } from 'Utils/index';
+import {
+    setCommandNodeFunc,
+    setFlowNodeFunc,
+    setFrameNodeFunc,
+    setNoteNodeFunc
+} from 'Api';
 
 export type NodeType = {
     readonly id: string;
@@ -9,6 +15,7 @@ export type NodeType = {
     size?: { width:number, height:number };
     error?: {};
     invalid?: {};
+    clone: <TNodeType=NodeType>(id:string, position?:{x:number, y:number}) => TNodeType;
 };
     
 export type FrameNodeType = NodeType & {
@@ -77,12 +84,7 @@ export const FrameNode = function(this: FrameNodeType, id:string, position:{x:nu
     this.makeCache = false;
     this.dataSource = 'csv';
     this.cacheCreatedAt = null;
-    this.hasData = () => !!this.uuid;
-    this.isCached = () => !!this.cacheCreatedAt;
-    this.deleteCache = () => {
-        this.cacheCreatedAt = null;
-        this.uuid = null;
-    };
+    setFrameNodeFunc(this);
 };
 
 export const CommandNode = function(this: CommandNodeType, id:string, commandId:string, position:{x:number, y:number}) {
@@ -98,38 +100,10 @@ export const CommandNode = function(this: CommandNodeType, id:string, commandId:
     this.srcs = {};
     this.dsts = {};
     this.srcsOrder =[];
-    this.deleteInPort = (label:string) => {
-        this.srcs && delete this.srcs[label];
-        if(this.srcsOrder){
-            this.srcsOrder = this.srcsOrder.filter(srcLabel => srcLabel !== label);
-        }
-    };
-    this.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
-    this.getInPortIndex = () => {
-        const srcKeys = Object.keys(this.srcs || {});
-
-        const filterKeys = srcKeys.filter((key) => {
-            return (key.indexOf("*") != -1);
-        });
-
-        let max = 0;
-        filterKeys.forEach((key) => {
-            const value = key.replace("*", "");
-            max = (parseInt(value) > max) ? parseInt(value) : max;
-        });
-
-        return max;
-    };
-    this.addableInPort = (command: Command) => {
-        // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
-        const filterKeys = command.ports[0].filter((inPort) => {
-            return (inPort.label.indexOf("*") >= 0);
-        });
-        return filterKeys.length > 0;
-    };
+    setCommandNodeFunc(this);
 };
 
-export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, position:{x:number, y:number}) {
+export const FlowNode = function(this: FlowNodeType, id:string, uuid:string|null, position:{x:number, y:number}) {
     (this as any).id = id;
     (this as any).type = 'flow';
     this.label = id;
@@ -142,13 +116,12 @@ export const FlowNode = function(this: FlowNodeType, id:string, uuid:string, pos
     this.srcs = {};
     this.dsts = {};
     this.srcsOrder = [];
-    this.addInPort = (label:string, nodeId:string) => addInPort(this, label, nodeId);
-    this.addableInPort = () => false;
+    setFlowNodeFunc(this);
 };
 
 export const InlineFlowNode = function( this: InlineFlowNodeType,
                                         id: string, 
-                                        classification: string,
+                                        classification: string|undefined,
                                         flow:Flow & {creator:string; createdAt:string;},
                                         position:{x:number, y:number}) {
     (this as any).id = id;
@@ -164,7 +137,7 @@ export const InlineFlowNode = function( this: InlineFlowNodeType,
     this.srcs = {};
     this.dsts = {};
     this.srcsOrder = [];
-    this.addableInPort = () => false;
+    setFlowNodeFunc(this);
 };
 
 export const NoteNode = function(this:NoteNodeType, id:string, position:{x:number, y:number}){
@@ -179,14 +152,7 @@ export const NoteNode = function(this:NoteNodeType, id:string, position:{x:numbe
     this.content = '';
     this.fontSize = 16;
     this.color = 'green';
-    this.setTitle = (title:string) => {
-        this.title = title;
-        this.size = calcSize(title, this.fontSize || 16);
-    };
-    this.setFontSize = (fontSize:number) => {
-        this.fontSize = fontSize;
-        this.size = calcSize(this.title, fontSize);
-    };
+    setNoteNodeFunc(this);
 };
 
 export const addInPort = (self:any, label:string, nodeId:string) => {

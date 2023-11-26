@@ -1,21 +1,21 @@
 import React from "react";
 import { Rect } from "Shared/SVG";
-import * as Step from "Shared/SVG/Step";
+import {RectStyle} from "Shared/SVG/Node";
 
 type Props = {
     hover?: boolean;
     selected?: boolean;
     filter?: string;
     style?: any;
-}
+};
 
-class DataDstIcon extends React.Component<Props> {
+export class DataDstIcon extends React.Component<Props> {
 
     render() {
         const { hover, selected, filter, style } = this.props;
         const baseUrl = "/front_static/";
         const src = baseUrl + "images/icon/icon-data-dst.svg";
-        const defaultStyle =  {...Step.RectStyle, rx: 12, ry: 12 }
+        const defaultStyle =  {...RectStyle, rx: 12, ry: 12 }
 
         return (
             <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
@@ -26,6 +26,4 @@ class DataDstIcon extends React.Component<Props> {
             </Rect>
         );
     }
-}
-
-export { DataDstIcon }
+};

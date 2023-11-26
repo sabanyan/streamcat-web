@@ -2,7 +2,6 @@ import React from 'react';
 
 import {CommandParamType} from 'Types/index';
 import { Api } from 'Api';
-import {StateUtil} from 'Utils/index';
 import style from './style.scss';
 
 
@@ -15,7 +14,7 @@ type Props = {
     index: number;
     visualize: VCommand;
     flowUuid: string;
-    stepIds: (string | null | undefined)[];
+    nodeIds: (string | null | undefined)[];
     frameUuid: string | null;
     lockUuid?: string;
     result: {
@@ -23,7 +22,7 @@ type Props = {
         html: any
     };
     headers: string[];
-    afterViz: Function;
+    afterViz: () => void;
     onSaveResult: Function;
     notify: (title:string, message:string) => string;
     dismissNotify: (id:string) => void;
@@ -56,10 +55,10 @@ export default class Visualizer extends React.Component<Props, State> {
             const command = {...visualize};
             if (!command) throw "command is undefined in Visualizer";
             if (!command.params) throw "command.params is undefined in Visualizer";
-            const params = StateUtil.deepCopy(command.params);
+            // const params = StateUtil.deepCopy(command.params);
             const rules = (command.rules) ? command.rules : {};
 
-            params.map((param: CommandParamType) => {
+            command.params.map((param: CommandParamType) => {
                 // 1.ルールの適用
                 const rule = rules[param.name];
                 // rule: 必須項目で空白（""）が許される場合
@@ -191,22 +190,22 @@ export default class Visualizer extends React.Component<Props, State> {
     postActivity() {
         const {index, flowUuid, frameUuid, lockUuid, visualize} = this.props;
         const {onSaveResult, notify} = this.props;
-        let stepIds = this.props.stepIds;
+        let nodeIds = this.props.nodeIds;
         
-        if(!stepIds){
+        if(!nodeIds){
             // datasourceによるプレビューでは対象Pointのidは'd'である
-            stepIds = ['d'];
+            nodeIds = ['d'];
         }
 
-        // stepIdのリストから、stepIdをプロパティに持つオブジェクトへ変換する
-        const stepIdsArgs = stepIds.reduce((stepIdObj, stepId) => {
-            if(stepId){
-                stepIdObj[stepId] = {
+        // nodeIdのリストから、nodeIdをプロパティに持つオブジェクトへ変換する
+        const nodeIdsArgs = nodeIds.reduce((nodeIdObj, nodeId) => {
+            if(nodeId){
+                nodeIdObj[nodeId] = {
                     command_id: visualize.id,
                     args: this.state.args
                 };
             }
-            return stepIdObj;
+            return nodeIdObj;
         }, {});
 
         let promise: Promise<ActivityType>;
@@ -216,7 +215,7 @@ export default class Visualizer extends React.Component<Props, State> {
                 frameUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
-                    vis: stepIdsArgs
+                    vis: nodeIdsArgs
                 }
             )
         }else{
@@ -225,7 +224,7 @@ export default class Visualizer extends React.Component<Props, State> {
                 flowUuid,
                 {   // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
-                    vis: stepIdsArgs
+                    vis: nodeIdsArgs
                 },
                 lockUuid
             )

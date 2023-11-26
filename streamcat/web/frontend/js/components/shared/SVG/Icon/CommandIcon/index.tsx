@@ -1,7 +1,7 @@
 import React from "react";
 import {Icon} from "Shared/SVG/Icon";
 import {Rect} from "Shared/SVG";
-import * as Step from "Shared/SVG/Step";
+import {RectStyle} from "Shared/SVG/Node";
 import { Command } from "Model/Library";
 
 type Props = {
@@ -9,9 +9,9 @@ type Props = {
     hover?: boolean;
     selected?: boolean;
     filter?: string;
-}
+};
 
-class CommandIcon extends React.Component<Props> {
+export class CommandIcon extends React.Component<Props> {
 
     render() {
         let path;
@@ -107,7 +107,7 @@ class CommandIcon extends React.Component<Props> {
             <Rect selectedOutlineColor={"#FFD263"} fillColor={"#FFFFFF"}
                   hoverFillColor={"#FFF6E4"} selectedFillColor={"#FFF6E4"}
                   hover={this.props.hover} selected={this.props.selected} stroke={"#FFB300"}
-                  filter={this.props.filter} style={{...Step.RectStyle, rx: 12, ry: 12}}>
+                  filter={this.props.filter} style={{...RectStyle, rx: 12, ry: 12}}>
                 <Icon fillColor={"#F4B63F"} width={22} height={22} paddingLeft={8} paddingTop={7.5}>
                     {path}
                 </Icon>
@@ -115,6 +115,4 @@ class CommandIcon extends React.Component<Props> {
         );
 
     }
-}
-
-export {CommandIcon};
+};

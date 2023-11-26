@@ -17,7 +17,7 @@ export class ErrorResponse {
  * ResponseオブジェクトからJSONを取り出す
  * @param res 
  */
-export const toJsonOrRaise = (res: Response) => {
+const toJsonOrRaise = (res: Response) => {
     if(res.status===200) {
         // API発行が成功し、データが返された場合
         return res.json();
@@ -31,6 +31,23 @@ export const toJsonOrRaise = (res: Response) => {
         }).catch(e => {
             throw new ErrorResponse(Number.NaN, e.message || '');
         });
+    }
+};
+
+/**
+ * ResponseオブジェクトからBLOBを取り出す
+ * @param res 
+ */
+const toBlobOrRaise = (res: Response) => {
+    if(res.status===200) {
+        // API発行が成功し、データが返された場合
+        return res.blob();
+    }else if(res.status===204){
+        // API発行が成功し、データが返されない場合
+        return Promise.resolve(new Blob());
+    }else{
+        // 失敗した場合
+        throw new ErrorResponse(Number.NaN, res.statusText);
     }
 };
 
@@ -131,6 +148,71 @@ export const delBase = <TDatumType>(url: string, body={}) => {
             }
         }
     ).then<TDatumType>(
+        res => toJsonOrRaise(res)
+    );
+};
+
+/**
+ * GET APIを発行してファイルをダウンロードする
+ * @param url
+ * @param accept
+ * @param fileName
+ * @throws {ErrorResponse}
+ */
+export const download = (url: string, accept: string, fileName?: string, params?: {}) => {
+    if(params) {
+        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+    }
+    return fetch(
+        url,
+        {
+            method: 'GET',
+            headers: {
+                'Accept': accept
+            }
+        }
+    ).then(res => {
+        // ダウンロードしたファイル名を取得する
+        const fileName = res.headers.get('Content-Disposition')?.split('filename=')[1];
+        return toBlobOrRaise(res).then(blob => ({blob:blob, fileName:fileName}));
+    }).then(
+        // Fetch API to force download file
+        // https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
+        blob => {
+            const href = window.URL.createObjectURL(blob.blob);
+            Object.assign(
+                document.createElement('a'),
+                {
+                    href,
+                    download: fileName || blob.fileName
+                }
+            ).click();
+        }
+    );
+};
+
+/**
+ * POST APIを発行してファイルをアップロードする
+ * @param url
+ * @throws {ErrorResponse}
+ */
+export const uploadBase = (url:string, body:{}) => {
+    // FormDataオブジェクトにAPIパラメタを格納する
+    const formData = new FormData();
+    for(const key in body){
+        formData.append(key, body[key])
+    };
+    return fetch(
+        url,
+        {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+                // Content-Typeを指定するとAPI発行に失敗する
+            }
+        }
+    ).then(
         res => toJsonOrRaise(res)
     );
 };

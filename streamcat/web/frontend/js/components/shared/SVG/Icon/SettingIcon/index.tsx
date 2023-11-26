@@ -1,7 +1,7 @@
 import React from "react";
 import {Icon} from "Shared/SVG/Icon";
 
-const SettingIcon = () => {
+export const SettingIcon = () => {
     return (
         <Icon width={20} height={20} fillColor={"#606C78"}>
             <path
@@ -9,5 +9,3 @@ const SettingIcon = () => {
         </Icon>
     );
 };
-
-export {SettingIcon};

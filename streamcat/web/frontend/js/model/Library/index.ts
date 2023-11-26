@@ -4,7 +4,7 @@ import {
     FrameNodeType,
     InlineFlowNodeType,
     NoteNodeType
-} from 'Model/Step/NodeTypes';
+} from 'Model/Node/NodeTypes';
 
 /**
  * Datumの種別
@@ -359,6 +359,7 @@ export type Commands = {
     deleteCache:(
         nodeId: string
     ) => Promise<void>;
+    clone:() =>FlowType;
 };
 
 /**

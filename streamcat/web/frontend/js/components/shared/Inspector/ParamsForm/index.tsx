@@ -91,13 +91,17 @@ export class ParamsForm extends React.Component<Props, State> {
     }
 
     /**
-     * 初期値 or 入力値の取得
+     * 入力値の取得
      * @param args
      * @param param
      * @returns {*}
      */
-    getDefaultValueOrArgsValue(args: { [name:string]:any } | undefined, param: CommandParamType) {
-        return args? args[param.name]: param.default || '' ;
+    getArgsValue(args: { [name:string]:any } | undefined, param: CommandParamType) {
+        if(args && args.hasOwnProperty(param.name)){
+            return args[param.name];
+        }else{
+            return '';
+        }
     }
 
     /**
@@ -216,7 +220,7 @@ export class ParamsForm extends React.Component<Props, State> {
     renderParam(param, key) {
         const {args, command, invalids, onChange, headers, disabled, parentUUID} = this.props;
         let isPresence = (command) ? this.isPresence(command, param) : false;
-        const value = this.getDefaultValueOrArgsValue(args, param);
+        const value = this.getArgsValue(args, param);
         const paramElement = this.getParamElement(param, disabled, parentUUID, param.label, value, onChange, headers);
         const invalidMessageEelement = invalids && this.getInvalidMessageElement(invalids[param.name]);
 

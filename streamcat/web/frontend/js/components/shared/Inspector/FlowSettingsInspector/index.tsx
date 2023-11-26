@@ -1,22 +1,22 @@
-import React, {Fragment, useRef} from "react";
+import React, {Fragment} from "react";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
-import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { RunnablesType } from 'Types/index';
 
 type Props = {
     runnables: RunnablesType;
-    selectedStepIds: string[];
+    selectedNodes: AllNodeType[];
     // nodes: any[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     flowData: Flow;
     flowUuid: string;
     updateFlow: (flowData:Flow, zoom:number) => void;
@@ -24,15 +24,13 @@ type Props = {
     addFlowVariableHidden: boolean;
     commandSelectorHidden: boolean;
     baseInspectorDisabled: boolean;
-}
+};
 
 /*
   フローエディタで表示中のフローのInspector
 */
-const FlowSettingsInspector = (props: Props) => {
+export const FlowSettingsInspector = (props: Props) => {
     const {flowData} = props;
-
-    const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
     const onBlurTitle = (e: React.SyntheticEvent<HTMLInputElement>) => {
         flowData.label = e.currentTarget.value;
@@ -95,8 +93,8 @@ const FlowSettingsInspector = (props: Props) => {
         });
     };
 
-    const { flowUuid, runnables, zoom, addStep, addDataDstStep, addDataSrcStep,
-            selectSteps, selectedStepIds, addHistory, addFlowVariableHidden,
+    const { flowUuid, runnables, zoom, addNode, addDataDstNode, addDataSrcNode,
+            selectNodes, selectedNodes, addHistory, addFlowVariableHidden,
             commandSelectorHidden, baseInspectorDisabled } = props;
 
     let inputParamsContainer, addFlowParams;
@@ -104,8 +102,12 @@ const FlowSettingsInspector = (props: Props) => {
     const inputParams = flowData.params.map((param, index) => {
         return <div key={index} className={style.flow_param}>
             <div className={style.left}>
-                <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
-                       onChange={(e) => {onParamChange(e, index)}} />
+                <input  id={`param${index}`}
+                        type={'text'}
+                        value={param.name}
+                        readOnly={baseInspectorDisabled}
+                        className={'form-control'}
+                        onChange={(e) => {onParamChange(e, index)}} />
             </div>
             <div className={style.right}>
                 <Button danger={true} disabled={baseInspectorDisabled} onClick={e => onClickDeleteParam(e, index)}>削除</Button>
@@ -114,9 +116,12 @@ const FlowSettingsInspector = (props: Props) => {
     });
 
     if (inputParams && inputParams.length) {
+        // Note: ConsoleのIssueを抑制するためラベル文字列とinputタグをlabelタグの中に配置する
         inputParamsContainer = <div key='params' className={"mt-8px"}>
-            <label>フロー変数</label>
-            {inputParams}
+            <label>
+                フロー変数
+                {inputParams}
+            </label>
         </div>;
     } else if (baseInspectorDisabled) {
         inputParamsContainer = <div key='noParams0' className={"mt-8px"}>
@@ -137,12 +142,17 @@ const FlowSettingsInspector = (props: Props) => {
         addFlowParams = <AddButton onClick={() => onClickAddFlowParam()}>フロー変数を追加する</AddButton>;
     }
 
-    return <BaseInspector key={flowUuid} header={""} label={flowData.label}
+    return <BaseInspector key={flowUuid} label={flowData.label}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
-        <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}
-                  defaultValue={flowData.description} rows={8}
-                  onChange={(e) => onDescriptionChange(e)} disabled={(baseInspectorDisabled)} />
+        {/* Note: ConsoleのIssueを抑制するためid属性を設定する */}
+        <textarea id='flowDesc'
+                  defaultValue={flowData.description}
+                  placeholder={"フローの説明"}
+                  disabled={baseInspectorDisabled}
+                  rows={8}
+                  className={'form-control mb-8px'}
+                  onChange={e => onDescriptionChange(e)} />
         {inputParamsContainer}
         {addFlowParams}
         {
@@ -153,12 +163,12 @@ const FlowSettingsInspector = (props: Props) => {
                         nodes={flowData.nodes}
                         runnables={runnables}
                         numberOfInput={0}
-                        selectedStepIds={selectedStepIds}
+                        selectedNodes={selectedNodes}
                         zoom={zoom}
-                        addStep={addStep}
-                        addDataSrcStep={addDataSrcStep}
-                        addDataDstStep={addDataDstStep}
-                        selectSteps={selectSteps}
+                        addNode={addNode}
+                        addDataSrcNode={addDataSrcNode}
+                        addDataDstNode={addDataDstNode}
+                        selectNodes={selectNodes}
                         addHistory={addHistory}
                     />
                 </Fragment>
@@ -166,6 +176,3 @@ const FlowSettingsInspector = (props: Props) => {
         }
     </BaseInspector>;
 };
-
-
-export {FlowSettingsInspector};

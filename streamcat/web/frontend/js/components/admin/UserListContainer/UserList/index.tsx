@@ -12,7 +12,7 @@ import {FilterListLinkButton, IFilterCategoryItem, IFilterListItem} from 'Shared
 import {FilterSelectedList} from 'Shared/Input/FilterListLinkButton/FilterSelectedList';
 import { UserBody } from '../UserBody';
 
-interface Props {
+type Props = {
     navigation: NavigationType | null;
 };
 

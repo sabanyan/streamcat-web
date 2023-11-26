@@ -2,21 +2,21 @@ import React from 'react';
 import style from './style.scss';
 import iconStyle from 'Shared/Input/FlatButton/style.scss';
 
-export interface ITableHeader {
+export type ITableHeader = {
     label: string;
     key: string;
     width?: number;
     sort?: TTableHeaderSortType;
-}
+};
 
-export interface SortedHeader {
+export type SortedHeader = {
     key: string;
     sortType: TTableHeaderSortType;
 };
 
 export type TTableHeaderSortType = 'asc' | 'desc' | null | undefined
 
-interface Props {
+type Props = {
     headers: ITableHeader[];
     sortedHeaders: [SortedHeader[], (value:React.SetStateAction<SortedHeader[]>)=>void];
 }

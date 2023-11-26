@@ -12,6 +12,7 @@ type ToolBarProps = {
     flowState: [FlowType, (value:React.SetStateAction<FlowType>)=>void];
     graphState: [GraphType, (value:React.SetStateAction<GraphType>)=>void];
     flowData: Flow;
+    flowIsUpdated: boolean;
     // history: HistoryType;
     undoStackLength: number;
     redoStackLength: number;
@@ -23,18 +24,19 @@ type ToolBarProps = {
     notifyError: (title: string, message: string) => string;
     notifyComplete: (title:string, outLabels:string[], parentFolderUUID:string|null) => string;
     dismissNotify: (id:string) => void;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
     addHistory: () => void;
     undo: () => void;
     redo: () => void;
     baseDisabled: boolean
     runDisabled: boolean;
     onClickSaveFlow: () => {};
-    onClickRunFlowPromise: any;
+    onClickRunFlowPromise: () => Promise<void | FlowType>;
 };
 
 export const ToolBar = (props: ToolBarProps) => {
     const { flowData,
+            flowIsUpdated,
             // history,
             // zoom,
             undoStackLength,
@@ -46,7 +48,7 @@ export const ToolBar = (props: ToolBarProps) => {
             notifyError,
             notifyComplete,
             dismissNotify,
-            addStep,
+            addNode,
             addHistory, 
             undo,
             redo, 
@@ -84,12 +86,14 @@ export const ToolBar = (props: ToolBarProps) => {
         });
         //ノード位置を再計算
         graphUtil.refreshPosition(targets);
+        setFlow({...flow});
         setGraph(graphUtil.getGraph(flowData.nodes, zoom));;
     };
 
     return <div>
         <div className={classnames(style.flow_toolbar)}>
             <Save disabled={baseDisabled}
+                  flowIsUpdated={flowIsUpdated}
                   onClick={e => onClickSaveFlow()}>保存</Save>
             <Run refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}
@@ -103,7 +107,7 @@ export const ToolBar = (props: ToolBarProps) => {
                 disabled={runDisabled}>このフローを実行</Run>
             <Note zoom={zoom}
                   nodes={flowData.nodes}
-                  addStep={addStep}
+                  addNote={addNode}
                   addHistory={addHistory}
                   disabled={baseDisabled}>メモ</Note>
             <Undo undo={undo}

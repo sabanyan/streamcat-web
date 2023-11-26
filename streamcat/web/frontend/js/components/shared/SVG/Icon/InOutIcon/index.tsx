@@ -1,14 +1,14 @@
 import React from "react";
 import {IconProps} from "Shared/SVG/Icon";
 
-interface Props extends IconProps {
+type Props = IconProps & {
     flowIn?: boolean;
     flowOut?: boolean;
     fill: string;
     stroke: string;
-}
+};
 
-const InOutIcon = (props: Props) => {
+export const InOutIcon = (props: Props) => {
     const {flowIn, flowOut, width, height, fill, stroke} = props;
     let text;
     if (flowIn && flowOut) {
@@ -39,4 +39,3 @@ const InOutIcon = (props: Props) => {
         </svg>
     </g>);
 };
-export {InOutIcon};

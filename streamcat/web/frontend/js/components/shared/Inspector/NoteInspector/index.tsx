@@ -1,41 +1,36 @@
 import React, {useEffect} from 'react';
 import {BaseInspector} from 'Shared/Inspector';
-import {GraphUtil, ModalUtil} from 'Utils/index';
+import {ModalUtil} from 'Utils/index';
 import {Button, DropDownList} from 'Shared/Input';
 import Constants from 'Constants/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
-import { NoteNodeType } from 'Model/Step/NodeTypes';
+import { NoteNodeType } from 'Model/Node/NodeTypes';
 import { AllNodeType } from 'Model/Library';
 
-interface Props {
-    selectedNodeId: string;
+type Props = {
+    selectedNode: AllNodeType;
     nodes: AllNodeType[];
-    selectSteps: (selected_steps: any[]) => void;
-    updateStep: (node:NoteNodeType) => void;
-    deleteSteps: (step_ids: string[]) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
+    updateNode: (node:NoteNodeType) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     baseInspectorDisabled: boolean;
     addHistory: () => void;
-}
+};
 
-const NoteInspector = (props: Props) => {
+export const NoteInspector = (props: Props) => {
     useEffect(() => {
         const element: HTMLInputElement = document.querySelector('.property_body input:first-child') as HTMLInputElement;
         if (element) element.focus();
     }, []);
 
-    const getSelectedStep = () => {
-        const {selectedNodeId, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedNodeId) as NoteNodeType;
-    };
-
     const onClickDelete = () => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                const {selectedNodeId, deleteSteps, selectSteps, addHistory} = props;
-                deleteSteps([selectedNodeId]);
-                selectSteps([]);
+                const {selectedNode, deleteNodes, selectNodes, addHistory} = props;
+                deleteNodes([selectedNode]);
+                selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -46,48 +41,48 @@ const NoteInspector = (props: Props) => {
             done: '削除する',
             danger: true,
             content: <div>
-                選択されたステップを削除しますか？
+                選択されたノードを削除しますか？
             </div>
         });
     };
 
-    const update = (getNewStep:(step:NoteNodeType) => NoteNodeType) => {
-        const {updateStep} = props;
-        const selectedStep = getSelectedStep();
-        if(selectedStep){
-            const newStep = getNewStep(selectedStep);
-            updateStep(newStep);
+    const update = (getNewNode:(node:NoteNodeType) => NoteNodeType) => {
+        const {selectedNode, updateNode} = props;
+        // const selectedNode = getSelectedNode();
+        if(selectedNode){
+            const newNote = getNewNode(selectedNode as NoteNodeType);
+            updateNode(newNote);
         }
     };
 
     const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        update((step) => {
+        update(node => {
             if (e.target) {
-                step.setTitle(e.target.value);
+                node.setTitle(e.target.value);
             }
-            return step;
+            return node;
         });
     };
 
     const onContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        update((step) => {
-            step.content = e.target.value;
-            return step;
+        update(node => {
+            node.content = e.target.value;
+            return node;
         });
     };
 
     const onChangeFontSize = (e: React.ChangeEvent<HTMLInputElement>, data, label) => {
-        update((step) => {
+        update(node => {
             const fontSize = parseInt(e.target.value);
-            step.setFontSize(fontSize);
-            return step;
+            node.setFontSize(fontSize);
+            return node;
         });
     };
 
     const onChangeColor = (e: React.ChangeEvent<HTMLInputElement>, data, label) => {
-        update((step) => {
-            step.color = e.target.value;
-            return step;
+        update(node => {
+            node.color = e.target.value;
+            return node;
         });
     };
 
@@ -118,17 +113,19 @@ const NoteInspector = (props: Props) => {
         }];
     };
 
-    const {baseInspectorDisabled} = props;
+    const {selectedNode, baseInspectorDisabled} = props;
 
-    const selected_step = getSelectedStep();
-    if (!selected_step) return null;
-    const noteTitle = selected_step.title;
-    const noteContent = selected_step.content;
-    const fontSize = selected_step.fontSize;
-    const color = selected_step.color;
+    // const selectedNode = getSelectedNode();
+    const noteNode = selectedNode as NoteNodeType;
+    if (!noteNode) return null;
+    const noteTitle = noteNode.title;
+    const noteContent = noteNode.content;
+    const fontSize = noteNode.fontSize;
+    const color = noteNode.color;
     const content = <div className='property_body'>
         <div>
             <input
+                id='noteTitle'
                 type='text'
                 className={'form-control mb-8px'}
                 placeholder={'メモのタイトル'}
@@ -140,6 +137,7 @@ const NoteInspector = (props: Props) => {
             </input>
             <Spacer height={6} />
             <textarea
+                id='noteContents'
                 className={'mb-8px form-control'}
                 placeholder={'メモの詳細'}
                 defaultValue={noteContent}
@@ -152,7 +150,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='fontSize'
                 onChange={(e, data, label) => onChangeFontSize(e, data, label)}
-                defaultValue={fontSize?.toString() || '16'}
+                value={fontSize?.toString() || '16'}
                 disabled={baseInspectorDisabled}
                 list={getFontSizeList()}
                 label={'文字'}
@@ -162,7 +160,7 @@ const NoteInspector = (props: Props) => {
             <DropDownList
                 key='color'
                 onChange={(e, data, label) => onChangeColor(e, data, label)}
-                defaultValue={color || Constants.default.note.color.green}
+                value={color || Constants.default.note.color.green}
                 disabled={baseInspectorDisabled}
                 list={getColorList()}
                 label={'色'}
@@ -175,9 +173,7 @@ const NoteInspector = (props: Props) => {
         </div>
     </div>;
 
-    return <BaseInspector key={selected_step.id} header={''} label={null} disabled={baseInspectorDisabled} >
+    return <BaseInspector key={selectedNode.id} label={null} disabled={baseInspectorDisabled} >
         {content}
     </BaseInspector>;
 };
-
-export {NoteInspector};

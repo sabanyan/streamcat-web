@@ -6,7 +6,7 @@ import style from './style.scss';
 import {Button} from 'Shared/Input';
 import classnames from 'classnames';
 
-interface Props {
+type Props = {
     // children?: React.ReactNode,
     label: string,
     params: {
@@ -22,9 +22,9 @@ interface Props {
     groups: [],
     // event
     onApply: (args:{}) => void
-}
+};
 
-const PreviewInspector = (props: Props) => {
+export const PreviewInspector = (props: Props) => {
 
     const [args, setArgs] = useState<any>(props.args);
 
@@ -71,11 +71,9 @@ const PreviewInspector = (props: Props) => {
 
     return <Resizer>
         <div className={property_class}>
-            <BaseInspector key={0} header={''} label={label} subLabel={''} disabled={true}>
+            <BaseInspector key={0} label={label} subLabel={''} disabled={true}>
                 {content}
             </BaseInspector>
         </div>
     </Resizer>;
 };
-
-export {PreviewInspector};

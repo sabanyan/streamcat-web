@@ -12,19 +12,14 @@ describe('AdminUtil',
 	});
 });
 
-import SortUtil from './SortUtil';
+import StringUtil from './StringUtil'
 
-describe('SortUtil', () => {
-	test('getSortedContents', () => {
-		const a = {order: 1};
-		const b = {order: 4};
-		const c = {order: 3};
-		const d = {order: 5};
-		const e = {order: 2};
+describe('StringUtil', () => {
+	test('convertToFileSize', () => {
 		expect(
-			SortUtil.getSortedContents([a,b,c,d,e])
+			StringUtil.convertToFileSize(2469879, true)
 		).toEqual(
-			[a,e,c,b,d]
+			'2 MB'
 		);
 	});
 });

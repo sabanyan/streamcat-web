@@ -15,35 +15,22 @@ import {
     DocumentType,
     ActivityType,
     Flow,
-    Port,
-    AllNodeType,
     InlineFlowCommand,
-    Command,
     VCommand,
     Commands,
     FlowCommands
 } from 'Model/Library';
 import {
-    ConnectivityType,
-    NavigationType
-} from 'Model/Navigation/NavigationModel';
-import {
-    FrameNodeType,
-    CommandNodeType,
-    FlowNodeType,
-    InlineFlowNodeType,
-    NoteNodeType,
-    calcSize,
-    addInPort,
-} from 'Model/Step/NodeTypes';
-import {
-    toJsonOrRaise,
     getBase as get,
     postBase,
     putBase,
     delBase,
+    download,
+    uploadBase,
     makeArrayCtor
 } from './ApiBase';
+import { NodeArray } from './Nodes';
+import { PortArray } from './Ports';
 
 const post = <TDatumType>(url: string, body: {}) => {
     return postBase<TDatumType>(url, body).then<TDatumType>(datum => {
@@ -66,64 +53,8 @@ const del = <TDatumType>(url: string, body={}) => {
     });
 };
 
-/**
- * GET APIを発行してファイルをダウンロードする
- * @param url 
- */
-const download = (url: string, accept: string, fileName: string, params?: {}) => {
-    if(params) {
-        url += '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
-    }
-    return fetch(
-        url,
-        {
-            method: 'GET',
-            headers: {
-                'Accept': accept
-            }
-        }
-    ).then(
-        res => res.blob()
-    ).then(
-        // Fetch API to force download file
-        // https://stackoverflow.com/questions/44168090/fetch-api-to-force-download-file
-        blob => {
-            const href = window.URL.createObjectURL(blob);
-            Object.assign(
-                document.createElement('a'),
-                {
-                    href,
-                    download: fileName
-                }
-            ).click();
-        }
-    );
-};
-
-/**
- * POST APIを発行してファイルをアップロードする
- * @param url
- * @throws {ErrorResponse}
- */
 const upload = <TDatumType>(url:string, body:{}) => {
-    // FormDataオブジェクトにAPIパラメタを格納する
-    const formData = new FormData();
-    for(const key in body){
-        formData.append(key, body[key])
-    };
-    return fetch(
-        url,
-        {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-                // Content-Typeを指定するとAPI発行に失敗する
-            }
-        }
-    ).then<TDatumType>(
-        json => toJsonOrRaise(json)
-    ).then(datum => {
+    return uploadBase(url, body).then<TDatumType>(datum => {
         // DatumArrayのshift()を用いてdatumに各種関数を付与する
         return datum && (new DatumArray([datum as any])).shift() as any;
     });
@@ -279,6 +210,7 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             post(`/api/v0/flows`, {source:d.uuid});
         d.deleteCache = (nodeId) =>
             del<void>(`/api/v0/caches?of=${d.uuid}.${nodeId}`);
+        d.clone = () => ({...d, flow: d.flow.clone()});
     }else if(datum.type === 'schedule') {
         const d = datum as ScheduleType;
         d.move = (parent) => 
@@ -324,112 +256,6 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
         // Activityの変更・削除はできない
     }
 });
-
-/**
- * NodeArrayのコンストラクタ関数を作成する
- */
-export const NodeArray = makeArrayCtor<AllNodeType>(node => {
-    if(node.type === 'frame'){
-        const n = node as FrameNodeType;
-        n.hasData = () => !!n.uuid;
-        n.isCached = () => !!n.cacheCreatedAt;
-        n.deleteCache = () => {
-            n.cacheCreatedAt = null;
-            n.uuid = null;
-        };
-    }else if(node.type === 'command'){
-        const c = node as CommandNodeType;
-        c.deleteInPort = (label:string) => {
-            c.srcs && delete c.srcs[label];
-            if(c.srcsOrder){
-                c.srcsOrder = c.srcsOrder.filter(srcLabel => srcLabel !== label);
-            }
-        };
-        c.addInPort = (label:string, nodeId:string) => addInPort(c, label, nodeId);
-        c.getInPortIndex = () => {
-            const srcKeys = Object.keys(c.srcs || {});
-
-            const filterKeys = srcKeys.filter((key) => {
-                return (key.indexOf("*") != -1);
-            });
-    
-            let max = 0;
-            filterKeys.forEach((key) => {
-                const value = key.replace("*", "");
-                max = (parseInt(value) > max) ? parseInt(value) : max;
-            });
-    
-            return max;
-        };
-        c.addableInPort = (command: Command) => {
-            // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
-            const filterKeys = command.ports[0].filter((inPort) => {
-                return (inPort.label.indexOf("*") >= 0);
-            });
-            return filterKeys.length > 0;
-        };
-    }else if(node.type === 'flow'){
-        if(node.hasOwnProperty('uuid')){
-            const f = node as FlowNodeType;
-            f.addableInPort = () => false;
-        }else if(node.hasOwnProperty('flow')){
-            const f = node as InlineFlowNodeType;
-            f.addableInPort = () => false;
-        }else{
-            throw new Error('Flow node has not neither uuid nor flow property');
-        }
-    }else if(node.type === 'note'){
-        const n = node as NoteNodeType;
-        n.setTitle = (title) => {
-            n.title = title;
-            n.size = calcSize(title, n.fontSize || 16);
-        };
-        n.setFontSize = (fontSize) => {
-            n.fontSize = fontSize;
-            n.size = calcSize(n.title, fontSize);
-        };
-    }else{
-        // TODO: 他のNodeTpeを追加予定
-    }
-});
-
-/**
- * PortArrayのコンストラクタ関数を作成する
- */
-const PortArray = function(this: any, ports: Port[]){
-    Array.prototype.push.apply(this, ports);
-    // JsonStringify()でlengthプロパティをJSON文字列から除外するために設定しておく
-    this.__allAPIFuncSet = true;
-};
-PortArray.prototype = Object.create(Array.prototype);
-PortArray.prototype.constructor = PortArray;
-
-PortArray.prototype.exists = function(portId: string){
-    // TODO: Portの識別子はnodeIdからlabelに変更予定
-    return !!PortArray.prototype.find.apply(this, [p => p.nodeId === portId]);
-};
-
-PortArray.prototype.upsert = function(port: Port){
-    const findPort = PortArray.prototype.find.apply(this, [p => p.nodeId === port.nodeId]);
-    if(findPort){
-        // 既に存在する場合は更新する
-        findPort.label = port.label;
-        findPort.type = port.type;
-    }else{
-        // 存在しない場合は追加する
-        this.push(port);
-    }
-};
-
-PortArray.prototype.removeByNodeId = function(nodeId: string){
-    const index = PortArray.prototype.findIndex.apply(this, [p => p.nodeId === nodeId]);
-    if(index === -1){
-        // 存在しない場合は何もしない
-        return;
-    }
-    // 存在する場合は削除する
-    PortArray.prototype.splice.apply(this, [index, 1]);
-};
 
 /**
  * 引数を追加する共通関数
@@ -683,60 +509,6 @@ export const DatumApi = {
      */
     findVCommands: () => {
         return get<VCommand[]>('/api/v0/vcommands');
-    },
-
-    /**
-     * GET /navigationを発行してNavigationを取得する
-     * @throws {ErrorResponse}
-     */
-    findNavigation: () => {
-        return get<NavigationType>('/api/v0/navigation');
-    },
-
-    /**
-     * GET /connectables/remote-foldersを発行して
-     * RemoteFolderへの接続を確認する
-     */
-    checkRemoteFolderConnection: (
-        protocol: 'smb',
-        hostname: string,
-        domain: string,
-        directory: string,
-        userId: string,
-        password: string
-    ) => {
-        const params = {
-            protocol: protocol,
-            hostname: hostname,
-            domain: domain,
-            directory: directory,
-            userId: userId,
-            password: password
-        };
-        return get<ConnectivityType>('/api/v0/connections/remote-folders', params);
-    },
-
-    /**
-     * GET /connectables/databasesを発行して
-     * Databaseへの接続を確認する
-     */
-    checkDatabaseConnection: (
-        dbms: 'postgresql'|'oracle',
-        hostname: string,
-        port: number,
-        database: string,
-        userId: string,
-        password: string
-    ) => {
-        const params = {
-            dbms: dbms,
-            hostname: hostname,
-            port: port,
-            database: database,
-            userId: userId,
-            password: password
-        };
-        return get<ConnectivityType>('/api/v0/connections/databases', params);
     },
 
     /**

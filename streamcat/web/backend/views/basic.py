@@ -19,6 +19,11 @@ def favicon():
 def profile():
     return make_response('profile.html')
 
+@mod.route('/admin/sys', methods=['GET', 'POST'])
+@login_required
+def admin_sys():
+    return make_response('admin/sys.html')
+
 @mod.route('/admin/users', methods=['GET', 'POST'])
 @login_required
 def admin_users():

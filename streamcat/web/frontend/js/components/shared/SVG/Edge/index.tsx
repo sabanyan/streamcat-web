@@ -1,6 +1,6 @@
 import React from "react";
 import style from "./style.scss";
-import {Arrow, Port, StepTextStyle} from "Shared/SVG";
+import {Arrow, Port, NodeTextStyle} from "Shared/SVG";
 import Constants from "Constants/index";
 import {StringUtil} from "Utils/index";
 
@@ -11,16 +11,16 @@ type EdgeProps = {
     vy: number;
     wx: number;
     wy: number;
-}
+};
 
 type RectProps = {
     x: number;
     y: number;
     width: number;
     height: number;
-}
+};
 
-const Edge = (props: EdgeProps) => {
+export const Edge = (props: EdgeProps) => {
     /**
      * 二点間の角度の計算
      * ref:https://www.s-projects.net/point-to-angle.html
@@ -107,7 +107,7 @@ const Edge = (props: EdgeProps) => {
     const arrowPosition = edgeOfRect(arrowRect, rectOfEdgeAngle);
 
     // ポートのラベルの位置計算（ラベルの長さに応じた調整付き）
-    let offsetWidth = StringUtil.getTextWidth(outPortLabel, StepTextStyle.fontSize);
+    let offsetWidth = StringUtil.getTextWidth(outPortLabel, NodeTextStyle.fontSize);
     let offsetHeight = 10;
     const outPortRect = {
         x: vx,
@@ -115,7 +115,7 @@ const Edge = (props: EdgeProps) => {
         width: Constants.default.step.width + Constants.default.step.borderWidth * 2 + offsetWidth,
         height: Constants.default.step.height + Constants.default.step.borderWidth * 2 + offsetHeight
     };
-    offsetWidth = StringUtil.getTextWidth(inPortLabel, StepTextStyle.fontSize);
+    offsetWidth = StringUtil.getTextWidth(inPortLabel, NodeTextStyle.fontSize);
     const inPortRect = {
         x: wx,
         y: wy,
@@ -175,5 +175,3 @@ const Edge = (props: EdgeProps) => {
         {inPort}
     </g>;
 };
-
-export {Edge};

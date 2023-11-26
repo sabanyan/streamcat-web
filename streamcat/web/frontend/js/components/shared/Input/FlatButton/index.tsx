@@ -2,7 +2,7 @@ import React from 'react';
 import style from "./style.scss";
 import classnames from "classnames";
 
-interface Props {
+type Props = {
     onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
     children?: React.ReactNode;
     disabled?: boolean;
@@ -12,7 +12,7 @@ interface Props {
     primary?: boolean;
 }
 
-const FlatButton = (props: Props) => {
+export const FlatButton = (props: Props) => {
     const {onClick, children, disabled, icon, danger, className, primary} = props;
     const buttonClass = classnames(style.button, {
         [style.danger]: danger,
@@ -30,5 +30,3 @@ const FlatButton = (props: Props) => {
         </div>
     </button>;
 };
-
-export {FlatButton};

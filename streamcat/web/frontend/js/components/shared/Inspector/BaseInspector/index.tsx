@@ -3,18 +3,18 @@ import {useEffect, useRef} from "react";
 import style from "../style.scss";
 import classnames from "classnames";
 
-interface Props {
+type Props = {
     label?: string | null;
     subLabel?: string;
     header?: string;
     title?: (string | React.ReactNode);
     children?: React.ReactNode;
     onBlurTitle?: any;
-    onHide?: Function;
+    onHide?: () => void;
     disabled?: boolean;
-}
+};
 
-const BaseInspector = (props: Props) => {
+export const BaseInspector = (props: Props) => {
     const inputEl = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -45,6 +45,7 @@ const BaseInspector = (props: Props) => {
     let labelContainer, subLabelContainer;
     if (onBlurTitle && label !== undefined) {
         labelContainer = <input key={label || undefined}
+                                id='cmdLabel'
                                 type="text" ref={inputEl}
                                 onBlur={(onBlurTitle) ? (e) => {
                                     onBlurTitle(e, props);
@@ -74,6 +75,3 @@ const BaseInspector = (props: Props) => {
         </div>
     </div>;
 };
-
-export {BaseInspector};
-

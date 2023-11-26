@@ -5,12 +5,12 @@ import {NavigationType} from 'Model/Navigation/NavigationModel';
 import { Spacer } from "Shared/Base";
 import {StorageUsage} from 'Shared/Input'
 
-interface Props {
+type Props = {
     navigation: NavigationType | null;
     visible: boolean;
-}
+};
 
-const AccountMenu = (props: Props) => {
+export const AccountMenu = (props: Props) => {
     const {navigation, visible} = props;
 
     // 非表示の場合はnullを返す
@@ -41,8 +41,10 @@ const AccountMenu = (props: Props) => {
         depoName = '';
     }
 
+    // システム管理画面へのリンクの表示有無を判定する
+    const availableSysAdmin = navigation && navigation.allowlist && navigation.allowlist.setSystem;
     // ユーザー管理画面へのリンクの表示有無を判定する
-    const availableUserAdmin = (navigation && navigation.allowlist && navigation.allowlist.findUsers)
+    const availableUsrAdmin = navigation && navigation.allowlist && navigation.allowlist.findUsers;
 
     return <>
         <Button id='basic-button'
@@ -68,12 +70,19 @@ const AccountMenu = (props: Props) => {
                 <Link href='/settings/profile' underline='none'>ユーザー情報変更</Link>
             </MenuItem>
             {
-                availableUserAdmin ?
+                availableSysAdmin ?
                 <MenuItem >
-                    <Link href='/admin/users' underline='none'>ユーザー管理</Link>
+                    <Link href='/admin/sys' underline='none'>システム管理</Link>
                 </MenuItem> :
                 // <></>を返すと"MUI: The Menu component doesn't accept a Fragment as a child"
                 // という警告が表示される
+                null
+            }
+            {
+                availableUsrAdmin ?
+                <MenuItem >
+                    <Link href='/admin/users' underline='none'>ユーザー管理</Link>
+                </MenuItem> :
                 null
             }
             <MenuItem onClick={e=>onClickLogout(e)}>
@@ -82,5 +91,3 @@ const AccountMenu = (props: Props) => {
         </Menu>
     </>;
 }
-
-export {AccountMenu};

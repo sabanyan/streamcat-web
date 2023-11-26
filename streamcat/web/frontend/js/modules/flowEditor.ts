@@ -4,7 +4,8 @@ import { FlowUtil, GraphUtil, ModelUtil, ZoomUtil } from "Utils/index";
 import { CommandPortType, RunnablesType } from "../types";
 import _ from "lodash";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
-import { CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Step/NodeTypes";
+import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Node/NodeTypes";
+import { NodeArray } from "Api";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -48,98 +49,59 @@ const ADD_DATASRC_ACTION = "add_datasrc_action";
 export const graphUtil: GraphUtil = new GraphUtil();
 
 /**
- * エッジのつなぎ直し処理
- * @param newState
- * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
- * @returns {*}
+ * CanvasからEdgeを削除する
+ * @param node 
+ * @param portLabel 
  */
-export const rebuildNodesEdges = (nodes:AllNodeType[], action:{step:any}) => {
-    return nodes.map((node: any, index) => {
-        //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
-        if (node.id === action.step.id) {
-            if (node.type === 'command' ||
-                node.type === 'flow' ||
-                node.classification === "data_source" ||
-                node.classification === "data_dest") {
-                if (!_.isEqual(node.srcs, action.step.srcs)) {
-                    //ノードのつながりを削除
-                    Object.keys(node.srcs).forEach(portLabel => {
-                        const id = node.srcs[portLabel];
-                        const from = id;
-                        const to = node.id;
-                        if (GraphUtil.NodeExists(nodes, id)) {
-                            graphUtil.removeEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                        }
-                    });
-                    //ノードのつながりを再構築
-                    Object.keys(action.step.srcs).forEach(portLabel => {
-                        const id = action.step.srcs[portLabel];
-                        const from = id;
-                        const to = action.step.id;
-                        if (GraphUtil.NodeExists(nodes, id)) {
-                            graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                        }
-                    });
-                }
-                if (!_.isEqual(node.dsts, action.step.dsts)) {
-                    //ノードのつながりを削除
-                    Object.keys(node.dsts).forEach(portLabel => {
-                        const id = node.dsts[portLabel];
-                        const from = node.id;
-                        const to = id;
-                        if (GraphUtil.NodeExists(nodes, id)) {
-                            graphUtil.removeEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                        }
-                    });
-                    //ノードのつながりを再構築
-                    Object.keys(action.step.dsts).forEach(portLabel => {
-                        const id = action.step.dsts[portLabel];
-                        const from = action.step.id;
-                        const to = id;
-                        if (GraphUtil.NodeExists(nodes, id)) {
-                            graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                        }
-                    });
-                }
-            }
-            return action.step;
+export const removeNodeEdge = (node:CommandNodeType|BaseFlowNodeType, portLabel:string) => {
+    const remove = (fromNodeId:string, toNodeId:string) => {
+        if(fromNodeId && toNodeId && graphUtil.existsNode(fromNodeId) && graphUtil.existsNode(toNodeId)){
+            graphUtil.removeEdge(fromNodeId, toNodeId, GraphUtil.edgeName(fromNodeId, toNodeId, portLabel));
         }
-        return node;
+    };
+    // nodeに入るEdgeを削除する
+    node.srcs && remove(node.srcs[portLabel], node.id);
+    // nodeから出るEdgeを削除する
+    node.dsts && remove(node.id, node.dsts[portLabel]);
+};
+
+/**
+ * CanvasにEdgeを追加する
+ * @param newNode 
+ */
+export const addNodeEdges = (newNode:CommandNodeType|BaseFlowNodeType) => {
+    const add = (fromNodeId:string, toNodeId:string, portLabel:string) => {
+        // NOTE: Nodeの追加前にEdgeを追加できるようだ
+        // if(fromNodeId && toNodeId && graphUtil.existsNode(fromNodeId) && graphUtil.existsNode(toNodeId)){
+        if(fromNodeId && toNodeId){
+            graphUtil.addEdge(fromNodeId, toNodeId, GraphUtil.edgeName(fromNodeId, toNodeId, portLabel));
+        }
+    };
+    // nodeに入るEdgeを追加する  
+    newNode.srcs && Object.entries(newNode.srcs).forEach(([portLabel, srcNodeId]) => {
+        add(srcNodeId, newNode.id, portLabel);
+    });
+    // nodeから出るEdgeを追加する
+    newNode.dsts && Object.entries(newNode.dsts).forEach(([portLabel, dstNodeId]) => {
+        add(newNode.id, dstNodeId, portLabel);
     });
 };
 
 /**
- * エッジのつなぎ直し処理
- * @param newState
- * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
- * @returns {*}
+ * 指定された全てのNodeに繋ぐEdgeを再描画する
+ * @param nodes 
+ * @param edges 
  */
-export const allRebuildNodesEdges = (nodes:AllNodeType[], edges:{v:string,w:string,name:string}[]) => {
-    //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
+export const redrawAllEdges = (nodes:AllNodeType[], edges:{v:string,w:string,name:string}[]) => {
+    // 全てのEdgeを削除する
     graphUtil.removeAllEdges(edges);
-    return nodes.map(node => {
-        if (node.type === 'command' || node.type === 'flow') {
-            const runnableNode = node as CommandNodeType | FlowNodeType | InlineFlowNodeType;
-            // 入力Edgeを再生成する
-            runnableNode.srcs && Object.keys(runnableNode.srcs).forEach(portLabel => {
-                const id = runnableNode.srcs![portLabel];
-                const from = id;
-                const to = runnableNode.id;
-                if (GraphUtil.NodeExists(nodes, id)) {
-                    graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                }
-            });
-            // 出力Edgeを再生成する
-            runnableNode.dsts && Object.keys(runnableNode.dsts).forEach(portLabel => {
-                const id = runnableNode.dsts![portLabel];
-                const from = runnableNode.id;
-                const to = id;
-                if (GraphUtil.NodeExists(nodes, id)) {
-                    graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-                }
-            });
+
+    // 全てのCommandまたはFlowのEdgeを追加する
+    nodes.forEach(node => {
+        if(node.type==='command' || node.type==='flow'){
+            const runnableNode = node as CommandNodeType|BaseFlowNodeType;
+            addNodeEdges(runnableNode);
         }
-        return node;
     });
 };
 
@@ -168,10 +130,13 @@ const defaultNodePositionAndSize = (): PositionAndSize => {
 };
 
 const newNodesPositionAndSize = (nodes: AllNodeType[], srcNodeIds: string[] = [], dstNodeIds: string[] = []) => {
-    let result = {
+    const result: {
+        newNodePositionAndSize: PositionAndSize,
+        dstNodesPositionAndSize: { [nodeId:string]:PositionAndSize }
+    } = {
         newNodePositionAndSize: defaultNodePositionAndSize(),
         dstNodesPositionAndSize: {}
-    }
+    };
 
     let totalSX = 0;
     let totalSY = 0;
@@ -184,7 +149,7 @@ const newNodesPositionAndSize = (nodes: AllNodeType[], srcNodeIds: string[] = []
 
     if (srcNodeIds.length > 0) {
         srcNodeIds.forEach((id: string) => {
-            const node = GraphUtil.getNode(nodes, id);
+            const node = FlowUtil.getNode(nodes, id);
             totalSX = totalSX + node.position.x;
             totalSY = totalSY + node.position.y;
         });
@@ -247,26 +212,6 @@ const newDstNodes = (dstNodeIds: string[],
     return result;
 };
 
-const addToGraph = (graphUtil: GraphUtil, node: InlineFlowNodeType) => {
-    // node
-    graphUtil.addNode(node.id);
-    // src edges
-    node.srcs && Object.keys(node.srcs).forEach((key) => {
-        const from = node.srcs![key];
-        const to = node.id;
-        const portLabel = key;
-        graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-    })
-    // dst edges
-    node.dsts && Object.keys(node.dsts).forEach((key) => {
-        const to = node.dsts![key];
-        const from = node.id;
-        const portLabel = key;
-        graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
-        graphUtil.addNode(to);
-    })
-};
-
 type DataSrcProps = {
     id: string
     position: { x: number, y: number }
@@ -316,11 +261,20 @@ const newDataDest = (props: DataDestProps) => {
 };
 
 /**
- * ステップの追加
- * @param step
- * @returns {{type: string, step: *}}
+ * 
+ * @param flowData ノードを追加する
+ * @param addNode 
+ * @param srcNodes 
+ * @param dstNodes 
+ * @param runnables 
+ * @param zoom 
  */
-export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[], dst_step_ids:string[], runnables:RunnablesType, zoom:number) => {
+export const addNodeAction = (flowData: Flow,
+                              addNode: AllNodeType,
+                              srcNodes: AllNodeType[],
+                              dstNodes: AllNodeType[],
+                              runnables: RunnablesType,
+                              zoom: number) => {
 
     // let offsetX = 0;
     // let hasNode = (from_step_ids)?(graph.outEdges(from_step_ids[0]).length):false
@@ -329,22 +283,22 @@ export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[]
     // }
 
     //ノードの追加
-    graphUtil.addNode(add_step.id);
+    graphUtil.addNode(addNode.id);
 
-    if (add_step.type === 'command' || add_step.type === 'flow') {
+    if (addNode.type === 'command' || addNode.type === 'flow') {
+        const newRunableNode = addNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
 
         let totalSX = 0;
         let totalSY = 0;
 
-        src_step_ids.forEach((id: string) => {
-            const target: AllNodeType = GraphUtil.getNode(flowData.nodes, id);
-            totalSX = totalSX + target.position.x;
-            totalSY = totalSY + target.position.y;
+        srcNodes.forEach(srcNode => {
+            totalSX = totalSX + srcNode.position.x;
+            totalSY = totalSY + srcNode.position.y;
         });
 
         //dsts
         let totalDX = 0;
-        dst_step_ids.forEach((id: string) => {
+        dstNodes.forEach(dstNode => {
             //ノードの数に応じて
             totalDX = totalDX + defaultGraphProps.nodeSeparator;
         });
@@ -356,15 +310,15 @@ export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[]
         //
         if (totalDX) totalDX = totalDX - defaultGraphProps.nodeSeparator;
 
-        if (src_step_ids || dst_step_ids) {
-            //追加したステップの位置調整
+        if (srcNodes || dstNodes) {
+            //追加したNodeの位置調整
             let average = {
-                sx: totalSX / src_step_ids.length,
-                sy: totalSY / src_step_ids.length,
+                sx: totalSX / srcNodes.length,
+                sy: totalSY / srcNodes.length,
                 dx: totalDX / 2
             };
 
-            if (!src_step_ids.length) {
+            if (!srcNodes.length) {
                 //入力がない場合、グラフの中央を基準にする
                 const el = document.querySelector("#flow_editor>div");
                 const leftTopPosition = {
@@ -378,173 +332,212 @@ export const addStepAction = (flowData:Flow, add_step:any, src_step_ids:string[]
                 };
             }
 
+            const adjustment = 12;
             const newPosition = {
                 x: average.sx,
-                y: average.sy + Constants.default.step.height + defaultGraphProps.rankSeparator
+                y: average.sy + Constants.default.step.height + defaultGraphProps.rankSeparator - adjustment
             };
 
             //追加されたノードの位置調整
-            add_step.position = {x:newPosition.x, y:newPosition.y};
-            add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+            newRunableNode.position = {x:newPosition.x, y:newPosition.y};
+            newRunableNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
 
             //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
-            const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...add_step.position }, flowData.nodes);
-            const notOverlapOffsetX = notOverlapNodePosition.x - add_step.position.x;
-            const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y;
+            const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...newRunableNode.position }, flowData.nodes);
+            const notOverlapOffsetX = notOverlapNodePosition.x - newRunableNode.position.x;
+            const notOverlapOffsetY = notOverlapNodePosition.y - newRunableNode.position.y;
             if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) {
                 //再調整
-                add_step.position = {x:notOverlapNodePosition.x, y:notOverlapNodePosition.y};
-                add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+                newRunableNode.position = {x:notOverlapNodePosition.x, y:notOverlapNodePosition.y};
+                newRunableNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
             }
 
             //先行して設置されている接続先のノードの位置調整
-            dst_step_ids.map((id, index) => {
-                let new_node = GraphUtil.getNode(flowData.nodes, id);
-                new_node.position = {
-                    x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
-                    y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
+            dstNodes.map((dstNode, index) => {
+                dstNode.position = {
+                    x: newRunableNode.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
+                    y: newRunableNode.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator
                 };
-                new_node.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
-                flowData.nodes = GraphUtil.updateNode({ nodes: flowData.nodes, id: id, new_node: new_node });
+                dstNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+                flowData.nodes = FlowUtil.updateNode({ nodes: flowData.nodes, id: dstNode.id, new_node: dstNode });
             });
-            //出力先ステップの位置調整
+            //出力先Nodeの位置調整
 
             //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
-            let isAddable = false;
-            let command;
-            if (add_step.type === 'flow') {
-                const node = add_step as FlowNodeType;
-                command = runnables.subflows.getCommand(node.uuid);
-            } else if (add_step.type === 'command') {
-                const node = add_step as CommandNodeType;
-                command = runnables.commands.getCommand(node.commandId);
-                isAddable = (command as Command).ports[0].length > 0 && (command as Command).ports[0][0].label === '*';
+            let command:Command|FlowCommand|null = null;
+            let isAddable:boolean;
+            if (newRunableNode.type === 'flow') {
+                const flowNode = newRunableNode as FlowNodeType;
+                command = runnables.subflows.getCommand(flowNode.uuid);
+                // フローの入力ポートは不変
+                isAddable = flowNode.addableInPort();
+            } else if (newRunableNode.type === 'command') {
+                const commandNode = newRunableNode as CommandNodeType;
+                command = runnables.commands.getCommand(commandNode.commandId);
+                // Command引数に初期値があれば設定する
+                commandNode.args = commandNode.args || {};
+                command && command.params.filter(param => param.default!==undefined).forEach(param => {
+                    commandNode.args![param.name] = param.default;
+                });
+                // コマンドの入力ポートが可変な場合はtrue
+                isAddable = !!command && commandNode.addableInPort(command);
             }
+
+            if(!command){
+                throw new Error('invalid node type at here');
+            }
+
             const inPorts: CommandPortType[] = command.ports[0];
             const outPorts: CommandPortType[] = command.ports[1];
-            src_step_ids.forEach((id, index) => {
+            srcNodes.forEach((srcNode, index) => {
                 const newPort = inPorts[index];
                 let portLabel = isAddable ? "*" + index : newPort.label;
-                if (add_step.type === 'flow') {
+                if (newRunableNode.type === 'flow') {
                     portLabel = newPort.label;
                 }
 
-                add_step.addInPort(portLabel, id);
+                newRunableNode.addInPort(portLabel, srcNode.id);
 
                 //srcsがあった場合は１つ目のポート名につなぐ
                 //srcsがない場合は、デフォルト値（i）のポートにつなぐ
-                const from: string = id;
-                const to: string = add_step.id;
+                const from: string = srcNode.id;
+                const to: string = newRunableNode.id;
                 let inputPortLabel = Constants.default.command.inputPortLabel;
-                if (add_step.srcs !== undefined || !_.isEmpty(add_step.srcs)) {
-                    let object = add_step.srcs;
-                    inputPortLabel = Object.keys(object).find(key => object[key] === id) || "";
+                if (newRunableNode.srcs !== undefined || !_.isEmpty(newRunableNode.srcs)) {
+                    const srcs = newRunableNode.srcs || {};
+                    inputPortLabel = Object.keys(srcs).find(key => srcs[key] === srcNode.id) || "";
                 }
                 graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, portLabel));
 
             });
-            dst_step_ids.forEach((id, index) => {
+
+            newRunableNode.dsts = newRunableNode.dsts || {};
+            dstNodes.forEach((dstNode, index) => {
                 const newPort = outPorts[index];
                 let portLabel = newPort.label;
-                if (add_step.type === 'flow') {
+                if (newRunableNode.type === 'flow') {
                     portLabel = newPort.label;
                 }
-                add_step.dsts[portLabel] = id;
+
+                newRunableNode.dsts![portLabel] = dstNode.id;
 
                 //dstsがあった場合は１つ目のポート名につなぐ
                 //dstsがない場合は、デフォルト値（i）のポートにつなぐ
-                const from: string = add_step.id;
-                const to: string = id;
+                const from: string = newRunableNode.id;
+                const to: string = dstNode.id;
                 let outputPortLabel = Constants.default.command.outputPortLabel;
-                if (add_step.dsts !== undefined || !_.isEmpty(add_step.dsts)) {
-                    let object = add_step.dsts;
-                    outputPortLabel = Object.keys(object).find(key => object[key] === id) || "";
+                if (newRunableNode.dsts !== undefined || !_.isEmpty(newRunableNode.dsts)) {
+                    const dsts = newRunableNode.dsts || {};
+                    outputPortLabel = Object.keys(dsts).find(key => dsts[key] === dstNode.id) || "";
                 }
                 graphUtil.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortLabel));
             });
         } else {
-            add_step.srcs = {};
-            add_step.dsts = {};
-            add_step.position = {x:0, y:0};
-            add_step.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
+            newRunableNode.srcs = {};
+            newRunableNode.dsts = {};
+            newRunableNode.position = {x:0, y:0};
+            newRunableNode.size = {width:defaultNodeProps.width, height:defaultNodeProps.height};
         }
     }
 
-    if (add_step.type === 'frame') {
-        add_step.position = {
+    if (addNode.type === 'frame') {
+        const newFrameNode = addNode as FrameNodeType;
+        newFrameNode.position = {
             x: window.innerWidth / 2 - defaultNodeProps.width / 2,
             y: window.innerHeight / 2 - defaultNodeProps.height / 2,
         };
-        add_step.size = {
+        newFrameNode.size = {
             width: defaultNodeProps.width,
             height: defaultNodeProps.height
         };
     }
 
     // newState.nodes.push(add_step);
-    flowData.nodes.push(add_step);
+    flowData.nodes.push(addNode);
     // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
 };
 
 /**
- * ステップの削除
- * @param step_ids
- * @returns {{type: string, step: *}}
+ * ノードを削除する
+ * @param flowData 
+ * @param nodes 
  */
-export const deleteStepsAction = (flowData:Flow, step_ids:string[]) => {
+export const deleteNodesAction = (flowData:Flow, nodes:AllNodeType[]) => {
 
     let deleteKeySet = new Set<string>();
     //削除対象がデータフレームの場合、srcも削除対象とする
     //ただしsrcが別のデータフレームを複数出力している場合があるので、
     //一つでもデータフレームが残っていると削除は行わない
-    step_ids.forEach(id => {
-        const step = GraphUtil.getNode(flowData.nodes, id) as any;
-        if (GraphUtil.getNode(flowData.nodes, id).type === 'frame') {
-            //削除対象のノードの親がある場合、親を調べる
-            if (graphUtil.g.inEdges(id) && graphUtil.g.inEdges(id).length > 0) {
-                const deleteTargetStepId = graphUtil.g.inEdges(id)[0].v;
-                const deleteTargetStep = GraphUtil.getNode(flowData.nodes, deleteTargetStepId) as any;
-                if (deleteTargetStep.type === 'command' ||
-                    deleteTargetStep.type === 'flow' ||
-                    (deleteTargetStep.flow && deleteTargetStep.classification === "data_source")) {
-                    //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
-                    const isSingleDsts = (Object.keys(deleteTargetStep.dsts).length === 1 && deleteTargetStep.dsts[Object.keys(deleteTargetStep.dsts)[0]] === id);
+    nodes.forEach(node => {
+        if (node.type === 'frame') {
+            // 削除対象ノードがFrameの場合、そのFrameを出力先とするCommand(またはFlow)も削除する
+            if (graphUtil.g.inEdges(node.id) && graphUtil.g.inEdges(node.id).length > 0) {
+                const deleteTargetNodeId = graphUtil.g.inEdges(node.id)[0].v;
+                const deleteTargetNode = FlowUtil.getNode(flowData.nodes, deleteTargetNodeId) as any;
+                if (deleteTargetNode.type === 'command' ||
+                    deleteTargetNode.type === 'flow' ||
+                    (deleteTargetNode.flow && deleteTargetNode.classification === "data_source")) {
+
+                    // Command(またはFlow)の出力先Frameの数を取得する
+                    let lastDstNodeId:string = '';
+                    const dstsLength = Object.values<string>(deleteTargetNode.dsts).map<number>(nodeId => {
+                        if(nodeId){
+                            lastDstNodeId = nodeId;
+                            return 1;
+                        }else{
+                            // Portに紐づくNodeがない場合はカウントしない
+                            return 0;
+                        }
+                    }).reduce((prevDstCount, dstCount) => {
+                        return prevDstCount += dstCount;
+                    });
+
+                    // 削除対象ノードがCommand(またはFlow)の最後の出力先Frameの場合は、CommandまたはFlowを削除する
+                    const isSingleDsts = dstsLength===1 && lastDstNodeId===node.id;
+
                     if (isSingleDsts) {
-                        //親を削除
-                        flowData.nodes = graphUtil.removeNode(flowData.nodes, deleteTargetStepId);
-                        deleteKeySet.add(deleteTargetStepId);
+                        // CommandまたはFlowを削除
+                        flowData.nodes = graphUtil.removeNode(flowData.nodes, deleteTargetNodeId);
+                        deleteKeySet.add(deleteTargetNodeId);
                     }
                 }
             }
-        } else if (step.flow && step.classification === "data_dest") { // データデスト削除時、OutPortを解除する
-            Object.keys(step.srcs).forEach((key) => {
-                let srcId = step.srcs[key];
+        } else if (node.hasOwnProperty('flow') && (node as InlineFlowNodeType).classification == 'data_dest'){
+            // データデスト削除時、OutPortを解除する
+            const dstNode = node as InlineFlowNodeType;
+            Object.values(dstNode.srcs || {}).forEach(nodeId => {
+                // let srcId = node.srcs[key];
                 // newState.flow.deleteOutPortWithId(srcId);
-                flowData.ports[1].removeByNodeId(srcId);
+                flowData.ports[1].removeByNodeId(nodeId);
             })
-        } else if (step.flow && step.classification === "data_source") {// データソース削除時、InPortを解除する
-            Object.keys(step.dsts).forEach((key) => {
-                let dstId = step.dsts[key];
+        } else if (node.hasOwnProperty('flow') && (node as InlineFlowNodeType).classification == 'data_source'){
+            // データソース削除時、InPortを解除する
+            const srcNode = node as InlineFlowNodeType;
+            Object.values(srcNode.dsts || {}).forEach(nodeId => {
+                // let dstId = node.dsts[key];
                 // newState.flow.deleteInPortWithId(srcId);
-                flowData.ports[0].removeByNodeId(dstId);
+                flowData.ports[0].removeByNodeId(nodeId);
             })
         }
 
         //削除対象のノードがIn・OutPortの場合、Portから削除する
         // newState.flow.deleteInPortWithId(id);
         // newState.flow.deleteOutPortWithId(id);
-        if(step.type === Constants.step.type.frame){
-            flowData.ports[0].removeByNodeId(id);
-            flowData.ports[1].removeByNodeId(id);
+        if(node.type === Constants.node.type.frame){
+            flowData.ports[0].removeByNodeId(node.id);
+            flowData.ports[1].removeByNodeId(node.id);
         }
 
         //選択されたノードを削除
-        flowData.nodes = graphUtil.removeNode(flowData.nodes, id);
+        flowData.nodes = graphUtil.removeNode(flowData.nodes, node.id);
         // newState.flow!.nodes = newState.nodes;
-        deleteKeySet.add(id);
+        deleteKeySet.add(node.id);
     });
 
-    flowData.nodes = GraphUtil.getNewNodesWithExculudeKeys(flowData.nodes, deleteKeySet);
+    // flowData.nodes = GraphUtil.getNewNodesWithExculudeKeys(flowData.nodes, deleteKeySet);
+
+    // 削除対象のNodeを削除する
+    flowData.nodes = flowData.nodes.filter(node => !deleteKeySet.has(node.id));
     // newState.flow!.nodes = newState.nodes;
     // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
 
@@ -553,77 +546,146 @@ export const deleteStepsAction = (flowData:Flow, step_ids:string[]) => {
 };
 
 /**
- * ステップのペースト
- * @returns {{type: string, step: *}}
+ * ノードを複製する
+ * @param flowData 
+ * @param stringifiedNodes 
+ * @returns 
  */
-export const pasteStepsAction = (flowData:Flow, paste_nodes:string) => {
-    const add_nodes = JSON.parse(paste_nodes);
+export const pasteNodesAction = (flowData:Flow, stringifiedNodes:string) => {
 
-    //ペースト時に
-    //IDが新規に振られるので、旧のIDを新規のIDに置き換え
-    //コマンドのノード間の関連(srcs,dsts)を維持する
-    //let convertMap = {}
-    //newState.selected_step_ids = []
-    add_nodes.forEach((json) => {
-        const cacheId = json.id;
-        let label = (json.label) ? json.label : cacheId;
-        json.id = null;
-        json.label = "コピー " + label;
-        let newNode: AllNodeType = FlowUtil.setModelType(flowData.nodes, json);
+    // 入出力Portに紐づくNodeのidを置き換える
+    const replaceNodeIdInPorts = (ports: {[port:string]:string}, oldNodeId:string, newNodeId:string) => {
+        ports && Object.entries(ports).forEach(([portLabel, nodeId]) => {
+            if(nodeId === oldNodeId){
+                ports[portLabel] = newNodeId;
+            }
+        });
+    };
 
-        //ノード本体をコピー
-        graphUtil.addNode(newNode.id);
-        //newState.selected_step_ids.push(newNode.id);
-
-        //入力値をコピー
-        newNode = FlowUtil.copyPositionWithOffsetX(newNode);
-
-        if(newNode.type === 'command' || newNode.type === 'flow'){
-            let commandOrFlowNode = newNode as CommandNodeType | FlowNodeType | InlineFlowNodeType;
-            commandOrFlowNode = FlowUtil.copySrcs(commandOrFlowNode);
-            let newDsts = {};
-            commandOrFlowNode.dsts && Object.keys(commandOrFlowNode.dsts).forEach((key) => {
-                //出力先を作成し、接続先を変更する
-                const copiedStep = FlowUtil.getNodeFromID(flowData.nodes, commandOrFlowNode.dsts![key]) as FrameNodeType;
-                // const props: any = {
-                //   id: null,
-                //   type: Constants.step.type.frame,
-                //   uuid: null,
-                //   label: "コピー " + copiedStep.label,
-                //   dataSource: copiedStep.dataSource,
-                //   // srcs: newNode.id,
-                //   // dsts: [],
-                //   position: copiedStep.position
-                // };
-                // let add_step = new DataFrameStepModel(props);
-                const newId = ModelUtil.getNewId(flowData.nodes, 'frame');
-                let add_node:FrameNodeType = new FrameNode(newId, copiedStep.position);
-                add_node.label = 'コピー ' + copiedStep.label;
-                add_node = FlowUtil.copyPositionWithOffsetX(add_node) as FrameNodeType;
-                flowData.nodes.push(add_node);
-                //ノード本体をコピー
-                graphUtil.addNode(add_node.id);
-                //newState.selected_step_ids.push(add_step.id);
-                newDsts[key] = add_node.id;
-            });
-            //convertMap[cacheId] = newNode.id
-            commandOrFlowNode.dsts = {};
-
-            flowData.nodes.push(commandOrFlowNode);
-
-            const action_step = _.cloneDeep(commandOrFlowNode);
-            action_step.dsts = newDsts;
-            
-            flowData.nodes = rebuildNodesEdges(flowData.nodes, { step: action_step });
-            // newState.flow!.nodes = newState.nodes;
+    // 文字列からNodeオブジェクトを生成する
+    let jsonNodes;
+    try{
+        jsonNodes = JSON.parse(stringifiedNodes);
+    } catch (e) {
+        // 文字列がJSONでない場合はペースト処理を行わない
+        if(e instanceof SyntaxError){
+            console.warn(`pasete warning: ${e.message}`);
+            return [];
+        }else{
+            throw e;
         }
-    });
-    //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
+    }
 
-    // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
+    // getNewIdで採番したIdが複製Nodeと重複しないよう
+    // 既存のNodeと複製Nodeを併せて保持する
+    const allNodes = [...flowData.nodes];
+
+    // 全てのNodeに新規idを設定する
+    const convIdTable:{[port:string]:string} = {};
+    jsonNodes.forEach(jsonNode => {
+        const oldId = jsonNode.id;
+        const newId = ModelUtil.getNewId(allNodes, jsonNode.type);
+        // Frameのlabelがidと同じ場合は、labelを新規idに変更する
+        if(jsonNode.type==='frame' && jsonNode.id===jsonNode.label){
+            jsonNode.label = newId;
+        }
+        // idとlabelを置き換える
+        jsonNode.id = newId;
+        // 表示位置をずらす
+        jsonNode.position = FlowUtil.shiftPosition(jsonNode.position || {x:0,y:0});
+        // 新旧のidの対応を控えておく
+        convIdTable[oldId] = newId;
+        // 採番したidを控えておく
+        allNodes.push(jsonNode);
+    });
+
+    // 全ての複製Nodeについて入出力Portに紐づくidを置き換える
+    jsonNodes.forEach(jsonNode =>
+        Object.entries(convIdTable).forEach(([oldId, newId]) => {
+            replaceNodeIdInPorts(jsonNode.srcs, oldId, newId);
+            replaceNodeIdInPorts(jsonNode.dsts, oldId, newId);
+        })
+    );
+
+    // Nodeオブジェクトに関数を付与する
+    const copiedNodes = new NodeArray(jsonNodes).slice();
+    
+    const newDstFrames:FrameNodeType[] = [];
+    copiedNodes.forEach(copiedNode => {
+        // CommandでもFlowでもない場合は何もしない
+        if(copiedNode.type!=='command' && copiedNode.type!=='flow'){
+            return;
+        }
+
+        // 複製したCommandまたはFlow
+        const copiedCmd = copiedNode as CommandNodeType|BaseFlowNodeType;
+
+        // CommandまたはFlowの入力元Frameが複製Nodeに含まれていない場合
+        // 入力元Frameへの紐付けを削除する
+        const removeSrcs:string[] = [];
+        copiedCmd.srcs && Object.entries(copiedCmd.srcs).forEach(([portLabel, nodeId]) => {
+            // 入力元Frameがコピーに含まれていればFrameを削除処理をしない
+            if(copiedNodes.some(copiedNode => copiedNode.id === nodeId)){
+                return;
+            }
+            // 紐付けを削除するPortを保持する
+            removeSrcs.push(portLabel);
+        });
+
+        // 入力元Frameへの紐付けを削除する
+        copiedCmd.srcs && removeSrcs.forEach(removeSrc => {
+            copiedCmd.srcs![removeSrc] = '';
+        });
+
+        // CommandまたはFlowの出力先Frameが複製Nodeに含まれていない場合
+        // その出力先Frameを新規作成する
+        const newDsts = {};
+        copiedCmd.dsts && Object.entries(copiedCmd.dsts).forEach(([portLabel, nodeId]) => {
+            // 出力先Frameがコピーに含まれていればFrameを新規作成しない
+            if(copiedNodes.some(copiedNode => copiedNode.id === nodeId)){
+                return;
+            }
+
+            // 新規作成する出力先Frameの配置位置を算出する
+            const { dstNodesPositionAndSize } = newNodesPositionAndSize(flowData.nodes, [], ['NEW-FRAME']);
+
+            // 出力先Frameを新規作成する
+            const newDstFrame = new FrameNode(
+                // NOTE: 複製Nodeとidが重複しないよう留意すること
+                ModelUtil.getNewId([...allNodes, ...newDstFrames], 'frame'),
+                dstNodesPositionAndSize['NEW-FRAME'].position
+            );
+
+            // 新規作成したFrameを保持する
+            newDstFrames.push(newDstFrame);
+
+            // Portラベルと出力先Frameを保持する
+            newDsts[portLabel] = newDstFrame.id;
+        });
+
+        // Commandの出力先に新規作成した出力先Frameを追加する
+        copiedCmd.dsts = {...copiedCmd.dsts, ...newDsts};
+    });
+
+    // copiedNodesに新規作成したFrameを追加する
+    copiedNodes.push(...newDstFrames);
+
+    // Edgeの追加前に全ての複製NodeをCanvasに追加する
+    copiedNodes.forEach(copiedNode => graphUtil.addNode(copiedNode.id));
+
+    // 全ての複製Node間のEdgeを追加する
+    copiedNodes.forEach(copiedNode => {
+        if(copiedNode.type==='command' || copiedNode.type==='flow'){
+            addNodeEdges(copiedNode as CommandNodeType|BaseFlowNodeType);
+        }
+        // 全ての複製NodeをflowDataに保存する
+        flowData.nodes.push(copiedNode);
+    });
+
+    return copiedNodes;
 };
 
-export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowCommand | InlineFlowCommand) => {
+export const addDataSrcNodeAction = (flowData:Flow, dataSrc: Command | FlowCommand | InlineFlowCommand) => {
     const id = ModelUtil.getNewId(flowData.nodes, 'datasrc');
     const outPorts = dataSrc.ports[1];
 
@@ -659,18 +721,17 @@ export const addDataSrcStepAction = (flowData:Flow, dataSrc: Command | FlowComma
         flowData.ports[0].upsert(port);
     });
 
-    let nodes = flowData.nodes;
-    nodes.push(newNode);
-    dstNodes.forEach((dstNode) => {
-        nodes.push(dstNode);
-    })
-    // newState.flowData!.nodes = [...nodes];
-    flowData.nodes = [...nodes];
-    addToGraph(graphUtil, newNode);
-    // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
+    // データソースと出力ノードを追加する
+    flowData.nodes.push(newNode, ...dstNodes);
+    // CanvasにNodeを追加する
+    graphUtil.addNode(newNode.id);
+    // Canvasに出力Nodeを追加する
+    dstNodes.forEach(dstNode => graphUtil.addNode(dstNode.id));
+    // NodeにEdgeを繋げる
+    addNodeEdges(newNode);
 };
 
-export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
+export const addDataDstNodeAction = (flowData:Flow, dataDst: Command | FlowCommand | InlineFlowCommand, selectedDataNodeId: string) => {
     const srcNodeIds = [selectedDataNodeId];
 
     const id = ModelUtil.getNewId(flowData.nodes, 'datadst');
@@ -710,11 +771,11 @@ export const addDataDstStepAction = (flowData:Flow, dataDst: Command | FlowComma
     }
 
     const newNode = newDataDest(props);
-    let nodes = flowData.nodes;
-    nodes.push(newNode);
-    flowData.nodes = [...nodes];
-    // newState.nodes = [...nodes]
-    // graph
-    addToGraph(graphUtil, newNode);
-    // newState.graph = graphUtil.getGraph(flowData.nodes, action.zoom);
+
+    // データデストを追加する
+    flowData.nodes.push(newNode);
+    // CanvasにNodeを追加する
+    graphUtil.addNode(newNode.id);
+    // NodeにEdgeを繋げる
+    addNodeEdges(newNode);
 };

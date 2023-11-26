@@ -1,35 +1,36 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import Constants from "Constants/index";
 import { Api } from 'Api';
-import {GraphUtil, ModalUtil, SortUtil, StateUtil, StringUtil} from "Utils/index";
+import {ModalUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {RunnablesType} from "Types/index";
 import {Loader} from "Shared/Base";
-import { AllNodeType, Command, Flow, FlowCommand, FlowType, FrameType, InlineFlowCommand, Port } from "Model/Library";
+import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
-import { FrameNodeType } from "Model/Step/NodeTypes";
+import { FrameNodeType } from "Model/Node/NodeTypes";
+import { useAsyncResource } from "use-async-resource";
 
 type Props = {
     // selected_data_source_detail: FrameType;
     runnables: RunnablesType;
-    deleteSteps: (step_ids: string[]) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     flowData: Flow;
     // Flowの更新に用いる
     lastSavedFlow?: FlowType;
-    selectedStepIds: string[];
-    selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
-    deleteCache: Function;
+    selectedNodes: AllNodeType[];
+    // selectedFrameState: [FrameType|undefined, (value:React.SetStateAction<FrameType|undefined>)=>void];
+    deleteCache: (node:AllNodeType) => void;
     // nodes: AllNodeType[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
-    updateStep: (step: AllNodeType) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
+    updateNode: (node: AllNodeType) => void;
     updateFlow: (flowData:Flow, zoom:number) => void;
     updateLastSavedFlow: (lastSavedFlow:FlowType) => void;
     previewDisabled: boolean;
@@ -38,24 +39,32 @@ type Props = {
     lockUUID: string | undefined;
     // updateDataFrameDetail: Function;
     // refreshFlow: (context: FlowType) => void;
-}
+};
 
 type Content = {
     flowUuid: string;
-    stepIds: (string | null | undefined)[];
+    nodeIds: string[];
     frameUuid: string | null;
     lockUuid?: string;
     visualize: any;
-}
+};
 
-type Contents = {
+export type Contents = {
     title: string;
     content: Content;
-    id: string | null | undefined;
-    afterViz: Function;
-}
+    id: string;
+    afterViz: () => void;
+};
 
-const DataFrameInspector = (props: Props) => {
+const getFrame = (frameUuid?:string|null) => {
+    if(frameUuid){
+        return Api.findFrame(frameUuid);
+    }else{
+        return Api.findNull();
+    }
+};
+
+export const DataFrameInspector = (props: Props) => {
 
     const {notifyLoading, notifyError, dismissNotify} = useStreamCatNotifications();
 
@@ -76,14 +85,23 @@ const DataFrameInspector = (props: Props) => {
         });
     }, []);
 
+    const getSelectedNode = () => {
+        const {selectedNodes} = props;
+        return selectedNodes[0] as FrameNodeType;
+    };
+
+    // ここでFrameの取得を開始する
+    const selectedNode = getSelectedNode();
+    const [flowReader] = useAsyncResource(getFrame, selectedNode.uuid);
+
     const saveFlow = () => {
         const {flowData, lastSavedFlow, lockUUID, updateLastSavedFlow} = props;
         const notificationId = notifyLoading('フロー保存中', 'フローの設定を保存しています');
 
         return lastSavedFlow && lastSavedFlow.update(flowData, lockUUID).then(result => {
             dismissNotify(notificationId);
-            // FIXME: PUT /flow の戻り値にflow属性が含まれていない
-            updateLastSavedFlow({...result, flow:flowData});
+            // FIXME: PUT /flow の戻り値にflow属性が含まれていない、そのためflow属性の値は複製して格納する
+            updateLastSavedFlow({...result, flow:flowData.clone()});
         }).catch(e => {
             // 保存失敗した場合、エラーメッセージ出力
             notifyError('フロー保存エラー', e.message);
@@ -99,27 +117,27 @@ const DataFrameInspector = (props: Props) => {
         
         const {lockUUID} = props;
         const flowUuid = inject_flow_uuid;
-        const selected_step = getSelectedStep();
-        let id = selected_step.id;
-        let stepIds: (string | null | undefined)[] = [];
-        stepIds.push(id);
+        const selectedNode = getSelectedNode();
+        const id = selectedNode.id;
+        const nodeIds: (string | null | undefined)[] = [];
+        nodeIds.push(id);
 
         saveFlow()?.then(() => {
             // preview
-            if (selected_step.uuid) {
+            if (selectedNode.uuid) {
                 // uuidだけでプレビュー
-                window.open("/preview?step_id=" + id +
+                window.open("/preview?node_id=" + id +
                             "&dialog=true" +
-                            "&title=" + StringUtil.urlEncode(selected_step.label || '') +
-                            "&frame_uuid=" + selected_step.uuid);
+                            "&title=" + StringUtil.urlEncode(selectedNode.label || '') +
+                            "&frame_uuid=" + selectedNode.uuid);
             } else {
                 // 新規生成するので、step_id と flowUuid と step_ids でデータを生成する
-                window.open("/preview?step_id=" + id +
+                window.open("/preview?node_id=" + id +
                             "&dialog=true" +
-                            "&title=" + StringUtil.urlEncode(selected_step.label || '') +
+                            "&title=" + StringUtil.urlEncode(selectedNode.label || '') +
                             "&flow_uuid=" + flowUuid +
                             "&lock_uuid=" + lockUUID +
-                            "&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)));
+                            "&node_ids=" + StringUtil.urlEncode(JSON.stringify(nodeIds)));
             }
         }).catch((message) => {
             console.log(message);
@@ -131,13 +149,13 @@ const DataFrameInspector = (props: Props) => {
     }, [showPreview]);
 
     const onClickDelete = () => {
-        const {deleteSteps, selectSteps, addHistory} = props;
-        let {selectedStepIds, flowData} = props;
+        const {deleteNodes, selectNodes, addHistory} = props;
+        let {selectedNodes, flowData} = props;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                const selected_step = GraphUtil.getNode(flowData.nodes, selectedStepIds[0]);
-                deleteSteps([selected_step.id]);
-                selectSteps([]);
+                const selectedNode = selectedNodes[0];
+                deleteNodes([selectedNode]);
+                selectNodes([]);
                 addHistory();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -155,19 +173,18 @@ const DataFrameInspector = (props: Props) => {
 
 
     const onChangeFlowInOut = () => {
-        const {updateFlow} = props;
-        let {flowData} = props;
+        const {flowData, updateFlow} = props;
         const flowInChecked = (flowIn && flowIn.current) ? flowIn.current.checked : false;
         const flowOutChecked = (flowOut && flowOut.current) ? flowOut.current.checked : false;
 
-        let selected_step = getSelectedStep();
+        const selectedNode = getSelectedNode();
         //パラメーターを更新
         const port = {
             // TODO: Portのlabelは一意である必要があるので、getLabel() -> idに変更した
             // label: selected_step.getLabel(),
-            label: selected_step.id,
-            nodeId: selected_step.id,
-            type: selected_step.type
+            label: selectedNode.id,
+            nodeId: selectedNode.id,
+            type: selectedNode.type
         };
 
         if (flowInChecked) {
@@ -176,7 +193,7 @@ const DataFrameInspector = (props: Props) => {
             }
             flowData.ports[0].upsert(port as Port);
         } else {
-            selected_step.id && flowData.ports[0].removeByNodeId(selected_step.id);
+            selectedNode.id && flowData.ports[0].removeByNodeId(selectedNode.id);
         }
 
         if (flowOutChecked) {
@@ -185,27 +202,21 @@ const DataFrameInspector = (props: Props) => {
             }
             flowData.ports[1].upsert(port as Port);
         } else {
-            selected_step.id && flowData.ports[1].removeByNodeId(selected_step.id);
+            selectedNode.id && flowData.ports[1].removeByNodeId(selectedNode.id);
         }
 
         updateFlow(flowData, zoom);
-    };
-
-
-    const getSelectedStep = () => {
-        let {selectedStepIds, flowData} = props;
-        return GraphUtil.getNode(flowData.nodes, selectedStepIds[0]) as FrameNodeType;
     };
 
     const onChangeCacheCheck = () => {
-        const {updateFlow, flowData} = props;
-        let selected_step = getSelectedStep();
-        if (selected_step.makeCache) {
-            selected_step.makeCache = false;
+        const {updateNode} = props;
+        const selectedNode = getSelectedNode();
+        if (selectedNode.makeCache) {
+            selectedNode.makeCache = false;
         } else {
-            selected_step.makeCache = true;
+            selectedNode.makeCache = true;
         }
-        updateFlow(flowData, zoom);
+        updateNode(selectedNode);
     };
 
     const onClickDeleteCache = () => {
@@ -228,14 +239,19 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const deleteCache = () => {
-        const {lastSavedFlow, selectedStepIds, deleteCache} = props;
-        const [, setSelectedFrame] = props.selectedFrameState;
-        const id = selectedStepIds[0];
+        const {lastSavedFlow, selectedNodes, deleteCache} = props;
+        // const [, setSelectedFrame] = props.selectedFrameState;
+        // const id = selectedNodes[0].id;
+        const selectedNode = selectedNodes[0];
 
-        // キャッシュを削除する
-        lastSavedFlow && lastSavedFlow.deleteCache(id).then(() => {
-            deleteCache(id);
-            setSelectedFrame(undefined);
+        // キャッシュファイルを削除する
+        lastSavedFlow && lastSavedFlow.deleteCache(selectedNode.id).then(() => {
+            // NodeのuuidとcacheCreatedAtプロパティをクリアする
+            deleteCache(selectedNode);
+        }).catch(e => {
+            // NOTE: キャッシュが他のNodeからも参照されている場合にAPIはエラーを返すが
+            // その場合でもNodeのプロパティをクリアしてキャッシュとの紐付けを解除する
+            deleteCache(selectedNode);
         });
     };
 
@@ -266,23 +282,21 @@ const DataFrameInspector = (props: Props) => {
     };
 
     const onBlurTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {updateStep} = props;
-        const selectedStep = getSelectedStep();
-        let newSelectedStep = StateUtil.deepCopy(selectedStep);
-        newSelectedStep.label = e.target.value;
-        updateStep(newSelectedStep);
+        const {updateNode} = props;
+        const selectedNode = getSelectedNode();
+        selectedNode.label = e.target.value;
+        updateNode(selectedNode);
     };
 
-    const { runnables, zoom, addStep, addDataSrcStep, addDataDstStep, selectSteps, selectedStepIds, addHistory,
+    const { runnables, zoom, addNode, addDataSrcNode, addDataDstNode, selectNodes, selectedNodes, addHistory,
             previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
-    const selected_step = getSelectedStep();
-    if (selected_step.type === 'frame') {
+    if (selectedNode.type === 'frame') {
         preview = <Button onClick={() => onClickPreview()}
             icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
-        if (selected_step.hasData()) {
-            const onClick = () => Api.downloadFrame(selected_step.uuid!, selected_step.label || selected_step.id);
+        if (selectedNode.hasData()) {
+            const onClick = () => Api.downloadFrame(selectedNode.uuid!, selectedNode.label || selectedNode.id);
             download = <DownloadButton onClick={onClick} download={true} disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }
@@ -290,24 +304,37 @@ const DataFrameInspector = (props: Props) => {
     const {flowData} = props;
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flowData.ports[0].exists(selected_step.id)} ref={flowIn}
-                onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
+            <label>
+                <input  id='in'
+                        type="checkbox"
+                        checked={!!selectedNode.id && flowData.ports[0].exists(selectedNode.id)}
+                        ref={flowIn}
+                        disabled={baseInspectorDisabled}
+                        onChange={() => onChangeFlowInOut()} />
                 &nbsp;入力
             </label>
         </div>
         <div>
-            <label><input type="checkbox" checked={!!selected_step.id && flowData.ports[1].exists(selected_step.id)}
-                ref={flowOut}
-                onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
+            <label>
+                <input  id='out'
+                        type="checkbox"
+                        checked={!!selectedNode.id && flowData.ports[1].exists(selectedNode.id)}
+                        ref={flowOut}
+                        disabled={baseInspectorDisabled}
+                        onChange={() => onChangeFlowInOut()} />
                 &nbsp;出力
             </label>
         </div>
     </div>;
     const cacheCheckForm = <div>
         <div>
-            <label><input type="checkbox" checked={(selected_step.makeCache)}
-                ref={cache} disabled={baseInspectorDisabled}
-                onChange={() => onChangeCacheCheck()} />
+            <label>
+                <input  id='cache'
+                        type="checkbox"
+                        checked={(selectedNode.makeCache)}
+                        ref={cache}
+                        disabled={baseInspectorDisabled}
+                        onChange={() => onChangeCacheCheck()} />
             </label>
         </div>
     </div>;
@@ -317,8 +344,8 @@ const DataFrameInspector = (props: Props) => {
     if (loading) {
         content = <Loader center={true} absolute={true} fixed={false} visible={true} />;
     } else {
-
-        const [selectedFrame, ] = props.selectedFrameState;
+        // Frameを取得する
+        const selectedFrame = flowReader();
 
         const fileSize = selectedFrame && selectedFrame.fileSize ? selectedFrame.fileSize : 0;
         const fileSizeStr = StringUtil.convertToFileSize(fileSize);
@@ -379,7 +406,7 @@ const DataFrameInspector = (props: Props) => {
                 </div>
                 <div className={style.cache_delete}>
                     <Button icon={"delete"} danger={true}
-                        disabled={(!selected_step.isCached() || baseInspectorDisabled)}
+                        disabled={(!selectedNode.isCached() || baseInspectorDisabled)}
                         onClick={() => {
                             onClickDeleteCache();
                         }}>
@@ -406,12 +433,12 @@ const DataFrameInspector = (props: Props) => {
                             nodes={flowData.nodes}
                             runnables={runnables}
                             numberOfInput={1}
-                            selectedStepIds={selectedStepIds}
+                            selectedNodes={selectedNodes}
                             zoom={zoom}
-                            addStep={addStep}
-                            addDataSrcStep={addDataSrcStep}
-                            addDataDstStep={addDataDstStep}
-                            selectSteps={selectSteps}
+                            addNode={addNode}
+                            addDataSrcNode={addDataSrcNode}
+                            addDataDstNode={addDataDstNode}
+                            selectNodes={selectNodes}
                             addHistory={addHistory}
                         />
                     </Fragment>
@@ -421,12 +448,8 @@ const DataFrameInspector = (props: Props) => {
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label || ''}
-        onBlurTitle={(e) => onBlurTitle(e)} onHide={() => {
-        }} disabled={baseInspectorDisabled}>
+    return <BaseInspector key={selectedNode.uuid} label={selectedNode.label || ''}
+        onBlurTitle={(e) => onBlurTitle(e)} disabled={baseInspectorDisabled}>
         {content}
     </BaseInspector>;
 };
-
-
-export {DataFrameInspector, Contents};

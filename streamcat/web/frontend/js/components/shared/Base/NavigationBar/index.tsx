@@ -3,7 +3,7 @@ import { AppBar, Box, Toolbar } from '@mui/material';
 import { AccountMenu } from './AccountMenu';
 import {NavigationType} from "Model/Navigation/NavigationModel";
 
-interface Props {
+type Props = {
     navigation: NavigationType | null;
 };
 

@@ -13,16 +13,16 @@ import { Api, ErrorResponse } from 'Api';
  *                      NOT USE REDUX
  * ======================================================
  */
-interface Props {
+type Props = {
     navigation: NavigationType | null;
 }
 
-interface Profile {
+type Profile = {
     name: string,
     email: string
 }
 
-interface FormInputs {
+type FormInputs = {
     name: string,
     email: string,
     currentPassword: string,

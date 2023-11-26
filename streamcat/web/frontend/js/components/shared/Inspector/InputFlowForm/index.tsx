@@ -23,7 +23,7 @@ type Props = {
     flow: FlowType;
 };
 
-const InputFlowForm = (props: Props) => {
+export const InputFlowForm = (props: Props) => {
     const [, updateState] = React.useState();
     const forceUpdate = React.useCallback(() => updateState(undefined), []);
 
@@ -35,14 +35,13 @@ const InputFlowForm = (props: Props) => {
             const uuid = selected_data.uuid;
             // update
             let {runArgs, updateRunArgs} = props;
-            const flows = runArgs.flows.map((f) => {
+            runArgs.flows.forEach((f) => {
                 if (f.label == name) {
                     f.value = label;
                     f.uuid = uuid;
                 }
                 return f;
             });
-            runArgs.flows = flows;
             updateRunArgs(runArgs);
             forceUpdate();
         });
@@ -134,5 +133,3 @@ const InputFlowForm = (props: Props) => {
         {inputVariableForm}
     </div>;
 };
-
-export {InputFlowForm};

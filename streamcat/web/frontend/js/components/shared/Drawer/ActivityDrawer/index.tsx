@@ -62,7 +62,7 @@ export const ActivityDrawer = (props:Props) => {
                 // プレビューウインドウを開く
                 window.open(
                     WebUtil.webURL(
-                        `/preview?step_id=${out.id}&dialog=false&frame_uuid=${out.datum}&title=${StringUtil.urlEncode(out.label)}`
+                        `/preview?node_id=${out.id}&dialog=false&frame_uuid=${out.datum}&title=${StringUtil.urlEncode(out.label)}`
                     )
                 )
             } 

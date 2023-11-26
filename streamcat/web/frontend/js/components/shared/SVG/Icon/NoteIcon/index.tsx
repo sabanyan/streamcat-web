@@ -1,16 +1,16 @@
 import React from 'react';
 import {CSSProperties} from "react";
 import Constants from "Constants/index";
-import { NoteNodeType } from 'Model/Step/NodeTypes';
+import { NoteNodeType } from 'Model/Node/NodeTypes';
 
 type Props = {
     hover: boolean,
     selected: boolean,
     model: NoteNodeType,
     filter?: string | null,
-}
+};
 
-const NoteIcon = (props: Props) => {
+export const NoteIcon = (props: Props) => {
 
     const NoteStyle = {
         x: 0,
@@ -119,5 +119,3 @@ const NoteIcon = (props: Props) => {
         </svg>
     </g>;
 };
-
-export {NoteIcon};

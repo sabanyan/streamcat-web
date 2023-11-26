@@ -1,7 +1,7 @@
 import React from 'react';
 import {Tab, Tabs, Box} from '@mui/material';
 
-interface Props {
+type Props = {
     readOnly?:boolean;
     state?: [number, (value:React.SetStateAction<number>)=>void];
     onTabPanelChange?:(isError:boolean, prevIsError:boolean) => void;
@@ -48,7 +48,7 @@ export const Tabs2 = (props:Props) => {
     </>;
 };
 
-interface TabPanelProps {
+type TabPanelProps = {
     panelIndex: number;
     tabIndex: number;
     children?: React.ReactNode;

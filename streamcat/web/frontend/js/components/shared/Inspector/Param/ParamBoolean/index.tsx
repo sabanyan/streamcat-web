@@ -9,9 +9,9 @@ type Props = {
     value?: boolean;
     // event
     onChange?: Function; // onChange(e, param)
-}
+};
 
-const ParamBoolean = (props: Props) => {
+export const ParamBoolean = (props: Props) => {
 
     const _onChange = (e) => {
         try {
@@ -56,5 +56,3 @@ const ParamBoolean = (props: Props) => {
             onChange={(e) => _onChange(e)} />
     </React.Fragment>
 };
-
-export {ParamBoolean};

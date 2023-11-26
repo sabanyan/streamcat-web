@@ -8,7 +8,6 @@ import {ParamSelect} from '../ParamSelect/index'
 import Constants from 'Constants/index'
 import {ModalUtil, StateUtil} from 'Utils/index'
 import style from './style.scss'
-import {arrayMoveImmutable} from 'array-move'
 import classnames from 'classnames'
 
 type Props = {

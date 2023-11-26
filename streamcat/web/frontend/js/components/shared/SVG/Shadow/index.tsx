@@ -1,6 +1,6 @@
 import React from "react";
 
-const Shadow = () => {
+export const Shadow = () => {
     /**
      * https://kadoppe.com/archives/2012/03/svg-drop-shadow.html
      * @returns {XML}
@@ -21,5 +21,3 @@ const Shadow = () => {
         </defs>
     );
 };
-
-export {Shadow};

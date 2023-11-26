@@ -4,24 +4,25 @@ import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
 import Constants from "Constants/index";
-import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
+import {ModalUtil} from "Utils/index";
 import { Api } from 'Api';
-import { AllNodeType, Command, FlowCommand } from 'Model/Library';
-import { CommandNodeType, FlowNodeType, FrameNodeType, InlineFlowNodeType } from 'Model/Step/NodeTypes';
+import { AllNodeType } from 'Model/Library';
+import { CommandNodeType, FlowNodeType } from 'Model/Node/NodeTypes';
 import { RunnablesType } from 'Types/index';
 
 type Props = {
-    selectedNodeId: string;
+    selectedNode: AllNodeType;
     // runnables: RunnablesType;
     nodes: AllNodeType[];
     runnables: RunnablesType;
-    updateStep: (step: AllNodeType) => void;
+    updateNode: (node: AllNodeType) => void;
+    // updateNodeEdges: (node:AllNodeType) => void;
     addHistory: () => void;
-    selectSteps: (selected_steps: any[]) => void;
-    deleteSteps: (step_ids: string[]) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
+    deleteNodes: (nodes: AllNodeType[]) => void;
     // children?: React.ReactNode;
     baseInspectorDisabled: boolean;
-}
+};
 
 const getFlow = (uuid: string) => {
     if(uuid){
@@ -30,37 +31,31 @@ const getFlow = (uuid: string) => {
         // uuidが指定されない場合はAPIを発行しない
         return Api.findNull();
     }
-}
+};
 
-const CommandInspector = (props: Props) => {
+export const CommandInspector = (props: Props) => {
 
-    const getSelectedStep = () => {
-        const {selectedNodeId, nodes} = props;
-        return GraphUtil.getNode(nodes, selectedNodeId) as CommandNodeType | FlowNodeType;
-    };
-
-    // 選択中のステップを取得する
-    const selected_step = getSelectedStep();
+    // 選択中のNodeを取得する
+    const runableNode = props.selectedNode as CommandNodeType|FlowNodeType;
 
     // ここでFlowの取得を開始する
-    const [flowReader] = useAsyncResource(getFlow, (selected_step as any).uuid);
+    const [flowReader] = useAsyncResource(getFlow, (runableNode as any).uuid);
 
     const onHide = () => {
         //this.props.addHistory()
     };
 
-    const deleteStep = () => {
-        const {deleteSteps, selectSteps, addHistory} = props;
-        let selected_step = getSelectedStep();
-        deleteSteps([selected_step.id]);
-        selectSteps([]);
+    const deleteNode = () => {
+        const {deleteNodes, selectNodes, addHistory} = props;
+        deleteNodes([runableNode]);
+        selectNodes([]);
         addHistory()
     };
 
     const onClickDelete = () => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                deleteStep();
+                deleteNode();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
@@ -70,7 +65,7 @@ const CommandInspector = (props: Props) => {
             done: "削除する",
             danger: true,
             content: <div>
-                選択されたステップを削除しますか？
+                選択されたノードを削除しますか？
             </div>
         });
     };
@@ -91,42 +86,37 @@ const CommandInspector = (props: Props) => {
 
 
     const onArgChange = (e, param, value) => {
-        update((step) => {
-            if (step.args) {
-                step.args[param.name] = value;
-                if (!value) delete step.args[param.name];
+        update(node => {
+            if (node.args) {
+                node.args[param.name] = value;
+                if (!value) delete node.args[param.name];
             }
-            return step;
+            return node;
         });
     };
 
-    const update = (getNewStep: Function) => {
-        const {updateStep} = props;
-        let selectedStep = getSelectedStep();
-        const newStep = getNewStep(selectedStep);
-        updateStep(newStep);
+    const {updateNode, baseInspectorDisabled, nodes, runnables} = props;
+
+    const update = (getNewNode: Function) => {
+        const newNode = getNewNode(runableNode);
+        updateNode(newNode);
     };
 
     const onBlurTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {updateStep} = props;
-        const selectedStep = getSelectedStep();
-        let newSelectedStep = StateUtil.deepCopy(selectedStep);
-        newSelectedStep.label = e.target.value;
-        updateStep(newSelectedStep);
+        runableNode.label = e.target.value;
+        updateNode(runableNode);
     };
 
-
-    const {updateStep, baseInspectorDisabled, nodes, runnables} = props;
     let inputForm: React.ReactNode = [];
     let subFlowLink, label, subLabel, detail;
-    if (selected_step.type === Constants.step.type.command) {
-        const commandNode = selected_step as CommandNodeType;
-        //指定されたステップの元コマンドを取得
+    if (runableNode.type === Constants.node.type.command) {
+        const commandNode = runableNode as CommandNodeType;
+        //指定されたNodeの元コマンドを取得
         const command = runnables.commands.getCommand(commandNode.commandId);
-        //選択されたステップのラベルを取得
+        //選択されたNodeのラベルを取得
         label = commandNode.label;
         //コマンドのラベルを取得
-        subLabel = command?.label || '';
+        subLabel = `${command?.label || ''} - ${commandNode.commandId || ''}`;
         const params = command?.params || [];
         const args = commandNode.args;
         const invalids = commandNode.invalid;
@@ -134,11 +124,11 @@ const CommandInspector = (props: Props) => {
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command || undefined}
                                 onChange={(e, param, value) => onArgChange(e, param, value)} groups={command?.groups || []} />;
 
-    } else if (selected_step.type === Constants.step.type.subflow) {
-        label = selected_step.label;
-        if (selected_step.hasOwnProperty('uuid')) {
-            const flowNode = selected_step as FlowNodeType;
+    } else if (runableNode.type === Constants.node.type.subflow) {
+        if (runableNode.hasOwnProperty('uuid')) {
+            const flowNode = runableNode as FlowNodeType;
             const subflowCommand = runnables.subflows.getCommand(flowNode.uuid);
+            label = flowNode?.label || '';
             subLabel = subflowCommand?.label || '';
             const params = subflowCommand?.params || [];
             const args = flowNode.args;
@@ -180,24 +170,22 @@ const CommandInspector = (props: Props) => {
         <div><label>場所</label></div>
         {detail}
         <InOutConnector
-            updateStep={updateStep}
+            updateNode={updateNode}
+            // updateNodeEdges={updateNodeEdges}
             nodes={nodes}
             runnables={runnables}
-            selectedStep={selected_step}
+            selectedNode={runableNode}
             disabled={baseInspectorDisabled}
         />
         {form}
     </div>;
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector key={selected_step.id} header={""} label={label} subLabel={subLabel}
-                          onHide={() => onHide()}
+    return <BaseInspector key={runableNode.id} label={label} subLabel={subLabel}
+                          onHide={onHide}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         {content}
     </BaseInspector>;
 
 };
-
-
-export {CommandInspector};

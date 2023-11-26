@@ -1,8 +1,8 @@
 import React from 'react';
 import {useState} from 'react';
 import dayjs from 'dayjs';
-import * as style from './style.scss';
-import * as lodash from 'lodash';
+import style from './style.scss';
+import lodash from 'lodash';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Typography } from '@mui/material';
@@ -18,7 +18,7 @@ import { ListTableBodyDnD } from 'Shared/Base/ListTableBodyDnD';
 import { DragPreview } from 'Shared/Base/DragPreview';
 import { useMoveData } from 'Shared/Button/MoveButton/hooks';
 
-interface Props {
+type Props = {
     mode: string;
     allDatas: DatumType[];
     selectedDatas: [DatumType[], (value:React.SetStateAction<DatumType[]>)=>void];
@@ -93,8 +93,6 @@ export const FileListTable = (props: Props) => {
                 case 'frame':
                 case 'folder':
                 case 'project':
-                case Constants.library.type.remoteFolder:
-                case Constants.library.type.database:
                     return true;
                 default:
                     return false;
@@ -139,7 +137,7 @@ export const FileListTable = (props: Props) => {
                 onClickApply(datum);
                 return;
             }
-            window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + datum.uuid + '&title=' + StringUtil.urlEncode(datum.label)));
+            window.open(WebUtil.webURL('/preview?node_id=null&dialog=false&frame_uuid=' + datum.uuid + '&title=' + StringUtil.urlEncode(datum.label)));
         }else if (datum.type === 'document') {
             window.open(WebUtil.webURL('/documents/' + datum.uuid));
         }else if (datum.type === 'flow') {

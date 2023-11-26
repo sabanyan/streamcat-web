@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraphUtil, StateUtil, ModalUtil } from 'Utils/index';
+import { ModalUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
@@ -17,20 +17,21 @@ type State = {
 type Props = {
   nodes: AllNodeType[];
 
-  selectedNodeId: string;
+  selectedNode: AllNodeType;
   baseInspectorDisabled: boolean;
 
   runnables: RunnablesType;
   parentUUID?: string;
 
-  updateStep: (step: AllNodeType) => void;
+  updateNode: (node: AllNodeType) => void;
+  // updateNodeEdges: (node: AllNodeType) => void;
   addHistory: () => void;
-  selectSteps: (selected_steps: any[]) => void;
-  deleteSteps: (step_ids: string[]) => void;
+  selectNodes: (selectedNodes: AllNodeType[]) => void;
+  deleteNodes: (nodes: AllNodeType[]) => void;
 }
 
 
-// データソースステップのペイン
+// データソースNodeのペイン
 export class DataSrcInspector extends React.Component<Props, State> {
 
   constructor(props: Props) {
@@ -38,11 +39,6 @@ export class DataSrcInspector extends React.Component<Props, State> {
     this.state = {
       isLoading: false
     }
-  }
-
-  getSelectedStep(): any {
-    let { selectedNodeId, nodes } = this.props
-    return GraphUtil.getNode(nodes, selectedNodeId)
   }
 
   renderActions() {
@@ -55,12 +51,11 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   onClickDelete(e: any) {
+    const srcNode = this.props.selectedNode;
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        let { selectedNodeId, nodes } = this.props
-        const selected_step = GraphUtil.getNode(nodes, selectedNodeId)
-        this.props.deleteSteps([selected_step.id])
-        this.props.selectSteps([])
+        this.props.deleteNodes([srcNode])
+        this.props.selectNodes([])
         this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
@@ -77,17 +72,18 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   renderContents() {
-    const { updateStep, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
-    const selected_step = this.getSelectedStep();
+    const { updateNode, nodes, runnables, baseInspectorDisabled, parentUUID } = this.props;
+    const srcNode = this.props.selectedNode as any;
 
     let libraryPlace: any = null;
     let inOutConnector: any = null;
     let paramsForm: any = null;
 
-    if (selected_step.srcs || selected_step.dsts) {
+    if (srcNode.srcs || srcNode.dsts) {
       inOutConnector = <InOutConnector
-        selectedStep={selected_step}
-        updateStep={updateStep}
+        selectedNode={srcNode}
+        updateNode={updateNode}
+        // updateNodeEdges={updateNodeEdges}
         nodes={nodes}
         runnables={runnables}
         disabled={baseInspectorDisabled}
@@ -95,16 +91,15 @@ export class DataSrcInspector extends React.Component<Props, State> {
     }
 
  
-    if (selected_step.flow.params) {
-      
-      paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}} parentUUID={parentUUID}
+    if (srcNode.flow.params) {
+      paramsForm = <ParamsForm params={srcNode.flow.params} args={srcNode.args} invalids={{}} parentUUID={parentUUID}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
 
     return <React.Fragment>
       <div><label>場所</label></div>
       <div>
-        <a href={'/folders/' + selected_step.folderUuid} target={'_blank'}>{selected_step.folderPath}</a>
+        <a href={'/folders/' + srcNode.folderUuid} target={'_blank'}>{srcNode.folderPath}</a>
       </div>
       {libraryPlace}
       {inOutConnector}
@@ -125,46 +120,45 @@ export class DataSrcInspector extends React.Component<Props, State> {
   }
 
   onArgChange(e, param, value) {
-    this.update((step) => {
-      if (step.args) {
-        step.args[param.name] = value
-        if (!value) delete step.args[param.name]
+    this.update(node => {
+      if (node.args) {
+        node.args[param.name] = value
+        if (!value) delete node.args[param.name]
       }
-      return step
+      return node
     })
   }
 
-  update(getNewStep: Function) {
-    let selectedStep = this.getSelectedStep()
-    const newStep = getNewStep(selectedStep)
-    this.props.updateStep(newStep)
+  update(getNewNode: Function) {
+    const srcNode = this.props.selectedNode;
+    const newNode = getNewNode(srcNode)
+    this.props.updateNode(newNode)
   }
 
   render() {
     const { baseInspectorDisabled } = this.props;
-    const selected_step = this.getSelectedStep();
+    const srcNode = this.props.selectedNode as any;
 
     if (this.state.isLoading) return <Loader center={true} absolute={true} fixed={false} visible={true} />
 
-    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label}
-      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
+    return <BaseInspector key={srcNode.uuid} label={srcNode.label}
+      onBlurTitle={(e) => this.onBlurTitle(e)} disabled={baseInspectorDisabled}>
       <div className={style.property_overview}>
         <div className={style.actions}>
           {this.renderActions()}
         </div>
         <div className={style.full_hr} />
         <div className={style.overviews}>
-          {(selected_step.flow.params) ? this.renderContents() : null}
+          {(srcNode.flow.params) ? this.renderContents() : null}
         </div>
       </div>
     </BaseInspector >
   }
 
   onBlurTitle(e: any) {
-    const selectedStep = this.getSelectedStep()
-    let newSelectedStep = StateUtil.deepCopy(selectedStep)
-    newSelectedStep.label = e.target.value
-    this.props.updateStep(newSelectedStep)
+    const srcNode = this.props.selectedNode;
+    srcNode.label = e.target.value
+    this.props.updateNode(srcNode)
   }
 }
 

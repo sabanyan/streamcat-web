@@ -8,7 +8,7 @@ import style from '../Core/style.scss';
 
 type Props = {
     refreshFlow: (flow: FlowType) => void;
-    onClickRunFlowPromise: Function;
+    onClickRunFlowPromise: () => Promise<void | FlowType>;
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
     notifyLoading: (title: string, message: string) => string;
     notifiWarning: (title: string, message: string) => string;
@@ -68,7 +68,7 @@ export const Run = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_SAVE,
             onClickDone: () => {
-                onClickRunFlowPromise().then((flow: FlowType) => {
+                onClickRunFlowPromise().then(flow => {
                     // this.setState({
                     //     isLoading: true
                     // }, () => {

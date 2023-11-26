@@ -1,7 +1,7 @@
 import React from "react";
 import {Icon} from "Shared/SVG/Icon";
 
-const OperatorIcon = () => {
+export const OperatorIcon = () => {
     return (
         <Icon>
             <path
@@ -10,5 +10,3 @@ const OperatorIcon = () => {
         </Icon>
     );
 };
-
-export {OperatorIcon};

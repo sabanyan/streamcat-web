@@ -1,5 +1,5 @@
 import React from 'react';
-import * as style from "./style.scss";
+import style from "./style.scss";
 import { DatumType, FolderAllowlist, FolderType } from 'Model/Library'
 import { CreateFolderButton } from 'Shared/Button/CreateFolderButton';
 import { CreateRemoteFolderButton } from 'Shared/Button/CreateRemoteFolderButton';
@@ -10,13 +10,13 @@ import { UploadFileButton } from 'Shared/Button/UploadFileButton';
 import { UploadFlowButton } from 'Shared/Button/UploadFlowButton';
 import { CreateScheduleButton } from 'Shared/Button/CreateScheduleButton';
 
-interface Props {
+type Props = {
     parent: FolderType;
     allowlist: FolderAllowlist;
     onSuccess: (newDatum:DatumType) => void;
 }
 
-const MenuList = (props: Props) => {
+export const MenuList = (props: Props) => {
     const { parent, allowlist, onSuccess: onSuccess } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
@@ -55,5 +55,3 @@ const MenuList = (props: Props) => {
         {importProject}
     </div>;
 };
-
-export { MenuList };

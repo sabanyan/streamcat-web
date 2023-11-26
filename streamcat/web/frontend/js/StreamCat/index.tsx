@@ -8,6 +8,7 @@ import {ModalManager} from 'Shared/Modal';
 import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
+import {System} from 'Components/admin/SystemContainer/System';
 import {UserList} from 'Components/admin/UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
@@ -17,19 +18,18 @@ import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
     viewId: ViewId
-}
+};
 
 export enum ViewId {
     Flow_Editor,
-    Flow_List,
     Library,
     Profile,
-    Project_List,
     Preview,
     TrashCan,
+    System,
     User_List,
     Undefined = -1,
-}
+};
 
 const getNavigation = (viewId: ViewId) => {
     if(viewId !== ViewId.Undefined){
@@ -38,9 +38,9 @@ const getNavigation = (viewId: ViewId) => {
         // Login画面の場合はAPIを発行しない
         return Api.findNull();
     }
-}
+};
 
-const StreamCat = (props: Props) => {
+export const StreamCat = (props: Props) => {
     const {viewId} = props;
 
     // Navigationの取得を開始する
@@ -84,6 +84,9 @@ const StreamCat = (props: Props) => {
             case ViewId.Preview:
                 viewComponent = <Preview/>;
                 break;
+            case ViewId.System:
+                viewComponent = (nav && nav.allowlist && nav.allowlist.setSystem)?<System navigation={nav}/>:<NotAllowed/>;
+                break;
             case ViewId.User_List:
                 viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
                 break;
@@ -118,5 +121,3 @@ const StreamCat = (props: Props) => {
     }
 
 };
-
-export {StreamCat};

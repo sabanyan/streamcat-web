@@ -125,7 +125,8 @@ class FileTestCase(ApiTestCaseBase):
         # データソースを作成する
         import io
         frame = root.create_frame('データソース', io.BytesIO(b'abcdef'))
-        frame.save()
+        # 文字コードと改行コードを指定してライブラリに登録する
+        frame.save(encoding_str='CP932', newline_str='CR+LF')
 
         # フローを作成する
         flow = root.create_simple_flow('Export用フロー', frame)
@@ -163,6 +164,9 @@ class FileTestCase(ApiTestCaseBase):
         self.assertEqual(result['children'][0]['creator'], self.USER1.name)
         self.assertEqual(result['children'][1]['label'], 'データソース')
         self.assertEqual(result['children'][1]['type'], 'frame')
+        # 指定した文字コードと改行コードでFrameがインポートされていること
+        self.assertEqual(result['children'][1]['encoding'], 'CP932')
+        self.assertEqual(result['children'][1]['newline'], 'CR+LF')
         self.assertEqual(result['children'][1]['creator'], self.USER1.name)
 
         # インポートしたプロジェクトを削除する
@@ -255,6 +259,8 @@ class FileTestCase(ApiTestCaseBase):
         self.assertEqual(result['children'][1]['creator'], self.USER1.name)
         self.assertEqual(result['children'][2]['label'], 'データソース1')
         self.assertEqual(result['children'][2]['type'], 'frame')
+        self.assertEqual(result['children'][2]['encoding'], 'ASCII')
+        self.assertEqual(result['children'][2]['newline'], 'UNKNOWN')
         self.assertEqual(result['children'][2]['creator'], self.USER1.name)
 
         # フォルダ2もインポートされていること

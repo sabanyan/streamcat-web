@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import lodash from 'lodash';
 import style from "./style.scss";
 import { CommandItem } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
@@ -10,17 +11,17 @@ type Props = {
     runnables: RunnablesType;
     nodes:AllNodeType[];
     numberOfInput: number;
-    selectedStepIds: string[];
+    selectedNodes: AllNodeType[];
     zoom: number;
-    addStep: (add_step:AllNodeType, src_step_ids:string[], dst_step_ids:string[], zoom:number) => void;
-    selectSteps: (selected_steps: any[]) => void;
+    addNode: (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => void;
+    selectNodes: (selectedNodes: AllNodeType[]) => void;
     addHistory: () => void;
     disabled?: boolean;
-    addDataSrcStep: (command:Command | FlowCommand | InlineFlowCommand) => void;
-    addDataDstStep: (command:Command | FlowCommand | InlineFlowCommand, selectedStepId:string) => void;
+    addDataSrcNode: (command:Command | FlowCommand | InlineFlowCommand) => void;
+    addDataDstNode: (command:Command | FlowCommand | InlineFlowCommand, selectedNodeId:string) => void;
 };
 
-const CommandSelector = (props: Props) => {
+export const CommandSelector = (props: Props) => {
 
     const [keyword, setKeyword] = useState<string>("");
 
@@ -28,18 +29,9 @@ const CommandSelector = (props: Props) => {
         setKeyword(e.target.value);
     };
 
-    const sortArray = <T,>(array: T[], key: string): T[] => {
-        return array.sort((objectA, objectB) => {
-            const a = objectA[key];
-            const b = objectB[key];
-            let comparison = 0;
-            if (a > b) {
-                comparison = 1;
-            } else if (a < b) {
-                comparison = -1;
-            }
-            return comparison;
-        });
+    // key1とkey2でソートする
+    const sortCommands = <T,>(commands:T[], key1:string, key2:string=''): T[] => {
+        return lodash.orderBy(commands, item => [item[key1],item[key2]]);
     };
 
     /**
@@ -53,17 +45,17 @@ const CommandSelector = (props: Props) => {
         return (command.ports[0][0].label === "*");
     };
 
-    const { numberOfInput, selectedStepIds, zoom, addStep, addDataDstStep, addDataSrcStep,
-        selectSteps, addHistory, runnables, nodes } = props;
+    const { numberOfInput, selectedNodes, zoom, addNode, addDataDstNode, addDataSrcNode,
+        selectNodes, addHistory, runnables, nodes } = props;
     const { commands, subflows, datasrcs, datadsts } = runnables;
 
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;
     const sortedCommands = {
-        datasrcs: sortArray(datasrcs, "label"),
-        datadsts: sortArray(datadsts, "label"),
-        subflows: sortArray(sortArray(subflows, "label"), "classification"),
-        commands: sortArray(sortArray(commands, "id"), "classification"),
+        datasrcs: sortCommands(datasrcs, 'label'),
+        datadsts: sortCommands(datadsts, 'label'),
+        subflows: sortCommands(subflows, 'classification', 'label'),
+        commands: sortCommands(commands, 'classification', 'id'),
     }
 
 
@@ -92,7 +84,7 @@ const CommandSelector = (props: Props) => {
     });
     let operatorsContainer: React.ReactNode[] = [];
     let beforeCommand: Command | FlowCommand | InlineFlowCommand;
-    operators.map((command, index) => {
+    operators.forEach((command, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             // 区切りを表示
             // classificationがない場合はSubFlowのはず
@@ -105,12 +97,12 @@ const CommandSelector = (props: Props) => {
             nodes={nodes}
             key={index}
             command={command}
-            selectedStepIds={selectedStepIds}
+            selectedNodes={selectedNodes}
             zoom={zoom}
-            addStep={addStep}
-            addDataDstStep={addDataDstStep}
-            addDataSrcStep={addDataSrcStep}
-            selectSteps={selectSteps}
+            addNode={addNode}
+            addDataDstNode={addDataDstNode}
+            addDataSrcNode={addDataSrcNode}
+            selectNodes={selectNodes}
             addHistory={addHistory}
         />);
         beforeCommand = command;
@@ -121,8 +113,11 @@ const CommandSelector = (props: Props) => {
     if (!noOperators) {
 
         commandSelector = <div>
-            <TextField className={"mb-8px"} onChange={(e) => onChangeKeyword(e)}
-                placeholder={"キーワード"} />
+            {/* Note: ConsoleのIssueを抑制するためname属性を設定する */}
+            <TextField  name='cmdKeyword'
+                        className={"mb-8px"} 
+                        placeholder={"キーワード"}
+                        onChange={(e) => onChangeKeyword(e)} />
             <div className={style.command_selector_container}>
                 {(operatorsContainer.length) ? operatorsContainer : <div
                     className={style.command_not_found}>コマンドが見つかりませんでした</div>}
@@ -134,5 +129,3 @@ const CommandSelector = (props: Props) => {
         {commandSelector}
     </div>;
 };
-
-export { CommandSelector };

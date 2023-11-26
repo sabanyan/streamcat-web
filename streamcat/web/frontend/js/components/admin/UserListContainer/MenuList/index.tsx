@@ -1,10 +1,10 @@
 import React from 'react';
-import * as style from './style.scss';
+import style from './style.scss';
 import { NavigationType, UserType } from 'Model/Navigation/NavigationModel';
 import { ProjectType } from 'Model/Library';
 import { CreateUserButton } from 'Shared/Button/CreateUserButton';
 
-interface Props {
+type Props = {
     navigation: NavigationType | null;
     allProjects: ProjectType[];
     onSuccess: (newUser:UserType) => void;

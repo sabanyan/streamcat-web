@@ -3,12 +3,12 @@ import style from './style.scss';
 import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import ImageUtil from "Utils/ImageUtil";
 
-interface Props {
+type Props = {
     list: IFilterCategoryItem[];
     onClickRemove: (selectedCategory: IFilterCategoryItem) => void;
-}
+};
 
-const FilterSelectedList = (props: Props) => {
+export const FilterSelectedList = (props: Props) => {
     const {list, onClickRemove} = props;
 
     if (!list || !list.length) {
@@ -43,5 +43,3 @@ const FilterSelectedList = (props: Props) => {
 
     return <>{listItemElements}</>;
 };
-
-export {FilterSelectedList};

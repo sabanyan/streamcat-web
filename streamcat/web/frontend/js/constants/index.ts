@@ -59,7 +59,7 @@ const Constants = {
       maxWidth: 800
     }
   },
-  step: {
+  node: {
     type: {
       command: 'command',
       frame: 'frame',

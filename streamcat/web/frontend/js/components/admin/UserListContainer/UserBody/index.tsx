@@ -17,7 +17,7 @@ const getUsers = (keyword?: string) => {
     return Api.findUsers(q, exceptInActive, roles, projects);
 };
 
-interface Props {
+type Props = {
     navigation: NavigationType | null;
     allProjects: ProjectType[];
     keyword: string;
