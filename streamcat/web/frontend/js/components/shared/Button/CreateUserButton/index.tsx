@@ -3,7 +3,7 @@ import { NavigationType, UserType } from 'Model/Navigation/NavigationModel';
 import { ProjectType } from 'Model/Library';
 import { Api } from 'Api';
 import { DialogButton } from 'Shared/Input';
-import { EditBox, ExtendedUserType } from 'Shared/Base/EditBox';
+import { EditBox } from 'Shared/Base/EditBox';
 import { TextField2, Value } from 'Shared/Input/TextField2';
 import { MultiSelect2, Values } from 'Shared/Input/MultiSelect2';
 
@@ -41,15 +41,7 @@ export const CreateUserButton = (props:Props) => {
         return Api.createUser(email.value, name.value).then(user => {
             // UserをProjectに参加させる
             joinProject(user.uuid, projects.value);
-            // EditBoxに渡すためにExtendedUserTypeに変換する
-            return {
-                label: user.name,
-                type: 'user',
-                allowlist: {
-                    update: !!(navigation && navigation.allowlist && navigation.allowlist.updateUser)
-                },
-                ...user
-            };
+            return user;
         });
     };
 
@@ -62,15 +54,19 @@ export const CreateUserButton = (props:Props) => {
         );
     };
 
+    // userオブジェクトはallowlistを持ってないのでreadOnlyで更新可否を設定する
+    const enabled = navigation && navigation.allowlist && navigation.allowlist.createUser;
+
     // 選択肢の比較関数
     const isEaual = (item:ProjectType, value:ProjectType) => item.uuid===value.uuid;
 
     return <DialogButton label='ユーザーの追加'
+                         readOnly={!enabled}
                          icon='add'
                          large={true} >{[
         // Contents
         (closeDialog) => [
-            <EditBox<ExtendedUserType>
+            <EditBox<UserType>
                 key='createUser'
                 createMode={true}
                 values = {[name,email,projects]}

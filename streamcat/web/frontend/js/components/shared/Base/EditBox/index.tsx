@@ -1,20 +1,11 @@
-import React from 'react'
-import { Box } from '@mui/material'
+import React from 'react';
+import { Box } from '@mui/material';
 import { useStreamCatNotifications } from 'Shared/Notification';
 import { ErrorResponse } from 'Api';
 import { DatumType } from 'Model/Library';
-import { UserType } from 'Model/Navigation/NavigationModel';
+import { UserType, SelfUserType } from 'Model/Navigation/NavigationModel';
 import { typeNames } from 'Utils/TypeNames';
 import { AwaitButton, Button2 } from 'Shared/Input';
-
-// UserTypeを扱う場合は追加のプロパティが必要になる
-export type ExtendedUserType = UserType & {
-    label: string;
-    type: string;
-    allowlist: {
-        update: boolean;
-    };
-};
 
 type Value = {
     value: any;
@@ -58,11 +49,11 @@ type Props<T> = {
  * 新規追加/変更可能なBox
  * @param props 
  */
-export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(props:Props<T>) => {
+export const EditBox = <T extends DatumType|UserType|SelfUserType|void = DatumType>(props:Props<T>) => {
     const { datum, values, initValues, create, update, onSuccess, onEdit, onCancel } = props;
     const readOnly = !!props.readOnly;
     const createMode = !!props.createMode;
-    const [ buttons, inputs ] = props.children
+    const [ buttons, inputs ] = props.children;
 
     // 通知ダイアログ
     const {notifySuccess, notifyError} = useStreamCatNotifications();
@@ -129,6 +120,18 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
         return createMode? createDatum(): updateDatum();
     };
 
+    // 通知メッセージとonSuccess()の呼び出し
+    const notifyAndOnSuccess = (datum:T, methodName:string) => {
+        if(!datum){
+            return;
+        }
+        const typeLabel = typeNames[datum.type];
+        const label = datum.type==='user'? datum.name: datum.label;
+        notifySuccess(`${typeLabel}を${methodName}しました`, label);
+        // イベントハンドラを呼び出す
+        onSuccess(datum);
+    };
+
     // Datumの新規作成処理
     const createDatum = () => {
         // Datumを新規作成する
@@ -136,12 +139,7 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
             // ペインを変更不可にする
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
-            if(datum){
-                const typeLabel = typeNames[datum.type];
-                notifySuccess(`${typeLabel}を作成しました`, datum.label);
-                // イベントハンドラを呼び出す
-                onSuccess(datum);
-            }
+            notifyAndOnSuccess(datum, '作成');
         }).catch((error:ErrorResponse) => {
             notifyError(`作成エラー`, error.message);
         });
@@ -158,19 +156,16 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
             // ペインを変更不可にする
             setEditMode(false);
             // Promise.all([])が渡された場合、datumはundefinedになる
-            if(datum){
-                const typeLabel = typeNames[datum.type];
-                notifySuccess(`${typeLabel}を変更しました`, datum.label);
-                // イベントハンドラを呼び出す
-                onSuccess(datum);
-            }
+            notifyAndOnSuccess(datum, '変更');
         }).catch((error:ErrorResponse) => {
             notifyError(`変更エラー`, error.message);
         });
     };
 
     // Datumの更新可否
-    const enabled = datum && datum.allowlist.update && !readOnly;
+    // NOTE: Userはallowlistを持ってないのでreadOnly値だけで更新可否を判定する
+    const allowUpdate = datum && (datum.type==='user'? true: datum.allowlist.update);
+    const enabled = allowUpdate && !readOnly;
 
     // 変更ボタン
     const editbuttons = (align:'left'|'right') => {
@@ -180,7 +175,7 @@ export const EditBox = <T extends DatumType|ExtendedUserType|void = DatumType>(p
                 <Button2 onClick={onClickCancel}>キャンセル</Button2>
                 <AwaitButton disabled={editBoxError} onClick={submit}>確定</AwaitButton>
                 {createMode? []: buttons(!editMode)}
-            </Box>
+            </Box>;
         }else{
             return <Box textAlign={align}>
                 <AwaitButton disabled={!enabled} onClick={onClickEdit}>変更</AwaitButton>
