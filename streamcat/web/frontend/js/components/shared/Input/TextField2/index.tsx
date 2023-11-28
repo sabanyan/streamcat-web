@@ -13,8 +13,10 @@ type Props = {
     readOnly?:boolean;
     required?:boolean;
     requiredMessage?:string;
+    autoComplete?:'new-password'|'current-password';
     autoFocus?:boolean;
     state?: [Value, (value:React.SetStateAction<Value>)=>void];
+    validate?: (value:string) => true|string;
     onChange?:(value:Value) => void;
     onErrorChange?:(isError:boolean) => void;
     onEnterKeyDown?:(value:Value) => void;
@@ -25,17 +27,32 @@ type Props = {
  * @param props
  */
 export const TextField2 = (props:Props) => {
+    const {label, readOnly, required, autoComplete, autoFocus, validate} = props;
 
     // 親コンポーネントで変更可能なvalue.isErrorの値に依存しないよう
     // value.valueの値からエラー状態を判定する
     const isError = (value:string) => {
         // 入力必須、かつ入力値が空の場合はエラーにする
-        return !!required && !value;
+        // validate関数が指定されている場合はこの関数で検証する
+        return (!!required && !value) || (!!validate && validate(value)!==true);
     };
 
-    const {label, readOnly, required, autoFocus} = props;
+    // エラー種別に応じてエラーメッセージを取得する
+    const errorMessage = (value:string) => {
+        // 入力必須のエラーメッセージ
+        if(required && !value){
+            return props.requiredMessage || '入力必須です';
+        }
+        // validate関数から返されるエラーメッセージ
+        const result = validate && validate(value);
+        if(result===undefined || result===true){
+            return '';
+        }else{
+            return result;
+        }
+    };
+
     const type = props.type || 'text';
-    const requiredMessage = props.requiredMessage || '入力必須です';
     const [value, setValue] = props.state || [{value:'',isError:isError('')}, () => {}];
     const onChange = props.onChange || (() => {});
     const onErrorChange = props.onErrorChange || (() => {});
@@ -101,6 +118,8 @@ export const TextField2 = (props:Props) => {
                     type={hideValue? 'password' : type==='password'? 'text': type}
                     // 入力必須記号*の表示する
                     required={required}
+                    // Webブラウザの自動入力
+                    autoComplete={autoComplete}
                     // 小さく表示する
                     size='small'
                     // ある程度の横幅を設定する
@@ -115,7 +134,7 @@ export const TextField2 = (props:Props) => {
                     // (未入力時はエラー表示をしない)
                     error={valueChanged && isError(value.value)}
                     // エラーメッセージ
-                    helperText={(valueChanged && isError(value.value))? requiredMessage: ''}
+                    helperText={valueChanged? errorMessage(value.value): ''}
                     // 入力値
                     value={value.value}
                     // パスワード入力の場合はマスク表示の切り替えボタンを表示する
