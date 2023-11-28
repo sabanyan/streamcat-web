@@ -323,6 +323,9 @@ def fetch_subflows():
             continue
         subflow_data = subflow.flow_data.to_json(contains_nodes=False)
         subflow_data['uuid'] = subflow.uuid
+        subflow_data['label'] = subflow.label
+        subflow_data['creator'] = subflow.creator_str
+        subflow_data['createdAt'] = subflow.created_at_str
         # TODO: フロントエンドから参照された場合に備える、実質的に使用していない(後方互換)
         subflow_data['projectName'] = ''
         subflow_data_list.append(subflow_data)
