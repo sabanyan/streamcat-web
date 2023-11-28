@@ -832,7 +832,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertEqual(results[0]['ports'][1], [])
         self.assertEqual(results[0]['params'], [])
         self.assertEqual(results[0]['description'], '')
-        self.assertEqual(results[0]['creator'], 'ユーザ管理者')
+        self.assertEqual(results[0]['creator'], self.USER3.name)
         self.assertIsNotNone(results[0]['createdAt'])
         # サブフロー2
         self.assertEqual(results[1]['uuid'], flow2_uuid)
@@ -842,7 +842,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertEqual(results[1]['ports'][1], [{'type':'frame','label':'d1','nodeId':'d1'}])
         self.assertEqual(results[1]['params'], [])
         self.assertEqual(results[1]['description'], '')
-        self.assertEqual(results[1]['creator'], 'ユーザ管理者')
+        self.assertEqual(results[1]['creator'], self.USER3.name)
         self.assertIsNotNone(results[1]['createdAt'])
 
         # サブフロー1の排他ロックを取得する
