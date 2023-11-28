@@ -4,16 +4,16 @@ import { createTheme, ThemeProvider } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {NotificationsProvider} from 'reapop';
 import style from './style.scss';
+import {Api} from 'Api';
 import {ModalManager} from 'Shared/Modal';
 import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
 import {System} from 'Components/admin/SystemContainer/System';
-import {UserList} from 'Components/admin/UserListContainer/UserList';
+import {UserList} from 'UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
-import {Api} from 'Api';
 import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
