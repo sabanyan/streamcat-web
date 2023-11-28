@@ -137,6 +137,7 @@ export const CreateRemoteFolderButton = (props:Props) => {
                                 label='パスワード'
                                 type='password'
                                 readOnly={readOnly}
+                                autoComplete='new-password'
                                 state={[password,setPassword]}
                                 onChange={() => setChecked(false)}
                                 onEnterKeyDown={onEnterKeyDown} />

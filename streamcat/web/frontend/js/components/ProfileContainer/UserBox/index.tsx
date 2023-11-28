@@ -104,6 +104,7 @@ export const UserBox = (props:Props) => {
                                     required={true}
                                     requiredMessage={requiredMessage}
                                     readOnly={readOnly}
+                                    autoComplete='current-password'
                                     state={[password,setPassword]}
                                     onErrorChange={onErrorChange}
                                     onEnterKeyDown={onEnterKeyDown} />:

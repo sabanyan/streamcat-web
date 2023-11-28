@@ -126,6 +126,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'user')
         self.assertEqual(result['email'], 'abc@def.com')
         self.assertEqual(result['name'], 'テストです')
         self.assertEqual(result['state'], 'tmp')
@@ -213,6 +214,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'user')
         self.assertEqual(result['email'], expected['email'])
         self.assertEqual(result['name'], expected['name'])
         self.assertEqual(result['state'], 'active')
@@ -229,6 +231,7 @@ class SystemTestCase(ApiTestCaseBase):
         # 登録ユーザは論理削除されていること
         result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
         self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'user')
         self.assertEqual(result['email'], expected['email'])
         self.assertEqual(result['name'], expected['name'])
         self.assertEqual(result['state'], 'inactive')
@@ -265,6 +268,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'user')
         self.assertEqual(result['email'], expected['email'])
         self.assertEqual(result['name'], expected['name'])
         self.assertEqual(result['state'], 'active')
@@ -281,6 +285,7 @@ class SystemTestCase(ApiTestCaseBase):
         # 登録ユーザは論理削除されていること
         result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
         self.assertIsNotNone(result['uuid'])
+        self.assertEqual(result['type'], 'user')
         self.assertEqual(result['email'], expected['email'])
         self.assertEqual(result['name'], expected['name'])
         self.assertEqual(result['state'], 'inactive')
