@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextField} from '@mui/material';
+import { TextField, IconButton } from '@mui/material';
 import { FixedField2 } from '../FixedField2';
 
 export type Value = {
@@ -45,6 +45,8 @@ export const TextField2 = (props:Props) => {
     const [valueChanged, setValueChanged] = React.useState(false);
     // IME未確定の場合はtrue
     const [imeMode, setImeMode] = React.useState(false);
+    // 入力値をマスク表示する場合はtrue
+    const [hideValue, setHideValue] = React.useState(type==='password');
 
     // 初期処理
     React.useEffect(() => {
@@ -76,6 +78,13 @@ export const TextField2 = (props:Props) => {
         }
     };
 
+    // マスク表示の切り替えボタン
+    const maskToggleButton = <IconButton
+        edge='end'
+        onClick={() => setHideValue(!hideValue)} >
+        {hideValue? '👀': '🕶️'}
+    </IconButton>;
+
     return <>{
         readOnly?
         // 
@@ -88,7 +97,8 @@ export const TextField2 = (props:Props) => {
         // フォーカス時にラベルが外側に移動する挙動だが、これを解除するには手間がかかる
         // https://blog.gaji.jp/2020/12/07/5978/
         <TextField  label={label}
-                    type={type}
+                    // 入力値をマスクするにはtype=passwordを設定する
+                    type={hideValue? 'password' : type==='password'? 'text': type}
                     // 入力必須記号*の表示する
                     required={required}
                     // 小さく表示する
@@ -108,6 +118,10 @@ export const TextField2 = (props:Props) => {
                     helperText={(valueChanged && isError(value.value))? requiredMessage: ''}
                     // 入力値
                     value={value.value}
+                    // パスワード入力の場合はマスク表示の切り替えボタンを表示する
+                    InputProps={
+                        type==='password'? {endAdornment: maskToggleButton}: undefined
+                    }
                     onChange={onChangeValue}
                     onKeyDown={e => onDownKey(e.key, value.value, isError(value.value))}
                     // IME切替時のイベントハンドラ
