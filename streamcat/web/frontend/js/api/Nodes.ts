@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import lodash from 'lodash';
 import { AllNodeType, Command } from 'Model/Library';
 import {
     NodeType,
@@ -56,7 +56,7 @@ const cloneCommandNodeProps = (node:CommandNodeType|BaseFlowNodeType) => {
     if(node.srcsOrder){
         ret.srcsOrder = node.srcsOrder;
     }
-    return _.cloneDeep<{
+    return lodash.cloneDeep<{
         args?: { [name:string]:any },
         srcs?: { [port:string]:string },
         dsts?: { [port:string]:string },

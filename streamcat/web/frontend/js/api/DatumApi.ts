@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import lodash from 'lodash';
 import {
     DatumType,
     ParentProjectType,
@@ -391,7 +391,7 @@ export const DatumApi = {
             }
             // Flowオブジェクトを複製するclone関数を設定する
             const cloneFunc = (f:Flow) => {
-                const clonedFlowJson = _.cloneDeepWith(f);
+                const clonedFlowJson = lodash.cloneDeepWith(f);
                 clonedFlowJson.nodes = new NodeArray(clonedFlowJson.nodes);
                 clonedFlowJson.ports = [new PortArray(clonedFlowJson.ports[0]), new PortArray(clonedFlowJson.ports[1])];
                 clonedFlowJson.clone = () => cloneFunc(clonedFlowJson);

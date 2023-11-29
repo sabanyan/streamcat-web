@@ -1,7 +1,6 @@
-import { ModalUtil, StringUtil } from 'Utils/index'
-import Constants from 'Constants/index'
 import React from 'react';
-import { ReactDomUtil } from "./index";
+import { StringUtil } from 'Utils/index';
+import { ReactDomUtil } from './index';
 
 export default class ErrorUtil {
   constructor (message: string) {

@@ -1,4 +1,5 @@
 import React from 'react'
+import lodash from 'lodash';
 import {CommandParamType} from 'Types/index'
 import {AddButton, Button} from 'Shared/Input'
 // 循環参照されるため一個一個Importする（ParamBoolean, ParamString, ParamSelect)
@@ -6,7 +7,7 @@ import {ParamBoolean} from '../ParamBoolean/index'
 import {ParamString} from '../ParamString/index'
 import {ParamSelect} from '../ParamSelect/index'
 import Constants from 'Constants/index'
-import {ModalUtil, StateUtil} from 'Utils/index'
+import {ModalUtil} from 'Utils/index'
 import style from './style.scss'
 import classnames from 'classnames'
 
@@ -231,7 +232,7 @@ export class ParamList extends React.Component<Props, State>{
         try {
             const {param, onChange} = this.props;
             let newValue = this.state.currentValue;
-            newValue.push(StateUtil.deepCopy(param.default[0]));
+            newValue.push(lodash.cloneDeep(param.default[0]));
             this.setState({
                 currentValue: newValue
             }, () => {
