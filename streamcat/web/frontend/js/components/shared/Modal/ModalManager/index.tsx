@@ -1,6 +1,6 @@
 //@flow
 import React from "react";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import { Modal } from "Shared/Modal";
 
 /**

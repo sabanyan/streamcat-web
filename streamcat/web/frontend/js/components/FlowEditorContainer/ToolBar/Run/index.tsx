@@ -1,6 +1,6 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { FlowUtil, ModalUtil } from 'Utils/index';
 import { Api } from 'Api';
 import { FlowType } from 'Model/Library';

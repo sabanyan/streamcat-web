@@ -3,7 +3,7 @@ import { ModalUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
-import Constants from 'Constants/index'
+import { Constants } from 'Constants/index'
 
 import style from '../style.scss'
 import { AllNodeType } from 'Model/Library';

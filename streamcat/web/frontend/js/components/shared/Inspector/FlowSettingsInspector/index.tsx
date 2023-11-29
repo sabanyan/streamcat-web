@@ -3,7 +3,7 @@ import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { RunnablesType } from 'Types/index';

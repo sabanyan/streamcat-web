@@ -4,7 +4,7 @@ import { DragType, GraphType, RunnablesType } from 'Types/index';
 import { Node } from 'Shared/SVG';
 import {ZoomUtil} from 'Utils/index';
 import { graphUtil } from 'Modules/flowEditor';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 
 type Props = {
     selectedNodes: AllNodeType[];

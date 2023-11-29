@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {BaseInspector} from 'Shared/Inspector';
 import {ModalUtil} from 'Utils/index';
 import {Button, DropDownList} from 'Shared/Input';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import {dropDownListItem} from 'Types/index';
 import {Spacer} from 'Shared/Base';
 import { NoteNodeType } from 'Model/Node/NodeTypes';

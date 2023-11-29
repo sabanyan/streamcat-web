@@ -1,4 +1,4 @@
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { RoleType } from 'Model/Navigation/NavigationModel';
 export default class AdminUtil {
     static getUserStatus = (status: string): string => {

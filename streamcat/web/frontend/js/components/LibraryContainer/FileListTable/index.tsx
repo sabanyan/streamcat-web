@@ -6,7 +6,7 @@ import lodash from 'lodash';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Typography } from '@mui/material';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import StringUtil from 'Utils/StringUtil';
 import HttpUtil from 'Utils/HttpUtil';
 import WebUtil from 'Utils/WebUtil';

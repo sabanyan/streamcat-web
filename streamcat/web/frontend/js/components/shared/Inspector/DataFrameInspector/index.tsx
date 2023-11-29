@@ -1,5 +1,5 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import { Api } from 'Api';
 import {ModalUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";

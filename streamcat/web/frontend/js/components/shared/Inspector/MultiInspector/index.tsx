@@ -4,7 +4,7 @@ import {BaseInspector} from 'Shared/Inspector';
 import {Button} from 'Shared/Input';
 import {CommandSelector} from 'FlowEditorContainer/Command';
 import {ModalUtil} from 'Utils/index';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { RunnablesType } from 'Types/index';
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 

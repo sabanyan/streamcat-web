@@ -8,7 +8,7 @@ import { MessageModel } from 'Model/index';
 import { LockType } from 'Model/Locks';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { ModalUtil, WebUtil, FlowUtil} from 'Utils/index';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
 import {
@@ -169,7 +169,7 @@ export const FlowEditor = () => {
     // const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
     // Inspectorの横幅
-    const [inspectorWidth, setInspectorWidth] = useState(Constants.default.inspector.width);
+    const [inspectorWidth, setInspectorWidth] = useState<number>(Constants.default.inspector.width);
     // Canvasの横幅
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 

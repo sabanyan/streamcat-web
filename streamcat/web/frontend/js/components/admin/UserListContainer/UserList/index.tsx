@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import style from './style.scss';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import {Api} from 'Api';
 import {NavigationType, UserType} from 'Model/Navigation/NavigationModel';
 import { NotAllowed } from 'Components/NotAllowedContainer';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ParamString, ParamBoolean, ParamSelect, ParamList, ParamFrame } from 'Shared/Inspector/index';
 import { CommandParamType } from 'Types/index';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import classnames from 'classnames';
 import style from './style.scss';
 import { Command } from 'Model/Library';

@@ -1,5 +1,5 @@
 //@flow
-import Constants from 'Constants/index'
+import { Constants } from 'Constants/index'
 import { AllNodeType } from 'Model/Library'
 import { ErrorUtil } from 'Utils/index'
 
