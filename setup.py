@@ -11,6 +11,13 @@ setup(
         # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
         'blinker==1.6.2',
         'fastapi',
+        # FastAPIでMultipartリクエストを扱う場合に使用する
+        'python-multipart',
+        'jinja2',
+        # FastAPIでDatumをJSONに変換する時に使用する
+        'orjson'
+        # FastAPIでデコレータ内でRequestオブジェクトを取得できるようにする
+        'fastapi-decorators'
         'Flask==2.3.2',
         # 'flask_mail',
         'oauthlib==3.2.2',

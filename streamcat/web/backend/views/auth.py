@@ -15,16 +15,16 @@ from .utils.login_required import _make_login_response, _make_response_with_toke
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
 
-# flask_mail用の設定
-CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
-app.config.update(
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=465,
-    MAIL_USERNAME=CONFIRM_EMAIL,
-    MAIL_PASSWORD='@passwd1234',
-    MAIL_USE_TLS=False,
-    MAIL_USE_SSL=True
-)
+# # flask_mail用の設定
+# CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
+# app.config.update(
+#     MAIL_SERVER='smtp.gmail.com',
+#     MAIL_PORT=465,
+#     MAIL_USERNAME=CONFIRM_EMAIL,
+#     MAIL_PASSWORD='@passwd1234',
+#     MAIL_USE_TLS=False,
+#     MAIL_USE_SSL=True
+# )
 
 mod = Blueprint('auth', __name__)
 
