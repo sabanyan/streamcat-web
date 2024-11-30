@@ -351,11 +351,6 @@ class FlowTestCase(ApiTestCaseBase):
         sub_flow1 = flow_folder.create_flow('サブフロー1', FlowData({}))
         sub_flow1.uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
         sub_flow1.save()
-    
-        # フローを、フロー格納フォルダに格納する
-        flow_uuid = str(uuid.uuid4())
-        flow_path = 'backend/api/tests/flows/168d23c2-f835-4392-ba0e-76e94a08b719.json'
-        self.save_flow_to_library(flow_uuid, flow_path)
 
         # 作成を確定する
         self.factory.end()

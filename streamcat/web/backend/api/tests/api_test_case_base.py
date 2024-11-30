@@ -68,27 +68,6 @@ class ApiTestCaseBase(TestCaseBase):
             new_frame.uuid = frame_uuid
             new_frame.save(file_path=frame_file_path)
 
-    def save_flow_to_library(self, flow_uuid, flow_file_path):
-        """
-        指定したパスのフローを、指定したUUIDでライブラリに登録する
-        """
-        # テストで用いるテスト用フローをライブラリに登録する
-        if not self.factory.data.exists(flow_uuid):
-            # テストで用いるテスト用フローをライブラリに登録する
-            flow_folder = self.factory.data.load_flow_folder()
-            class_name = self.__class__.__name__
-            # フローJSONファイルからフローデータを取得する
-            import pathlib
-            from streamcat.store import FlowData
-            flow_path = pathlib.Path(app.root_path).parent / flow_file_path
-            flow_json = json.loads(flow_path.read_text(encoding='utf-8'))
-            flow_data = FlowData(flow_json)
-            # フローオブジェクトを作成する
-            test_flow = flow_folder.create_flow(f'テストフロー！({class_name})', flow_data)
-            # フローをライブラリに保存する
-            test_flow.uuid = flow_uuid
-            test_flow.save()
-
     def get_uri(self, uri, user):
         """
         URIをGETする
