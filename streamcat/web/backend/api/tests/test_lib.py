@@ -153,7 +153,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # 上記フォルダ内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder_src_uuid_1, f, self.USER1)
         frame_uuid_1= result['uuid']
@@ -309,7 +309,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"xyzxyzxyzxyz"), 'foo.csv')
+        f = io.BytesIO(b"xyzxyzxyzxyz")
 
         # フレームを作成する(POST /frames)
         result = self.post_frames('新しいフレームファイル?', root.uuid, f, self.USER1)
@@ -341,7 +341,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
 
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('新しいフレームファイル!', folder_uuid, f, self.USER1)
@@ -383,7 +383,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
+        f = io.BytesIO(b"thisisaframefile")
 
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイルAA', root.uuid, f, self.USER1)
@@ -423,7 +423,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"thisisaframefile"), 'aaa2.csv')
+        f = io.BytesIO(b"thisisaframefile")
 
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイルAA2', root.uuid, f, self.USER1)
@@ -465,7 +465,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # フレームを作成する(POST /frames)
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummyB.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1B', root.uuid, f, self.USER1)
         frame_uuid = result['uuid']
@@ -507,7 +507,7 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # フレームを作成する(POST /frames)
         import io
-        f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
+        f = io.BytesIO(b"thisisaframefile")
         result = self.post_frames('フレームファイルAA', folder2_uuid, f, self.USER1)
 
         # フォルダ1のラベル名を変更する(PUT /folders)

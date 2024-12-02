@@ -1,5 +1,5 @@
 import unittest
-from flask import template_rendered
+# from flask import template_rendered
 from streamcat.web.backend import app
 from .api_test_case_base import ApiTestCaseBase
 
@@ -11,10 +11,10 @@ class AuthTestCase(ApiTestCaseBase):
             '962c604d898bb6032131ecaca67ad70118f8c35ce31a505616cace7ea6d64a65'
         )
 
-    def setUp(self):
-        super().setUp()
-        self.client = app.test_client()
-        app.testing = True
+    # def setUp(self):
+    #     super().setUp()
+    #     self.client = app.test_client()
+    #     app.testing = True
 
 
     # TODO: viewsの/projectsを追加したらコメントアウトしてテストする

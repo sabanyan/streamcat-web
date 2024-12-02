@@ -324,7 +324,7 @@ class FileTestCase(ApiTestCaseBase):
         f = io.BytesIO(bytes(f.read(), encoding='utf-8'))
 
         # 入力フレームを作成する
-        result = self.post_frames('電車🚆', project_uuid0, (f, 'train.csv'), self.USER1)
+        result = self.post_frames('電車🚆', project_uuid0, f, self.USER1)
         frame_uuid = result['uuid']
 
         # リモートフォルダを作成する

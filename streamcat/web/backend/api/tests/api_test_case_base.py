@@ -1,9 +1,9 @@
-import json
 import pprint
 
+from fastapi.testclient import TestClient
 from streamcat.store.tests.test_case_base import TestCaseBase
-from streamcat.web.backend import app
-from ..utils import make_access_token, Status, is_ok
+from streamcat.web.backend import app, logger
+from ..utils import make_access_token, is_ok
 
 class ApiTestCaseBase(TestCaseBase):
     """
@@ -18,8 +18,8 @@ class ApiTestCaseBase(TestCaseBase):
     def setUpClass(cls):
         # 親クラスのsetUpClass()を実行する
         TestCaseBase.setUpClass()
-        # テスト実行時はFlaskからログ出力しない
-        app.logger.disabled = True
+        # テスト実行時はログ出力しない
+        logger.disabled = True
 
     @classmethod
     def tearDownClass(cls):
@@ -72,12 +72,12 @@ class ApiTestCaseBase(TestCaseBase):
         """
         URIをGETする
         """
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S':token}
             response = client.get(uri)
-            result = response.get_json(silent=True)
-        error_detail = result['message'] if 'message' in result else ''
+            result = response.json()
+        error_detail = result.get('message') if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), f'GET {uri} is failed. {error_detail}')
         return result
 
@@ -86,31 +86,33 @@ class ApiTestCaseBase(TestCaseBase):
         URIからファイルをダウンロードする
         """
         accept_charset = f';charset={charset}' if charset else ''
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S':token}
             # response = client.get(uri)
-            with client.get(uri, headers={'Accept':'text/csv'+ accept_charset}) as response:
-                result = response.get_json(silent=True) or {}
-                error_detail = result['message'] if 'message' in result else ''
+            response = client.get(uri, headers={'Accept':'text/csv'+ accept_charset})
+            content_type = response.headers.get('content-yype')
+            if content_type == 'application/json':
+                result = response.json() or {}
+                error_detail = result.get('message') if 'message' in result else ''
                 self.assertTrue(is_ok(response.status_code), f'GET {uri} is failed. {error_detail}')
-                if response.content_type == 'application/json':
-                    return result
-                else:
-                    return response.get_data()
+                return result
+            else:
+                self.assertTrue(is_ok(response.status_code), f'GET {uri} is failed.')
+                return response.content
 
     def post_uri(self, uri, json_data, user):
         """
         URIへPOSTする
         """
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S': token}
             response = client.post(uri,
-                                   content_type='application/json',
-                                   data=json.dumps(json_data))
-            result = response.get_json(silent=True) or {}
-        error_detail = result['message'] if 'message' in result else ''
+                                   headers={'content_type': 'application/json'},
+                                   json=json_data)
+            result = response.json() or {}
+        error_detail = result.get('message') if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), f'POST {uri} is failed. {error_detail}')
         return result
 
@@ -118,33 +120,36 @@ class ApiTestCaseBase(TestCaseBase):
         """
         URIへPOSTする
         """
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S':token}
             response = client.post(uri,
-                                   content_type='application/json',
-                                   data=json.dumps(json_data))
-            result = response.get_json(silent=True) or {}
-        error_detail = result['message'] if 'message' in result else ''
+                                   headers={'content_type': 'application/json'},
+                                   json=json_data)
+            result = response.json() or {}
+        error_detail = result.get('message') if 'message' in result else ''
         return result
 
     def post_files(self, uri, label, parent_uuid, frame_stream, user):
         """
         指定するストリームをアップロードする
         """
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S':token}
+            if label is None:
+                data = {'parent':parent_uuid}
+            else:
+                data = {'label':label, 'parent':parent_uuid}
             response = client.post(uri,
-                                   content_type='multipart/form-data',
-                                   data={
-                                        'label' : label,
-                                        'parent': parent_uuid,
-                                        'file'  : frame_stream
-                                        }
+                                    headers={'content_type': 'multipart/form-data'},
+                                    data=data,
+                                    files={
+                                        'file': frame_stream
+                                    }
                                   )
-            result = response.get_json(silent=True) or {}
-        error_detail = result['message'] if 'message' in result else ''
+            result = response.json() or {}
+        error_detail = result.get('message') if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), msg=f'POST {uri} is failed. {error_detail}')
         return result
 
@@ -165,37 +170,20 @@ class ApiTestCaseBase(TestCaseBase):
         URI(/api/v0/archives/flows)へPOSTする
         指定するストリームをフローとしてアップロードする
         """
-        data = {
-            'parent': parent_uuid,
-            'file'  : stream
-        }
-        if label is not None:
-            data['label'] = label
-        
-        with app.test_client() as client:
-            token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
-            response = client.post('/api/v0/archives/flows',
-                                   content_type='multipart/form-data',
-                                   data=data
-                                  )
-            result = response.get_json(silent=True) or {}
-        error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(is_ok(response.status_code), f'POST {"/api/v0/archives/flows"} is failed. {error_detail}')
-        return result
+        return self.post_files('/api/v0/archives/flows', label, parent_uuid, stream, user)
 
     def put_uri(self, uri, json_data, user):
         """
         URIへPUTする
         """
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S':token}
             response = client.put(uri,
-                                  content_type='application/json',
-                                  data=json.dumps(json_data))
+                                  headers={'content_type': 'application/json'},
+                                  json=json_data)
             # Silence parsing errors and return None instead.
-            result = response.get_json(silent=True) or {}
+            result = response.json() or {}
         error_detail = result['message'] if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), f'PUT {uri} is failed. {error_detail}')
         return result
@@ -204,13 +192,15 @@ class ApiTestCaseBase(TestCaseBase):
         """
         URIへDELETEする
         """
-        with app.test_client() as client:
+        # テストクライアントから例外を送出させない
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S': token}
             response = client.delete(uri)
             # Silence parsing errors and return None instead.
-            result = response.get_json(silent=True) or {}
-        error_detail = result['message'] if 'message' in result else ''
+            result = response.json() or {}
+        # error_detail = result['msg'] if 'message' in result else ''
+        error_detail = result.get('message') if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), f'DELETE {uri} is failed. {error_detail}')
         return result
 
@@ -218,15 +208,20 @@ class ApiTestCaseBase(TestCaseBase):
         """
         URIへDELETEする
         """
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user.uuid)
-            client.set_cookie('S', token)
-            response = client.delete(uri,
-                                     content_type='application/json',
-                                     data=json.dumps(json_data))
+            client.cookies = {'S':token}
+            request = client.build_request(
+                'delete',
+                uri,
+                json=json_data,
+                headers={'content_type': 'application/json'},
+                cookies={'S':token}
+            )
+            response = client.send(request)
             # Silence parsing errors and return None instead.
-            result = response.get_json(silent=True) or {}
-        error_detail = result['message'] if 'message' in result else ''
+            result = response.json() or {}
+        error_detail = result.get('message') if 'message' in result else ''
         self.assertTrue(is_ok(response.status_code), f'DELETE {uri} is failed. {error_detail}')
         return result
 
@@ -235,13 +230,15 @@ class ApiTestCaseBase(TestCaseBase):
         POST /library?session=on でログインする
         """
         uri = '/library?session=on'
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             response = client.post(uri,
-                                   content_type='multipart/form-data',
+                                   headers={'content_type': 'multipart/form-data'},
                                    data={'email'   : email,
-                                         'password': password})
-        self.assertEqual(response.status_code, 302, msg=f'POST {uri} is failed. response status: {response.status}')
-        return response.get_data()
+                                         'password': password},
+                                   # リダイレクトを追わない
+                                   follow_redirects=False)
+        self.assertEqual(response.status_code, 307, msg=f'POST {uri} is failed. response status: {response.status_code}')
+        return response.text
 
 
     def post_register_complete(self, user_uuid, new_password):
@@ -249,11 +246,13 @@ class ApiTestCaseBase(TestCaseBase):
         POST /signup/complete でユーザを登録状態にする
         """
         uri = '/signup/complete'
-        with app.test_client() as client:
+        with TestClient(app, raise_server_exceptions=False) as client:
             token = make_access_token(user_uuid)
-            client.set_cookie('S', token)
+            client.cookies = {'S':token}
             response = client.post(uri,
-                                   content_type='multipart/form-data',
-                                   data={'password': new_password})
-        self.assertEqual(response.status_code, 302, msg=f'POST {uri} is failed. response status: {response.status}')
-        return response.get_data()
+                                   headers={'content_type': 'multipart/form-data'},
+                                   data={'password': new_password},
+                                   # リダイレクトを追わない
+                                   follow_redirects=False)
+        self.assertEqual(response.status_code, 307, msg=f'POST {uri} is failed. response status: {response.status_code}')
+        return response.text

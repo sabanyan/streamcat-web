@@ -126,7 +126,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', root.uuid, f, self.USER1)
         frame_uuid_1= result['uuid'] 
@@ -237,7 +237,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1= result['uuid']
@@ -283,7 +283,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1= result['uuid']
@@ -301,7 +301,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレーム2を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy2.csv')
+        f = io.BytesIO(b"abcdef")
         # フレーム2データを作成する(POST /frames)
         result = self.post_frames('フレームファイル_2', folder2_uuid, f, self.USER1)
         frame_uuid_2= result['uuid']
@@ -354,7 +354,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ3内にフレームを作成する
         import io
-        f = (io.BytesIO(b'abcABC'), 'frame')
+        f = io.BytesIO(b'abcABC')
         result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
         frame_uuid= result['uuid']
 
@@ -428,7 +428,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ3内にフレームを作成する
         import io
-        f = (io.BytesIO(b'abcABC'), 'frame')
+        f = io.BytesIO(b'abcABC')
         result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
         frame_uuid= result['uuid']
 
@@ -474,7 +474,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_AA', root.uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -504,7 +504,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1= result['uuid']
@@ -561,7 +561,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -603,7 +603,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -612,7 +612,7 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
 
         # フォルダ2内に同じラベル名でフレームを作成する
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_2 = result['uuid']
         self.assertEqual(result['label'], 'フレームファイル_1')
@@ -646,13 +646,13 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
 
         # フォルダ2内にフレーム2を作成する
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_2 = result['uuid']
         self.assertEqual(result['label'], 'フレームファイル_1')
@@ -721,13 +721,13 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
 
         # フォルダ2内にフレーム2を作成する
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_2 = result['uuid']
         self.assertEqual(result['label'], 'フレームファイル_1')
@@ -785,7 +785,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ1内にフレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder1_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -798,7 +798,7 @@ class TrashTestCase(ApiTestCaseBase):
         self.factory.end()
 
         # フォルダ2内にフレーム2を作成する
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         result = self.post_frames('フレームファイル_2', folder2_uuid, f, self.USER1)
         frame_uuid_2 = result['uuid']
         self.assertEqual(result['label'], 'フレームファイル_2')
@@ -862,7 +862,7 @@ class TrashTestCase(ApiTestCaseBase):
         # 作成を確定する
         self.factory.end()
 
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', FLOW_FOLDER_UUID, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -915,7 +915,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フォルダ2内にフレームを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -1053,7 +1053,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_AA', project1_uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -1133,7 +1133,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root.uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']
@@ -1161,7 +1161,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # フレーム1を作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root.uuid, f, self.USER1)
         frame_uuid_1 = result['uuid']

@@ -43,3 +43,8 @@ def register_exception_handlers(app:FastAPI):
     @app.exception_handler(BadRequestException)
     async def BadRequestExceptionHandler(request:Request, ex:BadRequestException):
         return JSONResponse(status_code=Status.BAD_REQUEST, content=error_content(-1, ex))
+
+    # デフォルトエラーハンドラ
+    @app.exception_handler(Exception)
+    async def TheOthersExceptionHandler(request:Request, ex:Exception):
+        return JSONResponse(status_code=Status.INERNAL_SERVER_ERROR, content=error_content(-1, ex))

@@ -11,13 +11,13 @@ from .api_test_case_base import ApiTestCaseBase
 
 class FlowTestCase(ApiTestCaseBase):
 
-    def setUp(self):
-        super().setUp()
-        app.testing = True
-        self.client = app.test_client()
+    # def setUp(self):
+    #     super().setUp()
+    #     app.testing = True
+    #     self.client = app.test_client()
 
-    def tearDown(self):
-        super().tearDown()
+    # def tearDown(self):
+    #     super().tearDown()
 
     def test_new_flow(self):
         """
@@ -28,7 +28,7 @@ class FlowTestCase(ApiTestCaseBase):
 
         # データソースを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         result = self.post_frames('データソース', root.uuid, f, self.USER1)
         frame_uuid= result['uuid']
 
@@ -109,9 +109,8 @@ class FlowTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
         
         # まずユーザとプロジェクトとフローを作る
-        with app.app_context():
-            test_flow_uuid = setUpFlow(self)
-            test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_uuid = setUpFlow(self)
+        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
         # フローをコピーする
         data_copy_flow = {'source': test_flow_uuid}
@@ -150,9 +149,8 @@ class FlowTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
 
         # まずユーザとプロジェクトとフローを作る
-        with app.app_context():
-            test_flow_uuid = setUpFlow(self)
-            test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_uuid = setUpFlow(self)
+        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
         # フローをコピーする
         data_copy_flow = {'source': test_flow_uuid}
@@ -336,8 +334,7 @@ class FlowTestCase(ApiTestCaseBase):
         fecth_flowをテストする
         """
         # まずユーザとプロジェクトを作る
-        with app.app_context():
-            test_flow_uuid = setUpFlow(self)
+        test_flow_uuid = setUpFlow(self)
 
         # フロー格納フォルダを取得する
         flow_folder = self.factory.data.load_flow_folder()
@@ -356,7 +353,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.factory.end()
 
         # フレームを、フロー格納フォルダに格納する
-        f = (io.BytesIO(b"thisisaframefile"), 'wearetestmen.csv')
+        f = io.BytesIO(b"thisisaframefile")
         self.post_frames('適当なフレーム', flow_folder.uuid, f, self.USER1)
 
         # GET /Flows
@@ -376,8 +373,7 @@ class FlowTestCase(ApiTestCaseBase):
         update_flow APIをテストする
         """
         # まずユーザとプロジェクトを作る
-        with app.app_context():
-            test_flow_uuid = setUpFlow(self)
+        test_flow_uuid = setUpFlow(self)
 
         # 削除前にフローのロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':test_flow_uuid}, self.USER1)
@@ -501,8 +497,7 @@ class FlowTestCase(ApiTestCaseBase):
         folder_dst_uuid = folder_dst['uuid']
 
         # ユーザとプロジェクトを作る
-        with app.app_context():
-            flow_uuid = setUpFlow(self)
+        flow_uuid = setUpFlow(self)
 
         # 削除前にフローのロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
@@ -532,9 +527,8 @@ class FlowTestCase(ApiTestCaseBase):
         delete_flow APIをテストする
         """
         # まずユーザとプロジェクトを作る
-        with app.app_context():
-            test_flow_uuid = setUpFlow(self)
-            test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_uuid = setUpFlow(self)
+        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
         # APIを投げる前はフローは存在するはず
         self.assertTrue(self.factory.data.exists(test_flow_uuid))

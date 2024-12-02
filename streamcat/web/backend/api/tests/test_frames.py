@@ -135,7 +135,7 @@ class FrameTestCase(ApiTestCaseBase):
         frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
-        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
 
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.assertEqual(result['encoding'], 'UTF-8')
@@ -295,7 +295,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
 
         # Frameを作成する(POST /frames)
         result = self.post_frames('新しいフレームファイル!', root.uuid, f, self.USER1)
@@ -557,7 +557,7 @@ class FrameTestCase(ApiTestCaseBase):
         frame_uuid = self.create_data(frame_path, csv_data)
 
         # Visの取得
-        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER1)
 
         # ラベルとIDチェック
         self.assertIsNotNone(result.get('args'))

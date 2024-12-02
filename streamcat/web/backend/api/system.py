@@ -1,24 +1,20 @@
 import os
-from flask import (
-    Blueprint,
-    send_from_directory,
-    request,
-    g
-)
+from fastapi import APIRouter, Depends, Request, Form, File, UploadFile
+from fastapi.responses import FileResponse
+from streamcat.store.factory import Factory
 from .utils import (
     RequestJson,
-    api_base,
+    get_factory,
     login_required_api,
     make_refresh_token,
     make_access_token
 )
 
-mod = Blueprint('system', __name__)
+router = APIRouter()
 
-@mod.route('/navigation', methods=['GET'])
+@router.get('/navigation')
 @login_required_api
-@api_base
-def get_navigation():
+def get_navigation(factory:Factory=Depends(get_factory)):
     """
     ナビゲーションバーに表示する情報などを取得する
     """
@@ -40,70 +36,68 @@ def get_navigation():
         'allowlist': {}
     }
 
-    if g.user is not None:
-        navigation['user'] = g.user.to_json()
-        navigation['allowlist'] = g.user.get_allowlist()
+    if factory.myself is not None:
+        navigation['user'] = factory.myself.to_json()
+        navigation['allowlist'] = factory.myself.get_allowlist()
 
     return navigation
 
 
-@mod.route('/stores', methods=['GET'])
+@router.get('/stores')
 @login_required_api
-@api_base
-def fecth_stores():
+def fecth_stores(factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)の一覧を返却する
     """
-    return g.factory.store.find_all()
+    return factory.store.find_all()
 
-@mod.route('/stores/<store_id>', methods=['GET'])
+@router.get('/stores/{store_id}')
 @login_required_api
-@api_base
-def fecth_store(store_id):
+def fecth_store(store_id:str, factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)を返却する
     """
-    return g.factory.store.find_by_id(store_id)
+    return factory.store.find_by_id(store_id)
 
-@mod.route('/stores', methods=['POST'])
+@router.post('/stores')
 @login_required_api
-@api_base
-def make_new_store():
+def make_new_store(body:dict, factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)を作成する
     """
-    new_store = g.factory.store.create(request.json['id'],
-                                       request.json['version'],
-                                       request.json['label'],
-                                       request.json['description'],
-                                       request.json['url'],
-                                       request.json['params'])
+    new_store = factory.store.create(body['id'],
+                                    body['version'],
+                                    body['label'],
+                                    body['description'],
+                                    body['url'],
+                                    body['params'])
     new_store.save()
     return new_store
 
-@mod.route('/stores/<store_id>', methods=['DELETE'])
+@router.delete('/stores/{store_id}')
 @login_required_api
-@api_base
-def delete_store(store_id):
+def delete_store(store_id:str, factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)を削除する
     """
-    store = g.factory.store.find_by_id(store_id)
+    store = factory.store.find_by_id(store_id)
     store.delete()
 
 
-@mod.route('/connections/remote-folders', methods=['GET'])
+@router.get('/connections/remote-folders')
 @login_required_api
-@api_base
-def is_remote_folder_connectable():
+def is_remote_folder_connectable(request:Request, factory:Factory=Depends(get_factory)):
     """
     リモートフォルダの接続を確認する
     """
     from streamcat.store import RemoteFolderConn
 
+    # クエリパラメータをDictで取得する
+    request_args = dict(request.query_params)
+
     # 接続に用いるリモートフォルダを作成する(保存しないこと)
-    root = g.factory.data.load_root()
-    remote_folder_conn = RemoteFolderConn(request.args)
+    root = factory.data.load_root()
+    remote_folder_conn = RemoteFolderConn(request_args)
     tmp_folder = root.create_remote_folder('CONNECTION-TEST', remote_folder_conn)
 
     # 接続情報に漏れがあれば例外を送出する
@@ -112,10 +106,9 @@ def is_remote_folder_connectable():
     # 接続の確認結果を返す
     return {'conn': tmp_folder.is_mountable()}
 
-@mod.route('/connections/databases', methods=['GET'])
+@router.get('/connections/databases')
 @login_required_api
-@api_base
-def is_database_connectable():
+def is_database_connectable(request:Request, factory:Factory=Depends(get_factory)):
     """
     データベースの接続を確認する
     """
@@ -123,9 +116,12 @@ def is_database_connectable():
     from streamcat.engine import execute
     from streamcat.depo.std.commands.scmd.script import DbIsConnectableCommand
 
+    # クエリパラメータをDictで取得する
+    request_args = dict(request.query_params)
+
     # 接続に用いるデータベースを作成する(保存しないこと)
-    root = g.factory.data.load_root()
-    db_conn = DatabaseConn(request.args)
+    root = factory.data.load_root()
+    db_conn = DatabaseConn(request_args)
     tmp_db = root.create_database('CONNECTION-TEST', db_conn)
 
     # Restoreコマンドを実行する
@@ -136,47 +132,41 @@ def is_database_connectable():
     # 接続の確認結果を返す
     return {'conn': outs['o']}
 
-@mod.route('/archives/flows/<uuid>', methods=['GET'])
+@router.get('/archives/flows/{uuid}')
 @login_required_api
-def download_flow(uuid):
+def download_flow(uuid, factory:Factory=Depends(get_factory)):
+    from starlette.background import BackgroundTask
     from streamcat.store import FlowDumper
-    flow_dumper = FlowDumper(g.factory)
+    
+    flow_dumper = FlowDumper(factory)
     (archive_path, archive_name) = flow_dumper.dump_archive(uuid)
 
     # アーカイブファイルを返す
-    ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
-                              download_name=archive_name + '.tgz', mimetype='application/gzip')
-    archive_path.unlink()
-    return ret
+    return FileResponse(path=archive_path,
+                        filename=archive_name + '.tgz',
+                        media_type='application/gzip',
+                        # 返した後にファイルを削除する       
+                        background=BackgroundTask(archive_path.unlink))
 
-@mod.route('/archives/flows', methods=['POST'])
+@router.post('/archives/flows')
 @login_required_api
-@api_base
-def upload_flow():
+def upload_flow(label:str=Form(None),
+                parent:str=Form(),
+                file:UploadFile=File(),
+                factory:Factory=Depends(get_factory)):
     from pathlib import Path
 
-    if 'file' not in request.files or request.files.get('file') is None:
-        raise Exception('No archive file found.')
-    if 'parent' not in request.form:
-        raise Exception('No parent is designated.')
-
-    if 'label' in request.form:
-        folder_label = request.form['label']
-    else:
-        folder_label = None
-
-    parent = g.factory.data.find_by_uuid(request.form['parent'])
-    file_name = Path(request.files.get('file').filename).stem
-    stream = request.files.get('file').stream
+    parent = factory.data.find_by_uuid(parent)
+    file_name = Path(file.filename).stem
 
     from streamcat.store import FlowDumper
-    flow_dumper = FlowDumper(g.factory)
-    flow_dumper.restore_archive(parent, folder_label, file_name, stream)
+    flow_dumper = FlowDumper(factory)
+    flow_dumper.restore_archive(parent, label, file_name, file.file)
 
 
-@mod.route('/dump', methods=['GET'])
+@router.get('/dump')
 @login_required_api
-def get_dump():
+def get_dump(factory:Factory=Depends(get_factory)):
     """
     StreamCatのDumpファイルを取得する
     """
@@ -187,76 +177,59 @@ def get_dump():
 
     try:
         # Dumpコマンドを実行する
-        outs = execute(DumpCommand(), args={'datum_factory': g.factory.data}).join()
+        outs = execute(DumpCommand(), args={'datum_factory': factory.data}).join()
         if 'o' not in outs or isinstance(outs['o'], Exception):
             raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
 
         # Dumpファイルをクライアントに返す
         archive_path = outs['o']
         archive_name = 'backup_' + datetime.now().strftime('%Y%m%d') + '.tgz'
-        return send_from_directory(archive_path.parent, archive_path.name, as_attachment=True,
-                                   download_name=archive_name, mimetype='application/gzip')
+
+        # アーカイブファイルを返す
+        return FileResponse(path=archive_path,
+                            filename=archive_name,
+                            media_type='application/gzip')
     finally:
         # Dumpコマンドで作成した一時ファイルを削除する
         Tmp.remove_files()
     
-@mod.route('/dump', methods=['POST'])
+@router.post('/dump')
 @login_required_api
-@api_base
-def upload_dump():
+def upload_dump(file:UploadFile=File(),
+                factory:Factory=Depends(get_factory)):
     """
     StreamCatのDumpファイルを復元する
     """
     from streamcat.engine import execute
     from streamcat.depo.std.commands.scmd.script import RestoreCommand
 
-    if 'file' not in request.files or request.files.get('file') is None:
-        raise Exception('Dumpファイルを指定してください')
-
-    # 入力ストリームを取得する
-    stream = request.files.get('file').stream
-
     # Restoreコマンドを実行する
-    outs = execute(RestoreCommand(), args={'factory': g.factory}, inputs={'i':stream}).join()
+    outs = execute(RestoreCommand(), args={'factory':factory}, inputs={'i':file.file}).join()
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
 
 
-@mod.route('/tokens/refresh', methods=["POST"])
+@router.post('/tokens/refresh')
 @login_required_api
-@api_base
-def get_refresh_token():
+def get_refresh_token(body:dict, factory:Factory=Depends(get_factory)):
     """
     リフレッシュトークンを発給する
     """
-    req = RequestJson(request.json)
+    req = RequestJson(body)
 
     if not req.has('currentPassword'):
         raise Exception('現在のパスワードを指定してください')
-    if not g.user.authenticate(req['currentPassword']):
+    if not factory.myself.authenticate(req['currentPassword']):
         raise Exception('現在のパスワードが誤っています')
 
-    return make_refresh_token(g.user.uuid)
+    return make_refresh_token(factory.myself.uuid)
 
-@mod.route('/tokens/access', methods=["POST"])
+@router.post('/tokens/access')
 @login_required_api
-@api_base
-def get_access_token():
+def get_access_token(factory:Factory=Depends(get_factory)):
     """
     アクセストークンを発給する
     """
     # アクセストークンを用いて新たなアクセストークンを
     # 発給できるが脆弱性にはならないだろう
-    return make_access_token(g.user.uuid)
-
-
-@mod.errorhandler(400)
-def handle_bad_request(error):
-    """
-    Bad Requestが起きた時にもJSONを返却するように
-    （request bodyのJSONが不正な場合を想定している）
-    """
-    from .utils import BadRequestException
-    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
-    message = 'The browser (or proxy) sent a request that this server could not understand.'
-    raise BadRequestException(str(error))
+    return make_access_token(factory.myself.uuid)

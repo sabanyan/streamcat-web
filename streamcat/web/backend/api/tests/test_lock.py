@@ -57,7 +57,7 @@ class LockTestCase(ApiTestCaseBase):
         root_uuid = result['uuid']
         # フレームを作成する(POST /frames)
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummyD.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1D', root_uuid, f, self.USER1)
         frame_uuid = result['uuid']
@@ -109,7 +109,7 @@ class LockTestCase(ApiTestCaseBase):
         root_uuid = result['uuid']
         # フレームを作成する(POST /frames)
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root_uuid, f, self.USER1)
         frame_uuid = result['uuid']
@@ -150,7 +150,7 @@ class LockTestCase(ApiTestCaseBase):
         root_uuid = result['uuid']
         # フレームを作成する(POST /frames)
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('フレームファイル_1E', root_uuid, f, self.USER1)
         frame_uuid = result['uuid']
@@ -235,7 +235,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER2は、プロジェクト内にFrameを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        f = io.BytesIO(b"abcdef")
         result = self.post_frames('Yosemite', project_uuid, f, self.USER2)
         frame_uuid= result['uuid']
 
@@ -525,7 +525,7 @@ class LockTestCase(ApiTestCaseBase):
 
         # USER1は、フォルダ内にFrameを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummyD.csv')
+        f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
         result = self.post_frames('コケかけコケかけコケコーラ', folder_uuid, f, self.USER1)
         frame_uuid = result['uuid']
@@ -600,7 +600,7 @@ class LockTestCase(ApiTestCaseBase):
                 root_uuid = result['uuid']
                 # フレームを作成する(POST /frames)
                 import io
-                f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
+                f = io.BytesIO(b"abcdef")
                 # フレームデータを作成する(POST /frames)
                 result = self.base.post_frames('フレームファイル_1E', root_uuid, f, self.base.USER1)
                 frame_uuid = result['uuid']
