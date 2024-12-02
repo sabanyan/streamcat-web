@@ -18,6 +18,8 @@ setup(
         'orjson'
         # FastAPIでデコレータ内でRequestオブジェクトを取得できるようにする
         'fastapi-decorators'
+        # FastAPIのTestClientが使用する
+        'httpx'
         'Flask==2.3.2',
         # 'flask_mail',
         'oauthlib==3.2.2',

@@ -1,6 +1,6 @@
 class RequestJson():
 
-    def __init__(self, request_json):
+    def __init__(self, request_json:dict):
         if request_json is None:
             raise Exception('リクエストJsonが指定されていません')
         self._request_json = request_json
@@ -10,6 +10,10 @@ class RequestJson():
 
     def __getitem__(self, key):
         return self._request_json[key]
+
+    @property
+    def json(self):
+        return self._request_json
 
     def get(self, key):
         return self._request_json.get(key)
