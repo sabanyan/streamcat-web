@@ -40,33 +40,34 @@ def login_required(func):
     クエリパラメータにsessionが指定された場合は
     各エンドポイントに定義された処理の代わりに、ログインまたはログアウト処理を行う
     """
-    def get_request(_request:Request):
-        return _request
+    def get_request(__request:Request):
+        return __request
 
     # エンドポイント関数の引数とここでwrapper関数に加えた引数名が重複しないこと
-    @depends(_request=Depends(get_request)) 
+    # login_required_apiの_request引数との重複も避けるため__requestを引数名にする
+    @depends(__request=Depends(get_request)) 
     @functools.wraps(func)
-    async def wrapper(_request:Request, **kwargs):
+    async def wrapper(__request:Request, **kwargs):
         # デコレート対象の関数からRequest引数を取得する
         # request = kwargs.get('request')
 
         # 要求されたURLを取得する
-        request_base_url = _get_request_base_url(_request)
+        request_base_url = _get_request_base_url(__request)
 
         # 指定されたクエリパラメータ
-        q_params = _request.query_params
+        q_params = __request.query_params
 
         # ログアウト時のURLをCookieから取得する
-        last_url = _get_last_url(_request.cookies)
+        last_url = _get_last_url(__request.cookies)
 
         if 'session' not in q_params:
             try:
                 # 例外が送出されなければ認証成功
-                claims = _get_claims(_request.cookies)
+                claims = _get_claims(__request.cookies)
             except:
                 # 認証失敗した場合はCookieをクリアしてログインページを返す
                 original_url = request_base_url.include_query_params(session='on')
-                response = _make_login_response(_request, last_url=last_url, original_url=original_url, args=q_params)
+                response = _make_login_response(__request, last_url=last_url, original_url=original_url, args=q_params)
                 raise NotAuthenticationException('not authorized !', response)
             # クエリパラメータに'session'がない場合、各エンドポイントに定義された処理を行う
             response = await call_func(func, **kwargs)
@@ -82,7 +83,7 @@ def login_required(func):
             # (すでに認証が通っている場合でも、再認証する)
 
             # RequestからFormデータを取得する
-            form = await _request.form()
+            form = await __request.form()
             request_email = form.get('email', '')
 
             with UnAuthzFactory() as factory:
@@ -90,7 +91,7 @@ def login_required(func):
                     user = factory.find_user_by_email(request_email)
                 except Exception:
                     # 認証失敗した場合はCookieをクリアしてログインページを返す
-                    response = _make_login_response(_request, last_url=last_url, email=request_email, login_failed=True)
+                    response = _make_login_response(__request, last_url=last_url, email=request_email, login_failed=True)
                     raise NotAuthenticationException('user not found', response)
 
             if user.authenticate(form.get('password', '')):
@@ -99,7 +100,7 @@ def login_required(func):
 
                 if user.is_init_or_temp:
                     # 仮登録状態の場合はパスワード登録画面に遷移する
-                    response = make_response(_request, 'register_password.html', email=request_email)
+                    response = make_response(__request, 'register_password.html', email=request_email)
                     # アクセストークンをCookieに格納してWebブラウザに渡す
                     return _make_response_with_token(response, access_token)
                 else:
@@ -111,7 +112,7 @@ def login_required(func):
             elif user.password_expired():
                 # 仮パスワードが有効期限切れの場合、Cookieをクリアしてその旨を通知する
                 message = '仮パスワードの有効期限が切れています。ユーザ管理者に問い合わせて下さい。'
-                response = _make_login_response(_request, login_failed=True, alert_message=message)
+                response = _make_login_response(__request, login_failed=True, alert_message=message)
                 raise NotAuthenticationException('password expired', response)
 
             else:
@@ -119,7 +120,7 @@ def login_required(func):
                 # メールアドレスは残してパスワードだけにする
                 # この仕様はセキュリティ上あまりよろしくはないが、
                 # ちゃんと画面が遷移したテストとしてわかりやすいので一時的にそうしている
-                response = _make_login_response(_request, last_url=last_url, email=request_email, login_failed=True)
+                response = _make_login_response(__request, last_url=last_url, email=request_email, login_failed=True)
                 raise NotAuthenticationException('invalid password', response)
 
         elif q_params['session'] == 'off':
