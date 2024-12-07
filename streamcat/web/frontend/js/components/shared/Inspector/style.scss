@@ -91,8 +91,8 @@
 .property_body {
   padding: 16px;
   padding-bottom: 128px;
-  @include form-background-color();
   min-height: 100%;
+  @include form-background-color();
 
   label {
     font-size: 14px;
@@ -334,9 +334,6 @@
 .outPort_ {
   margin-bottom: 8px;
 
-  &:last-of-type {
-    margin-bottom: 0;
-  }
 
   position: relative;
   display: flex;
@@ -344,6 +341,11 @@
   border: 1px solid #CED4DA;
   padding: 6px;
   background: #e9ecef;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
 }
 
 .outPort_Port {

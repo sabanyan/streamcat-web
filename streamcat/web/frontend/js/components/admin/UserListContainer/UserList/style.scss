@@ -3,12 +3,12 @@
 .pageTitleHeader {
   width: 100%;
   border-radius: 8px;
-  @include button-background-color();
   padding: 12px 16px 12px 24px;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
   color: #606c7a;
+  @include button-background-color();
 }
 
 .pageTitle {

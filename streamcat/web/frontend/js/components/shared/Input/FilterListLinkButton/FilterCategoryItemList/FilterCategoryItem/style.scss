@@ -6,6 +6,7 @@
   padding: 14px;
   height: 48px;
   color: #606C7D;
+  cursor: pointer;
   &:hover{
     background: #f8f9fa;
   }
@@ -14,5 +15,4 @@
     background: inherit;
     color: #CACACA
   }
-  cursor: pointer;
 }

@@ -12,10 +12,10 @@
         vertical-align: middle;
         color: #606c7a;
         padding: 0 24px;
+        user-select: none;
         &::selection{
             background: transparent;
         }
-        user-select: none;
         span{
             cursor: pointer;
         }
