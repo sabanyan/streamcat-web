@@ -1,3 +1,5 @@
+@use 'common';
+
 .streamcat-form{
   .custom-control{
     &.custom-radio,&.custom-checkbox{
@@ -6,10 +8,10 @@
   }
   .custom-radio,.custom-checkbox{
     .custom-control-indicator{
-      @include form-background-color();
+      @include common.form-background-color();
     }
     .custom-control-input:checked ~ .custom-control-indicator{
-      background-color: $streamcat-form-radio-indicator-color;
+      background-color: common.$streamcat-form-radio-indicator-color;
       color: #fff;
     }
   }

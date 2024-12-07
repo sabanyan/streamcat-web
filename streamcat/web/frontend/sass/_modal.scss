@@ -1,3 +1,5 @@
+@use 'common';
+
 $preview-width: 100%;
 $preview-height: 100%;
 .modal.preview {
@@ -31,7 +33,7 @@ $preview-height: 100%;
       *{
         color: #fff!important;
       }
-      background: $streamcat-preview-modal-header-background-color !important;
+      background: common.$streamcat-preview-modal-header-background-color !important;
       border-bottom: 1px solid #EEEEEE !important;
     }
   }
@@ -50,7 +52,7 @@ $preview-height: 100%;
     .modal-content {
       border-radius: 0;
       height: 100%;
-      @include paper-background-color();
+      @include common.paper-background-color();
       .modal-body{
         max-height: inherit!important;
         overflow: scroll;
@@ -68,7 +70,7 @@ $preview-height: 100%;
       *{
         color: #fff!important;
       }
-      background: $streamcat-preview-modal-header-background-color !important;
+      background: common.$streamcat-preview-modal-header-background-color !important;
       border-bottom: 1px solid #EEEEEE !important;
     }
   }
@@ -116,11 +118,11 @@ $preview-height: 100%;
 }
 
 .modal-server-error-text{
-  color: $danger;
+  color: common.$danger;
 }
 
 .modal-script-error-text{
-  color: $danger;
+  color: common.$danger;
 }
 
 .modal-backdrop{

@@ -1,10 +1,10 @@
-@import "../../../node_modules/bootstrap/scss/bootstrap";
-@import "common";
-@import "list";
-@import "form";
-@import "nav";
-@import "modal";
-@import "margins";
+@use "../../../node_modules/bootstrap/scss/bootstrap";
+@use "common";
+@use "list";
+@use "form";
+@use "nav";
+@use "modal";
+@use "margins";
 //@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
 
 body {
@@ -55,7 +55,7 @@ input::placeholder,textarea::placeholder {
 
 .streamcat-list-link{
   cursor: pointer;
-  color: $streamcat-list-link-color!important;
+  color: common.$streamcat-list-link-color!important;
 }
 
 .streamcat-canvas-tool, .streamcat-property {
@@ -114,13 +114,13 @@ input::placeholder,textarea::placeholder {
     // ヘッダ行を固定する
     top: 0;
     position: sticky;
-    @include list-color();
+    @include common.list-color();
   }
   tr:nth-child(odd){
-    @include list-select-color();
+    @include common.list-select-color();
   }
   tr:nth-child(even){
-    @include list-color();
+    @include common.list-color();
   }
   td {
     padding: 5px 10px;

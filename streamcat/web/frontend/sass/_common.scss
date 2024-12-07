@@ -103,7 +103,7 @@ $streamcat-port-border-color: #B7C8D3;
 $streamcat-port-label-color: color.adjust(#B7C8D3, $lightness: -5%);
 //@import '../../node_modules/boiler_strap/sass/boilerstrap/mixins/customize_mixins';
 
-@import "tooltip";
+// @import "tooltip";
 
 .user-select{
   -webkit-user-select: text;
