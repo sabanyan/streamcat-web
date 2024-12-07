@@ -411,8 +411,9 @@ export const FlowEditor = () => {
         // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
         // ・document.addEventListener()へのイベントハンドラの登録では
         //   Pageを閉じる時にイベントハンドラが実行されなかった
+        // ・unloadイベントは非推奨で将来削除される予定なので代わりにpagehideイベントを仕様する
         window.addEventListener('beforeunload', handleLeavePage);
-        window.addEventListener('unload', handleUnload);
+        window.addEventListener('pagehide', handleUnload);
 
         return () => {
             window.removeEventListener('beforeunload', handleLeavePage);
