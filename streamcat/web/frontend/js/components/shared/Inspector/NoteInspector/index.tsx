@@ -91,7 +91,7 @@ export const NoteInspector = (props: Props) => {
         const minFontSize = Constants.default.note.fontSize.min;
         const increase = Constants.default.note.fontSize.increase;
         const list: dropDownListItem[] = [];
-        for (let i = minFontSize; i < maxFontSize; i = i + increase) {
+        for (let i:number = minFontSize; i < maxFontSize; i += increase) {
             list.push({
                 value: i.toString(),
                 label: i + 'px'
