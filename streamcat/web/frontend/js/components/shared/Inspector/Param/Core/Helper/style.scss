@@ -1,5 +1,7 @@
+@use 'sass:color';
+
 .helper {
-  border: solid 2px lighten(#00469d, 20%);
+  border: solid 2px color.adjust(#00469d, $lightness: 20%);
   border-radius: 5px;
   resize:vertical;
   width: 600px;
@@ -9,7 +11,7 @@
 }
 
 .toolbar {
-  background: lighten(#00469d, 10%);
+  background: color.adjust(#00469d, $lightness: 10%);
   font-size: small;
   text-align: right;
   color: white;

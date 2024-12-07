@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .input_file {
   display: none;
 }
@@ -23,15 +25,15 @@
     }
 
     .ready {
-      color: lighten(gray,10%)
+      color: color.adjust(gray, $lightness: 10%)
     }
 
     .success {
-      color: lighten(green,10%)
+      color: color.adjust(green, $lightness: 10%)
     }
 
     .fail {
-      color: lighten(red,10%);
+      color: color.adjust(red, $lightness: 10%);
     }
 
     input {

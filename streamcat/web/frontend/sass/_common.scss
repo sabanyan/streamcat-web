@@ -33,6 +33,8 @@
 
 //@import '../../node_modules/boiler_strap/sass/boilerstrap/variables/variables';
 
+@use 'sass:color';
+
 /**
   独自の変数定義
  */
@@ -89,7 +91,7 @@ $streamcat-property-operator-icon-color: $streamcat-orange;
 $streamcat-property-operator-label-color: $streamcat-text;
 $streamcat-property-command-separator-background-color: #00469D;
 $streamcat-property-command-separator-color: #fff;
-$streamcat-property-command-hover-background-color: lighten($streamcat-light-gray,20%);
+$streamcat-property-command-hover-background-color: color.adjust($streamcat-light-gray, $lightness: 20%);
 
 $streamcat-nav-active-border-color: #63CFFD;
 $streamcat-nav-background-color: #00469D;
@@ -98,7 +100,7 @@ $streamcat-preview-modal-header-background-color: #8296A8;
 $streamcat-dropdown-list-label-border-color: #8296A8;
 $streamcat-dropdown-list-label-color: #8296A8;
 $streamcat-port-border-color: #B7C8D3;
-$streamcat-port-label-color: darken(#B7C8D3,5%);
+$streamcat-port-label-color: color.adjust(#B7C8D3, $lightness: -5%);
 //@import '../../node_modules/boiler_strap/sass/boilerstrap/mixins/customize_mixins';
 
 @import "tooltip";

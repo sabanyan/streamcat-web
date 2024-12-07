@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import "../../../../sass/common";
 
 .property {
@@ -263,7 +264,7 @@
 }
 
 .invalid input[type=text] {
-  background: lighten(#F51F28, 40%);
+  background: color.adjust(#F51F28, $lightness: 40%);
 }
 
 .file_list_table {
