@@ -1,4 +1,4 @@
-@import "../../../../../../sass/common";
+@use '../../../../../../sass/common';
 
 .categoryItemList{
   position: absolute;
@@ -7,7 +7,7 @@
   border-radius: 4px;
   background: #fff;
   min-width: 16rem;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
 }
 .apply{
   text-align: right;

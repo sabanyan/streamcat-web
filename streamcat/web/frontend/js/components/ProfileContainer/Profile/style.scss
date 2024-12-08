@@ -1,23 +1,23 @@
-@import "../../../../sass/common";
+@use '../../../../sass/common';
 
 .page_title {
   margin-bottom: 20px;
   font-size: 20px;
   font-weight: bold;
-  color: $streamcat-text;
+  color: common.$streamcat-text;
 }
 
 .card {
   margin-bottom: 20px;
   max-width: 480px;
   border-radius: 4px;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
-  @include form-background-color();
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
+  @include common.form-background-color();
 }
 
 .card_legend {
   margin: 0;
   padding: 10px 10px 0 10px; 
   font-size: 18px;
-  color: $streamcat-text;
+  color: common.$streamcat-text;
 }

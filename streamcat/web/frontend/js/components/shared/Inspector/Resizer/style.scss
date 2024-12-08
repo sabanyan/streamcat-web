@@ -1,4 +1,4 @@
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .property {
   position: fixed;
@@ -9,7 +9,7 @@
   transition: opacity 0.2s linear, right 0.2s ease-in;
   opacity: 0;
   @extend .user-select;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
   z-index: 1;
 }
 
@@ -23,7 +23,7 @@
   transition: width 0.1s;
   opacity: 0;
   @extend .user-select;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
 
   &.isClosed {
     background: #fafafa;

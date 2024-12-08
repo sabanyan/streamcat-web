@@ -1,15 +1,15 @@
 @use 'sass:color';
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .addButton {
-  color: $primary-link-color;
+  color: common.$primary-link-color;
   text-align: center;
   cursor: pointer;
   margin: 5px;
   padding: 5px;
   font-size: 14px;
   &:hover {
-    color: color.adjust($primary-link-color, $lightness: -10%);
+    color: color.adjust(common.$primary-link-color, $lightness: -10%);
   }
   &.disabled{
     cursor: default;

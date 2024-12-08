@@ -1,4 +1,4 @@
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .button {
   display: inline-block;
@@ -9,17 +9,17 @@
   font-size: 16px;
   padding: 12px 16px;
   text-align: left;
-  @include button-background-color();
+  @include common.button-background-color();
   &:disabled {
     cursor: default;
     opacity: 0.5;
   }
 
   &.danger {
-    border: 1px solid $streamcat-danger;
+    border: 1px solid common.$streamcat-danger;
 
     .text, .icon {
-      color: $streamcat-danger !important;
+      color: common.$streamcat-danger !important;
     }
   }
 
@@ -49,6 +49,6 @@
 
 .icon {
   display: inline-block;
-  color: $streamcat-primary !important;
+  color: common.$streamcat-primary !important;
   padding-right: 16px;
 }

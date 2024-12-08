@@ -1,4 +1,4 @@
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .pageTitleHeader {
   width: 100%;
@@ -8,7 +8,7 @@
   align-items: flex-start;
   flex-direction: column;
   color: #606c7a;
-  @include button-background-color();
+  @include common.button-background-color();
 }
 
 .pageTitle {
@@ -35,7 +35,7 @@
 .searchBarContainer{
   max-width: 32rem;
   div{
-    @include list-color();
+    @include common.list-color();
   }
 }
 

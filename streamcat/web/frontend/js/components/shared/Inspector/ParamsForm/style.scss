@@ -1,5 +1,5 @@
 @use 'sass:color';
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .param {
 }
@@ -30,7 +30,7 @@
 }
 
 .group {
-  border-top: 1px solid $streamcat-property-border-color;
+  border-top: 1px solid common.$streamcat-property-border-color;
   color: #00469d;
   margin: 16px -16px 16px -16px;
   padding: 0 16px 0 16px;
@@ -41,7 +41,7 @@
 }
 
 .colored {
-  background: $streamcat-primary;
+  background: common.$streamcat-primary;
   color: #fff;
 }
 
@@ -49,7 +49,7 @@
   width: 100%;
   word-wrap: normal;
   white-space: pre-wrap;
-  color: color.adjust($streamcat-text, $lightness: 15%);
+  color: color.adjust(common.$streamcat-text, $lightness: 15%);
   font-size: 12px;
   padding: 0;
   margin: 0;

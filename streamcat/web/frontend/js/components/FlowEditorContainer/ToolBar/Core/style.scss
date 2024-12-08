@@ -1,4 +1,4 @@
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 
 .flow_toolbar {
@@ -28,5 +28,5 @@
 }
 
 .internal_error_message {
-  color: $streamcat-danger;
+  color: common.$streamcat-danger;
 }

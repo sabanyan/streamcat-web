@@ -1,11 +1,11 @@
-@use "../../../node_modules/bootstrap/scss/bootstrap";
-@use "common";
-@use "list";
-@use "form";
-@use "nav";
-@use "modal";
-@use "margins";
-//@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
+@use '../../../node_modules/bootstrap/scss/bootstrap';
+@use 'common';
+@use 'list';
+@use 'form';
+@use 'nav';
+@use 'modal';
+@use 'margins';
+//@import '../../node_modules/boiler_strap/sass/boilerstrap.import';
 
 body {
   padding-top: 64px; //navigation-header-height

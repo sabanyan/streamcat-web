@@ -1,4 +1,4 @@
-@import "../../../../sass/common";
+@use '../../../../sass/common';
 
 .breadCrumb{
   width: 100%;
@@ -9,5 +9,5 @@
   align-items: center;
   justify-content: left;
   color: #606c7a;
-  @include button-background-color();
+  @include common.button-background-color();
 }

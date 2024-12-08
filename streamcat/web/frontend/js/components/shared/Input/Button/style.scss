@@ -1,11 +1,11 @@
 @use 'sass:color';
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .button {
   display: inline-block;
-  border: 1px solid $streamcat-button-border;
+  border: 1px solid common.$streamcat-button-border;
   border-radius: 4px;
-  box-shadow: 0 1px 1px $streamcat-button-shadow;
+  box-shadow: 0 1px 1px common.$streamcat-button-shadow;
   margin: 0 8px 0 0;
   outline: none !important;
   cursor: pointer;
@@ -20,28 +20,28 @@
   }
 
   &.danger {
-    border: 1px solid $streamcat-danger!important;
+    border: 1px solid common.$streamcat-danger!important;
 
     .text, .icon {
-      color: $streamcat-danger !important;
+      color: common.$streamcat-danger !important;
     }
   }
 
   &:hover {
-    background-color: color.adjust($streamcat-button-background, $lightness: -5%);
-    border: 1px solid color.adjust($streamcat-button-border, $lightness: 5%);
+    background-color: color.adjust(common.$streamcat-button-background, $lightness: -5%);
+    border: 1px solid color.adjust(common.$streamcat-button-border, $lightness: 5%);
     transition: all 0.3s;
   }
 
   &.primary {
-    border: 1px solid color.adjust($streamcat-dark-gray, $lightness: -5%);
-    background: $streamcat-dark-gray;
+    border: 1px solid color.adjust(common.$streamcat-dark-gray, $lightness: -5%);
+    background: common.$streamcat-dark-gray;
     color: #fff !important;
   }
 
   &.primary:hover {
-    background-color: color.adjust($streamcat-dark-gray, $lightness: -5%);
-    border: 1px solid color.adjust($streamcat-dark-gray, $lightness: 5%);
+    background-color: color.adjust(common.$streamcat-dark-gray, $lightness: -5%);
+    border: 1px solid color.adjust(common.$streamcat-dark-gray, $lightness: 5%);
     transition: all 0.3s;
   }
   &.primary{
@@ -54,7 +54,7 @@
 .text {
   top: -0.5px;
   position: relative;
-  color: $streamcat-text !important;
+  color: common.$streamcat-text !important;
   font-size: 12px;
   display: inline-block;
 }
@@ -69,7 +69,7 @@
 
 .icon {
   display: inline-block;
-  color: $streamcat-text !important;
+  color: common.$streamcat-text !important;
   font-size: 16px;
   line-height: 1em;
   padding-right: 4px;
