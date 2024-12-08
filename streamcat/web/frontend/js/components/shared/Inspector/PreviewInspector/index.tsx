@@ -53,18 +53,14 @@ export const PreviewInspector = (props: Props) => {
     const {params, groups, label, headers} = props;
 
     const content = <div>
-        <div>
-            <div className={style.full_hr} />
-            <Button onClick={() => onClickApply()}>表示</Button>
-            <div className='mt-12px'>
-                <ParamsForm
-                    key={label}
-                    headers={headers} params={params} args={args}
-                    invalids={{}} groups={groups}
-                    onChange={(e, param, value) => onArgsChange(e, param, value)} />
-            </div>
+        <Button onClick={() => onClickApply()}>表示</Button>
+        <div className='mt-12px'>
+            <ParamsForm
+                key={label}
+                headers={headers} params={params} args={args}
+                invalids={{}} groups={groups}
+                onChange={(e, param, value) => onArgsChange(e, param, value)} />
         </div>
-        <div className={style.full_hr} />
     </div>;
 
     const property_class = classnames(style.property, style.in);

@@ -90,11 +90,9 @@ export const Run = (props: Props) => {
             visible: true,
             done: '確認',
             danger: true,
-            content: <div className={style.modal}>
-                <div>
-                    現在のフローを保存します。<br />
-                    よろしいですか？
-                </div>
+            content: <div>
+                現在のフローを保存します。<br />
+                よろしいですか？
             </div>
         });
     };

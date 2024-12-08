@@ -35,7 +35,7 @@ export class Icon extends React.Component<IconProps> {
         if (paddingTop) paddingY = paddingTop;
 
         return <g transform={"translate(" + paddingX + "," + paddingY + ")"}>
-            <svg className={style.icon} fill={this.props.fillColor} preserveAspectRatio="xMidYMin" height={32}
+            <svg fill={this.props.fillColor} preserveAspectRatio="xMidYMin" height={32}
                  width={32}
                  viewBox={"0 0 " + this.props.width + " " + this.props.height}
                  xmlns="http://www.w3.org/2000/svg">

@@ -353,7 +353,7 @@ export const DataFrameInspector = (props: Props) => {
         const creator = selectedFrame ? selectedFrame.creator : "";
 
         content = <div>
-            <div className={style.property_overview}>
+            <div>
                 <div className={style.actions}>
                     {preview}
                     {download}
@@ -361,7 +361,7 @@ export const DataFrameInspector = (props: Props) => {
                         danger={true} disabled={baseInspectorDisabled}>削除</Button>
                 </div>
                 <div className={style.full_hr} />
-                <div className={style.overviews}>
+                <div className={style.overview}>
                     <div className={style.overview}>
                         <div className={style.overview_label}>
                             ファイルサイズ
@@ -397,7 +397,7 @@ export const DataFrameInspector = (props: Props) => {
                     </div>
                 </div>
             </div>
-            <div className={style.cache}>
+            <div>
                 <div className={style.cache_label}>
                     結果をキャッシュ
                 </div>

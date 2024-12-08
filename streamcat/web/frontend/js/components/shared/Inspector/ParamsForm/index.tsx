@@ -147,7 +147,7 @@ export class ParamsForm extends React.Component<Props, State> {
 
     getParamElement(param: CommandParamType, disabled: boolean = false, parentUUID?:string, label?: string, value?: any, onChange?: Function, headers?: string[]) {
         let paramElement: any;
-        let className = param.type === Constants.param.type.boolean ? classnames(style.param, style.flex) : style.param;
+        let className = param.type === Constants.param.type.boolean ? style.flex : '';
         try {
             switch (param.type) {
                 case Constants.param.type.number:

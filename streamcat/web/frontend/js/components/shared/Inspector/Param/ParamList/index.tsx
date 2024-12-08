@@ -174,17 +174,18 @@ export class ParamList extends React.Component<Props, State>{
             }
             let className = style.element;
             if (element.type === Constants.param.type.select || element.type === Constants.param.type.column) {
-                className = classnames(className, style.select);
+                // style.scssに'select'ルールが存在しないのでコメントアウトする
+                // className = classnames(className, style.select);
             }
             if (param.elements[index + 1] && param.elements[index + 1].section) {
                 className = classnames(className, style.oneRow);
             }
 
             ele = <div key={argIndex + element.name + index} className={className}>
-                <div className={style.label}>
+                <div>
                     {element.label}
                 </div>
-                <div className={style.input}>
+                <div>
                     {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex) }, headers)}
                 </div>
             </div>;

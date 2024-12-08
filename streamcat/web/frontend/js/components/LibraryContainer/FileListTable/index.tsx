@@ -159,7 +159,7 @@ export const FileListTable = (props: Props) => {
             {isClickable(datum) ?
                 <Link2 value={datum.label} onClick={e => onClickFileName(datum, e)} />
                 :
-                <span className={style.filename}>{datum.label}</span>
+                <span>{datum.label}</span>
             }
         </td>
         <td>

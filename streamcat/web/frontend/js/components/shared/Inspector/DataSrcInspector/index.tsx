@@ -143,12 +143,12 @@ export class DataSrcInspector extends React.Component<Props, State> {
 
     return <BaseInspector key={srcNode.uuid} label={srcNode.label}
       onBlurTitle={(e) => this.onBlurTitle(e)} disabled={baseInspectorDisabled}>
-      <div className={style.property_overview}>
+      <div>
         <div className={style.actions}>
           {this.renderActions()}
         </div>
         <div className={style.full_hr} />
-        <div className={style.overviews}>
+        <div className={style.overview}>
           {(srcNode.flow.params) ? this.renderContents() : null}
         </div>
       </div>

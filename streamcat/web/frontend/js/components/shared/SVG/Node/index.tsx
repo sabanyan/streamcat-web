@@ -154,9 +154,8 @@ export const Node = (props: Props) => {
                         : null;
 
     return (
-        <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
-            <g className={style.iconContainer}
-                onMouseDown={e => onMouseDown(node, e)}
+        <g transform={'translate(' + x + ',' + y + ')'}>
+            <g onMouseDown={e => onMouseDown(node, e)}
                 onMouseOver={() => handleMouseOver()}
                 onMouseLeave={() => handleMouseLeave()}>
                 {icon}

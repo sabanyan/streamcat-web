@@ -103,7 +103,7 @@ export const FilterCategoryItemList = (props: Props) => {
             onClickFilterListItem(selectedCategory.id, checkedListItems)
         }
         applyElement = <div className={style.apply}>
-            <a href="#" className={style.applyLink} onClick={onClickApply}>適用</a>
+            <a href="#" onClick={onClickApply}>適用</a>
         </div>
     }
 
