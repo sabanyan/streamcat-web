@@ -1,5 +1,5 @@
 import React from 'react';
-import style from './style.scss';
+import * as style from './style.scss';
 import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import ImageUtil from "Utils/ImageUtil";
 

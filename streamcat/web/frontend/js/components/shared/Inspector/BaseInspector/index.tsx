@@ -1,6 +1,6 @@
 import React from 'react';
 import {useEffect, useRef} from "react";
-import style from "../style.scss";
+import * as style from '../style.scss';
 import classnames from "classnames";
 
 type Props = {

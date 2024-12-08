@@ -1,6 +1,6 @@
 import React from 'react';
 import {useState} from 'react';
-import style from './style.scss';
+import * as style from './style.scss';
 import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterCategoryItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterCategoryItem';
 import {FilterListItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterListItem';

@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState} from 'react';
 import dayjs from 'dayjs';
-import style from './style.scss';
+import * as style from './style.scss';
 import lodash from 'lodash';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'

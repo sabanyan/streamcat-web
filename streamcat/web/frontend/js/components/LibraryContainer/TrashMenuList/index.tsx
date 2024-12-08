@@ -1,5 +1,5 @@
 import React from 'react';
-import style from "./style.scss";
+import * as style from './style.scss';
 import { TrashAllButton } from 'Shared/Button/TrashAllButton';
 import { TrashType } from 'Model/Library';
 

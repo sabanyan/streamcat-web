@@ -1,6 +1,6 @@
 import React from 'react';
 import { Constants } from "Constants/index";
-import style from "./style.scss";
+import * as style from './style.scss';
 
 export type IconProps = {
     fillColor?: string;

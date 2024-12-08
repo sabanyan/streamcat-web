@@ -6,7 +6,7 @@ import { Helper } from 'Shared/Inspector';
 
 import { Constants } from 'Constants/index';
 
-import style from './style.scss';
+import * as style from './style.scss';
 import classnames from 'classnames';
 
 type Props = {

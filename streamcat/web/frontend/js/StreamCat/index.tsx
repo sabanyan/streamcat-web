@@ -3,7 +3,6 @@ import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import { createTheme, ThemeProvider } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {NotificationsProvider} from 'reapop';
-import style from './style.scss';
 import {Api} from 'Api';
 import {ModalManager} from 'Shared/Modal';
 import {NavigationBar} from 'Shared/Base';
@@ -61,7 +60,7 @@ export const StreamCat = (props: Props) => {
         if(isDialog){
             return <></>;
         }else{
-            return <div className={style.nav}>
+            return <div>
                 <NavigationBar navigation={nav} />
             </div>;
         }
@@ -96,7 +95,7 @@ export const StreamCat = (props: Props) => {
 
         return (
             <AsyncResourceContent fallback={<p>Loading...</p>}>
-            <div className={style.view}>
+            <div>
                 {viewComponent}
             </div>
             </AsyncResourceContent>
@@ -104,7 +103,7 @@ export const StreamCat = (props: Props) => {
     };
 
     try {
-        return <div className={style.streamcat}>
+        return <div>
             {/* 通知ダイアログ */}
             <NotificationsProvider>
             {/* MUIのテーマ */}

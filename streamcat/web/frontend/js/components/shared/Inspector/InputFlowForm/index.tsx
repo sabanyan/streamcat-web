@@ -1,7 +1,7 @@
 import React from 'react';
 import {AddButton} from 'Shared/Input';
 import {HttpUtil} from 'Utils/index';
-import style from './style.scss';
+import * as style from './style.scss';
 import { FlowType } from 'Model/Library';
 
 type LibraryListDataType = {

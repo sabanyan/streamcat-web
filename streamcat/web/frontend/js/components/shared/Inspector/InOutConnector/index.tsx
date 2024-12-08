@@ -1,5 +1,5 @@
 import React from 'react';
-import style from '../style.scss';
+import * as style from '../style.scss';
 import {AddButton} from 'Shared/Input';
 import {ModalUtil} from 'Utils/index';
 import { Constants } from 'Constants/index';

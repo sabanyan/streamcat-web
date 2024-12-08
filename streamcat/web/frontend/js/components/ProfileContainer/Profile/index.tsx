@@ -1,5 +1,5 @@
 import React from 'react';
-import style from './style.scss';
+import * as style from './style.scss';
 import { useAsyncResource } from 'use-async-resource';
 import { Stack } from '@mui/material';
 import { Api } from 'Api';

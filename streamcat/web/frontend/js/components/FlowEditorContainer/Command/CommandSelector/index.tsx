@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import lodash from 'lodash';
-import style from "./style.scss";
+import * as style from './style.scss';
 import { CommandItem } from "FlowEditorContainer/Command";
 import { Constants } from "Constants/index";
 import { RunnablesType } from "Types/index";

@@ -4,7 +4,7 @@ import { Constants } from 'Constants/index';
 import { FlowUtil, ModalUtil } from 'Utils/index';
 import { Api } from 'Api';
 import { FlowType } from 'Model/Library';
-import style from '../Core/style.scss';
+import * as style from '../Core/style.scss';
 
 type Props = {
     refreshFlow: (flow: FlowType) => void;

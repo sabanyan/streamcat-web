@@ -1,5 +1,5 @@
 import React from 'react';
-import style from '../style.scss';
+import * as style from '../style.scss';
 import { Constants } from 'Constants/index';
 import {DropDownList} from 'Shared/Input';
 import {ModalUtil} from 'Utils/index';

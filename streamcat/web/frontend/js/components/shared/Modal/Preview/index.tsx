@@ -3,7 +3,7 @@ import React from 'react';
 import classnames from 'classnames';
 import { Tab, TabBar, TabList } from 'Shared/Base';
 import { HttpUtil } from 'Utils/index';
-import style from '../Core/style.scss';
+import * as style from '../Core/style.scss';
 import Visualizer from 'Shared/Visualizer';
 import {Contents} from 'Shared/Inspector';
 import { useStreamCatNotifications } from 'Shared/Notification';
@@ -82,7 +82,7 @@ const PreviewModal = (props: Props) => {
     const {id, visible, title, footer} = props
     let {contents} = props
     const className = (isDialog()) ? 'modal fade previewDialog top' : 'modal fade preview top';
-    const modal_class = classnames(style.previewModal,className, {
+    const modal_class = classnames(className, {
         'show in': visible,
         'none-pointer-events': !visible,
     })

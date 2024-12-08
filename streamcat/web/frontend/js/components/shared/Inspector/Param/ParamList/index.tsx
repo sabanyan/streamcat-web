@@ -8,7 +8,7 @@ import {ParamString} from '../ParamString/index'
 import {ParamSelect} from '../ParamSelect/index'
 import { Constants } from 'Constants/index'
 import {ModalUtil} from 'Utils/index'
-import style from './style.scss'
+import * as style from './style.scss';
 import classnames from 'classnames'
 
 type Props = {

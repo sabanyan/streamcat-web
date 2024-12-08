@@ -3,7 +3,7 @@ import { ParamString, ParamBoolean, ParamSelect, ParamList, ParamFrame } from 'S
 import { CommandParamType } from 'Types/index';
 import { Constants } from 'Constants/index';
 import classnames from 'classnames';
-import style from './style.scss';
+import * as style from './style.scss';
 import { Command } from 'Model/Library';
 // import { param } from 'jquery'
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
 import useInterval from 'use-interval';
 import * as jsonpatch from 'fast-json-patch';
-import style from './style.scss';
+import * as style from './style.scss';
 import { Api, ErrorResponse, NodeArray } from 'Api';
 import { MessageModel } from 'Model/index';
 import { LockType } from 'Model/Locks';

@@ -5,7 +5,7 @@ import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
 import { Constants } from 'Constants/index'
 
-import style from '../style.scss'
+import * as style from '../style.scss';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
 

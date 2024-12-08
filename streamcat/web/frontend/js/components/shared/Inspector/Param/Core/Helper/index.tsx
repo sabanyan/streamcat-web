@@ -4,7 +4,7 @@ import { AppBar, IconButton, Tabs, Tab } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { Link2 } from 'Components/shared/Input';
 
-import style from './style.scss'
+import * as style from './style.scss';
 
 type Shortcut = {
   value: string,

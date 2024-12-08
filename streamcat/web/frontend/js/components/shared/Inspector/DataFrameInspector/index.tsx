@@ -3,7 +3,7 @@ import { Constants } from "Constants/index";
 import { Api } from 'Api';
 import {ModalUtil, StringUtil} from "Utils/index";
 import {BaseInspector} from "Shared/Inspector";
-import style from "../style.scss";
+import * as style from '../style.scss';
 import {Button, DownloadButton} from "Shared/Input";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {RunnablesType} from "Types/index";

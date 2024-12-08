@@ -1,5 +1,5 @@
 import React from 'react'
-import style from './style.scss';
+import * as style from './style.scss';
 import { Api } from 'Api';
 import { DatumType } from 'Model/Library';
 import { CommandParamType } from 'Types/index'

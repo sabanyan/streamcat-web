@@ -1,5 +1,5 @@
 import React from 'react';
-import style from "./style.scss";
+import * as style from './style.scss';
 import classnames from "classnames";
 import ImageUtil from "Utils/ImageUtil";
 import {useState} from "react";

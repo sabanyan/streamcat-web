@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
-import style from './style.scss';
+import * as style from './style.scss';
 import classnames from 'classnames';
 import { Loader } from 'Shared/Base';
 import { GraphType } from 'Types/index';

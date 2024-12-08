@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import style from 'Shared/Input/Button/style.scss'
+import * as style from 'Shared/Input/Button/style.scss'
 import classnames from 'classnames'
 
 export type Props = {

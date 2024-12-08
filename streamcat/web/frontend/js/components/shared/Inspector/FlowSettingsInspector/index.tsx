@@ -1,6 +1,6 @@
 import React, {Fragment} from "react";
 import {BaseInspector} from "Shared/Inspector";
-import style from "../style.scss";
+import * as style from '../style.scss';
 import {AddButton, Button} from "Shared/Input";
 import {ModalUtil} from "Utils/index";
 import { Constants } from "Constants/index";
