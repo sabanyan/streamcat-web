@@ -1194,3 +1194,58 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)     
+
+    def test_delete_duplicated_folders_simultaneously(self):
+        """
+        複製した複数のフォルダを同時に削除できること
+        """
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {'label': 'フォルダですよ1!!!!', 'parent': root.uuid}, self.USER1)
+        folder1_uuid = folder1['uuid']
+        folder1_label = folder1['label']
+
+        # フォルダ1を複製する
+        folder2 = self.post_uri('/api/v0/folders', {'source': folder1_uuid}, self.USER1)
+        folder2_uuid = folder2['uuid']
+        folder2_label = folder2['label']
+
+        # フォルダ1を複製する
+        folder3 = self.post_uri('/api/v0/folders', {'source': folder1_uuid}, self.USER1)
+        folder3_uuid = folder3['uuid']
+        folder3_label = folder3['label']
+
+        # フォルダ1を複製する
+        folder4 = self.post_uri('/api/v0/folders', {'source': folder1_uuid}, self.USER1)
+        folder4_uuid = folder4['uuid']
+        folder4_label = folder4['label']
+
+        # 非同期処理を行うためのスレッドプールを作成する
+        _executor = ThreadPoolExecutor(4)
+
+        # フォルダを削除するコルーチン
+        async def delete_folder(folder_uuid, folder_label):
+            # print(f'start del {folder_label}')
+            # run blocking function in another thread, and wait for it's result
+            await loop.run_in_executor(_executor, self.delete_uri, f'/api/v0/folders/{folder_uuid}', self.USER1)
+            # print(f'end   del {folder_label}')
+
+        # 複製した全てのフォルダを同時に削除する
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(
+            delete_folder(folder1_uuid, folder1_label),
+            delete_folder(folder2_uuid, folder2_label),
+            delete_folder(folder3_uuid, folder3_label),
+            delete_folder(folder4_uuid, folder4_label)
+        ))
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+        trash_can = self.factory.data.load_trash_folder()
+        trashed = trash_can.find_children()
+        self.assertEqual(len(trashed), 0)
