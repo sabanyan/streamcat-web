@@ -487,6 +487,61 @@ class TrashTestCase(ApiTestCaseBase):
         frame = self.factory.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.find_parent().uuid, root.uuid)
 
+    def test_delete_remote_folder(self):
+        """
+        マウント状態のリモートフォルダをゴミ箱に捨てるとマウントが解除されること
+        """
+        # ルートを取得する
+        root = self.factory3.data.load_root()
+
+        # ルートの下にプロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'私のプロジェクトですよ'}, self.USER1)
+        project1_uuid = project1['uuid']
+
+        # プロジェクトの下にリモートフォルダを作成する(POST /remote-folders)
+        data = {
+            'parent'   : project1_uuid,
+            'label'    : '私のリモートフォルダ',
+            'protocol' : 'smb',
+            'hostname' : '18.178.64.116',
+            'domain'   : 'WORKGROUP',
+            'directory': 'share',
+            'userId'   : 'samba',
+            'password' : 'kskanalytics'
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
+        remote_folder_uuid = result['uuid']
+
+        # ゴミ箱を取得する
+        trashcan = self.factory3.data.find_trashcan()
+
+        # リモートフォルダをほかす
+        result = self.delete_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER1)
+        # リモートフォルダはゴミ箱にほかされていること
+        self.assertEqual(result['uuid'], remote_folder_uuid)
+        self.assertEqual(result['folderUuid'], trashcan.uuid)
+        self.assertEqual(result['type'], 'rfolder')
+
+        # リモートフォルダをゴミ箱から戻す
+        self.put_uri(f'/api/v0/trashes/{remote_folder_uuid}', {}, self.USER1)
+
+        # リモートフォルダはゴミ箱にないこと
+        trashed = trashcan.find_children()
+        self.assertNotIn(remote_folder_uuid, [t.uuid for t in trashed])
+
+        # リモートフォルダは元の場所に戻っていること
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER1)
+        self.assertEqual(result['uuid'], remote_folder_uuid)
+        self.assertEqual(result['folderUuid'], project1_uuid)
+        self.assertEqual(result['prevFolderPath'], None)
+        self.assertEqual(result['type'], 'rfolder')
+        
+        # プロジェクトごとゴミ箱にほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_return_trashes(self):
         """
         ゴミを捨てる前の場所に戻す
@@ -515,7 +570,7 @@ class TrashTestCase(ApiTestCaseBase):
 
         # プロジェクト1をほかす
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
-        
+
         # プロジェクト1を戻す
         self.put_uri(f'/api/v0/trashes/{project1_uuid}', {}, self.USER1)
 
