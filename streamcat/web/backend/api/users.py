@@ -8,6 +8,7 @@ from .utils import (
     RequestJson,
     login_required_api,
     get_factory,
+    jsonify,
     update_user_info,
     update_users_info,
     update_role_info,
@@ -21,6 +22,7 @@ router = APIRouter()
 
 @router.get('/users')
 @login_required_api
+@jsonify
 @update_users_info
 def get_users(q:str=None, except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
     """
@@ -35,6 +37,7 @@ def get_users(q:str=None, except_inactive=False, roles=False, projects=False, fa
 
 @router.get('/users/self')
 @login_required_api
+@jsonify
 @update_user_info
 def get_self(except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
     """
@@ -45,6 +48,7 @@ def get_self(except_inactive=False, roles=False, projects=False, factory:Factory
 
 @router.get('/users/{user_uuid}')
 @login_required_api
+@jsonify
 @update_user_info
 def get_user(user_uuid, except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
     """
@@ -55,6 +59,7 @@ def get_user(user_uuid, except_inactive=False, roles=False, projects=False, fact
 
 @router.post('/users')
 @login_required_api
+@jsonify
 async def make_new_user(request:Request, factory:Factory=Depends(get_factory)):
     """
     新しいユーザを作成する
@@ -70,6 +75,7 @@ async def make_new_user(request:Request, factory:Factory=Depends(get_factory)):
 
 @router.put('/users/self')
 @login_required_api
+@jsonify
 async def update_self(request:Request, factory:Factory=Depends(get_factory)):
     """
     自身のユーザを変更する
@@ -88,6 +94,7 @@ async def update_self(request:Request, factory:Factory=Depends(get_factory)):
 
 @router.put('/users/{user_uuid}')
 @login_required_api
+@jsonify
 async def update_user(request:Request, user_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したユーザを変更する
@@ -129,6 +136,7 @@ def _update_user_inner(user, req:RequestJson):
 
 @router.delete('/users/{user_uuid}')
 @login_required_api
+@jsonify
 def delete_user(user_uuid, factory:Factory=Depends(get_factory)):
     """
     指定した登録状態のユーザを論理削除する
@@ -143,6 +151,7 @@ def delete_user(user_uuid, factory:Factory=Depends(get_factory)):
 
 @router.get('/roles')
 @login_required_api
+@jsonify
 @update_roles_info
 def get_roles(members=False, factory:Factory=Depends(get_factory)):
     """
@@ -152,6 +161,7 @@ def get_roles(members=False, factory:Factory=Depends(get_factory)):
 
 @router.get('/roles/{role_uuid}')
 @login_required_api
+@jsonify
 @update_role_info
 def get_role(role_uuid, members=False, factory:Factory=Depends(get_factory)):
     """
@@ -161,6 +171,7 @@ def get_role(role_uuid, members=False, factory:Factory=Depends(get_factory)):
 
 @router.post('/roles')
 @login_required_api
+@jsonify
 async def make_new_role(request:Request, factory:Factory=Depends(get_factory)):
     """
     新しいロールを作成する
@@ -175,6 +186,7 @@ async def make_new_role(request:Request, factory:Factory=Depends(get_factory)):
 
 @router.put('/roles/{role_uuid}')
 @login_required_api
+@jsonify
 async def update_role(request:Request, role_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したロールを変更する
@@ -211,6 +223,7 @@ async def update_role(request:Request, role_uuid, factory:Factory=Depends(get_fa
 
 @router.delete('/roles/{role_uuid}')
 @login_required_api
+@jsonify
 def delete_role(role_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したロールを削除する
@@ -224,6 +237,7 @@ def delete_role(role_uuid, factory:Factory=Depends(get_factory)):
 
 @router.put('/roles/sys_admin/users/{user_uuid}')
 @login_required_api
+@jsonify
 def join_user_to_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     システム管理者ロールにユーザを追加する
@@ -234,6 +248,7 @@ def join_user_to_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory))
 
 @router.put('/roles/usr_admin/users/{user_uuid}')
 @login_required_api
+@jsonify
 def join_user_to_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     ユーザ管理者ロールにユーザを追加する
@@ -244,6 +259,7 @@ def join_user_to_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory))
 
 @router.put('/roles/{role_uuid}/users/{user_uuid}')
 @login_required_api
+@jsonify
 async def join_user_to_role(request:Request, role_uuid, user_uuid, factory:Factory=Depends(get_factory)):
     """
     ロールにユーザを追加する
@@ -268,6 +284,7 @@ def _join_user_to_role(factory:Factory, role_uuid, user_uuid, owner:bool):
 
 @router.delete('/roles/sys_admin/users/{user_uuid}')
 @login_required_api
+@jsonify
 def leave_user_outof_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     システム管理者ロールからユーザを削除する
@@ -278,6 +295,7 @@ def leave_user_outof_sys_admin_role(user_uuid, factory:Factory=Depends(get_facto
 
 @router.delete('/roles/usr_admin/users/{user_uuid}')
 @login_required_api
+@jsonify
 def leave_user_outof_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     ユーザ管理者ロールからユーザを削除する
@@ -291,6 +309,7 @@ def leave_user_outof_usr_admin_role(user_uuid, factory:Factory=Depends(get_facto
 
 @router.delete('/roles/{role_uuid}/users/{user_uuid}')
 @login_required_api
+@jsonify
 def leave_user_outof_role(role_uuid, user_uuid, factory:Factory=Depends(get_factory)):
     """
     ロールからユーザを削除する
@@ -315,6 +334,7 @@ def _leave_user_outof_role(factory:Factory, role_uuid, user_uuid, raise_on_no_ow
 
 @router.put('/projects/{project_uuid}/users/{user_uuid}')
 @login_required_api
+@jsonify
 async def join_user_to_project(request:Request, project_uuid, user_uuid, factory:Factory=Depends(get_factory)):
     """
     プロジェクトにユーザを追加する
@@ -338,6 +358,7 @@ async def join_user_to_project(request:Request, project_uuid, user_uuid, factory
 
 @router.delete('/projects/{project_uuid}/users/{user_uuid}')
 @login_required_api
+@jsonify
 def leave_user_outof_project(project_uuid, user_uuid, factory:Factory=Depends(get_factory)):
     """
     プロジェクトからユーザを削除する

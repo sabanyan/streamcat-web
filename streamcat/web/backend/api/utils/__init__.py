@@ -14,3 +14,4 @@ from .vis_converter import VisConverter
 from .duplicate_datum import duplicate_datum
 from .get_factory import get_factory
 from .call_func import call_func
+from .jsonify import jsonify

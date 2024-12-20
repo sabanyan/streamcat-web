@@ -15,8 +15,7 @@ GOOGLE_LOGIN=bool(os.getenv('STREAMCAT_GOOGLE_LOGIN', 0))
 SECURITY_LEVEL=int(os.getenv('STREAMCAT_SECURITY_LEVEL', 1))
 
 # SECURITY_LEVELの定義の後にimportしないと循環importエラーになる
-from .api.utils import SCatJSONResponse
-app = FastAPI(default_response_class=SCatJSONResponse)
+app = FastAPI()
 
 # Jinja2のテンプレートを生成する
 SCatTemplates = Jinja2Templates(directory='streamcat-web/streamcat/web/backend/templates')
@@ -48,7 +47,10 @@ async def wrap_endpoint_call(request:Request, call_next):
         response = await call_next(request)
     finally:
         # NOTE: Sessionを閉じないとSQLAlchemyのコネクションプールが枯渇する
-        hasattr(request.state, 'factory') and request.state.factory.close()
+        # hasattr(request.state, 'factory') and request.state.factory.close()
+        # NOTE: 複数のエンドポイントが同時に処理された場合は一度しか呼ばれない可能性がある
+        # そうなると、ここでFactoryを閉じるのは不適切かもしれない
+        pass
 
     if SECURITY_LEVEL >= 1:
         # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する

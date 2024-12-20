@@ -59,10 +59,10 @@ def login_required_api(func:Callable):
             raise NotAuthenticationException('not authorized')
 
         # Userオブジェクトを取得する
-        with UnAuthzFactory() as factory:
+        with UnAuthzFactory() as ufactory:
             try:
                 user_uuid = claims['sub']
-                user = factory.find_user_by_uuid(user_uuid)
+                user = ufactory.find_user_by_uuid(user_uuid)
             except Exception as ex:
                 raise NotAuthenticationException('not authorized...')
                 # 存在しないuser_uuidはCookieから削除する
@@ -80,18 +80,18 @@ def login_required_api(func:Callable):
         # Factoryを渡す必要がある場合はRequestとkwargsに格納する
         if 'factory' in kwargs:
             # AuthzSessionをUserオブジェクトに格納する
-            user._session = factory._session
-
+            user._session = ufactory._session
             # Factoryを生成する
-            factory = Factory(user)
-
-            # 全エンドポイントの共通処理にFactoryを渡すため
-            # FactoryをRequestオブジェクトに格納する
-            _request.state.factory = factory
-            # Factoryをエンドポイント関数の引数に格納する
-            kwargs['factory'] = factory
-
-        # エンドポイント関数を実行する
-        return await call_func(func, **kwargs)
+            with Factory(user) as factory:
+                # 全エンドポイントの共通処理にFactoryを渡すため
+                # FactoryをRequestオブジェクトに格納する
+                # _request.state.factory = factory
+                # Factoryをエンドポイント関数の引数に格納する
+                kwargs['factory'] = factory
+                # エンドポイント関数を実行する
+                return await call_func(func, **kwargs)
+        else:
+            # エンドポイント関数を実行する
+            return await call_func(func, **kwargs)
 
     return wrapper

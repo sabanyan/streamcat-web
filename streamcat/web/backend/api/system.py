@@ -5,6 +5,7 @@ from streamcat.store.factory import Factory
 from .utils import (
     RequestJson,
     get_factory,
+    jsonify,
     login_required_api,
     make_refresh_token,
     make_access_token
@@ -14,6 +15,7 @@ router = APIRouter()
 
 @router.get('/navigation')
 @login_required_api
+@jsonify
 def get_navigation(factory:Factory=Depends(get_factory)):
     """
     ナビゲーションバーに表示する情報などを取得する
@@ -45,6 +47,7 @@ def get_navigation(factory:Factory=Depends(get_factory)):
 
 @router.get('/stores')
 @login_required_api
+@jsonify
 def fecth_stores(factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)の一覧を返却する
@@ -53,6 +56,7 @@ def fecth_stores(factory:Factory=Depends(get_factory)):
 
 @router.get('/stores/{store_id}')
 @login_required_api
+@jsonify
 def fecth_store(store_id:str, factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)を返却する
@@ -61,6 +65,7 @@ def fecth_store(store_id:str, factory:Factory=Depends(get_factory)):
 
 @router.post('/stores')
 @login_required_api
+@jsonify
 def make_new_store(body:dict, factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)を作成する
@@ -76,6 +81,7 @@ def make_new_store(body:dict, factory:Factory=Depends(get_factory)):
 
 @router.delete('/stores/{store_id}')
 @login_required_api
+@jsonify
 def delete_store(store_id:str, factory:Factory=Depends(get_factory)):
     """
     データストアの定義(雛形)を削除する
@@ -86,6 +92,7 @@ def delete_store(store_id:str, factory:Factory=Depends(get_factory)):
 
 @router.get('/connections/remote-folders')
 @login_required_api
+@jsonify
 def is_remote_folder_connectable(request:Request, factory:Factory=Depends(get_factory)):
     """
     リモートフォルダの接続を確認する
@@ -108,6 +115,7 @@ def is_remote_folder_connectable(request:Request, factory:Factory=Depends(get_fa
 
 @router.get('/connections/databases')
 @login_required_api
+@jsonify
 def is_database_connectable(request:Request, factory:Factory=Depends(get_factory)):
     """
     データベースの接続を確認する
@@ -134,6 +142,7 @@ def is_database_connectable(request:Request, factory:Factory=Depends(get_factory
 
 @router.get('/archives/flows/{uuid}')
 @login_required_api
+@jsonify
 def download_flow(uuid, factory:Factory=Depends(get_factory)):
     from starlette.background import BackgroundTask
     from streamcat.store import FlowDumper
@@ -150,6 +159,7 @@ def download_flow(uuid, factory:Factory=Depends(get_factory)):
 
 @router.post('/archives/flows')
 @login_required_api
+@jsonify
 def upload_flow(label:str=Form(None),
                 parent:str=Form(),
                 file:UploadFile=File(),
@@ -166,6 +176,7 @@ def upload_flow(label:str=Form(None),
 
 @router.get('/dump')
 @login_required_api
+@jsonify
 def get_dump(factory:Factory=Depends(get_factory)):
     """
     StreamCatのDumpファイルを取得する
@@ -195,6 +206,7 @@ def get_dump(factory:Factory=Depends(get_factory)):
     
 @router.post('/dump')
 @login_required_api
+@jsonify
 def upload_dump(file:UploadFile=File(),
                 factory:Factory=Depends(get_factory)):
     """
@@ -211,6 +223,7 @@ def upload_dump(file:UploadFile=File(),
 
 @router.post('/tokens/refresh')
 @login_required_api
+@jsonify
 def get_refresh_token(body:dict, factory:Factory=Depends(get_factory)):
     """
     リフレッシュトークンを発給する
@@ -226,6 +239,7 @@ def get_refresh_token(body:dict, factory:Factory=Depends(get_factory)):
 
 @router.post('/tokens/access')
 @login_required_api
+@jsonify
 def get_access_token(factory:Factory=Depends(get_factory)):
     """
     アクセストークンを発給する
