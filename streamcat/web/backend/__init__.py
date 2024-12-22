@@ -20,24 +20,6 @@ app = FastAPI()
 # Jinja2のテンプレートを生成する
 SCatTemplates = Jinja2Templates(directory='streamcat-web/streamcat/web/backend/templates')
 
-# FastAPIの起動時の処理
-@app.on_event('startup')
-async def startup_event():
-    # FastAPI(v0.104.1)で独自のオブジェクト型のJSONへの変換方法を指定する方法が無かった
-    # 代わりにSCatJSONResponseで変換することにし、FastAPIでの標準の変換処理を無効化する
-    from fastapi.encoders import encoders_by_class_tuples
-    from streamcat.core import SavableDatum
-    from streamcat.store import StoreModel
-    from streamcat.store import FlowData
-    from streamcat.store import ProjectFolder
-    from streamcat.store.lock import Lock
-    from streamcat.store.auth import User, Role
-    from .api.utils.vis_converter import VisConverter
-    # 独自オブジェクトがJSONに変換されないよう無処理の変換関数を定義する
-    pass_through = lambda d: d
-    # NOTE: 公開されていないencoders_by_class_tuples変数に無処理の変換関数を登録する
-    encoders_by_class_tuples[pass_through] = (VisConverter, StoreModel, Lock, SavableDatum, FlowData, User, Role, ProjectFolder.Member, Role.Member)
-
 # HTMLも含めて全てのエンドポイントの共通処理
 # https://github.com/tiangolo/fastapi/discussions/7691
 @app.middleware('http')
