@@ -28,10 +28,9 @@ def make_response(request, template_name:str, is_preview:bool=False, status_code
         render_js = ''
 
     # 二つのDictをマージする
-    # NOTE: contextにrequestを含めないとTemplateResponse()から例外が送出される
-    context = context | {'request':request, 'nonce':nonce, 'js_resources':render_js}
+    context = context | {'nonce':nonce, 'js_resources':render_js}
     # HTMLレスポンスを作成する
-    response = SCatTemplates.TemplateResponse(template_name, status_code=status_code, context=context)
+    response = SCatTemplates.TemplateResponse(request, template_name, status_code=status_code, context=context)
 
     # ログアウト後に戻る押下で前画面が表示されないようにするため
     # HTMLレスポンスがWebブラウザのbfcacheにキャッシュされるのを防ぐ
