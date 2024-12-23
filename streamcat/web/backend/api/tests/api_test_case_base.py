@@ -1,5 +1,5 @@
 import pprint
-
+import logging
 from fastapi.testclient import TestClient
 from streamcat.store.tests.test_case_base import TestCaseBase
 from streamcat.web.backend import app, logger
@@ -20,6 +20,11 @@ class ApiTestCaseBase(TestCaseBase):
         TestCaseBase.setUpClass()
         # テスト実行時はログ出力しない
         logger.disabled = True
+        # asyncioから以下のようなWarningが多量に出力されるため表示から除外する
+        # Executing ... took 0.208 seconds
+        def filter(record):
+            return record.msg != 'Executing %s took %.3f seconds'
+        logging.getLogger('asyncio').addFilter(filter) 
 
     @classmethod
     def tearDownClass(cls):
