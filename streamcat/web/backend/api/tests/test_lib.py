@@ -498,7 +498,7 @@ class LibraryTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
-        result = self.post_uri('/api/v0/folders', {'label': 'F O L \% E R', 'parent': root.uuid}, self.USER1)
+        result = self.post_uri('/api/v0/folders', {'label': r'F O L \% E % R', 'parent': root.uuid}, self.USER1)
         folder1_uuid = result['uuid']
 
         # フォルダ2を作成する(POST /folders)
@@ -511,7 +511,7 @@ class LibraryTestCase(ApiTestCaseBase):
         result = self.post_frames('フレームファイルAA', folder2_uuid, f, self.USER1)
 
         # フォルダ1のラベル名を変更する(PUT /folders)
-        result = self.put_uri(f'/api/v0/folders/{folder1_uuid}', {'label': 'F O L \% E R 2'}, self.USER1)
+        result = self.put_uri(f'/api/v0/folders/{folder1_uuid}', {'label': r'F O L \% E % R 2'}, self.USER1)
 
         # フォルダ2を削除する
         self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
