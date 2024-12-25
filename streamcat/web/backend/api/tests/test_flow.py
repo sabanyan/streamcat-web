@@ -11,13 +11,119 @@ from .api_test_case_base import ApiTestCaseBase
 
 class FlowTestCase(ApiTestCaseBase):
 
-    # def setUp(self):
-    #     super().setUp()
-    #     app.testing = True
-    #     self.client = app.test_client()
+    in_subflow = {
+        "label": "INPUTだけがあるサブフロー", 
+        "nodes": [
+            {
+            "id": "d", 
+            "type": "frame", 
+            "uuid": None, 
+            "label": "testData",
+            "makeCache": False, 
+            "dataSource": "csv", 
+            "cacheCreatedAt": None
+            }, 
+            {
+            "id": "d1", 
+            "type": "frame", 
+            "uuid": None, 
+            "label": "d1", 
+            "makeCache": False, 
+            "dataSource": "csv", 
+            "cacheCreatedAt": None
+            }, 
+            {
+            "id": "c1", 
+            "args": {
+                "d": "^^"
+            }, 
+            "dsts": {
+                "o": "d1"
+            }, 
+            "srcs": {
+                "i": "d"
+            }, 
+            "type": "command", 
+            "label": "c1", 
+            "commandId": "column_unique_name", 
+            "srcsOrder": [
+                "i"
+            ]
+            }
+        ], 
+        "ports": [
+            [
+            {
+                "type": "frame", 
+                "label": "testData", 
+                "nodeId": "d"
+            }
+            ], 
+            []
+        ], 
+        "params": [], 
+        "creator": "ユーザ管理者", 
+        "createdAt": "2020-11-19 11:31:10", 
+        "projectId": None, 
+        "description": ""
+    }
 
-    # def tearDown(self):
-    #     super().tearDown()
+    out_subflow = {
+        "label": "OUTPUTだけがあるサブフロー", 
+        "nodes": [
+            {
+            "id": "d", 
+            "type": "frame", 
+            "uuid": None, 
+            "label": "testData", 
+            "makeCache": False, 
+            "dataSource": "csv", 
+            "cacheCreatedAt": None
+            }, 
+            {
+            "id": "d1", 
+            "type": "frame", 
+            "uuid": None, 
+            "label": "d1", 
+            "makeCache": False, 
+            "dataSource": "csv", 
+            "cacheCreatedAt": None
+            }, 
+            {
+            "id": "c1", 
+            "args": {
+                "d": "^^"
+            }, 
+            "dsts": {
+                "o": "d1"
+            }, 
+            "srcs": {
+                "i": "d"
+            }, 
+            "type": "command", 
+            "label": "c1", 
+            "commandId": "column_unique_name", 
+            "srcsOrder": [
+                "i"
+            ]
+            }
+        ], 
+        "ports": [
+            [], 
+            [
+            {
+                "type": "frame", 
+                "label": "d1", 
+                "nodeId": "d1"
+            }
+            ]
+        ], 
+        "params": [], 
+        "creator": "ユーザ管理者", 
+        "createdAt": "2020-11-19 11:31:10", 
+        "projectId": None, 
+        "description": ""
+    }
 
     def test_new_flow(self):
         """
@@ -622,120 +728,6 @@ class FlowTestCase(ApiTestCaseBase):
         os.unlink(flow_path)
 
     def test_fetch_subflows(self):
-        flow1_json = {
-            "label": "INPUTだけがあるサブフロー", 
-            "nodes": [
-                {
-                "id": "d", 
-                "type": "frame", 
-                "uuid": None, 
-                "label": "testData",
-                "makeCache": False, 
-                "dataSource": "csv", 
-                "cacheCreatedAt": None
-                }, 
-                {
-                "id": "d1", 
-                "type": "frame", 
-                "uuid": None, 
-                "label": "d1", 
-                "makeCache": False, 
-                "dataSource": "csv", 
-                "cacheCreatedAt": None
-                }, 
-                {
-                "id": "c1", 
-                "args": {
-                    "d": "^^"
-                }, 
-                "dsts": {
-                    "o": "d1"
-                }, 
-                "srcs": {
-                    "i": "d"
-                }, 
-                "type": "command", 
-                "label": "c1", 
-                "commandId": "column_unique_name", 
-                "srcsOrder": [
-                    "i"
-                ]
-                }
-            ], 
-            "ports": [
-                [
-                {
-                    "type": "frame", 
-                    "label": "testData", 
-                    "nodeId": "d"
-                }
-                ], 
-                []
-            ], 
-            "params": [], 
-            "creator": "ユーザ管理者", 
-            "createdAt": "2020-11-19 11:31:10", 
-            "projectId": None, 
-            "description": ""
-        }
-
-        flow2_json = {
-            "label": "OUTPUTだけがあるサブフロー", 
-            "nodes": [
-                {
-                "id": "d", 
-                "type": "frame", 
-                "uuid": None, 
-                "label": "testData", 
-                "makeCache": False, 
-                "dataSource": "csv", 
-                "cacheCreatedAt": None
-                }, 
-                {
-                "id": "d1", 
-                "type": "frame", 
-                "uuid": None, 
-                "label": "d1", 
-                "makeCache": False, 
-                "dataSource": "csv", 
-                "cacheCreatedAt": None
-                }, 
-                {
-                "id": "c1", 
-                "args": {
-                    "d": "^^"
-                }, 
-                "dsts": {
-                    "o": "d1"
-                }, 
-                "srcs": {
-                    "i": "d"
-                }, 
-                "type": "command", 
-                "label": "c1", 
-                "commandId": "column_unique_name", 
-                "srcsOrder": [
-                    "i"
-                ]
-                }
-            ], 
-            "ports": [
-                [], 
-                [
-                {
-                    "type": "frame", 
-                    "label": "d1", 
-                    "nodeId": "d1"
-                }
-                ]
-            ], 
-            "params": [], 
-            "creator": "ユーザ管理者", 
-            "createdAt": "2020-11-19 11:31:10", 
-            "projectId": None, 
-            "description": ""
-        }
-    
         # ROOTを取得する
         root = self.factory.data.load_root()
 
@@ -761,7 +753,7 @@ class FlowTestCase(ApiTestCaseBase):
         lock1_uuid = result['uuid']
 
         # サブフロー1を編集する
-        self.put_uri(f'/api/v0/flows/{flow1_uuid}', {'flow': flow1_json, 'lock':lock1_uuid}, self.USER3)
+        self.put_uri(f'/api/v0/flows/{flow1_uuid}', {'flow': self.in_subflow, 'lock':lock1_uuid}, self.USER3)
 
         # サブフロー1の編集ロックする
         data = {
@@ -795,7 +787,7 @@ class FlowTestCase(ApiTestCaseBase):
         lock2_uuid = result['uuid']
 
         # サブフロー2を編集する
-        self.put_uri(f'/api/v0/flows/{flow2_uuid}', {'flow': flow2_json, 'lock':lock2_uuid}, self.USER3)
+        self.put_uri(f'/api/v0/flows/{flow2_uuid}', {'flow': self.out_subflow, 'lock':lock2_uuid}, self.USER3)
 
         # サブフロー1の編集ロックする
         data = {
@@ -868,6 +860,118 @@ class FlowTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER3)
+
+    def test_trashed_subflows(self):
+        """
+        ゴミ箱にほかされたサブフローは取得されないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'わっちのプロジェクト'}, self.USER2)
+        project_uuid = result['uuid']
+
+        # プロジェクトの下にフローを作成する
+        data = {
+            'parent': project_uuid,
+            'label': 'INPUTだけがあるサブフロー',
+            'flow': self.in_subflow
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        in_subflow_uuid = result['uuid']
+
+        # プロジェクトの下にフローを作成する
+        data = {
+            'parent': project_uuid,
+            'label': 'OUTPUTだけがあるサブフロー',
+            'flow': self.out_subflow
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        out_subflow_uuid = result['uuid']
+
+        # 編集ロックが掛けられてないのでサブフローは取得できないこと
+        result = self.get_uri(f'/api/v0/subflows', self.USER2)
+        self.assertEqual(len(result), 0)
+
+        # サブフローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':in_subflow_uuid}, self.USER2)
+        in_lock_uuid = result['uuid']
+        result = self.post_uri('/api/v0/locks', {'target':out_subflow_uuid}, self.USER2)
+        out_lock_uuid = result['uuid']
+
+        # サブフローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : in_lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{in_subflow_uuid}', data, self.USER2)
+        # サブフローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : out_lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{out_subflow_uuid}', data, self.USER2)
+
+        # サブフローを取得する
+        result = self.get_uri(f'/api/v0/subflows', self.USER2)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['uuid'], in_subflow_uuid)
+        self.assertEqual(result[0]['label'], 'INPUTだけがあるサブフロー')
+        self.assertEqual(result[1]['uuid'], out_subflow_uuid)
+        self.assertEqual(result[1]['label'], 'OUTPUTだけがあるサブフロー')
+
+        # サブフローの編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : in_lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{in_subflow_uuid}', data, self.USER2)
+        # サブフローの編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : out_lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{out_subflow_uuid}', data, self.USER2)
+
+        # 編集ロックが掛けられてないのでサブフローは取得できないこと
+        result = self.get_uri(f'/api/v0/subflows', self.USER2)
+        self.assertEqual(len(result), 0)
+
+        # サブフローをゴミ箱へほかす
+        result = self.delete_uri_with_json(f'/api/v0/flows/{in_subflow_uuid}', {'lock':in_lock_uuid}, self.USER2)
+        result = self.delete_uri_with_json(f'/api/v0/flows/{out_subflow_uuid}', {'lock':out_lock_uuid}, self.USER2)
+
+        # ゴミ箱へほかされたサブフローは取得されないこと
+        result = self.get_uri(f'/api/v0/subflows', self.USER2)
+        self.assertEqual(len(result), 0)
+
+        # サブフローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : in_lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{in_subflow_uuid}', data, self.USER2)
+        # サブフローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : out_lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{out_subflow_uuid}', data, self.USER2)
+
+        # 編集ロックされていても、ゴミ箱へほかされたサブフローは取得されないこと
+        result = self.get_uri(f'/api/v0/subflows', self.USER2)
+        self.assertEqual(len(result), 0)
+
+        # サブフローの排他ロックを解除する
+        self.delete_uri(f'/api/v0/locks/{in_lock_uuid}', self.USER2)
+        self.delete_uri(f'/api/v0/locks/{out_lock_uuid}', self.USER2)
+
+        # プロジェクトフォルダを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
 
 def setUpFlow(self, flow_json={}):
     # ルートストアフォルダを取得する

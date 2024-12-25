@@ -155,12 +155,9 @@ def fetch_datasrcs(factory:Factory=Depends(get_factory)):
     # データソースの一覧に格納する
     datasrcs_json.append(datasrc_json)
 
-    for store in factory.data.find_all_stores():
+    for store in factory.data.find_all_stores(except_trash=True):
         # 参照権限のないデータストアは取得しない
         if not store.readable:
-            continue
-        # ゴミ箱にあるデータストアは取得しない
-        if factory.data.trashed(store.uuid):
             continue
 
         if store.type == SavableDatum.DATABASE_TYPE:
@@ -244,12 +241,9 @@ def fetch_datadsts(factory:Factory=Depends(get_factory)):
     # データソースの一覧に格納する
     datadsts_json.append(datadst_json)
 
-    for store in factory.data.find_all_stores():
+    for store in factory.data.find_all_stores(except_trash=True):
         # 参照権限のないデータストアは取得しない
         if not store.readable:
-            continue
-        # ゴミ箱にあるデータストアは取得しない
-        if factory.data.trashed(store.uuid):
             continue
 
         if store.type == SavableDatum.DATABASE_TYPE:
@@ -313,10 +307,9 @@ def fetch_subflows(factory:Factory=Depends(get_factory)):
     subflow_data_list = []
     for subflow in factory.data.find_all_subflows():
         # 実行権限のないサブフローは取得しない
+        # NOTE: ゴミ箱フォルダには実行権限がないのでその中にあるサブフローにも実行権限はない
+        #       従って、実行権限のないフローという条件があればゴミ箱にあるサブフローは取得されない
         if not subflow.executable:
-            continue
-        # ゴミ箱にあるサブフローは取得しない
-        if factory.data.trashed(subflow.uuid):
             continue
         subflow_data = subflow.flow_data.to_json(contains_nodes=False)
         subflow_data['uuid'] = subflow.uuid
