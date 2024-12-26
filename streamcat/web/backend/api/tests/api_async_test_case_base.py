@@ -44,6 +44,18 @@ class ApiAsyncTestCaseBase(ApiTestCaseBase):
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
 
+    async def async_get_uri(self, uri, user):
+        print(f'stt GET by {user.name}')
+        result = await self._loop.run_in_executor(self._executor, self.get_uri, uri, user)
+        print(f'end GET by {user.name}')
+        return result
+
+    async def aync_post_uri(self, uri, json_data, user):
+        print(f'stt POST by {user.name}')
+        result = await self._loop.run_in_executor(self._executor, self.post_uri, uri, json_data, user)
+        print(f'end POST by {user.name}')
+        return result
+
     async def async_put_uri(self, uri, json_data, user):
         print(f'stt PUT by {user.name}')
         result = await self._loop.run_in_executor(self._executor, self.put_uri, uri, json_data, user)
