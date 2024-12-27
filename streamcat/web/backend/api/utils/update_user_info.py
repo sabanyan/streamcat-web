@@ -2,7 +2,7 @@ import functools
 
 def update_user_info(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 所属ロールの情報を含めるか否か
         update_roles = kwargs.get('roles')
 
@@ -10,7 +10,7 @@ def update_user_info(func):
         update_projects = kwargs.get('projects')
 
         # デコレート対象関数の呼び出し
-        user = func(**kwargs)
+        user = await func(**kwargs)
 
         if update_roles or update_projects:
             # 所属ロールの情報と所属プロジェクトの情報をUser JSONに追加する
@@ -21,7 +21,7 @@ def update_user_info(func):
 
 def update_users_info(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 所属ロールの情報を含めるか否か
         update_roles = kwargs.get('roles')
 
@@ -29,7 +29,7 @@ def update_users_info(func):
         update_projects = kwargs.get('projects')
 
         # デコレート対象関数の呼び出し
-        users = func(**kwargs)
+        users = await func(**kwargs)
 
         if update_roles or update_projects:
             # 所属ロールの情報と所属プロジェクトの情報をUser JSONに追加する

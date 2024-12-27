@@ -2,12 +2,12 @@ import functools
 
 def update_project_info(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 参加ユーザの情報を含めるか否か
         update_members = kwargs.get('members')
 
         # デコレート対象関数の呼び出し
-        project = func(**kwargs)
+        project = await func(**kwargs)
 
         # Project JSONに所属Member情報を追加する
         return _inject_members(project, inject_to_children=True) if update_members else project
@@ -15,12 +15,12 @@ def update_project_info(func):
 
 def update_projects_info(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 参加ユーザの情報を含めるか否か
         update_members = kwargs.get('members')
 
         # デコレート対象関数の呼び出し
-        folder = func(**kwargs)
+        folder = await func(**kwargs)
 
         # Project JSONに所属Member情報を追加する
         return _inject_members(folder, inject_to_children=True) if update_members else folder
@@ -28,12 +28,12 @@ def update_projects_info(func):
 
 def update_projects_info2(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 参加ユーザの情報を含めるか否か
         update_members = kwargs.get('members')
 
         # デコレート対象関数の呼び出し
-        projects = func(**kwargs)
+        projects = await func(**kwargs)
 
         # Project JSONに所属Member情報を追加する
         if update_members:

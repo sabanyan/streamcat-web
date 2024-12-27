@@ -2,12 +2,12 @@ import functools
 
 def update_role_info(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 所属Memberの情報を含めるか否か
         update_members = kwargs.get('members')
 
         # デコレート対象関数の呼び出し
-        role = func(**kwargs)
+        role = await func(**kwargs)
 
         # 所属Memberの情報をRole JSONに追加する
         if update_members:
@@ -18,12 +18,12 @@ def update_role_info(func):
 
 def update_roles_info(func):
     @functools.wraps(func)
-    def deco(**kwargs):
+    async def deco(**kwargs):
         # 所属Memberの情報を含めるか否か
         update_members = kwargs.get('members')
 
         # デコレート対象関数の呼び出し
-        roles = func(**kwargs)
+        roles = await func(**kwargs)
 
         # 所属Memberの情報をRole JSONに追加する
         if update_members:

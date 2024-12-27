@@ -48,7 +48,7 @@ def _add_children_info(folder, offset=None, limit=None, prev_folder_path=False):
 @login_required_api
 @jsonify
 @update_projects_info
-def fecth_library(members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
+async def fecth_library(members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
     """
     ルートフォルダを取得する
     """
@@ -59,7 +59,7 @@ def fecth_library(members:bool=False, offset:int=None, limit:int=None, factory:F
 @login_required_api
 @jsonify
 @update_projects_info2
-def get_projects(members:bool=False, on_root:bool=False, except_myproject:bool=False, factory:Factory=Depends(get_factory)):
+async def get_projects(members:bool=False, on_root:bool=False, except_myproject:bool=False, factory:Factory=Depends(get_factory)):
     """
     全てのプロジェクトを取得する
     """
@@ -73,7 +73,7 @@ def get_projects(members:bool=False, on_root:bool=False, except_myproject:bool=F
 @login_required_api
 @jsonify
 @update_project_info
-def fetch_project(project_uuid, members=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
+async def fetch_project(project_uuid, members=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
     """
     指定したプロジェクトを取得する
     """
@@ -151,7 +151,7 @@ async def update_project(request:Request, project_uuid, factory:Factory=Depends(
 @router.delete('/projects/{project_uuid}')
 @login_required_api
 @jsonify
-def throw_away_project(project_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_project(project_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したプロジェクトをほかす
     """
@@ -163,7 +163,7 @@ def throw_away_project(project_uuid, factory:Factory=Depends(get_factory)):
 @login_required_api
 @jsonify
 @update_projects_info
-def fetch_folder(folder_uuid, members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
+async def fetch_folder(folder_uuid, members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
     """
     指定したフォルダを取得する
     """
@@ -216,7 +216,7 @@ async def update_folder(request:Request, folder_uuid, factory:Factory=Depends(ge
 @router.delete('/folders/{folder_uuid}')
 @login_required_api
 @jsonify
-def throw_away_folder(folder_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_folder(folder_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したフォルダをほかす
     """
@@ -227,7 +227,7 @@ def throw_away_folder(folder_uuid, factory:Factory=Depends(get_factory)):
 @router.get('/trashes')
 @login_required_api
 @jsonify
-def fetch_trashes(offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
+async def fetch_trashes(offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
     """
     ゴミ箱を取得する
     """
@@ -240,7 +240,7 @@ def fetch_trashes(offset:int=None, limit:int=None, factory:Factory=Depends(get_f
 @router.put('/trashes/{datum_uuid}')
 @login_required_api
 @jsonify
-def return_trashes(datum_uuid, factory:Factory=Depends(get_factory)):
+async def return_trashes(datum_uuid, factory:Factory=Depends(get_factory)):
     """
     ゴミを元のフォルダに戻す
     """
@@ -250,7 +250,7 @@ def return_trashes(datum_uuid, factory:Factory=Depends(get_factory)):
 @router.delete('/trashes')
 @login_required_api
 @jsonify
-def empty_all(factory:Factory=Depends(get_factory)):
+async def empty_all(factory:Factory=Depends(get_factory)):
     """
     ゴミ箱を空にする
     """
@@ -262,7 +262,7 @@ def empty_all(factory:Factory=Depends(get_factory)):
 @login_required_api
 @jsonify
 @update_projects_info
-def fetch_remote_folder(folder_uuid, members:bool=False, factory:Factory=Depends(get_factory)):
+async def fetch_remote_folder(folder_uuid, members:bool=False, factory:Factory=Depends(get_factory)):
     """
     指定したリモートフォルダを取得する
     """
@@ -330,7 +330,7 @@ async def update_remote_folder(request:Request, folder_uuid, factory:Factory=Dep
 @router.delete('/remote-folders/{folder_uuid}')
 @login_required_api
 @jsonify
-def throw_away_remote_folder(folder_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_remote_folder(folder_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したリモートフォルダをほかす
     """
@@ -342,7 +342,7 @@ def throw_away_remote_folder(folder_uuid, factory:Factory=Depends(get_factory)):
 @router.get('/databases/{database_uuid}')
 @login_required_api
 @jsonify
-def fetch_database(database_uuid, factory:Factory=Depends(get_factory)):
+async def fetch_database(database_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したデータベースを取得する
     """
@@ -410,7 +410,7 @@ async def update_database(request:Request, database_uuid, factory:Factory=Depend
 @router.delete('/databases/{database_uuid}')
 @login_required_api
 @jsonify
-def throw_away_database(database_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_database(database_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したデータベースをほかす
     """
@@ -487,7 +487,7 @@ async def update_frame(request:Request, frame_uuid, factory:Factory=Depends(get_
 @router.delete('/frames/{frame_uuid}')
 @login_required_api
 @jsonify
-def throw_away_frame(frame_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_frame(frame_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したフレームをほかす
     """
@@ -500,7 +500,7 @@ def throw_away_frame(frame_uuid, factory:Factory=Depends(get_factory)):
 @router.get('/documents/{document_uuid}')
 @login_required_api
 @jsonify
-def fetch_document(document_uuid, contents:bool=False, factory:Factory=Depends(get_factory)):
+async def fetch_document(document_uuid, contents:bool=False, factory:Factory=Depends(get_factory)):
     """
     指定したドキュメントを取得する
     """
@@ -584,7 +584,7 @@ async def update_document(request:Request, document_uuid, factory:Factory=Depend
 @router.delete('/documents/{document_uuid}')
 @login_required_api
 @jsonify
-def throw_away_document(document_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_document(document_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したドキュメントをほかす
     """
@@ -596,7 +596,7 @@ def throw_away_document(document_uuid, factory:Factory=Depends(get_factory)):
 @login_required_api
 @jsonify
 @update_projects_info
-def fetch_awss3_folder(awss3_uuid, members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
+async def fetch_awss3_folder(awss3_uuid, members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
     """
     指定したAWS S3フォルダを取得する
     """
@@ -634,7 +634,7 @@ async def update_awss3_folder(request:Request, awss3_uuid, factory:Factory=Depen
 @router.delete('/awss3s/{awss3_uuid}')
 @login_required_api
 @jsonify
-def throw_away_awss3(awss3_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_awss3(awss3_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したAWS S3フォルダをほかす
     """

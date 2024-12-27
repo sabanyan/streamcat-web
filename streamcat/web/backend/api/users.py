@@ -24,7 +24,7 @@ router = APIRouter()
 @login_required_api
 @jsonify
 @update_users_info
-def get_users(q:str=None, except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
+async def get_users(q:str=None, except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
     """
     全てのユーザ、または指定したキーワードを含むユーザを取得する
     """
@@ -39,7 +39,7 @@ def get_users(q:str=None, except_inactive=False, roles=False, projects=False, fa
 @login_required_api
 @jsonify
 @update_user_info
-def get_self(except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
+async def get_self(except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
     """
     自身のユーザを取得する
     """
@@ -50,7 +50,7 @@ def get_self(except_inactive=False, roles=False, projects=False, factory:Factory
 @login_required_api
 @jsonify
 @update_user_info
-def get_user(user_uuid, except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
+async def get_user(user_uuid, except_inactive=False, roles=False, projects=False, factory:Factory=Depends(get_factory)):
     """
     指定したユーザを取得する
     """
@@ -137,7 +137,7 @@ def _update_user_inner(user, req:RequestJson):
 @router.delete('/users/{user_uuid}')
 @login_required_api
 @jsonify
-def delete_user(user_uuid, factory:Factory=Depends(get_factory)):
+async def delete_user(user_uuid, factory:Factory=Depends(get_factory)):
     """
     指定した登録状態のユーザを論理削除する
     (仮登録ユーザは物理削除する)
@@ -153,7 +153,7 @@ def delete_user(user_uuid, factory:Factory=Depends(get_factory)):
 @login_required_api
 @jsonify
 @update_roles_info
-def get_roles(members=False, factory:Factory=Depends(get_factory)):
+async def get_roles(members=False, factory:Factory=Depends(get_factory)):
     """
     全てのロールを取得する
     """
@@ -163,7 +163,7 @@ def get_roles(members=False, factory:Factory=Depends(get_factory)):
 @login_required_api
 @jsonify
 @update_role_info
-def get_role(role_uuid, members=False, factory:Factory=Depends(get_factory)):
+async def get_role(role_uuid, members=False, factory:Factory=Depends(get_factory)):
     """
     指定したロールを取得する
     """
@@ -224,7 +224,7 @@ async def update_role(request:Request, role_uuid, factory:Factory=Depends(get_fa
 @router.delete('/roles/{role_uuid}')
 @login_required_api
 @jsonify
-def delete_role(role_uuid, factory:Factory=Depends(get_factory)):
+async def delete_role(role_uuid, factory:Factory=Depends(get_factory)):
     """
     指定したロールを削除する
     """
@@ -238,7 +238,7 @@ def delete_role(role_uuid, factory:Factory=Depends(get_factory)):
 @router.put('/roles/sys_admin/users/{user_uuid}')
 @login_required_api
 @jsonify
-def join_user_to_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
+async def join_user_to_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     システム管理者ロールにユーザを追加する
     """
@@ -249,7 +249,7 @@ def join_user_to_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory))
 @router.put('/roles/usr_admin/users/{user_uuid}')
 @login_required_api
 @jsonify
-def join_user_to_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
+async def join_user_to_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     ユーザ管理者ロールにユーザを追加する
     """
@@ -285,7 +285,7 @@ def _join_user_to_role(factory:Factory, role_uuid, user_uuid, owner:bool):
 @router.delete('/roles/sys_admin/users/{user_uuid}')
 @login_required_api
 @jsonify
-def leave_user_outof_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
+async def leave_user_outof_sys_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     システム管理者ロールからユーザを削除する
     """
@@ -296,7 +296,7 @@ def leave_user_outof_sys_admin_role(user_uuid, factory:Factory=Depends(get_facto
 @router.delete('/roles/usr_admin/users/{user_uuid}')
 @login_required_api
 @jsonify
-def leave_user_outof_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
+async def leave_user_outof_usr_admin_role(user_uuid, factory:Factory=Depends(get_factory)):
     """
     ユーザ管理者ロールからユーザを削除する
     """
@@ -310,7 +310,7 @@ def leave_user_outof_usr_admin_role(user_uuid, factory:Factory=Depends(get_facto
 @router.delete('/roles/{role_uuid}/users/{user_uuid}')
 @login_required_api
 @jsonify
-def leave_user_outof_role(role_uuid, user_uuid, factory:Factory=Depends(get_factory)):
+async def leave_user_outof_role(role_uuid, user_uuid, factory:Factory=Depends(get_factory)):
     """
     ロールからユーザを削除する
     """
@@ -359,7 +359,7 @@ async def join_user_to_project(request:Request, project_uuid, user_uuid, factory
 @router.delete('/projects/{project_uuid}/users/{user_uuid}')
 @login_required_api
 @jsonify
-def leave_user_outof_project(project_uuid, user_uuid, factory:Factory=Depends(get_factory)):
+async def leave_user_outof_project(project_uuid, user_uuid, factory:Factory=Depends(get_factory)):
     """
     プロジェクトからユーザを削除する
     """
