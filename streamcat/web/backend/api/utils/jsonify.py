@@ -1,6 +1,5 @@
 import functools # wraps for decorator
 from typing import Callable
-from .call_func import call_func
 
 def encoder(obj):
     from streamcat.core import SavableDatum
@@ -29,7 +28,7 @@ def jsonify(func:Callable):
     @functools.wraps(func)
     async def wrapper(**kwargs):
         # エンドポイント関数を呼び出す
-        result = await call_func(func, **kwargs)
+        result = await func(**kwargs)
 
         if isinstance(result, Response):
             # FastAPIのResponse型が返された場合はそのまま返す

@@ -8,7 +8,6 @@ from ...api.utils import (
     make_access_token,
     decode_token,
     expired_soon,
-    call_func,
     NotAuthenticationException
 )
 from .make_response import make_response
@@ -70,7 +69,7 @@ def login_required(func):
                 response = _make_login_response(__request, last_url=last_url, original_url=original_url, args=q_params)
                 raise NotAuthenticationException('not authorized !', response)
             # クエリパラメータに'session'がない場合、各エンドポイントに定義された処理を行う
-            response = await call_func(func, **kwargs)
+            response = await func(**kwargs)
             if expired_soon(claims['exp']):
                 # アクセストークンの有効期限がもうすぐ切れる場合は、新しいアクセストークンを発給する
                 access_token = make_access_token(claims['sub'])

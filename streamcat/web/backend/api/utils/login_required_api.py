@@ -4,7 +4,6 @@ from fastapi import Request, Depends
 from fastapi_decorators import depends
 from streamcat.store.factory import Factory, UnAuthzFactory
 from .token import decode_token
-from .call_func import call_func
 from .exceptions import NotAuthenticationException
 
 def get_token_from_auth_header(headers:dict):
@@ -89,9 +88,9 @@ def login_required_api(func:Callable):
                 # Factoryをエンドポイント関数の引数に格納する
                 kwargs['factory'] = factory
                 # エンドポイント関数を実行する
-                return await call_func(func, **kwargs)
+                return await func(**kwargs)
         else:
             # エンドポイント関数を実行する
-            return await call_func(func, **kwargs)
+            return await func(**kwargs)
 
     return wrapper
