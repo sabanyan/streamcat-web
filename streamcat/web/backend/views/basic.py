@@ -9,12 +9,12 @@ router = APIRouter()
 
 @router.get('/')
 @router.post('/')
-def top(session:bool=False):
+async def top(session:bool=False):
     q_params = '?session=on' if session else ''
     return RedirectResponse(app.url_path_for('library') + q_params)
 
 @router.get('/favicon.ico')
-def favicon():
+async def favicon():
     from pathlib import Path
     file_path = Path(__file__).parents[2] / 'frontend/static/images/streamcat.ico'
     return FileResponse(path=file_path, media_type='image/x-icon')
@@ -22,57 +22,57 @@ def favicon():
 @router.get('/settings/profile')
 @router.post('/settings/profile')
 @login_required
-def profile(request:Request):
+async def profile(request:Request):
     return make_response(request, 'profile.html')
 
 @router.get('/admin/users')
 @router.post('/admin/users')
 @login_required
-def admin_users(request:Request):
+async def admin_users(request:Request):
     return make_response(request, 'admin/users.html')
 
 @router.get('/library')
 @router.post('/library')
 @login_required
-def library(request:Request):
+async def library(request:Request):
     return make_response(request, 'library.html', is_project='false', is_trash='false')
 
 @router.get('/projects/{project_uuid}')
 @router.post('/projects/{project_uuid}')
 @login_required
-def projects(request:Request, project_uuid):
+async def projects(request:Request, project_uuid):
     uuid = project_uuid.rstrip('?')
     return make_response(request, 'library.html', folder_uuid=uuid, is_project='true', is_trash='false')
 
 @router.get('/folders/{folder_uuid}')
 @router.post('/folders/{folder_uuid}')
 @login_required
-def folders(request:Request, folder_uuid):
+async def folders(request:Request, folder_uuid):
     uuid = folder_uuid.rstrip('?')
     return make_response(request, 'library.html', folder_uuid=uuid, is_project='false', is_trash='false')
 
 @router.get('/trashes')
 @router.post('/trashes')
 @login_required
-def trashes(request:Request):
+async def trashes(request:Request):
     return make_response(request, 'library.html', is_project='false', is_trash='true')
 
 @router.get('/flows/{flow_uuid}')
 @router.post('/flows/{flow_uuid}')
 @login_required
-def flow_designer(request:Request, flow_uuid):
+async def flow_designer(request:Request, flow_uuid):
     return make_response(request, 'flow_designer.html', flow_uuid=flow_uuid)
 
 @router.get('/preview')
 @router.post('/preview')
 @login_required
-def preview(request:Request):
+async def preview(request:Request):
     return make_response(request, 'preview.html', is_preview=True)
 
 @router.get('/documents/{document_uuid}')
 @login_required
 @login_required_api
-def document(request:Request, document_uuid, factory:Factory=Depends(get_factory)):
+async def document(request:Request, document_uuid, factory:Factory=Depends(get_factory)):
     document = factory.data.find_by_uuid(document_uuid)
     return make_response(request, 'document.html', document_uuid=document_uuid, label='👁' + document.label)
 
