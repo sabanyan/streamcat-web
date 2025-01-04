@@ -7,8 +7,8 @@ from ...api.tests.api_test_case_base import ApiTestCaseBase
 
 @unittest.skip('FastAPIにtemplate_renderedに相当する機能が見つからなかったのでこのテストをスキップする')
 class HtmlTestCase(ApiTestCaseBase):
-    def setUp(self):
-        super().setUp()
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
         app.testing = True
         self.client = app.test_client()
         # ログインするとCookieにトークンが格納される

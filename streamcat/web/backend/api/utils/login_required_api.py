@@ -81,7 +81,7 @@ def login_required_api(func:Callable):
             # AuthzSessionをUserオブジェクトに格納する
             user._session = ufactory._session
             # Factoryを生成する
-            with Factory(user) as factory:
+            async with Factory(user) as factory:
                 # 全エンドポイントの共通処理にFactoryを渡すため
                 # FactoryをRequestオブジェクトに格納する
                 # _request.state.factory = factory

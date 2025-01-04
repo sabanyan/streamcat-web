@@ -18,8 +18,8 @@ class FrameTestCase(ApiTestCaseBase):
     }
     database_conn = DatabaseConn(conn_json)
 
-    def setUp(self):
-        super().setUp()
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
         self.root = self.factory.data.load_root()
         self.root_path = self.root.path
         # テスト用のフロー

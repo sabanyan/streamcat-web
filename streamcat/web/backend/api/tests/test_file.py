@@ -8,8 +8,8 @@ from .api_test_case_base import ApiTestCaseBase
 
 class FileTestCase(ApiTestCaseBase):
 
-    def setUp(self):
-        super().setUp()
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
         app.testing = True
         self.TESTDATA_DIR = self.factory.data.load_root().path
 
