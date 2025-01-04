@@ -88,9 +88,9 @@ async def complete_sign_up(request:Request):
     user_uuid = _get_claims(request.cookies).get('sub')
     new_password = (await request.form())['password']
 
-    with UnAuthzFactory() as factory:
+    async with UnAuthzFactory() as factory:
         try:
-            user = factory.find_user_by_uuid(user_uuid)
+            user = await factory.find_user_by_uuid(user_uuid)
         except Exception:
             return make_response(request, 'login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
@@ -149,7 +149,7 @@ if GOOGLE_LOGIN:
         return RedirectResponse(url)
 
     @router.get('/callback')
-    def callback(request:Request):
+    async def callback(request:Request):
         import json
         import jwt
         import urllib.request
@@ -204,7 +204,7 @@ if GOOGLE_LOGIN:
         subject=claims['sub']
 
         # ユーザ管理者を取得する
-        with UnAuthzFactory() as factory:
+        async with UnAuthzFactory() as factory:
             usr_admin_user = factory.load_usr_admin_user()
         # ユーザを取得する
         with Factory(usr_admin_user) as factory:

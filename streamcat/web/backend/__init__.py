@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 
@@ -14,8 +15,18 @@ GOOGLE_LOGIN=bool(os.getenv('STREAMCAT_GOOGLE_LOGIN', 0))
 # 2: HTTPS通信を前提としたセキュリティ設定をする
 SECURITY_LEVEL=int(os.getenv('STREAMCAT_SECURITY_LEVEL', 1))
 
-# SECURITY_LEVELの定義の後にimportしないと循環importエラーになる
-app = FastAPI()
+# FastAPIの初期化終了処理を定義する関数
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from streamcat.store.factory import init_admin_users
+    # Startup
+    await init_admin_users()
+    yield
+    # Shutdown
+    pass
+
+# FastAPIを生成する
+app = FastAPI(lifespan=lifespan)
 
 # Jinja2のテンプレートを生成する
 SCatTemplates = Jinja2Templates(directory='streamcat-web/streamcat/web/backend/templates')

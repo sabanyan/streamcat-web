@@ -58,10 +58,10 @@ def login_required_api(func:Callable):
             raise NotAuthenticationException('not authorized')
 
         # Userオブジェクトを取得する
-        with UnAuthzFactory() as ufactory:
+        async with UnAuthzFactory() as ufactory:
             try:
                 user_uuid = claims['sub']
-                user = ufactory.find_user_by_uuid(user_uuid)
+                user = await ufactory.find_user_by_uuid(user_uuid)
             except Exception as ex:
                 raise NotAuthenticationException('not authorized...')
                 # 存在しないuser_uuidはCookieから削除する
