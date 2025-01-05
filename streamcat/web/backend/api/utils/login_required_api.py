@@ -76,12 +76,12 @@ def login_required_api(func:Callable):
                 # 本パスワード登録画面に遷移する
                 raise NotAuthenticationException('user password is not registered')
 
-        # Factoryを渡す必要がある場合はRequestとkwargsに格納する
-        if 'factory' in kwargs:
-            # AuthzSessionをUserオブジェクトに格納する
-            user._session = ufactory._session
-            # Factoryを生成する
-            async with Factory(user) as factory:
+            # Factoryを渡す必要がある場合はRequestとkwargsに格納する
+            if 'factory' in kwargs:
+                # AuthzSessionをUserオブジェクトに格納する
+                user._session = ufactory._session
+                # Factoryを生成する
+                factory = ufactory.create_authz_factory(user)
                 # 全エンドポイントの共通処理にFactoryを渡すため
                 # FactoryをRequestオブジェクトに格納する
                 # _request.state.factory = factory
@@ -89,8 +89,8 @@ def login_required_api(func:Callable):
                 kwargs['factory'] = factory
                 # エンドポイント関数を実行する
                 return await func(**kwargs)
-        else:
-            # エンドポイント関数を実行する
-            return await func(**kwargs)
+
+        # エンドポイント関数を実行する
+        return await func(**kwargs)
 
     return wrapper

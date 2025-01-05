@@ -88,13 +88,13 @@ async def complete_sign_up(request:Request):
     user_uuid = _get_claims(request.cookies).get('sub')
     new_password = (await request.form())['password']
 
-    async with UnAuthzFactory() as factory:
+    async with UnAuthzFactory() as ufactory:
         try:
-            user = await factory.find_user_by_uuid(user_uuid)
+            user = await ufactory.find_user_by_uuid(user_uuid)
         except Exception:
             return make_response(request, 'login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
-    async with Factory(user) as factory:
+        factory = ufactory.create_authz_factory(user)
         user = factory.user.find_by_id(user.id)
         user_is_init = user.is_init
         # 本パスワードへの変更
@@ -204,10 +204,10 @@ if GOOGLE_LOGIN:
         subject=claims['sub']
 
         # ユーザ管理者を取得する
-        async with UnAuthzFactory() as factory:
-            usr_admin_user = factory.load_usr_admin_user()
-        # ユーザを取得する
-        async with Factory(usr_admin_user) as factory:
+        async with UnAuthzFactory() as ufactory:
+            usr_admin_user = ufactory.load_usr_admin_user()
+            # ユーザを取得する
+            factory = ufactory.create_authz_factory(usr_admin_user)
             user = factory.user.load_openid_user(email, name, issuer, subject)
             user_uuid = user.uuid
 
