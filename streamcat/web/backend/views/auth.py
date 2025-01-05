@@ -94,7 +94,7 @@ async def complete_sign_up(request:Request):
         except Exception:
             return make_response(request, 'login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
-        factory = ufactory.create_authz_factory(user)
+        factory = await ufactory.create_authz_factory(user)
         user = factory.user.find_by_id(user.id)
         user_is_init = user.is_init
         # 本パスワードへの変更
@@ -207,7 +207,7 @@ if GOOGLE_LOGIN:
         async with UnAuthzFactory() as ufactory:
             usr_admin_user = ufactory.load_usr_admin_user()
             # ユーザを取得する
-            factory = ufactory.create_authz_factory(usr_admin_user)
+            factory = await ufactory.create_authz_factory(usr_admin_user)
             user = factory.user.load_openid_user(email, name, issuer, subject)
             user_uuid = user.uuid
 
