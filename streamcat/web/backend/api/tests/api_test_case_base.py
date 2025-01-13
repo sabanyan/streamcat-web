@@ -1,10 +1,11 @@
 import pprint
+import unittest
 from fastapi.testclient import TestClient
 from streamcat.store.tests.test_case_base import TestCaseBase
 from streamcat.web.backend import app, logger
 from ..utils import make_access_token, is_ok
 
-class ApiTestCaseBase(TestCaseBase):
+class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
     """
     各テストケースで使用する前処理と共通関数を定義する
     """
@@ -24,6 +25,12 @@ class ApiTestCaseBase(TestCaseBase):
     def tearDownClass(cls):
         # 親クラスのtearDownClass()を実行する
         TestCaseBase.tearDownClass()
+
+    def setUp(self) -> None:
+        TestCaseBase._call_async_func(self.asyncSetUp)
+
+    def tearDown(self) -> None:
+        TestCaseBase._call_async_func(self.asyncTearDown)
 
     def create_data(self, file_path_obj, data=None):
         """

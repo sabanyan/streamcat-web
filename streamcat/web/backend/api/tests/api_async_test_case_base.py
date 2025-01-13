@@ -12,8 +12,10 @@ class ApiAsyncTestCaseBase(ApiTestCaseBase):
     def setUpClass(cls):
         # 親クラスのsetUpClass()を実行する
         ApiTestCaseBase.setUpClass()
-        # イベントループを取得
-        cls._loop = asyncio.get_event_loop()
+        # イベントループを作成する
+        cls._loop = asyncio.new_event_loop()
+        # カレントイベントループに設定する
+        asyncio.set_event_loop(cls._loop)
         # 
         cls._executor = ThreadPoolExecutor(4)
 
@@ -33,7 +35,15 @@ class ApiAsyncTestCaseBase(ApiTestCaseBase):
         if len(args) == 1:
             return self._loop.run_until_complete(args[0])
         else:
-            return self._loop.run_until_complete(asyncio.gather(*args))
+            # NOTE: FutureのListを登録すると以下の例外が送出される
+            # RuntimeError: There is no current event loop in thread 'MainThread'
+            return self._loop.run_until_complete(self._gather(*args))
+
+    async def _gather(self, *coroutines):
+        """
+        複数のコルーチンをまとめる
+        """
+        return await asyncio.gather(*coroutines)
 
     def empty_trash(self):
         """

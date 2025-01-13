@@ -1,5 +1,4 @@
 import io
-import unittest
 import pprint
 from .api_async_test_case_base import ApiAsyncTestCaseBase
 
