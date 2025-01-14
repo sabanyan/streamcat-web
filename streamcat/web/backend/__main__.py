@@ -1,4 +1,4 @@
 from . import run
 
-# Flaskを起動する
+# Uvicornを起動する
 run(port=5000)

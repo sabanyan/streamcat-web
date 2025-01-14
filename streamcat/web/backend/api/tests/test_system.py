@@ -2603,7 +2603,7 @@ class SystemTestCase(ApiTestCaseBase):
         flow_uuid = result['children'][0]['uuid']
 
         # プロジェクト管理者は、プロジェクト内にフレームを作成する
-        f = (io.BytesIO(b'wxyz'), 'frame1.csv')
+        f = io.BytesIO(b'wxyz')
         result = self.post_frames('𠮷野家', project_uuid, f, self.USER2)
         frame_uuid = result['uuid']
 
@@ -2656,7 +2656,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/projects/{project_b_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER3)
 
         # プロジェクトAの下にフレームを作成する
-        f = (io.BytesIO(b'I am a chilimen byer'), 'frame1.csv')
+        f = io.BytesIO(b'I am a chilimen byer')
         result = self.post_frames('御隠居', project_a_uuid, f, self.USER0)
         frame_uuid = result['uuid']
 
@@ -2669,7 +2669,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトAのメンバは、フレームをプレビューできないこと
         with self.assertRaises(AssertionError):
-            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER0)
+            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER0)
 
         # プロジェクトBのメンバは、フレームの参照・更新ができること
         result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': '水戸光圀公であらせられるぞ'}, self.USER3)
@@ -2714,7 +2714,7 @@ class SystemTestCase(ApiTestCaseBase):
         folder_uuid = result['uuid']
 
         # フォルダの下にフレームを作成する
-        f = (io.BytesIO(b'I am a chilimen byer'), 'frame1.csv')
+        f = io.BytesIO(b'I am a chilimen byer')
         result = self.post_frames('はぎや整形', folder_uuid, f, self.USER0)
         frame_uuid = result['uuid']
 
@@ -2727,7 +2727,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトAのメンバは、フレームをプレビューできないこと
         with self.assertRaises(AssertionError):
-            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER0)
+            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents=on', self.USER0)
 
         # プロジェクトBのメンバは、フレームの参照・更新ができること
         result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': 'カタツムリ大作戦'}, self.USER3)
@@ -3742,7 +3742,7 @@ class SystemTestCase(ApiTestCaseBase):
         project_modified_at = result['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にフレームを作成する
-        f = (io.BytesIO(b'Every cup has a story'), 'frame1.csv')
+        f = io.BytesIO(b'Every cup has a story')
         result = self.post_frames('TULLY\'s', project_uuid, f, self.USER2)
         frame_uuid = result['uuid']
 

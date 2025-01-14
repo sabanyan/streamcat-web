@@ -1,12 +1,15 @@
 import functools # wraps for decorator
-from flask import (
-    Response,
-    redirect,
-    request
-)
+from fastapi import Request, Depends
+from fastapi.responses import Response, RedirectResponse
+from fastapi_decorators import depends
 from streamcat.store.factory import UnAuthzFactory
 from ... import SECURITY_LEVEL, GOOGLE_LOGIN
-from ...api.utils import make_access_token, decode_token, expired_soon
+from ...api.utils import (
+    make_access_token,
+    decode_token,
+    expired_soon,
+    NotAuthenticationException
+)
 from .make_response import make_response
 
 if SECURITY_LEVEL >= 1:
@@ -30,108 +33,120 @@ else:
     _SESSION_COOKIE_HTTPONLY = False
     _SESSION_COOKIE_SAMESITE = None
 
+
 def login_required(func):
     """
-    このデコレータがついたエンドポイントは、
-    ログインされていないとログインページを表示させる
-
-    TODO: 自動的にmethodsにPOSTを追加するようにしたい
-    そうなるとパラメータつきデコレータになりそうだけど、やるだけといえばやるだけ
+    クエリパラメータにsessionが指定された場合は
+    各エンドポイントに定義された処理の代わりに、ログインまたはログアウト処理を行う
     """
-    from streamcat.web.backend import SECURITY_LEVEL
-    
+    def get_request(__request:Request):
+        return __request
+
+    # エンドポイント関数の引数とここでwrapper関数に加えた引数名が重複しないこと
+    # login_required_apiの_request引数との重複も避けるため__requestを引数名にする
+    @depends(__request=Depends(get_request)) 
     @functools.wraps(func)
-    def deco(**kwargs):
-        # AWSではロードバランサーから各EC2インスタンスへの通信はHTTPである
-        # そのような構成の場合、request.urlにはhttp:/が設定される
-        if SECURITY_LEVEL >= 2 and not request.is_secure:
-            request_base_url = request.base_url.replace('http://', 'https://', 1)
-        else:
-            request_base_url = request.base_url
+    async def wrapper(__request:Request, **kwargs):
+        # デコレート対象の関数からRequest引数を取得する
+        # request = kwargs.get('request')
+
+        # 要求されたURLを取得する
+        request_base_url = _get_request_base_url(__request)
+
+        # 指定されたクエリパラメータ
+        q_params = __request.query_params
 
         # ログアウト時のURLをCookieから取得する
-        last_url = _get_last_url(request.cookies)
+        last_url = _get_last_url(__request.cookies)
 
-        if 'session' not in request.args:
-            # クエリパラメータに'session'がない、普通のアクセス
+        if 'session' not in q_params:
             try:
                 # 例外が送出されなければ認証成功
-                claims = _get_claims(request.cookies)
+                claims = _get_claims(__request.cookies)
             except:
                 # 認証失敗した場合はCookieをクリアしてログインページを返す
-                return _make_login_response(last_url=last_url, original_url=request_base_url+'?session=on', args=request.args)
-            # HTMLレスポンスを作成する
-            response = func(**kwargs)
+                original_url = request_base_url.include_query_params(session='on')
+                response = _make_login_response(__request, last_url=last_url, original_url=original_url, args=q_params)
+                raise NotAuthenticationException('not authorized !', response)
+            # クエリパラメータに'session'がない場合、各エンドポイントに定義された処理を行う
+            response = await func(**kwargs)
             if expired_soon(claims['exp']):
                 # アクセストークンの有効期限がもうすぐ切れる場合は、新しいアクセストークンを発給する
-                token = make_access_token(claims['sub'])
-                return _make_response_with_token(response, token)
+                access_token = make_access_token(claims['sub'])
+                return _make_response_with_token(response, access_token)
             else:
                 return response
 
-        elif request.args['session'] == 'on':
+        elif q_params['session'] == 'on':
             # 認証を要求している場合
             # (すでに認証が通っている場合でも、再認証する)
-            form = request.form
+
+            # RequestからFormデータを取得する
+            form = await __request.form()
             request_email = form.get('email', '')
 
-            with UnAuthzFactory() as factory:
+            async with UnAuthzFactory() as factory:
                 try:
-                    user = factory.find_user_by_email(request_email)
+                    user = await factory.find_user_by_email(request_email)
                 except Exception:
                     # 認証失敗した場合はCookieをクリアしてログインページを返す
-                    return _make_login_response(last_url=last_url, email=request_email, login_failed=True)
+                    response = _make_login_response(__request, last_url=last_url, email=request_email, login_failed=True)
+                    raise NotAuthenticationException('user not found', response)
 
             if user.authenticate(form.get('password', '')):
-                # 仮登録状態の場合はパスワード登録画面に遷移する
-                if user.is_init_or_temp:
-                    # アクセストークンをCookieに格納してWebブラウザに渡す
-                    access_token = make_access_token(user.uuid)
-                    response = make_response('register_password.html', email=request_email)
-                    return _make_response_with_token(response, access_token)
-
-                # Cookieからログアウト時のURLを取得する
-                last_url = _get_last_url(request.cookies)
-
-                # ログアウト時のURLが得られない場合は、request_base_urlにリダイレクトさせる
-                response = redirect(last_url or request_base_url)
-
-                # アクセストークンをCookieに格納してWebブラウザに渡す
+                # アクセストークンを発給する
                 access_token = make_access_token(user.uuid)
-                return _make_response_with_token(response, access_token)
+
+                if user.is_init_or_temp:
+                    # 仮登録状態の場合はパスワード登録画面に遷移する
+                    response = make_response(__request, 'register_password.html', email=request_email)
+                    # アクセストークンをCookieに格納してWebブラウザに渡す
+                    return _make_response_with_token(response, access_token)
+                else:
+                    # ログアウト時のURLが得られない場合は、request_base_urlにリダイレクトさせる
+                    response = RedirectResponse(last_url or request_base_url)
+                    # アクセストークンをCookieに格納してWebブラウザに渡す
+                    return _make_response_with_token(response, access_token)
 
             elif user.password_expired():
                 # 仮パスワードが有効期限切れの場合、Cookieをクリアしてその旨を通知する
                 message = '仮パスワードの有効期限が切れています。ユーザ管理者に問い合わせて下さい。'
-                return _make_login_response(login_failed=True, alert_message=message)
+                response = _make_login_response(__request, login_failed=True, alert_message=message)
+                raise NotAuthenticationException('password expired', response)
 
             else:
                 # 認証失敗
                 # メールアドレスは残してパスワードだけにする
                 # この仕様はセキュリティ上あまりよろしくはないが、
                 # ちゃんと画面が遷移したテストとしてわかりやすいので一時的にそうしている
-                return _make_login_response(last_url=last_url, email=request_email, login_failed=True)
+                response = _make_login_response(__request, last_url=last_url, email=request_email, login_failed=True)
+                raise NotAuthenticationException('invalid password', response)
 
-        elif request.args['session'] == 'off':
+        elif q_params['session'] == 'off':
             # ログアウト処理
-            # 'session=off'だけを消し去ったURLを作りたいがための記述
-            query = '?'
-            for key, arg in request.args.items():
-                if not key == 'session':
-                    if not query == '?':
-                        query += '&'
-                    query += key + '=' + arg
+            # クエリパラメータから'session=off'を削除する
+            last_q_params = {k: v for k, v in q_params.items() if k != 'session'}
             # ログアウト時のURLをCookieに格納してWebブラウザに渡す
-            last_url = request_base_url + query
-            response = redirect(last_url)
+            last_url = request_base_url.include_query_params(**last_q_params)
+            response = RedirectResponse(last_url)
             return _make_response_with_last_url(response, last_url)
 
         else:
             # 無効なクエリパラメータの値
-            # ひとまずログインページを返しておく
-            return _make_login_response(last_url=last_url, original_url=request_base_url+'?session=on', args=request.args)
+            raise NotAuthenticationException('invalid value of session parameter')
 
-    return deco
+    return wrapper
+
+def _get_request_base_url(request:Request):
+    # クエリパラメータを除いたURL
+    base_url = request.url.replace(query='')
+
+    # AWSではロードバランサーから各EC2インスタンスへの通信はHTTPである
+    # そのような構成の場合、request.urlにはhttp:/が設定される
+    if SECURITY_LEVEL >= 2 and not base_url.is_secure:
+        return base_url.replace(scheme='https')
+    else:
+        return base_url
 
 def _get_claims(cookies:dict):
     """
@@ -193,19 +208,21 @@ def _make_response_with_last_url(response:Response, last_url):
         )
     return response
 
-def _make_login_response(last_url=None, email='', login_failed=False, alert_message='', original_url='', args=''):
+def _make_login_response(request:Request, last_url=None, email='', login_failed=False, alert_message='', original_url='', args=''):
     """
     ログイン画面に遷移する
     """
     from ...api.utils import Status
-    response = make_response('login.html',
+    # ログインに失敗した場合は、UNAUTHORIZED(401)を返す
+    status_code = Status.UNAUTHORIZED if login_failed else Status.OK
+    response = make_response(request,
+                            'login.html',
+                            status_code=status_code,
                             email=email,
                             login_failed=login_failed,
                             alert_message=alert_message,
                             google_login=GOOGLE_LOGIN,
                             original_url=original_url,
                             args=args)
-    # ログインに失敗した場合は、UNAUTHORIZED(401)を返す
-    status_code = Status.UNAUTHORIZED if login_failed else Status.OK
     # ログアウト時のURLの指定があれば、Set-Cookieヘッダにログアウト時のURLを設定し、Webブラウザに渡す
-    return _make_response_with_last_url(response, last_url), status_code
+    return _make_response_with_last_url(response, last_url)

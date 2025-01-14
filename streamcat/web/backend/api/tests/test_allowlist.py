@@ -14,7 +14,7 @@ class AllowlistTest(ApiTestCaseBase):
         root = self.factory.data.load_root()
 
         # キャッシュフォルダの下にフレームを作成する
-        f = (io.BytesIO(b'teihenda'), 'cache1')
+        f = io.BytesIO(b'teihenda')
         result = self.post_frames('一心太助', SavableDatum.CACHE_FOLDER_UUID, f, self.USER2)
         cache_uuid = result['uuid']
 
@@ -127,7 +127,7 @@ class AllowlistTest(ApiTestCaseBase):
         activity_uuid = result['uuid']
 
         # フォルダの下にフレームを作成する
-        f = (io.BytesIO(b'abcABC'), 'frame1')
+        f = io.BytesIO(b'abcABC')
         result = self.post_frames('大岡越前', folder_uuid, f, self.USER2)
         frame_uuid = result['uuid']
 

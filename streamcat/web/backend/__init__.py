@@ -1,8 +1,7 @@
 import os
-from flask import Flask, Response, Blueprint
-
-# Flask
-app = Flask('streamcat.web.backend')
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.templating import Jinja2Templates
 
 # 0 : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
 # 1 : evalを使用する
@@ -16,8 +15,36 @@ GOOGLE_LOGIN=bool(os.getenv('STREAMCAT_GOOGLE_LOGIN', 0))
 # 2: HTTPS通信を前提としたセキュリティ設定をする
 SECURITY_LEVEL=int(os.getenv('STREAMCAT_SECURITY_LEVEL', 1))
 
-@app.after_request
-def after_request(response:Response):
+# FastAPIの初期化終了処理を定義する関数
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from streamcat.store.factory import init_admin_users
+    # Startup
+    await init_admin_users()
+    yield
+    # Shutdown
+    pass
+
+# FastAPIを生成する
+app = FastAPI(lifespan=lifespan)
+
+# Jinja2のテンプレートを生成する
+SCatTemplates = Jinja2Templates(directory='streamcat-web/streamcat/web/backend/templates')
+
+# HTMLも含めて全てのエンドポイントの共通処理
+# https://github.com/tiangolo/fastapi/discussions/7691
+@app.middleware('http')
+async def wrap_endpoint_call(request:Request, call_next):
+    # 定義した各エンドポイントの処理を行う
+    try:
+        response = await call_next(request)
+    finally:
+        # NOTE: Sessionを閉じないとSQLAlchemyのコネクションプールが枯渇する
+        # hasattr(request.state, 'factory') and request.state.factory.close()
+        # NOTE: 複数のエンドポイントが同時に処理された場合は一度しか呼ばれない可能性がある
+        # そうなると、ここでFactoryを閉じるのは不適切かもしれない
+        pass
+
     if SECURITY_LEVEL >= 1:
         # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する
         # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Content-Type-Options
@@ -26,80 +53,92 @@ def after_request(response:Response):
         # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Strict-Transport-Security
         if SECURITY_LEVEL >= 2:
             response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    # FlaskからHTTPリクエストログを出力する
-    app.logger.info(response.status_code)
-    # レスポンスを返す
+
+    # HTTPリクエストログを出力する
+    logger.info(msg='', extra={'request':request, 'status':response.status_code})
+
+    # Responseを返す
     return response
+
+# Bad Requestエラー(400)が送出された時の処理
+@app.exception_handler(400)
+def handle_bad_request(request:Request, ex:HTTPException):
+    """
+    Bad Requestが起きた時にもJSONを返却するように設定する
+    （request bodyのJSONが不正な場合を想定している）
+    """
+    from .api.utils import BadRequestException
+    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
+    message = 'The browser (or proxy) sent a request that this server could not understand.'
+    raise BadRequestException(str(ex))
 
 #
 # ログ出力の設定
 #
+import sys
 import logging
-from flask.logging import default_handler
 from .api.utils import SCatLogFormatter, XHRFilter
 
-# WerkzeugサーバのHTTPリクエストログの出力を停止する
-werkzeug_logger = logging.getLogger('werkzeug')
-werkzeug_logger.disabled = True
+# UvicornサーバのHTTPリクエストログの出力を停止する
+uvicorn_logger = logging.getLogger('uvicorn.access')
+uvicorn_logger.disabled = True
 
 # ログの書式を定義する
-# %(message)sにHTTPステータスコードが記述されているようだ
 # https://docs.python.org/ja/3/library/logging.html#logrecord-attributes
 log_formatter = SCatLogFormatter(
-    '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(message)s","%(method)s","%(path)s"'
+    '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(status)s","%(method)s","%(path)s"'
 )
 
-# Flaskのログ書式を設定する
-default_handler.setFormatter(log_formatter)
-default_handler.setLevel(logging.INFO)
+# 標準出力に出力するHandlerを作成する
+consoleHandler = logging.StreamHandler(sys.stdout)
+# ログレベルと書式を設定する
+consoleHandler.setLevel(logging.INFO)
+consoleHandler.setFormatter(log_formatter)
 
-# Flaskのloggerに設定する
-app.logger.addHandler(default_handler)
-app.logger.addFilter(XHRFilter())
-
-# Flaskがdebug=Falseの場合でもログ出力する
-app.logger.setLevel(logging.INFO)
-
-#
-# JSONエンコードの設定
-#
-from .api.utils import SCatJSONProvider
-# FlaskのjsonifyによるJSONへのエンコード処理を、独自に定義したデコード処理に置き換える
-app.json = SCatJSONProvider(app)
-# jsonify関数を使うときにUTF-8として返却できるようにするための設定
-app.json.ensure_ascii = False
-# jsonify関数を使ってJSON形式で返すと勝手に並び順がソートされてしまうので、それを無効にする
-app.json.sort_keys = False
+# Loggerを作成する
+logger = logging.getLogger('streamcat')
+logger.handlers = [consoleHandler]
+logger.filters = [XHRFilter()]
+logger.setLevel(logging.INFO)
 
 #
 # End points of API
 #
-PREFIX = '/api/v0'
 from .api import domain
 from .api import flows
 from .api import library
 from .api import system
 from .api import users
-app.register_blueprint(domain.mod)
-app.register_blueprint(flows.mod, url_prefix=PREFIX)
-app.register_blueprint(library.mod, url_prefix=PREFIX)
-app.register_blueprint(system.mod, url_prefix=PREFIX)
-app.register_blueprint(users.mod, url_prefix=PREFIX)
+PREFIX = '/api/v0'
+app.include_router(domain.router, prefix=PREFIX)
+app.include_router(flows.router, prefix=PREFIX)
+app.include_router(library.router, prefix=PREFIX)
+app.include_router(system.router, prefix=PREFIX)
+app.include_router(users.router, prefix=PREFIX)
 
 #
 # End points of HTML
 #
 from .views import auth
 from .views import basic
-app.register_blueprint(auth.mod, url_prefix='/signup')
-app.register_blueprint(basic.mod)
+app.include_router(auth.router, prefix='/signup')
+app.include_router(basic.router)
 
-# static用
-mod = Blueprint('front_static', __name__, static_url_path='/front_static', static_folder='../frontend/static')
-app.register_blueprint(mod)
+# 
+# error handlers
+# 
+from .api import errors
+errors.register_exception_handlers(app)
+
+# 
+# static files
+# 
+from fastapi.staticfiles import StaticFiles
+app.mount('/front_static', StaticFiles(directory='streamcat-web/streamcat/web/frontend/static'), name='front_static')
 
 def run(port=5000):
-    app.run(host='0.0.0.0', port=port)
+    import uvicorn
+    uvicorn.run('streamcat.web.backend:app', host='0.0.0.0', port=port)
 
 if __name__ == '__main__':
     run(port=5000)

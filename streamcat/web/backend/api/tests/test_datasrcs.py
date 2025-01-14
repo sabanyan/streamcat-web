@@ -462,3 +462,77 @@ class DatasrcsTest(ApiTestCaseBase):
         # (RemoteFolderを削除(unmount)する)
         self.delete_uri('/api/v0/trashes', self.USER1)
 
+    def test_trashed_datasrcs_datadsts(self):
+        """
+        ゴミ箱にほかされたデータデストは取得されないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトぉぉ'}, self.USER2)
+        project_uuid = result['uuid']
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            'parent'   : project_uuid,
+            'label'    : 'データベースぅぅ',
+            'dbms'     : 'postgresql',
+            'hostname' : 'db',
+            'port'     : 5432,
+            'database' : 'streamcat',
+            'userId'  : 'postgres',
+            'password' : ''
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER2)
+        database_uuid = result['uuid']
+
+        # RemoteFolderを作成する(POST /remote-folders)
+        data = {
+            'parent'   : project_uuid,
+            'label'    : 'リモートフォルダぁぁ',
+            'protocol' : 'smb',
+            'hostname' : 'localhost',
+            'domain'   : 'WORKGROUP',
+            'directory': 'share',
+            'userId'  : '',
+            'password' : ''
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
+        rfolder_uuid = result['uuid']
+
+        # データソースの一覧を取得する
+        results = self.get_uri('/api/v0/datasrcs', self.USER2)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(results[0]['label'], 'ライブラリ')
+        self.assertEqual(results[1]['label'], 'データベースぅぅ')
+        self.assertEqual(results[2]['label'], 'リモートフォルダぁぁ')
+
+        # データデストの一覧を取得する
+        results = self.get_uri('/api/v0/datadsts', self.USER2)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(results[0]['label'], 'ライブラリ')
+        self.assertEqual(results[1]['label'], 'データベースぅぅ')
+        self.assertEqual(results[2]['label'], 'リモートフォルダぁぁ')
+
+        # DataBasesとRemoteFoldersをゴミ箱にほかす
+        self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
+        self.delete_uri(f'/api/v0/remote-folders/{rfolder_uuid}', self.USER2)
+
+        # データソースの一覧を取得する
+        results = self.get_uri('/api/v0/datasrcs', self.USER2)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['label'], 'ライブラリ')
+
+        # データデストの一覧を取得する
+        results = self.get_uri('/api/v0/datadsts', self.USER2)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['label'], 'ライブラリ')
+
+        # プロジェクトをほかす(DELETE /projects)
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # プロジェクトを削除する
+        # (RemoteFolderを削除(unmount)する)
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
