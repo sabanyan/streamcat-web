@@ -116,7 +116,7 @@ async def update_project(request:Request, project_uuid, factory:Factory=Depends(
     elif req.has_all('parent', 'label', 'members'):
         raise Exception('label,parentとmembers属性は同時に指定できません')
 
-    project = factory.data.find_by_uuid(project_uuid)
+    project = factory.data.find_by_uuid(project_uuid, for_update=True)
 
     if req.has('label'):
         # プロジェクトのラベルを変更する
@@ -204,11 +204,11 @@ async def update_folder(request:Request, folder_uuid, factory:Factory=Depends(ge
 
     if req.has('label'):
         # フォルダのラベルを変更する
-        folder = factory.data.find_by_uuid(folder_uuid)
+        folder = factory.data.find_by_uuid(folder_uuid, for_update=True)
         return folder.update_label(req['label'])
     elif req.has('parent'):
         # フォルダを移動する
-        folder = factory.data.find_by_uuid(folder_uuid)
+        folder = factory.data.find_by_uuid(folder_uuid, for_update=True)
         return folder.move(req['parent'])
     else:
         raise Exception('update_folder parameter error!')
@@ -460,7 +460,7 @@ async def update_frame(request:Request, frame_uuid, factory:Factory=Depends(get_
     elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
         raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
 
-    frame = factory.data.find_by_uuid(frame_uuid)
+    frame = factory.data.find_by_uuid(frame_uuid, for_update=True)
 
     if req.has('parent'):
         # frameを移動する
