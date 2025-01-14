@@ -2,7 +2,7 @@ from typing import Callable
 import functools # wraps for decorator
 from fastapi import Request, Depends
 from fastapi_decorators import depends
-from streamcat.store.factory import Factory, UnAuthzFactory
+from streamcat.store.factory import UnAuthzFactory
 from .token import decode_token
 from .exceptions import NotAuthenticationException
 
@@ -78,8 +78,6 @@ def login_required_api(func:Callable):
 
             # Factoryを渡す必要がある場合はRequestとkwargsに格納する
             if 'factory' in kwargs:
-                # AuthzSessionをUserオブジェクトに格納する
-                user._session = ufactory._session
                 # Factoryを生成する
                 factory = await ufactory.create_authz_factory(user)
                 # 全エンドポイントの共通処理にFactoryを渡すため
