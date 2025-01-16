@@ -178,26 +178,22 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         project1_modified_at = project1['modifiedAt']
 
         data = {
+            'label': 'プロジェクト!!',
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Writer'},
                         {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
             'lastModifiedAt' : project1_modified_at
         }
 
-        # 同じプロジェクトを同時に更新する
-        self.run_until_complete(
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', {'label': 'AAA'}, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', {'label': 'BBB'}, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', {'label': 'CCC'}, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', {'label': 'DDD'}, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', {'label': 'EEE'}, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', {'label': 'FFF'}, self.USER3),
-            self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
-        )
+        # 同じプロジェクトを同時に更新すると、楽観的排他制御により例外が送出される
+        with self.assertRaisesRegex(AssertionError, '他ユーザーが編集しているため更新できませんでした'):
+            self.run_until_complete(
+                self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
+                self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
+                self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
+                self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
+                self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
+                self.async_put_uri(f'/api/v0/projects/{project1_uuid}', data, self.USER3),
+            )
 
         # プロジェクトをほかす
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER3)
