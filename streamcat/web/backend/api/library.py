@@ -59,8 +59,7 @@ async def fecth_library(members:bool=False, offset:int=None, limit:int=None, fac
 @login_required_api
 @jsonify
 @update_projects_info2
-def fecth_data(q:str=None, type:str=None, members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)
-):
+def fecth_data(q:str=None, type:str=None, members:bool=False, offset:int=None, limit:int=None, factory:Factory=Depends(get_factory)):
     """
     全てのDatum、または指定したキーワードを含むDatumを取得する
     """
@@ -129,40 +128,46 @@ async def update_project(request:Request, project_uuid, factory:Factory=Depends(
 
     if req.has_no_all('parent', 'label', 'members'):
         raise Exception('label,parentまたはmembers属性を指定してください')
-    elif req.has_all('parent', 'label', 'members'):
-        raise Exception('label,parentとmembers属性は同時に指定できません')
+    elif req.has('parent') and req.has_at_least('label', 'members'):
+        raise Exception('label,membersとはparent属性は同時に指定できません')
 
     project = factory.data.find_by_uuid(project_uuid, for_update=True)
 
-    if req.has('label'):
-        # プロジェクトのラベルを変更する
-        return project.update_label(req['label'])
-    elif req.has('parent'):
+    if req.has('parent'):
         # プロジェクトを移動する
         return project.move(req['parent'])
 
-    elif req.has('members'):
-        # プロジェクトにユーザを追加・削除する
-        if not req.has('lastModifiedAt'):
-            raise Exception('lastModifiedAtにプロジェクトの最終更新時刻を指定してください')
-        if not isinstance(req['members'], list):
-            raise Exception('members属性にはユーザuuidの配列を指定してください')
-        # member属性からMembersオブジェクトを作成する
-        members = []
-        for member_dict in req['members']:
-            user = factory.user.find_by_uuid(member_dict['uuid'])
-            type = member_dict['type']
-            members.append(ProjectFolder.Member(user, type))
-        # プロジェクト管理者が設定されない場合はエラーとする
-        if not project.owner_exists(members):
-            raise Exception('プロジェクト管理者が設定されていません')
-        # member属性で指定されたユーザを追加する
-        from datetime import datetime
-        last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
-        project.init_members(members, last_modified_at)
-        return project
     else:
-        raise Exception('誤った引数が指定されました')
+        if req.has('members'):
+            # プロジェクトにユーザを追加・削除する
+            if not req.has('lastModifiedAt'):
+                raise Exception('lastModifiedAtにプロジェクトの最終更新時刻を指定してください')
+            if not isinstance(req['members'], list):
+                raise Exception('members属性にはユーザuuidの配列を指定してください')
+            # member属性からMembersオブジェクトを作成する
+            members = []
+            for member_dict in req['members']:
+                user = factory.user.find_by_uuid(member_dict['uuid'])
+                type = member_dict['type']
+                members.append(ProjectFolder.Member(user, type))
+            # プロジェクト管理者が設定されない場合はエラーとする
+            if not project.owner_exists(members):
+                raise Exception('プロジェクト管理者が設定されていません')
+            # member属性で指定されたユーザを追加する
+            from datetime import datetime
+            last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
+            project.init_members(members, last_modified_at)
+            ret = project
+
+        # ラベルの変更で最終更新時刻が更新されると、members属性の更新ができない
+        if req.has('label'):
+            # プロジェクトのラベルを変更する
+            ret = project.update_label(req['label'])
+
+        if ret is None:
+            raise Exception('誤った引数が指定されました')
+
+        return ret
 
 @router.delete('/projects/{project_uuid}')
 @login_required_api
@@ -480,15 +485,12 @@ async def update_frame(request:Request, frame_uuid, factory:Factory=Depends(get_
 
     if req.has('parent'):
         # frameを移動する
-        new_parent = req['parent']
-        return frame.move(new_parent)
+        return frame.move(req['parent'])
 
     else:
         if req.has('label'):
             # frameのラベルを変更する
-            label = req['label']
-            # ret = Frame.update_label(frame_uuid, label, modifier)
-            ret = frame.update_label(label)
+            ret = frame.update_label(req['label'])
 
         if req.has_all('encoding', 'newline'):
             encoding_str = req['encoding']

@@ -127,6 +127,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {parent:parent});
             d.rename = (label) => 
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
+            d.update = (label, members, lastModifiedAt) =>
+                put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label, members:members, lastModifiedAt:lastModifiedAt});
             d.duplicate = () =>
                 post(`/api/v0/folders`, {source:d.uuid});
             d.delete = () =>
