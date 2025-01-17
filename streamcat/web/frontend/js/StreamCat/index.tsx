@@ -27,15 +27,19 @@ export enum ViewId {
     TrashCan,
     System,
     User_List,
+    // Login画面の場合はViewIdが未定義
     Undefined = -1,
 };
 
+const isDialog = HttpUtil.getURLParam('dialog');
+
 const getNavigation = (viewId: ViewId) => {
-    if(viewId !== ViewId.Undefined){
-        return Api.findNavigation();
-    }else{
-        // Login画面の場合はAPIを発行しない
+    if( isDialog || viewId===ViewId.Undefined){
+        // ダイアログ表示の場合はAPIを発行しない
+        // また、ログイン画面の場合もAPIを発行しない
         return Api.findNull();
+    }else{
+        return Api.findNavigation();
     }
 };
 
@@ -56,7 +60,6 @@ export const StreamCat = (props: Props) => {
     const nav = readNavigation();
 
     const renderNavigationBar = () => {
-        const isDialog = HttpUtil.getURLParam("dialog");
         if(isDialog){
             return <></>;
         }else{
