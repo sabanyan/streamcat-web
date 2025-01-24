@@ -461,10 +461,10 @@ async def create_frame(request:Request, factory:Factory=Depends(get_factory)):
             raise Exception('No parent or label are designated.')
 
         parent = factory.data.find_by_uuid(req['parent'])
-        new_frame = parent.create_frame(req['label'],
-                                        req['file'].file)
-        # FrameをDBに格納する
-        new_frame.save()
+        with req['file'].file as f:
+            new_frame = parent.create_frame(req['label'], f)
+            # FrameをDBに格納する
+            new_frame.save()
         return new_frame
 
 @router.put('/frames/{frame_uuid}')
@@ -564,12 +564,11 @@ async def make_new_document(request:Request, factory:Factory=Depends(get_factory
 
         # 格納先フォルダを取得する
         parent = factory.data.find_by_uuid(req['parent'])
-        # ファイルを作成する
-        new_file = parent.create_file(req['label'],
-                                    req['file'].file,
-                                    maybe_csv=maybe_csv)
-        # ファイルをDBに格納する
-        new_file.save()
+        with req['file'].file as f:
+            # ファイルを作成する
+            new_file = parent.create_file(req['label'], f, maybe_csv=maybe_csv)
+            # ファイルをDBに格納する
+            new_file.save()
         return new_file
 
 @router.put('/documents/{document_uuid}')
