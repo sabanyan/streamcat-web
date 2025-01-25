@@ -388,7 +388,7 @@ export const FlowEditor = () => {
     }, [inspectorWidth]);
 
     useEffect(() => {
-        const handleLeavePage = (e) => {
+        const handleBeforeunload = (e) => {
             if(flowIsUpdated){
                 // flowに未保存の変更があれば警告ダイアログを表示する
                 e.preventDefault();
@@ -399,7 +399,7 @@ export const FlowEditor = () => {
         };
 
         // タブが閉じられた時にロックを解除する
-        const handleUnload = (e) => {
+        const handlePagehide = (e) => {
             if(!lockIsAcquired){
                 return;
             }
@@ -412,12 +412,12 @@ export const FlowEditor = () => {
         // ・document.addEventListener()へのイベントハンドラの登録では
         //   Pageを閉じる時にイベントハンドラが実行されなかった
         // ・unloadイベントは非推奨で将来削除される予定なので代わりにpagehideイベントを仕様する
-        window.addEventListener('beforeunload', handleLeavePage);
-        window.addEventListener('pagehide', handleUnload);
+        window.addEventListener('beforeunload', handleBeforeunload);
+        window.addEventListener('pagehide', handlePagehide);
 
         return () => {
-            window.removeEventListener('beforeunload', handleLeavePage);
-            window.removeEventListener('unload', handleUnload);
+            window.removeEventListener('beforeunload', handleBeforeunload);
+            window.removeEventListener('pagehide', handlePagehide);
         }
     }, [flowIsUpdated, lock]);
 
