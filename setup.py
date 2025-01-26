@@ -10,12 +10,12 @@ setup(
     install_requires=[
         # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
         # 'blinker==1.9.0',
-        'fastapi==0.115.6',
+        'fastapi==0.115.7',
         # FastAPIでMultipartリクエストを扱う場合に使用する
         'python-multipart==0.0.20',
         'jinja2==3.1.5',
         # FastAPIでDatumをJSONに変換する時に使用する
-        'orjson==3.10.12',
+        'orjson==3.10.15',
         # FastAPIでデコレータ内でRequestオブジェクトを取得できるようにする
         'fastapi-decorators==1.0.6',
         # FastAPIのTestClientが使用する
