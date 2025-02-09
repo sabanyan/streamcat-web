@@ -121,7 +121,7 @@ async def is_database_connectable(request:Request, factory:Factory=Depends(get_f
     データベースの接続を確認する
     """
     from streamcat.store import DatabaseConn
-    from streamcat.engine import execute
+    from streamcat.engine import aexecute
     from streamcat.depo.std.commands.scmd.script import DbIsConnectableCommand
 
     # クエリパラメータをDictで取得する
@@ -133,7 +133,8 @@ async def is_database_connectable(request:Request, factory:Factory=Depends(get_f
     tmp_db = root.create_database('CONNECTION-TEST', db_conn)
 
     # Restoreコマンドを実行する
-    outs = execute(DbIsConnectableCommand(), inputs={'i':tmp_db}).join()
+    job = await aexecute(DbIsConnectableCommand(), inputs={'i':tmp_db})
+    outs = job.join()
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'DbIsConnectableCommandの実行に失敗しました {outs.get("o","")}')
 
@@ -183,12 +184,13 @@ async def get_dump(factory:Factory=Depends(get_factory)):
     """
     from datetime import datetime
     from streamcat.core import Tmp
-    from streamcat.engine import execute
+    from streamcat.engine import aexecute
     from streamcat.depo.std.commands.scmd.script import DumpCommand
 
     try:
         # Dumpコマンドを実行する
-        outs = execute(DumpCommand(), args={'datum_factory': factory.data}).join()
+        job = await aexecute(DumpCommand(), args={'datum_factory': factory.data})
+        outs = job.join()
         if 'o' not in outs or isinstance(outs['o'], Exception):
             raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
 
@@ -212,11 +214,12 @@ async def upload_dump(file:UploadFile=File(),
     """
     StreamCatのDumpファイルを復元する
     """
-    from streamcat.engine import execute
+    from streamcat.engine import aexecute
     from streamcat.depo.std.commands.scmd.script import RestoreCommand
 
     # Restoreコマンドを実行する
-    outs = execute(RestoreCommand(), args={'factory':factory}, inputs={'i':file.file}).join()
+    job = await aexecute(RestoreCommand(), args={'factory':factory}, inputs={'i':file.file})
+    outs = job.join()
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
 

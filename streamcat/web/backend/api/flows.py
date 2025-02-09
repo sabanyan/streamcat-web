@@ -479,7 +479,7 @@ async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, lim
             from .utils import VisConverter
             result_json = frame.to_json()
             # frameの内容を取得する
-            vis = _get_vis(factory, frame_uuid, args={'offset':offset, 'limit':limit})
+            vis = await _get_vis(factory, frame_uuid, args={'offset':offset, 'limit':limit})
             result_json['args'] = {'column_names':vis.column_names}
             result_json['contents'] = VisConverter(request, vis)
             return result_json
@@ -555,7 +555,7 @@ def _convert_file(frame, user, target_encoding:str='UTF-8'):
         traceback.print_exc()
         raise e
 
-def _get_vis(factory:Factory, frame_uuid:str, args={}):
+async def _get_vis(factory:Factory, frame_uuid:str, args={}):
     """
     指定したframeのVisデータを取得する
     """
@@ -572,7 +572,7 @@ def _get_vis(factory:Factory, frame_uuid:str, args={}):
                }
     # Visを取得する
     datasource = _make_flow(factory, frame_uuid=frame_uuid)
-    job = _execute_flow(datasource, vis_args=vis_args)
+    job = await _execute_flow(datasource, vis_args=vis_args)
     outs = _get_outs(job)
     if len(outs.outs) == 0:
         raise NoResultsException('プレビュー結果は出力されませんでした.')
@@ -594,7 +594,7 @@ async def make_new_vis(request:Request, factory:Factory=Depends(get_factory)):
         raise Exception("Vizを取得するには'vis'属性の指定が必須です")
     # Activityを作成する
     flow = _make_flow(factory, flow_uuid=req.get('uuid'), frame_uuid=req.get('frame'), flow_json=req.get('flow'))
-    return _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
+    return await _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
 
 
 @router.get('/activities/{activity_uuid}')
@@ -616,7 +616,7 @@ async def make_new_acitivity(request:Request, factory:Factory=Depends(get_factor
     # Activityを作成する
     req = RequestJson(await request.json())
     flow = _make_flow(factory, flow_uuid=req.get('uuid'), flow_json=req.get('flow'))
-    return _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
+    return await _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
 
 def _make_flow(factory:Factory, flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> object:
     """
@@ -654,7 +654,7 @@ def _make_flow(factory:Factory, flow_uuid:str=None, frame_uuid:str=None, flow_js
     else:
         raise Exception(f'Either flow or flow uuid or frame uuid is required')
 
-def _make_new_acitivity(request:Request, flow:object, lock_uuid:str=None, args:dict={}) -> dict:
+async def _make_new_acitivity(request:Request, flow:object, lock_uuid:str=None, args:dict={}) -> dict:
     """
     フローを実行してActivityを作成する
     """
@@ -665,7 +665,7 @@ def _make_new_acitivity(request:Request, flow:object, lock_uuid:str=None, args:d
         return isinstance(out, Vis)
 
     # フローを実行してApparentOutsを取得する
-    job = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
+    job = await _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
     outs = _get_outs(job)
 
     return {
@@ -683,14 +683,14 @@ def _make_new_acitivity(request:Request, flow:object, lock_uuid:str=None, args:d
                       ]
     }
 
-def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
+async def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
     指定されたフローを実行しJobを取得する
     """
-    from streamcat.engine import execute, FlowCommand
+    from streamcat.engine import aexecute, FlowCommand
     args = args.copy()
     args.update(vis_args)
-    return execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
+    return await aexecute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
 def _get_outs(job):
     """
