@@ -155,7 +155,7 @@ async def download_flow(uuid, factory:Factory=Depends(get_factory)):
     return FileResponse(path=archive_path,
                         filename=archive_name + '.tgz',
                         media_type='application/gzip',
-                        # 返した後にファイルを削除する       
+                        # 返した後にファイルを削除する
                         background=BackgroundTask(archive_path.unlink))
 
 @router.post('/archives/flows')
@@ -183,34 +183,32 @@ async def get_dump(factory:Factory=Depends(get_factory)):
     StreamCatのDumpファイルを取得する
     """
     from datetime import datetime
-    from streamcat.core import Tmp
+    from starlette.background import BackgroundTask
     from streamcat.engine import aexecute
     from streamcat.depo.std.commands.scmd.script import DumpCommand
 
-    try:
-        # Dumpコマンドを実行する
-        job = await aexecute(DumpCommand(), args={'datum_factory': factory.data})
-        outs = job.join()
-        if 'o' not in outs or isinstance(outs['o'], Exception):
-            raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
+    # Dumpコマンドを実行する
+    job = await aexecute(DumpCommand(), args={'datum_factory': factory.data})
+    outs = job.join()
+    if 'o' not in outs or isinstance(outs['o'], Exception):
+        raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
 
-        # Dumpファイルをクライアントに返す
-        archive_path = outs['o']
-        archive_name = 'backup_' + datetime.now().strftime('%Y%m%d') + '.tgz'
+    # Dumpファイルをクライアントに返す
+    archive_path = outs['o']
+    archive_name = 'backup_' + datetime.now().strftime('%Y%m%d') + '.tgz'
 
-        # アーカイブファイルを返す
-        return FileResponse(path=archive_path,
-                            filename=archive_name,
-                            media_type='application/gzip')
-    finally:
-        # Dumpコマンドで作成した一時ファイルを削除する
-        Tmp.remove_files()
-    
+    # アーカイブファイルを返す
+    return FileResponse(path=archive_path,
+                        filename=archive_name,
+                        media_type='application/gzip',
+                        # Dumpコマンドで作成したTmpファイルを削除する
+                        background=BackgroundTask(archive_path.unlink))
+
 @router.post('/dump')
 @login_required_api
 @jsonify
 async def upload_dump(file:UploadFile=File(),
-                factory:Factory=Depends(get_factory)):
+                      factory:Factory=Depends(get_factory)):
     """
     StreamCatのDumpファイルを復元する
     """
