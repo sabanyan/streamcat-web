@@ -27,10 +27,12 @@ class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
         TestCaseBase.tearDownClass()
 
     def setUp(self) -> None:
-        TestCaseBase._call_async_func(self.asyncSetUp)
+        # テスト環境を構築する
+        TestCaseBase.event_loop.run_until_complete(self.asyncSetUp())
 
     def tearDown(self) -> None:
-        TestCaseBase._call_async_func(self.asyncTearDown)
+        # テスト環境を破棄する
+        TestCaseBase.event_loop.run_until_complete(self.asyncTearDown())
 
     def create_data(self, file_path_obj, data=None):
         """
