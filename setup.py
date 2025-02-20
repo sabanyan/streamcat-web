@@ -10,7 +10,7 @@ setup(
     install_requires=[
         # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
         # 'blinker==1.9.0',
-        'fastapi==0.115.7',
+        'fastapi==0.115.8',
         # FastAPIでMultipartリクエストを扱う場合に使用する
         'python-multipart==0.0.20',
         'jinja2==3.1.5',
