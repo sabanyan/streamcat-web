@@ -1,4 +1,4 @@
-@import "../../../../../../sass/common";
+@use '../../../../../../sass/common';
 
 .list {
     .elements {
@@ -21,12 +21,6 @@
                     margin: 4px;
                     justify-content: flex-start;
                     width: calc(50% - 8px);
-
-                    .label {
-                    }
-
-                    .input {
-                    }
                 }
 
                 .oneRow {

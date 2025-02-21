@@ -1,6 +1,6 @@
 import React from 'react';
-import style from './style.scss';
-import iconStyle from 'Shared/Input/FlatButton/style.scss';
+import * as style from './style.scss';
+import * as flatStyle from 'Shared/Input/FlatButton/style.scss';
 
 export type ITableHeader = {
     label: string;
@@ -40,7 +40,7 @@ export const ListTableHeader = (props: Props) => {
     const getIconElement = (icon: string | null) => {
         const baseUrl = '/front_static/';
         const iconElement = (icon)
-            ? <img className={iconStyle.icon} src={baseUrl + 'images/icon/' + icon + '.svg'} />
+            ? <img className={flatStyle.icon} src={baseUrl + 'images/icon/' + icon + '.svg'} />
             : null;
         return iconElement;
     };

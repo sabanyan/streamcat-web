@@ -1,9 +1,9 @@
 import React from 'react';
 import { ParamString, ParamBoolean, ParamSelect, ParamList, ParamFrame } from 'Shared/Inspector/index';
 import { CommandParamType } from 'Types/index';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import classnames from 'classnames';
-import style from './style.scss';
+import * as style from './style.scss';
 import { Command } from 'Model/Library';
 // import { param } from 'jquery'
 
@@ -147,7 +147,7 @@ export class ParamsForm extends React.Component<Props, State> {
 
     getParamElement(param: CommandParamType, disabled: boolean = false, parentUUID?:string, label?: string, value?: any, onChange?: Function, headers?: string[]) {
         let paramElement: any;
-        let className = param.type === Constants.param.type.boolean ? classnames(style.param, style.flex) : style.param;
+        let className = param.type === Constants.param.type.boolean ? style.flex : '';
         try {
             switch (param.type) {
                 case Constants.param.type.number:

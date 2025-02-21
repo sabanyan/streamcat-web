@@ -1,4 +1,4 @@
-@import "../../../../../../sass/common";
+@use '../../../../../../sass/common';
 
 .listItem{
   display: inline-flex;
@@ -12,10 +12,10 @@
   font-size: 13px;
   justify-content: space-between;
   cursor: pointer;
+  margin-right: 8px;
   &:hover{
     background: #f6faff;
   }
-  margin-right: 8px;
 }
 
 .label{

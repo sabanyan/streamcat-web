@@ -1,4 +1,4 @@
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { RoleType } from 'Model/Navigation/NavigationModel';
 export default class AdminUtil {
     static getUserStatus = (status: string): string => {
@@ -21,10 +21,5 @@ export default class AdminUtil {
 
     static hasSystemAdmin = (admin_types: RoleType[]):boolean =>{
         return !!(admin_types.find(role => role.systemRole==Constants.admin.systemRole.SYS_ADMIN))
-    }
-
-    static replaceAsterisk = (length: number): string => {
-        const asteriskStr = [...Array(length)].map((index) => {return "*"});
-        return asteriskStr.toString().replace(/,/g, '');
     }
 }

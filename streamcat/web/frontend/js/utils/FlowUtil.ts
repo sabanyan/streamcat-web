@@ -1,5 +1,5 @@
 //@flow
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { Api } from 'Api';
 import { MessageModel} from 'Model/index';
 import { AllNodeType } from 'Model/Library';

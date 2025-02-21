@@ -1,8 +1,8 @@
-@import "../../../../sass/common";
+@use '../../../../sass/common';
 
 .header {
   font-weight: bold;
-  color: $streamcat-text;
+  color: common.$streamcat-text;
 }
 
 .search_bar {

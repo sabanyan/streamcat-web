@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMyDragLayer } from './hooks';
-import style from './style.scss';
+import * as style from './style.scss';
 
 // 参考元
 // https://qiita.com/s_kido14/items/d506805b40da3eb514ad

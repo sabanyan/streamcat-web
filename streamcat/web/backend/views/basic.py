@@ -1,77 +1,90 @@
-from flask import Blueprint
-from ..api.utils import login_required_api
-from .utils import login_required, make_response
+from fastapi import APIRouter, Request, Depends
+from fastapi.responses import RedirectResponse, FileResponse
+from streamcat.store.factory import Factory
+from .. import app
+from ..api.utils import login_required_api, get_factory
+from .utils import make_response, login_required
 
-mod = Blueprint('basic_template', __name__)
+router = APIRouter()
 
-@mod.route('/', methods=['GET'])
-def top():
-    from flask import redirect, url_for
-    return redirect(url_for('basic_template.library'))
+@router.get('/')
+@router.post('/')
+async def top(session:bool=False):
+    q_params = '?session=on' if session else ''
+    return RedirectResponse(app.url_path_for('library') + q_params)
 
-@mod.route('/favicon.ico', methods=['GET'])
-def favicon():
-    from flask import send_from_directory
-    return send_from_directory('../frontend/static/images', 'streamcat.ico', mimetype='image/x-icon')
+@router.get('/favicon.ico')
+async def favicon():
+    from pathlib import Path
+    file_path = Path(__file__).parents[2] / 'frontend/static/images/streamcat.ico'
+    return FileResponse(path=file_path, media_type='image/x-icon')
 
-@mod.route('/settings/profile', methods=['GET', 'POST'])
+@router.get('/settings/profile')
+@router.post('/settings/profile')
 @login_required
-def profile():
-    return make_response('profile.html')
+async def profile(request:Request):
+    return make_response(request, 'profile.html')
 
-@mod.route('/admin/sys', methods=['GET', 'POST'])
+@router.get('/admin/sys')
+@router.post('/admin/sys')
 @login_required
-def admin_sys():
-    return make_response('admin/sys.html')
+async def admin_sys(request:Request):
+    return make_response(request, 'admin/sys.html')
 
-@mod.route('/admin/users', methods=['GET', 'POST'])
+@router.get('/admin/users')
+@router.post('/admin/users')
 @login_required
-def admin_users():
-    return make_response('admin/users.html')
+async def admin_users(request:Request):
+    return make_response(request, 'admin/users.html')
 
-@mod.route('/library', methods=['GET', 'POST'])
+@router.get('/library')
+@router.post('/library')
 @login_required
-def library():
-    return make_response('library.html', is_project='false', is_trash='false')
+async def library(request:Request):
+    return make_response(request, 'library.html', is_project='false', is_trash='false')
 
-@mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
+@router.get('/projects/{project_uuid}')
+@router.post('/projects/{project_uuid}')
 @login_required
-def projects(project_uuid):
+async def projects(request:Request, project_uuid):
     uuid = project_uuid.rstrip('?')
-    return make_response('library.html', folder_uuid=uuid, is_project='true', is_trash='false')
+    return make_response(request, 'library.html', folder_uuid=uuid, is_project='true', is_trash='false')
 
-@mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
+@router.get('/folders/{folder_uuid}')
+@router.post('/folders/{folder_uuid}')
 @login_required
-def folders(folder_uuid):
+async def folders(request:Request, folder_uuid):
     uuid = folder_uuid.rstrip('?')
-    return make_response('library.html', folder_uuid=uuid, is_project='false', is_trash='false')
+    return make_response(request, 'library.html', folder_uuid=uuid, is_project='false', is_trash='false')
 
-@mod.route('/trashes', methods=['GET', 'POST'])
+@router.get('/trashes')
+@router.post('/trashes')
 @login_required
-def trashes():
-    return make_response('library.html', is_project='false', is_trash='true')
+async def trashes(request:Request):
+    return make_response(request, 'library.html', is_project='false', is_trash='true')
 
-@mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
+@router.get('/flows/{flow_uuid}')
+@router.post('/flows/{flow_uuid}')
 @login_required
-def flow_designer(flow_uuid):
-    return make_response('flow_designer.html', flow_uuid=flow_uuid)
+async def flow_designer(request:Request, flow_uuid):
+    return make_response(request, 'flow_designer.html', flow_uuid=flow_uuid)
 
-@mod.route('/preview', methods=['GET', 'POST'])
+@router.get('/preview')
+@router.post('/preview')
 @login_required
-def preview():
-    return make_response('preview.html', is_preview=True)
+async def preview(request:Request):
+    return make_response(request, 'preview.html', is_preview=True)
 
-@mod.route('/documents/<document_uuid>', methods=['GET'])
+@router.get('/documents/{document_uuid}')
 @login_required
 @login_required_api
-def document(document_uuid):
-    from flask import g
-    document = g.factory.data.find_by_uuid(document_uuid)
-    return make_response('document.html', document_uuid=document_uuid, label='👁' + document.label)
+async def document(request:Request, document_uuid, factory:Factory=Depends(get_factory)):
+    document = factory.data.find_by_uuid(document_uuid)
+    return make_response(request, 'document.html', document_uuid=document_uuid, label='👁' + document.label)
 
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
-@mod.route('/dev', methods=['GET', 'PUT'])
-@login_required
-def dev():
-    return make_response('dev/dev.html')
+# @mod.route('/dev', methods=['GET', 'PUT'])
+# @login_required
+# def dev():
+#     return make_response('dev/dev.html')

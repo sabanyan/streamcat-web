@@ -1,13 +1,14 @@
 import React from 'react'
+import lodash from 'lodash';
 import {CommandParamType} from 'Types/index'
 import {AddButton, Button} from 'Shared/Input'
 // 循環参照されるため一個一個Importする（ParamBoolean, ParamString, ParamSelect)
 import {ParamBoolean} from '../ParamBoolean/index'
 import {ParamString} from '../ParamString/index'
 import {ParamSelect} from '../ParamSelect/index'
-import Constants from 'Constants/index'
-import {ModalUtil, StateUtil} from 'Utils/index'
-import style from './style.scss'
+import { Constants } from 'Constants/index'
+import {ModalUtil} from 'Utils/index'
+import * as style from './style.scss';
 import classnames from 'classnames'
 
 type Props = {
@@ -173,17 +174,18 @@ export class ParamList extends React.Component<Props, State>{
             }
             let className = style.element;
             if (element.type === Constants.param.type.select || element.type === Constants.param.type.column) {
-                className = classnames(className, style.select);
+                // style.scssに'select'ルールが存在しないのでコメントアウトする
+                // className = classnames(className, style.select);
             }
             if (param.elements[index + 1] && param.elements[index + 1].section) {
                 className = classnames(className, style.oneRow);
             }
 
             ele = <div key={argIndex + element.name + index} className={className}>
-                <div className={style.label}>
+                <div>
                     {element.label}
                 </div>
-                <div className={style.input}>
+                <div>
                     {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex) }, headers)}
                 </div>
             </div>;
@@ -231,7 +233,7 @@ export class ParamList extends React.Component<Props, State>{
         try {
             const {param, onChange} = this.props;
             let newValue = this.state.currentValue;
-            newValue.push(StateUtil.deepCopy(param.default[0]));
+            newValue.push(lodash.cloneDeep(param.default[0]));
             this.setState({
                 currentValue: newValue
             }, () => {

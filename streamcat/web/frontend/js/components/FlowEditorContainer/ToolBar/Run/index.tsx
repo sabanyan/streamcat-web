@@ -1,10 +1,10 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { FlowUtil, ModalUtil } from 'Utils/index';
 import { Api } from 'Api';
 import { FlowType } from 'Model/Library';
-import style from '../Core/style.scss';
+import * as style from '../Core/style.scss';
 
 type Props = {
     refreshFlow: (flow: FlowType) => void;
@@ -90,11 +90,9 @@ export const Run = (props: Props) => {
             visible: true,
             done: '確認',
             danger: true,
-            content: <div className={style.modal}>
-                <div>
-                    現在のフローを保存します。<br />
-                    よろしいですか？
-                </div>
+            content: <div>
+                現在のフローを保存します。<br />
+                よろしいですか？
             </div>
         });
     };

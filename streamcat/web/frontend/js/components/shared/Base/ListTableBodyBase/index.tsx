@@ -1,6 +1,6 @@
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroller';
-import style from './style.scss';
+import * as style from './style.scss';
 
 type Props<TDatumType> = {
     allDatas: TDatumType[];

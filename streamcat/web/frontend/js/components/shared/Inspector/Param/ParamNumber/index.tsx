@@ -4,9 +4,9 @@ import { Popper } from '@mui/material';
 import { CommandParamType } from 'Types/index';
 import { Helper } from 'Shared/Inspector';
 
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 
-import style from './style.scss';
+import * as style from './style.scss';
 
 type Props = {
     label?: string;

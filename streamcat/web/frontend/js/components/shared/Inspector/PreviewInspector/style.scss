@@ -1,4 +1,4 @@
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 
 
@@ -8,7 +8,7 @@
   height: 100%;
   transition: opacity 0.2s linear, right 0.2s ease-in;
   opacity: 0;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
   @extend .user-select;
 
   /*

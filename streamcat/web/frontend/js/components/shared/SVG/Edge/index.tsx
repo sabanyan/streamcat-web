@@ -1,7 +1,7 @@
 import React from "react";
-import style from "./style.scss";
+import * as style from './style.scss';
 import {Arrow, Port, NodeTextStyle} from "Shared/SVG";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import {StringUtil} from "Utils/index";
 
 type EdgeProps = {

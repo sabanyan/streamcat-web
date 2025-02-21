@@ -1,5 +1,5 @@
 import React from 'react';
-import style from "./style.scss";
+import * as style from './style.scss';
 import { Breadcrumbs, Link } from '@mui/material';
 import {Text} from "Shared/Base/Texts/Text";
 

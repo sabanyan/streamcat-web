@@ -1,5 +1,6 @@
 import React from 'react';
-import style from "./style.scss";
+import * as buttonStyle from '../Button/style.scss';
+import * as style from './style.scss';
 import classnames from "classnames";
 
 type Props = {
@@ -25,7 +26,7 @@ export const FlatButton = (props: Props) => {
         : null;
     return <button type="button" className={buttonClass} disabled={disabled} onClick={onClick}>
         {iconElement}
-        <div className={classnames({[style.whiteText]: primary, [style.text]: !primary})}>
+        <div className={classnames({[buttonStyle.whiteText]: primary, [style.text]: !primary})}>
             {children}
         </div>
     </button>;

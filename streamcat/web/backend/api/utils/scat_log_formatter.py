@@ -1,6 +1,5 @@
 import logging
 import datetime
-from flask import has_request_context, request
 from .token import decode_token
 from .login_required_api import get_token_from_auth_header
 
@@ -9,7 +8,8 @@ class SCatLogFormatter(logging.Formatter):
     HTTPリクエストのログの書式
     """
     def format(self, record):
-        if has_request_context():
+        if hasattr(record, 'request'):
+            request = record.request
             # requestインスタンスが存在する場合
             # CookieまたはAuthorizationヘッダからアクセストークンを取得する
             access_token = request.cookies.get('S') or get_token_from_auth_header(request.headers)
@@ -18,9 +18,9 @@ class SCatLogFormatter(logging.Formatter):
             else:
                 claims = decode_token(access_token)
                 record.user_uuid = claims['sub'][:8]
-            record.remote_addr = request.remote_addr
+            record.remote_addr = request.client.host
             record.method = request.method
-            record.path = request.path
+            record.path = (request.url.path + '?' + request.url.query).rstrip('?')
         else:
             # requestインスタンスが存在しない場合
             record.user_uuid = ''
@@ -44,4 +44,4 @@ class XHRFilter(logging.Filter):
     HTMLとAPI以外へのHTTPリクエストをログ出力しない
     """
     def filter(self, record):
-        return has_request_context() and not request.path.startswith('/front_static')
+        return hasattr(record, 'request') and not record.request.url.path.startswith('/front_static')

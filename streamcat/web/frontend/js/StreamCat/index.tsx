@@ -3,17 +3,16 @@ import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import { createTheme, ThemeProvider } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {NotificationsProvider} from 'reapop';
-import style from './style.scss';
+import {Api} from 'Api';
 import {ModalManager} from 'Shared/Modal';
 import {NavigationBar} from 'Shared/Base';
 import {Preview} from 'PreviewContainer/Preview';
 import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
 import {System} from 'Components/admin/SystemContainer/System';
-import {UserList} from 'Components/admin/UserListContainer/UserList';
+import {UserList} from 'UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
-import {Api} from 'Api';
 import HttpUtil from 'Utils/HttpUtil';
 
 export type Props = {
@@ -28,15 +27,19 @@ export enum ViewId {
     TrashCan,
     System,
     User_List,
+    // Login画面の場合はViewIdが未定義
     Undefined = -1,
 };
 
+const isDialog = HttpUtil.getURLParam('dialog');
+
 const getNavigation = (viewId: ViewId) => {
-    if(viewId !== ViewId.Undefined){
-        return Api.findNavigation();
-    }else{
-        // Login画面の場合はAPIを発行しない
+    if( isDialog || viewId===ViewId.Undefined){
+        // ダイアログ表示の場合はAPIを発行しない
+        // また、ログイン画面の場合もAPIを発行しない
         return Api.findNull();
+    }else{
+        return Api.findNavigation();
     }
 };
 
@@ -57,11 +60,10 @@ export const StreamCat = (props: Props) => {
     const nav = readNavigation();
 
     const renderNavigationBar = () => {
-        const isDialog = HttpUtil.getURLParam("dialog");
         if(isDialog){
             return <></>;
         }else{
-            return <div className={style.nav}>
+            return <div>
                 <NavigationBar navigation={nav} />
             </div>;
         }
@@ -96,7 +98,7 @@ export const StreamCat = (props: Props) => {
 
         return (
             <AsyncResourceContent fallback={<p>Loading...</p>}>
-            <div className={style.view}>
+            <div>
                 {viewComponent}
             </div>
             </AsyncResourceContent>
@@ -104,7 +106,7 @@ export const StreamCat = (props: Props) => {
     };
 
     try {
-        return <div className={style.streamcat}>
+        return <div>
             {/* 通知ダイアログ */}
             <NotificationsProvider>
             {/* MUIのテーマ */}

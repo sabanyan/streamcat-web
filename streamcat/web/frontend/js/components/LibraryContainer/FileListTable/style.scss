@@ -1,4 +1,4 @@
-@import "../../../../sass/common";
+@use '../../../../sass/common';
 
 .fileListTable {
     width: 100%;
@@ -8,10 +8,6 @@
     margin-right: 16px;
     position: relative;
     top: -1px;
-}
-
-.filename {
-
 }
 
 .date {

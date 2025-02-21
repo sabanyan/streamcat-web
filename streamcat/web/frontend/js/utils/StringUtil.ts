@@ -1,11 +1,6 @@
 //@flow
 export default class StringUtil {
 
-  static separate (num: number): string {
-    if (!num && num !== 0) return ''
-    return String(num).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
-  }
-
   static convertToFileSize (size:number, withUnit=true): string {
     if (!size && size !== 0) return '';
     const units = [' B', ' KB', ' MB', ' GB', ' TB', ' PB'];
@@ -13,7 +8,9 @@ export default class StringUtil {
     for (i = 0; size > 1024; i++) {
       size /= 1024;
     }
-    return this.separate(Math.round(size * 100 / 100)) + (withUnit? units[i]: '');
+    // 3桁区切りの数字文字列に変換する
+    const localedSize = Math.round(size * 100 / 100).toLocaleString();
+    return localedSize + (withUnit? units[i]: '');
   }
 
   static stripHtmlToText (html: string) {

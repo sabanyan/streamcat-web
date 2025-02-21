@@ -1,5 +1,5 @@
 import React from 'react';
-import style from "./style.scss";
+import * as style from './style.scss';
 import classnames from "classnames";
 import ImageUtil from "Utils/ImageUtil";
 import {useState} from "react";
@@ -17,7 +17,7 @@ export const FilterListItem = (props: Props) => {
     const {onClick, children, multiple, selected, checked, onChecked} = props;
     if (multiple) {
         return <div className={style.listItemMultiple} onClick={() => onChecked(!checked)}>
-            <div className={style.listItemLabel}>{children}</div>
+            <div>{children}</div>
             {
                 (checked) ?
                     ImageUtil.getIconElement("icon-checkbox-on")
@@ -27,7 +27,7 @@ export const FilterListItem = (props: Props) => {
         </div>;
     } else {
         return <div className={style.listItem} onClick={onClick}>
-            <div className={style.listItemLabel}>{children}</div>
+            <div>{children}</div>
             {
                 (selected) ?
                     ImageUtil.getIconElement("icon-done")

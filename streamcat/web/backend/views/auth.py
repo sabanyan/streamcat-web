@@ -1,11 +1,5 @@
-from flask import (
-    Blueprint,
-    redirect,
-    url_for,
-    flash,
-    session,
-    request
-)
+from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse
 from oauthlib.oauth2 import WebApplicationClient
 from .. import app, GOOGLE_LOGIN
 from ..api.utils import make_access_token
@@ -15,24 +9,24 @@ from .utils.login_required import _make_login_response, _make_response_with_toke
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
 
-# flask_mail用の設定
-CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
-app.config.update(
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=465,
-    MAIL_USERNAME=CONFIRM_EMAIL,
-    MAIL_PASSWORD='@passwd1234',
-    MAIL_USE_TLS=False,
-    MAIL_USE_SSL=True
-)
+# # flask_mail用の設定
+# CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
+# app.config.update(
+#     MAIL_SERVER='smtp.gmail.com',
+#     MAIL_PORT=465,
+#     MAIL_USERNAME=CONFIRM_EMAIL,
+#     MAIL_PASSWORD='@passwd1234',
+#     MAIL_USE_TLS=False,
+#     MAIL_USE_SSL=True
+# )
 
-mod = Blueprint('auth', __name__)
+router = APIRouter()
 
-@mod.route('/')
+@router.get('/')
 def signup():
     return make_response('signup.html')
 
-@mod.route('/confirm', methods=['POST'])
+@router.post('/confirm')
 def confirm_email():
     from flask_mail import Mail, Message
     
@@ -75,15 +69,15 @@ def confirm_email():
 
     return make_response('signup.html')
 
-@mod.route('/register/<mail_hash>')
+@router.get('/register/{mail_hash}')
 def register_email(mail_hash):
     """
     メールの確認ができたので、パスワード入力画面を返す
     """
     return make_response('register_password.html', email=session['signup_email'])
 
-@mod.route('/complete', methods=['POST'])
-def complete_sign_up():
+@router.post('/complete')
+async def complete_sign_up(request:Request):
     """
     パスワードが決定されたので、それを元にユーザー登録を行う
     """
@@ -92,15 +86,15 @@ def complete_sign_up():
 
     # FORMの値は送信者が容易に改竄できるので、FORMからE-Mailを取得しないこと
     user_uuid = _get_claims(request.cookies).get('sub')
-    new_password = request.form['password']
+    new_password = (await request.form())['password']
 
-    with UnAuthzFactory() as factory:
+    async with UnAuthzFactory() as ufactory:
         try:
-            user = factory.find_user_by_uuid(user_uuid)
+            user = await ufactory.find_user_by_uuid(user_uuid)
         except Exception:
-            return make_response('login.html', login_failed=True, google_login=GOOGLE_LOGIN)
+            return make_response(request, 'login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
-    with Factory(user) as factory:
+        factory = await ufactory.create_authz_factory(user)
         user = factory.user.find_by_id(user.id)
         user_is_init = user.is_init
         # 本パスワードへの変更
@@ -108,7 +102,7 @@ def complete_sign_up():
             user.update_password(new_password, modifier=user)
         except InvalidPassword as e:
             # もう一度パスワード入力を促す
-            return make_response('register_password.html', login_failed=True, alert_message=str(e), email=user.email)
+            return make_response(request, 'register_password.html', login_failed=True, alert_message=str(e), email=user.email)
 
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         if user_is_init:
@@ -117,7 +111,7 @@ def complete_sign_up():
             project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
-    response = redirect(url_for('basic_template.library'))
+    response = RedirectResponse(app.url_path_for('library'))
     # アクセストークンをCookieに格納してWebブラウザに渡す
     access_token = make_access_token(user_uuid)
     return _make_response_with_token(response, access_token)
@@ -141,19 +135,21 @@ if GOOGLE_LOGIN:
     # (Google Developer Consoleの認証済リダイレクトURIに設定する必要がある)
     REDIRECT_URL_PATH = 'signup/callback'
 
-    @mod.route('/login', methods=['GET'])
-    def login():
+    @router.get('/login')
+    def login(request:Request):
         client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
+        # クエリパラメータを除いたURL
+        base_url = request.url.replace(query='')
         # リダイレクト先のURLを作成する
         url, headers, body = client.prepare_authorization_request(
             GOOGLE_AUTHORIZATION_URL,
-            redirect_url=request.url_root + REDIRECT_URL_PATH,
+            redirect_url=base_url + REDIRECT_URL_PATH,
             scope=GOOGLE_API_SCOPE)
         # 認証URLにリダイレクトする (Googleへの認可リクエスト)
-        return redirect(url)
+        return RedirectResponse(url)
 
-    @mod.route('/callback', methods=['GET'])
-    def callback():
+    @router.get('/callback')
+    async def callback(request:Request):
         import json
         import jwt
         import urllib.request
@@ -161,12 +157,14 @@ if GOOGLE_LOGIN:
         from streamcat.store.factory import UnAuthzFactory, Factory
 
         client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
+        # クエリパラメータを除いたURL
+        base_url = request.url.replace(query='')
 
         # JWTトークン取得のリクエストを作成する
         url, headers, body = client.prepare_token_request(
             GOOGLE_TOKEN_URL,
             authorization_response=request.url,
-            redirect_url=request.url_root + REDIRECT_URL_PATH,
+            redirect_url=base_url + REDIRECT_URL_PATH,
             code=request.args.get('code'),
             client_secret=GOOGLE_API_CLIENT_SECRET)
 
@@ -206,15 +204,15 @@ if GOOGLE_LOGIN:
         subject=claims['sub']
 
         # ユーザ管理者を取得する
-        with UnAuthzFactory() as factory:
-            usr_admin_user = factory.load_usr_admin_user()
-        # ユーザを取得する
-        with Factory(usr_admin_user) as factory:
+        async with UnAuthzFactory() as ufactory:
+            usr_admin_user = ufactory.load_usr_admin_user()
+            # ユーザを取得する
+            factory = await ufactory.create_authz_factory(usr_admin_user)
             user = factory.user.load_openid_user(email, name, issuer, subject)
             user_uuid = user.uuid
 
         # とりあえずライブラリ画面にリダイレクトする
-        response = redirect(url_for('basic_template.library'))
+        response = RedirectResponse(app.url_path_for('library'))
         # アクセストークンをCookieに格納してWebブラウザに渡す
         access_token = make_access_token(user_uuid)
         return _make_response_with_token(response, access_token)

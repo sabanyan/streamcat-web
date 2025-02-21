@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import lodash from 'lodash';
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import { Api } from 'Api';
 import {HttpUtil, ModalUtil, StringUtil, WebUtil} from "Utils/index";
 import {ModalManager} from "Shared/Modal";

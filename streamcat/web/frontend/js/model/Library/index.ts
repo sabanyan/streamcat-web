@@ -164,6 +164,11 @@ export type ProjectType = FolderType & {
     members?: Member[];
     modifiedAt: string;
 
+    update:(
+        label: string,
+        members: {uuid:string, type:MemberType}[],
+        lastModifiedAt: string
+    ) => Promise<ProjectType>;
     initMembers:(
         members: {uuid:string, type:MemberType}[],
         lastModifiedAt: string

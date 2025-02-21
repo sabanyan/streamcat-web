@@ -25,20 +25,23 @@ if SECURITY_LEVEL >= 2:
 else:
     _SECRET = 'QZnpv2sNiiErzCNLebaHz*rzBtiPjCyf'
 
-def _make_token(user_uuid:str, expiration_time:timedelta):
+def _make_token(user_uuid:str, expiration_time:timedelta, user_is_init_or_temp:bool=False):
     """
     JWTトークンを作成する
     """
     # 'sub' : ユーザ識別子
     # 'exp' : 有効期限
+    # 'tmp  : ユーザが仮登録状態の場合はtrue
     payload = {'sub':user_uuid, 'exp':datetime.now(timezone.utc)+expiration_time}
+    if user_is_init_or_temp:
+        payload['tmp'] = True
     return jwt.encode(payload, key=_SECRET, algorithm='HS256')
 
-def make_access_token(user_uuid):
+def make_access_token(user_uuid, user_is_init_or_temp:bool=False):
     """
     アクセストークンを作成する
     """
-    return _make_token(user_uuid, _access_expire_timedelta)
+    return _make_token(user_uuid, _access_expire_timedelta, user_is_init_or_temp)
 
 def make_refresh_token(user_uuid):
     """

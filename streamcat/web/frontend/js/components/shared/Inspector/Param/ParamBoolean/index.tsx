@@ -1,6 +1,6 @@
 import React from 'react';
 import {CommandParamType} from 'Types/index';
-import style from './style.scss';
+import * as style from './style.scss';
 
 type Props = {
     label?: string;

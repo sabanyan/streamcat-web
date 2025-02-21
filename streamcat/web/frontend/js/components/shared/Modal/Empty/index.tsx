@@ -1,6 +1,6 @@
 import React from 'react'
 import classnames from 'classnames'
-import style from './style.scss'
+import * as style from './style.scss';
 
 /*
  * standard Modalと一緒だが、buttonとcontentの位置が逆転されたモーダル

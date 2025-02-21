@@ -3,9 +3,9 @@ import { ModalUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
 import { Button } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
-import Constants from 'Constants/index'
+import { Constants } from 'Constants/index'
 
-import style from '../style.scss'
+import * as style from '../style.scss';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
 
@@ -142,12 +142,12 @@ export class DataDstInspector extends React.Component<Props, State> {
 
     return <BaseInspector key={dstNode.uuid} label={dstNode.label}
       onBlurTitle={(e) => this.onBlurTitle(e)} disabled={baseInspectorDisabled}>
-      <div className={style.property_overview}>
+      <div>
         <div className={style.actions}>
           {this.renderActions()}
         </div>
         <div className={style.full_hr} />
-        <div className={style.overviews}>
+        <div className={style.overview}>
           {(dstNode.flow.params) ? this.renderContents() : null}
         </div>
       </div>

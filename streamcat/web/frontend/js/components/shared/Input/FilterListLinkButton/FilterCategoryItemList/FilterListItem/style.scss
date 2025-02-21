@@ -1,4 +1,4 @@
-@import "../../../../../../../sass/common";
+@use '../../../../../../../sass/common';
 
 .listItem,.listItemMultiple{
   padding: 14px;
@@ -7,16 +7,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: pointer;
   &:hover{
     background: #f8f9fa;
   }
   img{
     margin-right: 0!important;
   }
-  .listItemLabel{
-
-  }
-  cursor: pointer;
 }
 
 .listItemMultiple{

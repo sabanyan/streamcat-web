@@ -1,8 +1,7 @@
 import { defaultGraphProps, defaultNodeProps } from "Utils/GraphUtil";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import { FlowUtil, GraphUtil, ModelUtil, ZoomUtil } from "Utils/index";
 import { CommandPortType, RunnablesType } from "../types";
-import _ from "lodash";
 import { AllNodeType, Command, Flow, FlowCommand, InlineFlowCommand } from "Model/Library";
 import { BaseFlowNodeType, CommandNodeType, FlowNodeType, FrameNode, FrameNodeType, InlineFlowNode, InlineFlowNodeType } from "Model/Node/NodeTypes";
 import { NodeArray } from "Api";
@@ -402,8 +401,9 @@ export const addNodeAction = (flowData: Flow,
                 //srcsがない場合は、デフォルト値（i）のポートにつなぐ
                 const from: string = srcNode.id;
                 const to: string = newRunableNode.id;
-                let inputPortLabel = Constants.default.command.inputPortLabel;
-                if (newRunableNode.srcs !== undefined || !_.isEmpty(newRunableNode.srcs)) {
+                let inputPortLabel:string = Constants.default.command.inputPortLabel;
+                // if (newRunableNode.srcs !== undefined || !lodash.isEmpty(newRunableNode.srcs)) {
+                if(newRunableNode.srcs && Object.keys(newRunableNode.srcs).length > 0){
                     const srcs = newRunableNode.srcs || {};
                     inputPortLabel = Object.keys(srcs).find(key => srcs[key] === srcNode.id) || "";
                 }
@@ -425,8 +425,9 @@ export const addNodeAction = (flowData: Flow,
                 //dstsがない場合は、デフォルト値（i）のポートにつなぐ
                 const from: string = newRunableNode.id;
                 const to: string = dstNode.id;
-                let outputPortLabel = Constants.default.command.outputPortLabel;
-                if (newRunableNode.dsts !== undefined || !_.isEmpty(newRunableNode.dsts)) {
+                let outputPortLabel:string = Constants.default.command.outputPortLabel;
+                // if (newRunableNode.dsts !== undefined || !lodash.isEmpty(newRunableNode.dsts)) {
+                if(newRunableNode.dsts && Object.keys(newRunableNode.dsts).length > 0){
                     const dsts = newRunableNode.dsts || {};
                     outputPortLabel = Object.keys(dsts).find(key => dsts[key] === dstNode.id) || "";
                 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import style from "./style.scss";
+import * as style from './style.scss';
 import {FlatButton} from "Shared/Input";
 
 type Props = {

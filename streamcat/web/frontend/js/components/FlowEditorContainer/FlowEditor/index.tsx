@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAsyncResource } from 'use-async-resource';
 import useInterval from 'use-interval';
 import * as jsonpatch from 'fast-json-patch';
-import style from './style.scss';
+import * as style from './style.scss';
 import { Api, ErrorResponse, NodeArray } from 'Api';
 import { MessageModel } from 'Model/index';
 import { LockType } from 'Model/Locks';
 import { AllNodeType, Flow, FlowType } from 'Model/Library';
 import { FlowEditModeValue, FlowExecuteModeValue, Connectivity } from 'Model/Flow/FlowModel';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { ModalUtil, WebUtil, FlowUtil} from 'Utils/index';
 import { DragType, GraphType, RunnablesType } from 'Types/index';
 import {
@@ -169,7 +169,7 @@ export const FlowEditor = () => {
     // const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
     // Inspectorの横幅
-    const [inspectorWidth, setInspectorWidth] = useState(Constants.default.inspector.width);
+    const [inspectorWidth, setInspectorWidth] = useState<number>(Constants.default.inspector.width);
     // Canvasの横幅
     const [canvasWidth, setCanvasWidth] = useState(window.innerWidth - Constants.default.inspector.width);
 
@@ -388,7 +388,7 @@ export const FlowEditor = () => {
     }, [inspectorWidth]);
 
     useEffect(() => {
-        const handleLeavePage = (e) => {
+        const handleBeforeunload = (e) => {
             if(flowIsUpdated){
                 // flowに未保存の変更があれば警告ダイアログを表示する
                 e.preventDefault();
@@ -399,7 +399,7 @@ export const FlowEditor = () => {
         };
 
         // タブが閉じられた時にロックを解除する
-        const handleUnload = (e) => {
+        const handlePagehide = (e) => {
             if(!lockIsAcquired){
                 return;
             }
@@ -411,12 +411,13 @@ export const FlowEditor = () => {
         // ・visibilitychangeイベントはFirefoxとSafariでは機能しなかった
         // ・document.addEventListener()へのイベントハンドラの登録では
         //   Pageを閉じる時にイベントハンドラが実行されなかった
-        window.addEventListener('beforeunload', handleLeavePage);
-        window.addEventListener('unload', handleUnload);
+        // ・unloadイベントは非推奨で将来削除される予定なので代わりにpagehideイベントを仕様する
+        window.addEventListener('beforeunload', handleBeforeunload);
+        window.addEventListener('pagehide', handlePagehide);
 
         return () => {
-            window.removeEventListener('beforeunload', handleLeavePage);
-            window.removeEventListener('unload', handleUnload);
+            window.removeEventListener('beforeunload', handleBeforeunload);
+            window.removeEventListener('pagehide', handlePagehide);
         }
     }, [flowIsUpdated, lock]);
 

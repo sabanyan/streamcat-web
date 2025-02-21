@@ -1,5 +1,5 @@
 import React from 'react';
-import style from './style.scss';
+import * as style from './style.scss';
 import {DetectUtil} from 'Utils/index';
 import {DragType, GraphType} from 'Types/index';
 import {

@@ -1,6 +1,6 @@
 //@flow
 import dagre from 'dagre'
-import Constants from 'Constants/index'
+import { Constants } from 'Constants/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import { CommandNodeType, FlowNodeType, InlineFlowNodeType } from 'Model/Node/NodeTypes'
 import { AllNodeType, Flow } from 'Model/Library'

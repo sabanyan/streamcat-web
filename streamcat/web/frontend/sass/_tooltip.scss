@@ -16,6 +16,7 @@
   text-align: center;
   transition: all 0.2s;
   color: #fff;
+  z-index: -1;
   &:after {
     position: absolute;
     width: 0;
@@ -30,7 +31,6 @@
     pointer-events: none;
     content: " ";
   }
-  z-index: -1;
 }
 
 .tooltip_trigger:hover + .tooltip{

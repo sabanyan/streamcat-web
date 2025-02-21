@@ -1,5 +1,5 @@
 import React from 'react';
-import style from "./style.scss";
+import * as style from './style.scss';
 import { DatumType, FolderAllowlist, FolderType } from 'Model/Library'
 import { CreateFolderButton } from 'Shared/Button/CreateFolderButton';
 import { CreateRemoteFolderButton } from 'Shared/Button/CreateRemoteFolderButton';

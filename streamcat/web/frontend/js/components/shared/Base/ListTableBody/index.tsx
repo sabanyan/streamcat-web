@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import { ListTableBodyBase } from '../ListTableBodyBase';
-import style from '../ListTableBodyBase/style.scss';
+import * as style from '../ListTableBodyBase/style.scss';
 
 type Props<TDatumType> = {
     allDatas: TDatumType[];

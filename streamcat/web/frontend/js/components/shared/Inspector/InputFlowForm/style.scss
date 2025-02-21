@@ -1,4 +1,5 @@
-@import "../../../../../sass/common";
+@use 'sass:color';
+@use '../../../../../sass/common';
 
 .property {
   position: fixed;
@@ -9,7 +10,7 @@
   transition: opacity 0.2s linear, right 0.2s ease-in;
   opacity: 0;
   @extend .user-select;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
 }
 
 .in {
@@ -26,13 +27,13 @@
 
 .property_header {
   font-size: 18px;
-  color: $streamcat-text;
-  background-color: $streamcat-property-background-color;
-  border-bottom: 1px solid $streamcat-property-border-color;
+  color: common.$streamcat-text;
+  background-color: common.$streamcat-property-background-color;
+  border-bottom: 1px solid common.$streamcat-property-border-color;
 }
 
 .property_label {
-  color: $streamcat-text;
+  color: common.$streamcat-text;
   font-size: 16px;
   padding: 0 0 8px;
   text-align: left;
@@ -40,7 +41,7 @@
 }
 
 .property_name {
-  color: $streamcat-text;
+  color: common.$streamcat-text;
   font-size: 14px;
   padding: 0 0 8px;
   text-align: left;
@@ -50,12 +51,12 @@
 .property_body {
   padding: 16px;
   padding-bottom: 64px;
-  background-color: $streamcat-property-background-color;
+  background-color: common.$streamcat-property-background-color;
   min-height: 100%;
 
   label {
     font-size: 14px;
-    color: $streamcat-text;
+    color: common.$streamcat-text;
     padding: 8px 0 4px;
     margin: 0;
   }
@@ -67,18 +68,15 @@
 }
 
 .hr {
-  border-top: 1px solid $streamcat-property-border-color;
+  border-top: 1px solid common.$streamcat-property-border-color;
   margin: 8px -8px 8px -8px;
   height: 8px;
 }
 
 .full_hr {
-  border-top: 1px solid $streamcat-property-border-color;
+  border-top: 1px solid common.$streamcat-property-border-color;
   margin: 16px -16px 8px -16px;
   height: 8px;
-}
-
-.property_overview {
 }
 
 .overview {
@@ -90,7 +88,7 @@
 .overview_label {
   float: left;
   width: 120px;
-  color: $streamcat-property-overview-label-color;
+  color: common.$streamcat-property-overview-label-color;
   margin-bottom: 8px;
   font-size: 14px;
 }
@@ -100,7 +98,7 @@
   width: calc(100% - 120px);
   text-align: left;
   font-size: 14px;
-  color: $streamcat-property-overview-value-color;
+  color: common.$streamcat-property-overview-value-color;
 }
 
 .flowInOut {
@@ -122,7 +120,7 @@
 }
 
 .output {
-  color: $streamcat-text;
+  color: common.$streamcat-text;
   padding-left: 12px;
 }
 
@@ -139,11 +137,11 @@
   width: 100%;
   padding: 4px 0;
   position: relative;
-  color: $streamcat-text;
+  color: common.$streamcat-text;
   border-bottom: 1px dotted transparent;
 
   &:hover {
-    border-bottom: 1px dotted $streamcat-text;
+    border-bottom: 1px dotted common.$streamcat-text;
     cursor: pointer;
   }
 
@@ -186,7 +184,7 @@
 }
 
 .new_flow_params {
-  color: $primary-link-color;
+  color: common.$primary-link-color;
   font-size: 14px;
   clear: both;
   margin-top: 8px;
@@ -222,16 +220,16 @@
 }
 
 .invalid input[type=text] {
-  background: lighten(#F51F28, 40%);
+  background: color.adjust(#F51F28, $lightness: 40%);
 }
 
 .file_list_table {
   width: 100%;
 
   th {
-    color: $streamcat-text;
+    color: common.$streamcat-text;
     font-weight: normal;
-    border-bottom: 1px solid $streamcat-text;
+    border-bottom: 1px solid common.$streamcat-text;
   }
 
   th, td {
@@ -250,19 +248,19 @@
   .activity_user {
     float: right;
     font-size: 12px;
-    color: $streamcat-text;
+    color: common.$streamcat-text;
   }
 
   .activity_time {
     float: left;
     font-size: 12px;
-    color: $streamcat-text;
+    color: common.$streamcat-text;
     margin-bottom: 8px;
   }
 }
 
 .noDescription {
-  color: $streamcat-gray;
+  color: common.$streamcat-gray;
 }
 
 .cache_ {
@@ -271,14 +269,14 @@
 
 .cache_label {
   display: inline-block;
-  color: $streamcat-property-overview-label-color;
+  color: common.$streamcat-property-overview-label-color;
   margin-bottom: 8px;
   font-size: 14px;
 }
 
 .cache_value {
   display: inline-block;
-  color: $streamcat-property-overview-value-color;
+  color: common.$streamcat-property-overview-value-color;
   margin-bottom: 8px;
   margin-left: 8px;
   font-size: 14px;
@@ -292,13 +290,13 @@
 }
 
 .addButton {
-  color: $primary-link-color;
+  color: common.$primary-link-color;
   text-align: left;
   margin-left: 10px;
   cursor: pointer;
 
   &:hover {
-    color: darken($primary-link-color, 10%);
+    color: color.adjust(common.$primary-link-color, $lightness: -10%);
   }
 }
 

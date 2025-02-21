@@ -1,4 +1,4 @@
-@import "../../../../../sass/common";
+@use '../../../../../sass/common';
 
 .command {
   display: block;
@@ -12,7 +12,7 @@
 
   &:hover {
     transition: all 0.3s;
-    background: $streamcat-property-command-hover-background-color;
+    background: common.$streamcat-property-command-hover-background-color;
   }
 }
 
@@ -24,14 +24,14 @@
 }
 
 .command_label {
-  color: $streamcat-property-operator-label-color;
+  color: common.$streamcat-property-operator-label-color;
   font-size: 12px;
   font-weight: bold;
   line-height: 1em;
 }
 
 .command_description {
-  color: $streamcat-property-operator-label-color;
+  color: common.$streamcat-property-operator-label-color;
   padding-top: 4px;
   text-overflow: ellipsis;
   font-size: 10px;

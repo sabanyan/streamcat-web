@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import style from './style.scss';
+import * as style from './style.scss';
 import lodash from 'lodash';
 import { ProjectType } from 'Model/Library';
 import { RoleType, UserType } from 'Model/Navigation/NavigationModel';

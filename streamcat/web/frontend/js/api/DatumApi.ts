@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import lodash from 'lodash';
 import {
     DatumType,
     ParentProjectType,
@@ -127,6 +127,8 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {parent:parent});
             d.rename = (label) => 
                 put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
+            d.update = (label, members, lastModifiedAt) =>
+                put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label, members:members, lastModifiedAt:lastModifiedAt});
             d.duplicate = () =>
                 post(`/api/v0/folders`, {source:d.uuid});
             d.delete = () =>
@@ -391,7 +393,7 @@ export const DatumApi = {
             }
             // Flowオブジェクトを複製するclone関数を設定する
             const cloneFunc = (f:Flow) => {
-                const clonedFlowJson = _.cloneDeepWith(f);
+                const clonedFlowJson = lodash.cloneDeepWith(f);
                 clonedFlowJson.nodes = new NodeArray(clonedFlowJson.nodes);
                 clonedFlowJson.ports = [new PortArray(clonedFlowJson.ports[0]), new PortArray(clonedFlowJson.ports[1])];
                 clonedFlowJson.clone = () => cloneFunc(clonedFlowJson);

@@ -1,6 +1,6 @@
 import React from 'react';
 import {useState} from 'react';
-import style from './style.scss';
+import * as style from './style.scss';
 import {IFilterCategoryItem, IFilterListItem} from 'Shared/Input/FilterListLinkButton';
 import {FilterCategoryItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterCategoryItem';
 import {FilterListItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterListItem';
@@ -103,7 +103,7 @@ export const FilterCategoryItemList = (props: Props) => {
             onClickFilterListItem(selectedCategory.id, checkedListItems)
         }
         applyElement = <div className={style.apply}>
-            <a href="#" className={style.applyLink} onClick={onClickApply}>適用</a>
+            <a href="#" onClick={onClickApply}>適用</a>
         </div>
     }
 

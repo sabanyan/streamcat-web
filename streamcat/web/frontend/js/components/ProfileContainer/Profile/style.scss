@@ -1,48 +1,23 @@
-@import "../../../../sass/common";
+@use '../../../../sass/common';
 
 .page_title {
-  color: $streamcat-text;
+  margin-bottom: 20px;
   font-size: 20px;
   font-weight: bold;
-  margin-bottom: 20px;
+  color: common.$streamcat-text;
 }
 
 .card {
   margin-bottom: 20px;
   max-width: 480px;
-  padding: 32px;
   border-radius: 4px;
-  box-shadow: 0 1px 3px $streamcat-property-shadow;
-  @include form-background-color();
+  box-shadow: 0 1px 3px common.$streamcat-property-shadow;
+  @include common.form-background-color();
 }
 
-.property_body {
-  label {
-    font-size: 14px;
-    color: $streamcat-text;
-    padding: 8 0 4px;
-    margin: 0;
-  }
+.card_legend {
+  margin: 0;
+  padding: 10px 10px 0 10px; 
+  font-size: 18px;
+  color: common.$streamcat-text;
 }
-
-.helpText{
-  font-size: 12px!important;
-  color: #999!important;
-}
-//.tabbar{
-//  margin: 0 auto;
-//}
-//
-//.tab{
-//  font-size: 16px!important;
-//  height: auto;
-//  width: auto;
-//  background: #606B78;
-//  color: #fff;
-//  box-shadow: 0px -1.5px 3px lighten($streamcat-property-shadow,70%);
-//}
-
-//.active{
-//  background: #fff!important;
-//  color: $streamcat-text!important;
-//}

@@ -1,6 +1,6 @@
 import React from 'react';
-import style from "./style.scss";
-import Constants from "Constants/index";
+import * as style from './style.scss';
+import { Constants } from "Constants/index";
 import {FlowUtil, ZoomUtil} from "Utils/index";
 import { AllNodeType, FlowType } from 'Model/Library';
 import {DragType, GraphType, RunnablesType} from "Types/index";

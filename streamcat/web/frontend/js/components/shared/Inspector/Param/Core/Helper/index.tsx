@@ -4,7 +4,7 @@ import { AppBar, IconButton, Tabs, Tab } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { Link2 } from 'Components/shared/Input';
 
-import style from './style.scss'
+import * as style from './style.scss';
 
 type Shortcut = {
   value: string,
@@ -73,7 +73,7 @@ export function Helper(props: Props) {
       let v = defaultValue;
       v = { ...s }
       result.push(
-        <div key={index} className={style.shortcut}>
+        <div key={index}>
           {v.label + " : "}
           <Link2 value={v.link} onClick={e=>onClickShortcut(event, v.value, v.delimiter)} />
         </div>

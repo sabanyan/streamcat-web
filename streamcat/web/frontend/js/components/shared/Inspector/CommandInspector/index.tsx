@@ -1,9 +1,9 @@
 import React from 'react';
 import {useAsyncResource} from 'use-async-resource';
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
-import style from "../style.scss";
+import * as style from '../style.scss';
 import {Button} from "Shared/Input";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import {ModalUtil} from "Utils/index";
 import { Api } from 'Api';
 import { AllNodeType } from 'Model/Library';

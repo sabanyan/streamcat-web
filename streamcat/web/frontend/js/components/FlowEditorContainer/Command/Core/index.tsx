@@ -1,5 +1,5 @@
 import React from "react";
-import style from "./style.scss";
+import * as style from './style.scss';
 import classnames from "classnames";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { ModelUtil, WebUtil } from "Utils/index";

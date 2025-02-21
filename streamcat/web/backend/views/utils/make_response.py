@@ -1,10 +1,11 @@
-def make_response(template_name, is_preview:bool=False, **context):
+from ...api.utils import Status
+
+def make_response(request, template_name:str, is_preview:bool=False, status_code:Status=Status.OK, **context):
     """
-    Jinja2のテンプレートからFlaskのHTMLレスポンスを作成する
+    Jinja2のテンプレートからHTMLレスポンスを作成する
     """
     import uuid
-    from flask import render_template, make_response
-    from ... import DEBUG_BUILD, SECURITY_LEVEL
+    from ... import SCatTemplates, DEBUG_BUILD, SECURITY_LEVEL
 
     def make_bokeh_script(nonce):
         """
@@ -26,12 +27,10 @@ def make_response(template_name, is_preview:bool=False, **context):
     else:
         render_js = ''
 
+    # 二つのDictをマージする
+    context = context | {'nonce':nonce, 'js_resources':render_js}
     # HTMLレスポンスを作成する
-    contents = render_template(template_name,
-                                nonce=nonce,
-                                js_resources=render_js,
-                                **context)
-    response = make_response(contents)
+    response = SCatTemplates.TemplateResponse(request, template_name, status_code=status_code, context=context)
 
     # ログアウト後に戻る押下で前画面が表示されないようにするため
     # HTMLレスポンスがWebブラウザのbfcacheにキャッシュされるのを防ぐ

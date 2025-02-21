@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { useDrag, useDrop } from 'react-dnd'
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { ListTableBodyBase } from '../ListTableBodyBase';
-import style from '../ListTableBodyBase/style.scss';
+import * as style from '../ListTableBodyBase/style.scss';
 
 type Props<TDatumType> = {
     allDatas: TDatumType[];

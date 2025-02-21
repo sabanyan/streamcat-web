@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import style from './style.scss';
-import Constants from 'Constants/index';
+import * as style from './style.scss';
+import { Constants } from 'Constants/index';
 import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from 'Shared/SVG';
 import { AllNodeType } from 'Model/Library';
 import { RunnablesType } from 'Types/index';
@@ -154,9 +154,8 @@ export const Node = (props: Props) => {
                         : null;
 
     return (
-        <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
-            <g className={style.iconContainer}
-                onMouseDown={e => onMouseDown(node, e)}
+        <g transform={'translate(' + x + ',' + y + ')'}>
+            <g onMouseDown={e => onMouseDown(node, e)}
                 onMouseOver={() => handleMouseOver()}
                 onMouseLeave={() => handleMouseLeave()}>
                 {icon}

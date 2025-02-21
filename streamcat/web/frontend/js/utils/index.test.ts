@@ -1,5 +1,5 @@
 import AdminUtil from './AdminUtil';
-import Constants from '../constants/index';
+import { Constants } from '../constants/index';
 
 describe('AdminUtil', 
 	() => {

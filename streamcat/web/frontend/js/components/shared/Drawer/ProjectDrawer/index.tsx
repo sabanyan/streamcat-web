@@ -7,12 +7,18 @@ import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DownloadFlowButton } from 'Shared/Button/DownloadFlowButton';
 import { MembersSelect } from 'Shared/Input/MembersSelect';
 import { CreatorField } from 'Shared/Input/CreatorField';
+import { Api } from 'Api';
 
 type Props = {
     createMode: boolean;
     parent: FolderType;
     project: ProjectType;
     onSuccess:(newProject:ProjectType) => void;
+};
+
+type MemberType = {
+    label: string;
+    value: string;
 };
 
 export const ProjectDrawer = (props:Props) => {
@@ -25,6 +31,13 @@ export const ProjectDrawer = (props:Props) => {
             label: member.name,
             value: member.uuid
     }))};
+
+    // 二つのプロジェクトメンバ配列が同じメンバを持つかどうかを判定する
+    // TODO: メンバの並び順が異なるだけの場合はfalseと判定される
+    const isSemiEqualMembers = (members1:MemberType[], members2:MemberType[]) => (
+        members1.length===members2.length &&
+        members1.every((member, i) => member.value===members2[i].value)
+    );
 
     // 初期表示値
     const initLabel = {value:createMode? '': project.label, isError:createMode};
@@ -54,34 +67,45 @@ export const ProjectDrawer = (props:Props) => {
 
     // プロジェクトの更新処理
     const update = () => {
-        let promises:Promise<DatumType>[] = [];
+        let newLabel:string = '';
+        let newMembers:{uuid:string, type:'Owner'|'Writer'|'Reader'}[] = [];
         // ラベル名が変更された場合はPromiseを追加する
         if(label.value!==project.label){
-            promises.push(
-                project.rename(label.value)
-            );
+            newLabel = label.value;
         }
-        // プロジェクトメンバを更新するPromiseを追加する
-        const newOnwers = owners.value.map(member => ({
-            uuid: member.value,
-            type: 'Owner' as 'Owner'
-        }));
-        const newEditors = editors.value.map(member => ({
-            uuid: member.value,
-            type: 'Writer' as 'Writer'
-        }));
-        const newReaders = readers.value.map(member => ({
-            uuid: member.value,
-            type: 'Reader' as 'Reader'
-        }));
-        promises.push(
-            project.initMembers(
-                [...newOnwers, ...newEditors, ...newReaders],
-                project.modifiedAt
-            )
-        );
-        // 全ての更新処理が完了したら、Projectを返すPromiseを返す
-        return Promise.all(promises).then(data => data[0]);
+        // プロジェクトメンバが変更された場合はPromiseを追加する
+        if( !isSemiEqualMembers(owners.value, initOwners.value)  ||
+            !isSemiEqualMembers(editors.value, initEditors.value)||
+            !isSemiEqualMembers(readers.value, initReaders.value)){
+            // プロジェクトメンバを更新するPromiseを追加する
+            const newOnwers = owners.value.map(member => ({
+                uuid: member.value,
+                type: 'Owner' as 'Owner'
+            }));
+            const newEditors = editors.value.map(member => ({
+                uuid: member.value,
+                type: 'Writer' as 'Writer'
+            }));
+            const newReaders = readers.value.map(member => ({
+                uuid: member.value,
+                type: 'Reader' as 'Reader'
+            }));
+            newMembers = [...newOnwers, ...newEditors, ...newReaders];
+        }
+        // Projectを返すPromiseを返す
+        if(newLabel && newMembers.length > 0){
+            // ラベル名とプロジェクトメンバが変更された場合
+            return project.update(newLabel, newMembers, project.modifiedAt);
+        }else if(newLabel){
+            // ラベル名だけが変更された場合
+            return project.rename(newLabel);
+        }else if(newMembers.length > 0){
+            // プロジェクトメンバだけが変更された場合
+            return project.initMembers(newMembers, project.modifiedAt);
+        }else{
+            // 何も変更されなかった場合
+            return Promise.resolve(undefined);
+        }
     };
 
     return <Drawer2>

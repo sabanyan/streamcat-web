@@ -1,6 +1,6 @@
 import React from 'react';
 import {ToolBarButton} from 'FlowEditorContainer/ToolBar';
-import style from './style.scss';
+import * as style from './style.scss';
 import { graphUtil } from 'Modules/flowEditor';
 import { Flow } from 'Model/Library';
 import { GraphType } from 'Types/index';

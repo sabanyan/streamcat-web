@@ -2,7 +2,7 @@ import React from 'react';
 
 import {CommandParamType} from 'Types/index';
 import { Api } from 'Api';
-import style from './style.scss';
+import * as style from './style.scss';
 
 
 import {EmptyState, Loader} from 'Shared/Base';

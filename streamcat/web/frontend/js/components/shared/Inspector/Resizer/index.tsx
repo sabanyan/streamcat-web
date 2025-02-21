@@ -1,8 +1,8 @@
 import React from 'react'
-import style from '../style.scss'
+import * as style from '../style.scss';
 import classnames from 'classnames'
 import { InspectorKnob } from 'Shared/Inspector'
-import Constants from 'Constants/index'
+import { Constants } from 'Constants/index'
 import { HttpUtil  } from "Utils/index";
 
 let mouseMoveEvent;

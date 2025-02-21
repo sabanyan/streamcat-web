@@ -337,6 +337,78 @@ class ProjectTestCase(ApiTestCaseBase):
         project = self.factory.data.find_by_uuid(project.uuid)
         self.assertFalse(project.delete())
 
+    def test_update_project_label_and_members(self):
+        """
+        プロジェクトのラベルとメンバを一緒に更新する
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'名無しのプロジェクト'}, self.USER1)
+        project_uuid = result['uuid']
+        project_modified_at = result['modifiedAt']
+
+        # ラベルの変更とユーザの参加を一緒に行う
+        data = {
+            'label': '我々のプロジェクト',
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER1)
+
+        # プロジェクトのラベルが変更されていることを確認する
+        self.assertEqual(result['label'], '我々のプロジェクト')
+        # プロジェクトのメンバが変更されていることを確認する
+        self.assertEqual(len(result['members']), 2)
+        self.assertEqual(result['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['members'][0]['type'], 'Owner')
+        self.assertEqual(result['members'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['members'][1]['type'], 'Reader')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_update_project_label_and_members_then_failure(self):
+        """
+        プロジェクトのメンバの更新に失敗すると一緒に指定したラベルも更新されないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'名無しのプロジェクト'}, self.USER1)
+        project_uuid = result['uuid']
+        project_modified_at = result['modifiedAt']
+
+        # ラベルの変更とユーザの参加を一緒に行う
+        data = {
+            'label': '我々のプロジェクト',
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            # lastModifiedAtに古い値を指定する
+            'lastModifiedAt' : '2025-01-14 08:07:06.962031'
+        }
+        with self.assertRaises(Exception):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER1)
+
+        # プロジェクトのラベルが変更されていないことを確認する
+        self.assertEqual(result['label'], '名無しのプロジェクト')
+        # プロジェクトのメンバが変更されていないことを確認する
+        self.assertEqual(len(result['members']), 1)
+        self.assertEqual(result['members'][0]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['members'][0]['type'], 'Owner')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
     @unittest.skip('Projectの移動は禁止する仕様に変更した')
     def test_move_project(self):
         # ルートを取得する

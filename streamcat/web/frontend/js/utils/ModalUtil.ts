@@ -1,5 +1,5 @@
 //@flow
-import Constants from 'Constants/index'
+import { Constants } from 'Constants/index'
 
 type Context ={
   id: string,

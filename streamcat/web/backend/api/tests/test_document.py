@@ -16,7 +16,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"thisIsDocumentFile"), 'foo.doc')
+        f = io.BytesIO(b"thisIsDocumentFile")
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント', project_uuid, f, self.USER3)
@@ -61,7 +61,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"abcdef"), 'dummy.doc')
+        f = io.BytesIO(b"abcdef")
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
@@ -92,7 +92,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"thisisadocfile"), 'aaa.doc')
+        f = io.BytesIO(b"thisisadocfile")
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
@@ -128,7 +128,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"abcdefghijk"), 'dummy.doc')
+        f = io.BytesIO(b"abcdefghijk")
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)
@@ -212,7 +212,7 @@ class DocumentTest(ApiTestCaseBase):
 
         # アップロード用に一時ファイルを作成する
         import io
-        f = (io.BytesIO(b"abcdefghijk"), 'dummy.doc')
+        f = io.BytesIO(b"abcdefghijk")
 
         # ドキュメントを作成する(POST /documents)
         result = self.post_documents('新しいドキュメント!', project_uuid, f, self.USER3)

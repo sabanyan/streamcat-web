@@ -7,7 +7,7 @@ import { EditBox } from "Shared/Base/EditBox";
 import { DuplicateButton } from 'Shared/Button/DuplicateButton';
 import { DownloadFileButton } from "Shared/Button/DownloadFileButton";
 import StringUtil from "Utils/StringUtil";
-import Constants from "Constants/index";
+import { Constants } from "Constants/index";
 import { CreatorField } from "Shared/Input/CreatorField";
 
 type Props = {

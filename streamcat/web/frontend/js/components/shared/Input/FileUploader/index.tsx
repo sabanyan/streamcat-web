@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import style from './style.scss';
+import * as style from './style.scss';
 import { Button, TextField } from 'Shared/Input';
 import { Loader } from 'Shared/Base';
 import { FolderType } from 'Model/Library';

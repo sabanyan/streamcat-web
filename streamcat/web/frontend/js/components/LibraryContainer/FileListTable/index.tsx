@@ -1,12 +1,12 @@
 import React from 'react';
 import {useState} from 'react';
 import dayjs from 'dayjs';
-import style from './style.scss';
+import * as style from './style.scss';
 import lodash from 'lodash';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Typography } from '@mui/material';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import StringUtil from 'Utils/StringUtil';
 import HttpUtil from 'Utils/HttpUtil';
 import WebUtil from 'Utils/WebUtil';
@@ -159,7 +159,7 @@ export const FileListTable = (props: Props) => {
             {isClickable(datum) ?
                 <Link2 value={datum.label} onClick={e => onClickFileName(datum, e)} />
                 :
-                <span className={style.filename}>{datum.label}</span>
+                <span>{datum.label}</span>
             }
         </td>
         <td>

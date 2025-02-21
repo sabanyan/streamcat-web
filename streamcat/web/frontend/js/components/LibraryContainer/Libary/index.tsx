@@ -3,7 +3,7 @@ import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-r
 import { EmptyState, Spacer } from 'Shared/Base';
 import { Flex } from 'Shared/Base/Layouts/Flex';
 import { NotificationManager, useStreamCatNotifications } from 'Shared/Notification';
-import Constants from 'Constants/index';
+import { Constants } from 'Constants/index';
 import { Api } from 'Api';
 import { ErrorUtil,
         HttpUtil,

@@ -71,7 +71,7 @@ export const DatePicker2 = (props:Props) => {
         // 
         // 入力可の場合
         // 
-        <LocalizationProvider dateAdapter={AdapterDayjs} dateFormats={{monthAndYear:'YYYY年 M月'}} adapterLocale={ja.name} >
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={ja.name} >
         <DatePicker label={label}
                     format='YYYY-MM-DD'
                     minDate={minDate}
@@ -79,6 +79,9 @@ export const DatePicker2 = (props:Props) => {
                     value={value.value}
                     onChange={onChangeValue}
                     slotProps={{
+                        calendarHeader: {
+                            format: 'YYYY年 M月'
+                        },
                         textField: {
                             required: required,
                             // 小さく表示する
