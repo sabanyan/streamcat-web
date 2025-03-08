@@ -223,13 +223,14 @@ const DatumArray = makeArrayCtor<DatumType>(datum => {
             post(`/api/v0/schedules`, {source:d.uuid});
         d.delete = () =>
             del<ScheduleType>(`/api/v0/schedules/${d.uuid}`);
-        d.update = (label, runnableUUID, args, inputs, trigger) =>
+        d.update = (label, runnableUUID, args, inputs, trigger, lastModifiedAt) =>
             put<ScheduleType>(`/api/v0/schedules/${d.uuid}`,
                                 { label   : label,
                                 runnable: runnableUUID,
                                 args    : args,
                                 inputs  : inputs,
-                                trigger : trigger});
+                                trigger : trigger,
+                                lastModifiedAt: lastModifiedAt});
     }else if(datum.type === 'frame') {
         const d = datum as FrameType;
         d.move = (parent) => 

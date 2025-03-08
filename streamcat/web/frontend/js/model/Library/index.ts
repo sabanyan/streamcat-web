@@ -375,13 +375,15 @@ export type ScheduleType = DatumType & {
     args: {};
     inputs: {};
     trigger: {};
+    modifiedAt: string;
 
     update:(
         label: string,
         runnableUUID: string,
         args: {},
         inputs: {},
-        trigger: {}
+        trigger: {},
+        lastModifiedAt: string
     ) => Promise<ScheduleType>;
 };
 

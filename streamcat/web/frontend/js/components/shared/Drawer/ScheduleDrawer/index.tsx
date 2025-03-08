@@ -372,7 +372,7 @@ export const ScheduleDrawer = (props:Props) => {
     const create = () => parent.createSchedule(label.value, flow.value?.uuid || '', {}, {}, trigger);
 
     // スケジュールの更新処理
-    const update = () => schedule.update(label.value, flow.value?.uuid || '', {}, {}, trigger);
+    const update = () => schedule.update(label.value, flow.value?.uuid || '', {}, {}, trigger, schedule.modifiedAt);
 
     // タブIndexと入力項目の対応テーブル
     const triggerFieldTable = {

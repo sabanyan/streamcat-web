@@ -762,15 +762,20 @@ async def update_schedule(request:Request, schedule_uuid, factory:Factory=Depend
         schedule = factory.data.find_by_uuid(schedule_uuid)
         return schedule.move(req['parent'])
     elif req.has_all('runnable', 'trigger'):
+        from datetime import datetime
+        if not req.has('lastModifiedAt'):
+            raise Exception('lastModifiedAtにスケジュールの最終更新時刻を指定してください')
         label = req.get('label') or schedule.label
         args = req.get('args') or {}
         inputs = req.get('inputs') or {}
+        last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
         schedule = factory.data.find_by_uuid(schedule_uuid)
         return schedule.update_data(label,
                                     req['runnable'],
                                     args=args,
                                     inputs=inputs,
-                                    trigger=req['trigger'])
+                                    trigger=req['trigger'],
+                                    last_modified_at=last_modified_at)
     elif req.has('label'):
         schedule = factory.data.find_by_uuid(schedule_uuid)
         return schedule.update_label(req['label'])
