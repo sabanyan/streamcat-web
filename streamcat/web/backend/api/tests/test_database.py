@@ -1,7 +1,7 @@
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class DatabaseTestCase(ApiTestCaseBase):
+class DatabaseTest(ApiTestCaseBase):
 
     def test_connection_database(self):
         """

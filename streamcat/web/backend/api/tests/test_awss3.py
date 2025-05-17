@@ -6,7 +6,7 @@ from streamcat.store import Mountable
 from .api_test_case_base import ApiTestCaseBase
 
 @unittest.skip('ASW S3のIDとアカウントが必要')
-class AwsS3TestCase(ApiTestCaseBase):
+class AwsS3Test(ApiTestCaseBase):
     def test_create_get_awss3(self):
         root = self.factory.data.load_root()
         root_uuid = root.uuid

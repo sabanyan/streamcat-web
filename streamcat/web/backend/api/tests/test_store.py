@@ -1,7 +1,7 @@
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class DataStoreTestCase(ApiTestCaseBase):
+class DataStoreTest(ApiTestCaseBase):
 
     def test_create_fetchall_delete_stores(self):
         """

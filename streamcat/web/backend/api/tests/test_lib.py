@@ -2,7 +2,7 @@ import os
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class LibraryTestCase(ApiTestCaseBase):
+class LibraryTest(ApiTestCaseBase):
     def test_get_root(self):
         """
         ルートフォルダがある場合にGET /libraryを実行した場合

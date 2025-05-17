@@ -3,7 +3,7 @@ import pprint
 
 from .api_test_case_base import ApiTestCaseBase
 
-class TrashTestCase(ApiTestCaseBase):
+class TrashTest(ApiTestCaseBase):
   
     def get_flow_with_source(self, source_frame_uuid):
         from streamcat.store import FlowData

@@ -12,7 +12,7 @@ class WebSocketMock():
         print(message)
         return message
 
-class WebSocketTestCase(TestCaseBase):
+class WebSocketTest(TestCaseBase):
 
     def setUp(self):
         pass

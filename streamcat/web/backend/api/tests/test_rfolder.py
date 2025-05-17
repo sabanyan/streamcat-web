@@ -2,7 +2,7 @@ import unittest
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class RemoteFolderTestCase(ApiTestCaseBase):
+class RemoteFolderTest(ApiTestCaseBase):
 
     def test_connection_folders(self):
         """

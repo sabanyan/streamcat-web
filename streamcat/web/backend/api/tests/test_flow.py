@@ -9,7 +9,7 @@ from streamcat.web.backend import app
 from streamcat.store import Flow, FlowData
 from .api_test_case_base import ApiTestCaseBase
 
-class FlowTestCase(ApiTestCaseBase):
+class FlowTest(ApiTestCaseBase):
 
     in_subflow = {
         "label": "INPUTだけがあるサブフロー", 

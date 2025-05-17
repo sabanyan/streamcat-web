@@ -4,7 +4,7 @@ from streamcat.core import SavableDatum
 from streamcat.store import DatabaseConn
 from .api_test_case_base import ApiTestCaseBase
 
-class FrameTestCase(ApiTestCaseBase):
+class FrameTest(ApiTestCaseBase):
     """
     実行以外のFramesAPIのテストを行う
     """

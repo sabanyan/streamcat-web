@@ -7,7 +7,7 @@ from streamcat.core import SavableDatum
 from streamcat.store.auth import User, Role
 from .api_test_case_base import ApiTestCaseBase
 
-class SystemTestCase(ApiTestCaseBase):
+class SystemTest(ApiTestCaseBase):
 
     expected_everyone = {
         "uuid": Role.EVERYONE_ROLE_UUID,

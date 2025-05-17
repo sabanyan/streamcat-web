@@ -3,7 +3,7 @@ import unittest
 from streamcat.web.backend import app
 from .api_test_case_base import ApiTestCaseBase
 
-class AuthTestCase(ApiTestCaseBase):
+class AuthTest(ApiTestCaseBase):
     def test_password_hash(self):
         user = self.factory.user.create('a', 'test', 'password0123')
         self.assertEqual(

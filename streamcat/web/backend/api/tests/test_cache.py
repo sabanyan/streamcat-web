@@ -4,7 +4,7 @@ import pprint
 from streamcat.store import FlowData
 from .api_test_case_base import ApiTestCaseBase
 
-class CacheTestCase(ApiTestCaseBase):
+class CacheTest(ApiTestCaseBase):
 
     def test_delete_cache(self):
         root = self.factory.data.load_root()

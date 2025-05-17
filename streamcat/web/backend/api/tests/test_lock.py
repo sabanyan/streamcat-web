@@ -3,7 +3,7 @@ import unittest
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class LockTestCase(ApiTestCaseBase):
+class LockTest(ApiTestCaseBase):
 
     def create_flow(self, parent_uuid, source_uuid):
         new_flow_name = '新しいフローでーす！'

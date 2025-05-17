@@ -323,7 +323,7 @@ export const ScheduleDrawer = (props:Props) => {
     // テキストボックスの値
     const [label, setLabel] = React.useState(initLabel);
     const [flow, setFlow] = React.useState<Value>(initFlow);
-    const [tabIndex, setTabIndex] = React.useState(initTabIndex);
+    const [tabIndex, setTabIndex] = React.useState<number>(initTabIndex);
     // 一度だけ起動
     const [date, setDate] = React.useState<DateValue>(initDate);
     const [time, setTime] = React.useState<DateValue>(initTime);

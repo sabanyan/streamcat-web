@@ -7,7 +7,7 @@ from streamcat.web.backend import app
 from .api_test_case_base import ApiTestCaseBase
 
 @unittest.skip
-class ExecuteTestCase(ApiTestCaseBase):
+class ExecuteTest(ApiTestCaseBase):
     def test_execute_flow(self):
         """
         フローの実行結果がライブラリに登録されることを検証する

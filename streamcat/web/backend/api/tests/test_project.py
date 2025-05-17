@@ -4,7 +4,7 @@ import pprint
 
 from .api_test_case_base import ApiTestCaseBase
 
-class ProjectTestCase(ApiTestCaseBase):
+class ProjectTest(ApiTestCaseBase):
 
     def get_row_by_sql(self, sql):
         """

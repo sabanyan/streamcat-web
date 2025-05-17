@@ -6,7 +6,7 @@ from pathlib import Path
 from streamcat.web.backend import app
 from .api_test_case_base import ApiTestCaseBase
 
-class FileTestCase(ApiTestCaseBase):
+class FileTest(ApiTestCaseBase):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
