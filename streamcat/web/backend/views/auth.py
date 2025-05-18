@@ -81,7 +81,7 @@ async def complete_sign_up(request:Request):
     """
     パスワードが決定されたので、それを元にユーザー登録を行う
     """
-    from streamcat.store.factory import Factory, UnAuthzFactory
+    from streamcat.store.finder import Factory, UnAuthzFactory
     from streamcat.store.auth import InvalidPassword
 
     # FORMの値は送信者が容易に改竄できるので、FORMからE-Mailを取得しないこと
@@ -154,7 +154,7 @@ if GOOGLE_LOGIN:
         import jwt
         import urllib.request
         from jwt.algorithms import RSAAlgorithm
-        from streamcat.store.factory import UnAuthzFactory, Factory
+        from streamcat.store.finder import UnAuthzFactory, Factory
 
         client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
         # クエリパラメータを除いたURL

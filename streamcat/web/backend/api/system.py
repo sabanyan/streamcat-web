@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, Depends, Request, Form, File, UploadFile
 from fastapi.responses import FileResponse
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Factory
 from .utils import (
     RequestJson,
     get_factory,

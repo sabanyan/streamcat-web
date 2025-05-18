@@ -18,7 +18,7 @@ SECURITY_LEVEL=int(os.getenv('STREAMCAT_SECURITY_LEVEL', 1))
 # FastAPIの初期化終了処理を定義する関数
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from streamcat.store.factory import init_admin_users
+    from streamcat.store.finder import init_admin_users
     # Startup
     await init_admin_users()
     yield

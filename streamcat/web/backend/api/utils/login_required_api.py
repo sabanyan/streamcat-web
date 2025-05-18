@@ -2,7 +2,7 @@ from typing import Callable
 import functools # wraps for decorator
 from fastapi import Request, Depends
 from fastapi_decorators import depends
-from streamcat.store.factory import UnAuthzFactory
+from streamcat.store.finder import UnAuthzFactory
 from .token import decode_token
 from .exceptions import NotAuthenticationException
 

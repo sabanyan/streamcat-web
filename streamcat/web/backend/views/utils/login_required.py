@@ -2,7 +2,7 @@ import functools # wraps for decorator
 from fastapi import Request, Depends
 from fastapi.responses import Response, RedirectResponse
 from fastapi_decorators import depends
-from streamcat.store.factory import UnAuthzFactory
+from streamcat.store.finder import UnAuthzFactory
 from ... import SECURITY_LEVEL, GOOGLE_LOGIN
 from ...api.utils import (
     make_access_token,

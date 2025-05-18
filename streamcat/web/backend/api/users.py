@@ -3,7 +3,7 @@
 # 
 
 from fastapi import APIRouter, Request, Depends
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Factory
 from .utils import (
     RequestJson,
     login_required_api,

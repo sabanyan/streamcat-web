@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from streamcat.core import SavableDatum
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Factory
 from streamcat.store.lock import lock_manager
 from .utils import (
     RequestHeaders,

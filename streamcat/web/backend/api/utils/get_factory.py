@@ -1,5 +1,5 @@
 from fastapi import Request
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Factory
 
 def get_factory(request:Request) -> Factory:
     """

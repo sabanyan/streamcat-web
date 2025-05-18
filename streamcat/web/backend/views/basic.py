@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, FileResponse
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Factory
 from .. import app
 from ..api.utils import login_required_api, get_factory
 from .utils import make_response, login_required

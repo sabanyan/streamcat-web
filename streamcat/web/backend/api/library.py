@@ -5,7 +5,7 @@ from streamcat.store import (
     DatabaseConn,
     RemoteFolderConn
 )
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Factory
 from ..views.auth import MY_PROJECT
 from .utils import (
     RequestJson,
