@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from streamcat.core import SavableDatum
-from streamcat.store.finder import Factory
+from streamcat.store.finder import Finder
 from streamcat.store.lock import lock_manager
 from .utils import (
     RequestHeaders,
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post('/locks')
 @login_required_api
 @jsonify
-async def make_new_lock(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_lock(request:Request, factory:Finder=Depends(get_factory)):
     """
     排他ロックを獲得する
     """
@@ -85,7 +85,7 @@ async def delete_lock_by_post(lock_uuid):
 @router.delete('/caches')
 @login_required_api
 @jsonify
-async def delete_cache(request:Request, of=None, factory:Factory=Depends(get_factory)):
+async def delete_cache(request:Request, of=None, factory:Finder=Depends(get_factory)):
     """
     指定したフローのキャッシュを削除する
     """
@@ -121,7 +121,7 @@ async def delete_cache(request:Request, of=None, factory:Factory=Depends(get_fac
 @router.get('/datasrcs')
 @login_required_api
 @jsonify
-async def fetch_datasrcs(factory:Factory=Depends(get_factory)):
+async def fetch_datasrcs(factory:Finder=Depends(get_factory)):
     """
     実行可能な全てのデータソースを取得する
     """
@@ -214,7 +214,7 @@ async def fetch_datasrcs(factory:Factory=Depends(get_factory)):
 @router.get('/datadsts')
 @login_required_api
 @jsonify
-async def fetch_datadsts(factory:Factory=Depends(get_factory)):
+async def fetch_datadsts(factory:Finder=Depends(get_factory)):
     """
     実行可能な全てのデータデストを取得する
     """
@@ -300,7 +300,7 @@ async def fetch_datadsts(factory:Factory=Depends(get_factory)):
 @router.get('/subflows')
 @login_required_api
 @jsonify
-async def fetch_subflows(factory:Factory=Depends(get_factory)):
+async def fetch_subflows(factory:Finder=Depends(get_factory)):
     """
     実行可能な全てのサブフローを取得する
     """
@@ -367,7 +367,7 @@ async def fetch_visualizers():
 @router.get('/flows/{flow_uuid}')
 @login_required_api
 @jsonify
-async def fetch_flow(flow_uuid, mini=False, factory:Factory=Depends(get_factory)):
+async def fetch_flow(flow_uuid, mini=False, factory:Finder=Depends(get_factory)):
     """
     指定したフローを取得する
     """
@@ -379,7 +379,7 @@ async def fetch_flow(flow_uuid, mini=False, factory:Factory=Depends(get_factory)
 @router.post('/flows')
 @login_required_api
 @jsonify
-async def new_flow(request:Request, factory:Factory=Depends(get_factory)):
+async def new_flow(request:Request, factory:Finder=Depends(get_factory)):
     """
     新しいフローを作成する
     """
@@ -402,7 +402,7 @@ async def new_flow(request:Request, factory:Factory=Depends(get_factory)):
 @router.put('/flows/{flow_uuid}')
 @login_required_api
 @jsonify
-async def update_flow(request:Request, flow_uuid, factory:Factory=Depends(get_factory)):
+async def update_flow(request:Request, flow_uuid, factory:Finder=Depends(get_factory)):
     """
     フローのラベルを変更する、またはフローを移動する
     """
@@ -434,7 +434,7 @@ async def update_flow(request:Request, flow_uuid, factory:Factory=Depends(get_fa
 @router.delete('/flows/{flow_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_flow(request:Request, flow_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_flow(request:Request, flow_uuid, factory:Finder=Depends(get_factory)):
     """
     指定したフローをほかす
     """
@@ -451,7 +451,7 @@ async def throw_away_flow(request:Request, flow_uuid, factory:Factory=Depends(ge
 @router.get('/frames/{frame_uuid}')
 @login_required_api
 @jsonify
-async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, limit=100, factory:Factory=Depends(get_factory)):
+async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, limit=100, factory:Finder=Depends(get_factory)):
     """
     指定したフレームを取得する
     """
@@ -555,7 +555,7 @@ def _convert_file(frame, user, target_encoding:str='UTF-8'):
         traceback.print_exc()
         raise e
 
-async def _get_vis(factory:Factory, frame_uuid:str, args={}):
+async def _get_vis(factory:Finder, frame_uuid:str, args={}):
     """
     指定したframeのVisデータを取得する
     """
@@ -582,7 +582,7 @@ async def _get_vis(factory:Factory, frame_uuid:str, args={}):
 @router.post('/vizs')
 @login_required_api
 @jsonify
-async def make_new_vis(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_vis(request:Request, factory:Finder=Depends(get_factory)):
     """
     フローを実行してVisを作成する
     """
@@ -600,7 +600,7 @@ async def make_new_vis(request:Request, factory:Factory=Depends(get_factory)):
 @router.get('/activities/{activity_uuid}')
 @login_required_api
 @jsonify
-async def fetch_activity(activity_uuid, factory:Factory=Depends(get_factory)):
+async def fetch_activity(activity_uuid, factory:Finder=Depends(get_factory)):
     """
     指定したActivityを取得する
     """
@@ -609,7 +609,7 @@ async def fetch_activity(activity_uuid, factory:Factory=Depends(get_factory)):
 @router.post('/activities')
 @login_required_api
 @jsonify
-async def make_new_acitivity(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_acitivity(request:Request, factory:Finder=Depends(get_factory)):
     """
     指定したフローを実行してActivityを作成する
     """
@@ -618,7 +618,7 @@ async def make_new_acitivity(request:Request, factory:Factory=Depends(get_factor
     flow = _make_flow(factory, flow_uuid=req.get('uuid'), flow_json=req.get('flow'))
     return await _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
 
-def _make_flow(factory:Factory, flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> object:
+def _make_flow(factory:Finder, flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> object:
     """
     リクエストJSONで指定された属性値からフローを用意する
     """
@@ -716,7 +716,7 @@ def _get_outs(job):
 @router.get('/schedules/{schedule_uuid}')
 @login_required_api
 @jsonify
-async def fetch_schedule(schedule_uuid, factory:Factory=Depends(get_factory)):
+async def fetch_schedule(schedule_uuid, factory:Finder=Depends(get_factory)):
     """
     指定したスケジュールを取得する
     """
@@ -725,7 +725,7 @@ async def fetch_schedule(schedule_uuid, factory:Factory=Depends(get_factory)):
 @router.post('/schedules')
 @login_required_api
 @jsonify
-async def make_new_schedule(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_schedule(request:Request, factory:Finder=Depends(get_factory)):
     """
     スケジュールを作成する
     """
@@ -749,7 +749,7 @@ async def make_new_schedule(request:Request, factory:Factory=Depends(get_factory
 @router.put('/schedules/{schedule_uuid}')
 @login_required_api
 @jsonify
-async def update_schedule(request:Request, schedule_uuid, factory:Factory=Depends(get_factory)):
+async def update_schedule(request:Request, schedule_uuid, factory:Finder=Depends(get_factory)):
     """
     スケジュールのラベルを変更する、またはスケジュールを移動する
     """
@@ -785,7 +785,7 @@ async def update_schedule(request:Request, schedule_uuid, factory:Factory=Depend
 @router.delete('/schedules/{schedule_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_schedule(schedule_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_schedule(schedule_uuid, factory:Finder=Depends(get_factory)):
     """
     指定したスケジュールをほかす
     """

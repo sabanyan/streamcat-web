@@ -2,7 +2,7 @@ import functools # wraps for decorator
 from fastapi import Request, Depends
 from fastapi.responses import Response, RedirectResponse
 from fastapi_decorators import depends
-from streamcat.store.finder import UnAuthzFactory
+from streamcat.store.finder import UnAuthzFinder
 from ... import SECURITY_LEVEL, GOOGLE_LOGIN
 from ...api.utils import (
     make_access_token,
@@ -85,7 +85,7 @@ def login_required(func):
             form = await __request.form()
             request_email = form.get('email', '')
 
-            async with UnAuthzFactory() as factory:
+            async with UnAuthzFinder() as factory:
                 try:
                     user = await factory.find_user_by_email(request_email)
                 except Exception:

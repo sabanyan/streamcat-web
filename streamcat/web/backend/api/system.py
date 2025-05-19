@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, Depends, Request, Form, File, UploadFile
 from fastapi.responses import FileResponse
-from streamcat.store.finder import Factory
+from streamcat.store.finder import Finder
 from .utils import (
     RequestJson,
     get_factory,
@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get('/navigation')
 @login_required_api
 @jsonify
-async def get_navigation(factory:Factory=Depends(get_factory)):
+async def get_navigation(factory:Finder=Depends(get_factory)):
     """
     ナビゲーションバーに表示する情報などを取得する
     """
@@ -48,7 +48,7 @@ async def get_navigation(factory:Factory=Depends(get_factory)):
 @router.get('/stores')
 @login_required_api
 @jsonify
-async def fecth_stores(factory:Factory=Depends(get_factory)):
+async def fecth_stores(factory:Finder=Depends(get_factory)):
     """
     データストアの定義(雛形)の一覧を返却する
     """
@@ -57,7 +57,7 @@ async def fecth_stores(factory:Factory=Depends(get_factory)):
 @router.get('/stores/{store_id}')
 @login_required_api
 @jsonify
-async def fecth_store(store_id:str, factory:Factory=Depends(get_factory)):
+async def fecth_store(store_id:str, factory:Finder=Depends(get_factory)):
     """
     データストアの定義(雛形)を返却する
     """
@@ -66,7 +66,7 @@ async def fecth_store(store_id:str, factory:Factory=Depends(get_factory)):
 @router.post('/stores')
 @login_required_api
 @jsonify
-async def make_new_store(body:dict, factory:Factory=Depends(get_factory)):
+async def make_new_store(body:dict, factory:Finder=Depends(get_factory)):
     """
     データストアの定義(雛形)を作成する
     """
@@ -82,7 +82,7 @@ async def make_new_store(body:dict, factory:Factory=Depends(get_factory)):
 @router.delete('/stores/{store_id}')
 @login_required_api
 @jsonify
-async def delete_store(store_id:str, factory:Factory=Depends(get_factory)):
+async def delete_store(store_id:str, factory:Finder=Depends(get_factory)):
     """
     データストアの定義(雛形)を削除する
     """
@@ -93,7 +93,7 @@ async def delete_store(store_id:str, factory:Factory=Depends(get_factory)):
 @router.get('/connections/remote-folders')
 @login_required_api
 @jsonify
-async def is_remote_folder_connectable(request:Request, factory:Factory=Depends(get_factory)):
+async def is_remote_folder_connectable(request:Request, factory:Finder=Depends(get_factory)):
     """
     リモートフォルダの接続を確認する
     """
@@ -116,7 +116,7 @@ async def is_remote_folder_connectable(request:Request, factory:Factory=Depends(
 @router.get('/connections/databases')
 @login_required_api
 @jsonify
-async def is_database_connectable(request:Request, factory:Factory=Depends(get_factory)):
+async def is_database_connectable(request:Request, factory:Finder=Depends(get_factory)):
     """
     データベースの接続を確認する
     """
@@ -144,7 +144,7 @@ async def is_database_connectable(request:Request, factory:Factory=Depends(get_f
 @router.get('/archives/flows/{uuid}')
 @login_required_api
 @jsonify
-async def download_flow(uuid, factory:Factory=Depends(get_factory)):
+async def download_flow(uuid, factory:Finder=Depends(get_factory)):
     from starlette.background import BackgroundTask
     from streamcat.store import FlowDumper
     
@@ -164,7 +164,7 @@ async def download_flow(uuid, factory:Factory=Depends(get_factory)):
 async def upload_flow(label:str=Form(None),
                 parent:str=Form(),
                 file:UploadFile=File(),
-                factory:Factory=Depends(get_factory)):
+                factory:Finder=Depends(get_factory)):
     from pathlib import Path
 
     parent = factory.data.find_by_uuid(parent)
@@ -178,7 +178,7 @@ async def upload_flow(label:str=Form(None),
 @router.get('/dump')
 @login_required_api
 @jsonify
-async def get_dump(factory:Factory=Depends(get_factory)):
+async def get_dump(factory:Finder=Depends(get_factory)):
     """
     StreamCatのDumpファイルを取得する
     """
@@ -208,7 +208,7 @@ async def get_dump(factory:Factory=Depends(get_factory)):
 @login_required_api
 @jsonify
 async def upload_dump(file:UploadFile=File(),
-                      factory:Factory=Depends(get_factory)):
+                      factory:Finder=Depends(get_factory)):
     """
     StreamCatのDumpファイルを復元する
     """
@@ -225,7 +225,7 @@ async def upload_dump(file:UploadFile=File(),
 @router.post('/tokens/refresh')
 @login_required_api
 @jsonify
-async def get_refresh_token(body:dict, factory:Factory=Depends(get_factory)):
+async def get_refresh_token(body:dict, factory:Finder=Depends(get_factory)):
     """
     リフレッシュトークンを発給する
     """
@@ -241,7 +241,7 @@ async def get_refresh_token(body:dict, factory:Factory=Depends(get_factory)):
 @router.post('/tokens/access')
 @login_required_api
 @jsonify
-async def get_access_token(factory:Factory=Depends(get_factory)):
+async def get_access_token(factory:Finder=Depends(get_factory)):
     """
     アクセストークンを発給する
     """

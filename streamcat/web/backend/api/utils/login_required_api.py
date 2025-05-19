@@ -2,7 +2,7 @@ from typing import Callable
 import functools # wraps for decorator
 from fastapi import Request, Depends
 from fastapi_decorators import depends
-from streamcat.store.finder import UnAuthzFactory
+from streamcat.store.finder import UnAuthzFinder
 from .token import decode_token
 from .exceptions import NotAuthenticationException
 
@@ -58,7 +58,7 @@ def login_required_api(func:Callable):
             raise NotAuthenticationException('not authorized')
 
         # Userオブジェクトを取得する
-        async with UnAuthzFactory() as ufactory:
+        async with UnAuthzFinder() as ufactory:
             try:
                 user_uuid = claims['sub']
                 user = await ufactory.find_user_by_uuid(user_uuid)

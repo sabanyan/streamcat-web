@@ -81,14 +81,14 @@ async def complete_sign_up(request:Request):
     """
     パスワードが決定されたので、それを元にユーザー登録を行う
     """
-    from streamcat.store.finder import Factory, UnAuthzFactory
+    from streamcat.store.finder import Finder, UnAuthzFinder
     from streamcat.store.auth import InvalidPassword
 
     # FORMの値は送信者が容易に改竄できるので、FORMからE-Mailを取得しないこと
     user_uuid = _get_claims(request.cookies).get('sub')
     new_password = (await request.form())['password']
 
-    async with UnAuthzFactory() as ufactory:
+    async with UnAuthzFinder() as ufactory:
         try:
             user = await ufactory.find_user_by_uuid(user_uuid)
         except Exception:
@@ -154,7 +154,7 @@ if GOOGLE_LOGIN:
         import jwt
         import urllib.request
         from jwt.algorithms import RSAAlgorithm
-        from streamcat.store.finder import UnAuthzFactory, Factory
+        from streamcat.store.finder import UnAuthzFinder, Finder
 
         client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
         # クエリパラメータを除いたURL
@@ -204,7 +204,7 @@ if GOOGLE_LOGIN:
         subject=claims['sub']
 
         # ユーザ管理者を取得する
-        async with UnAuthzFactory() as ufactory:
+        async with UnAuthzFinder() as ufactory:
             usr_admin_user = ufactory.load_usr_admin_user()
             # ユーザを取得する
             factory = await ufactory.create_authz_factory(usr_admin_user)
