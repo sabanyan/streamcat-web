@@ -50,7 +50,7 @@ class ApiAsyncTestCaseBase(ApiTestCaseBase):
         ゴミ箱を空にする
         """
         self.delete_uri('/api/v0/trashes', self.USER1)
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
 

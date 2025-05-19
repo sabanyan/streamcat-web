@@ -46,15 +46,15 @@ class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
                 writer.writerows(data)
         
         with file_path_obj.open('rb') as f:
-            root = self.factory.data.load_root()
+            root = self.finder.data.load_root()
             frame = root.create_frame(file_path_obj.name, f)
             frame.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # save()によりreadable=Noneになるため再取得する
-        return self.factory.data.find_by_uuid(frame.uuid).uuid
+        return self.finder.data.find_by_uuid(frame.uuid).uuid
 
     def save_frame_to_library(self, frame_uuid, frame_file_path):
         """
@@ -68,9 +68,9 @@ class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
         #         g.factory = AuthzSession(Session, user=self.USER1)
 
         # テストで用いるテスト用フレームをライブラリに登録する
-        if not self.factory.data.exists(frame_uuid):
+        if not self.finder.data.exists(frame_uuid):
             # テストで用いるテスト用フレームをライブラリに登録する
-            frame_folder = self.factory.data.load_root()
+            frame_folder = self.finder.data.load_root()
             class_name = self.__class__.__name__
             new_frame = frame_folder.create_frame(f'テスト用フレーム({class_name})', None)
             new_frame.uuid = frame_uuid

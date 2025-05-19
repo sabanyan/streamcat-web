@@ -46,7 +46,7 @@ class DatabaseTest(ApiTestCaseBase):
         self.assertFalse(result['conn'])
 
     def test_create_get_database(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -98,11 +98,11 @@ class DatabaseTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER1)
 
         # Databaseはゴミ箱に移動していること
-        db = self.factory.data.find_by_uuid(database_uuid)
-        self.assertEqual(db.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        db = self.finder.data.find_by_uuid(database_uuid)
+        self.assertEqual(db.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
     def test_update_label(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         
         # Databaseを作成する(POST /databases)
@@ -143,7 +143,7 @@ class DatabaseTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER1)
 
     def test_update_database(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         
         # Databaseを作成する(POST /databases)
@@ -191,7 +191,7 @@ class DatabaseTest(ApiTestCaseBase):
 
     def test_move_database(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER1)
@@ -242,7 +242,7 @@ class DatabaseTest(ApiTestCaseBase):
 
     def test_delete_database(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # Databaseを作成する(POST /databases)
         data = {
@@ -262,7 +262,7 @@ class DatabaseTest(ApiTestCaseBase):
         result = self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER1)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -298,7 +298,7 @@ class DatabaseTest(ApiTestCaseBase):
         データベースを複製できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # Databaseを作成する(POST /databases)
         data = {

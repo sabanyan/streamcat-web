@@ -7,7 +7,7 @@ class DatasrcsTest(ApiTestCaseBase):
         データソース一覧取得のテスト
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
@@ -231,7 +231,7 @@ class DatasrcsTest(ApiTestCaseBase):
         データデスト一覧取得のテスト
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
@@ -467,7 +467,7 @@ class DatasrcsTest(ApiTestCaseBase):
         ゴミ箱にほかされたデータデストは取得されないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトぉぉ'}, self.USER2)

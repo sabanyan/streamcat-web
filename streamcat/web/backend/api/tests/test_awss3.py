@@ -8,7 +8,7 @@ from .api_test_case_base import ApiTestCaseBase
 @unittest.skip('ASW S3のIDとアカウントが必要')
 class AwsS3Test(ApiTestCaseBase):
     def test_create_get_awss3(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -29,7 +29,7 @@ class AwsS3Test(ApiTestCaseBase):
         self.assertIsNotNone(result['createdAt'])
 
         awss3_uuid = result['uuid']
-        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
+        awss3 = self.finder.data.find_by_uuid(awss3_uuid)
 
         # S3マウント用フォルダが作成されていることを検証する
         self.assertTrue(os.path.isdir((awss3.path).as_posix()))
@@ -61,7 +61,7 @@ class AwsS3Test(ApiTestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_update_awss3(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
         
@@ -74,7 +74,7 @@ class AwsS3Test(ApiTestCaseBase):
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
         awss3_uuid = result['uuid']
-        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
+        awss3 = self.finder.data.find_by_uuid(awss3_uuid)
 
         # S3フォルダのラベルを更新する(PUT /awss3s)
         update_data = {
@@ -99,7 +99,7 @@ class AwsS3Test(ApiTestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_remount_awss3(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -112,7 +112,7 @@ class AwsS3Test(ApiTestCaseBase):
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
         awss3_uuid = result['uuid']
-        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
+        awss3 = self.finder.data.find_by_uuid(awss3_uuid)
 
         # StreamCatの外部からUnmountをする
         import shlex
@@ -140,7 +140,7 @@ class AwsS3Test(ApiTestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_mount_under_mount_awss3(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -152,7 +152,7 @@ class AwsS3Test(ApiTestCaseBase):
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
         awss3_uuid = result['uuid']
-        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
+        awss3 = self.finder.data.find_by_uuid(awss3_uuid)
 
         # AWS S3フォルダの下にAWS S3フォルダを作成しようとする(POST /awss3s)
         data = {

@@ -11,7 +11,7 @@ class AllowlistTest(ApiTestCaseBase):
         Datumのallowlistを検証する
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # キャッシュフォルダの下にフレームを作成する
         f = io.BytesIO(b'teihenda')

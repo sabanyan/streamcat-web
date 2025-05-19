@@ -142,7 +142,7 @@ class SystemTest(ApiTestCaseBase):
 
         # 仮登録ユーザは物理削除されていること
         with self.assertRaises(Exception):
-            self.factory.user.find_by_uuid(user_uuid)
+            self.finder.user.find_by_uuid(user_uuid)
 
     def test_create_user_with_myproject(self):
         """
@@ -198,11 +198,11 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         new_user.update_password('hogehoge88')
 
         # 登録を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ユーザ管理者は、ユーザ情報を変更する
         expected = {
@@ -251,11 +251,11 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         new_user.update_password('fuurinkazann')
 
         # 登録を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ユーザ情報を変更する
         expected = {
@@ -305,7 +305,7 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         self.post_register_complete(user_uuid, 'jurujurujuru')
 
         # 名前だけの変更であればパスワード認証は必要ないこと
@@ -373,11 +373,11 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         new_user.update_password('bishamontenn123')
 
         # 変更を確定する
-        self.factory.end()
+        self.finder.end()
 
         # 他人のユーザ情報を変更する
         data = {
@@ -449,7 +449,7 @@ class SystemTest(ApiTestCaseBase):
 
         # 仮登録ユーザは物理削除されていること
         with self.assertRaises(Exception):
-            self.factory.user.find_by_uuid(user_uuid)
+            self.finder.user.find_by_uuid(user_uuid)
 
     def test_reset_user_password(self):
         """
@@ -481,7 +481,7 @@ class SystemTest(ApiTestCaseBase):
 
         # 仮登録ユーザは物理削除されていること
         with self.assertRaises(Exception):
-            self.factory.user.find_by_uuid(user_uuid)
+            self.finder.user.find_by_uuid(user_uuid)
 
     def test_get_all_user(self):
         """
@@ -502,7 +502,7 @@ class SystemTest(ApiTestCaseBase):
 
         # 仮登録ユーザは物理削除されていること
         with self.assertRaises(Exception):
-            self.factory.user.find_by_uuid(user_uuid)
+            self.finder.user.find_by_uuid(user_uuid)
 
     def test_get_admin_user(self):
         """
@@ -612,17 +612,17 @@ class SystemTest(ApiTestCaseBase):
         Userの所属プロジェクトを取得する
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # ユーザを作成する
-        USER_X = self.factory.user.create('test-x@streamcat.io', 'TestX', '~!@#$%^&*()')
+        USER_X = self.finder.user.create('test-x@streamcat.io', 'TestX', '~!@#$%^&*()')
         USER_X.save()
 
         # 仮登録状態から登録状態にする
         USER_X.update_password('_)(*&^%$#@!')
 
         # 変更を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ユーザ2は、本登録処理をする
         # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
@@ -892,7 +892,7 @@ class SystemTest(ApiTestCaseBase):
         user_email = result['email']
 
         # 桃太郎侍を取得する
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
 
         # 桃太郎侍を本登録処理をする
         self.post_register_complete(user_uuid, 'momotarou!')
@@ -927,7 +927,7 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # ユーザを取得する
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
 
         # ユーザを登録状態にする
         self.post_register_complete(user_uuid, 'password012345')
@@ -1190,11 +1190,11 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         new_user.update_password('alslb**^a#2a@aa0O')
 
         # 変更を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
@@ -1218,11 +1218,11 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         new_user.update_password('passoiuyt*')
 
         # 変更を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
@@ -1325,7 +1325,7 @@ class SystemTest(ApiTestCaseBase):
         user_uuid = result['uuid']
 
         # コッコロちゃんを取得する
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
 
         # コッコロちゃんを本登録処理をする
         self.post_register_complete(user_uuid, 'adminpass0')
@@ -1413,7 +1413,7 @@ class SystemTest(ApiTestCaseBase):
 
         # ロールは物理削除されていること
         with self.assertRaises(Exception):
-            self.factory.role.find_by_uuid(role_uuid)
+            self.finder.role.find_by_uuid(role_uuid)
 
     def test_update_role_by_self(self):
         """
@@ -1456,7 +1456,7 @@ class SystemTest(ApiTestCaseBase):
 
         # ロールは物理削除されていること
         with self.assertRaises(Exception):
-            self.factory.role.find_by_uuid(role_uuid)
+            self.finder.role.find_by_uuid(role_uuid)
 
     def test_join_leave_user_to_role(self):
         """
@@ -1747,7 +1747,7 @@ class SystemTest(ApiTestCaseBase):
         Projectにユーザを参加・脱退させる
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER0)
@@ -1804,7 +1804,7 @@ class SystemTest(ApiTestCaseBase):
         (PUT /projects を用いる)
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトですよ'}, self.USER0)
@@ -1873,7 +1873,7 @@ class SystemTest(ApiTestCaseBase):
         (PUT /projects を用いる)
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトですよ'}, self.USER0)
@@ -1950,7 +1950,7 @@ class SystemTest(ApiTestCaseBase):
         ユーザ管理者は全てのプロジェクトに対してメンバの追加と削除ができること
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'KitKat'}, self.USER2)
@@ -1980,12 +1980,12 @@ class SystemTest(ApiTestCaseBase):
         self.assertEqual(result['state'], 'tmp')
 
         # ユーザを取得する
-        user = self.factory.user.find_by_uuid(user_uuid)
+        user = self.finder.user.find_by_uuid(user_uuid)
         # DBでの状態は初期状態(=init)である
         self.assertEqual(user.state, 'init')
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'そりゃないよとっつぁん'}, self.USER0)
@@ -2056,11 +2056,11 @@ class SystemTest(ApiTestCaseBase):
         self.assertEqual(result['state'], 'tmp')
 
         # ユーザを取得する
-        user = self.factory.user.find_by_uuid(user_uuid)
+        user = self.finder.user.find_by_uuid(user_uuid)
         self.assertEqual(user.state, 'tmp')
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'とっつぁーん'}, self.USER2)
@@ -2117,7 +2117,7 @@ class SystemTest(ApiTestCaseBase):
         ユーザ管理者は、プロジェクト管理者に自身を追加できること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'ワルサーP38'}, self.USER1)
@@ -2186,7 +2186,7 @@ class SystemTest(ApiTestCaseBase):
         self.assertEqual(result['state'], 'inactive')
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'斬鉄剣'}, self.USER2)
@@ -2236,7 +2236,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクト管理者は必ず指定すること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃおーん'}, self.USER1)
@@ -2264,7 +2264,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクトメンバは必ず指定すること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'ネコミミモード'}, self.USER1)
@@ -2287,7 +2287,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクトメンバの設定は先勝であること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'北海道はでっかいどう'}, self.USER1)
@@ -2335,7 +2335,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクトメンバの設定は先勝であること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'北海道はでっかいどう'}, self.USER1)
@@ -2378,20 +2378,20 @@ class SystemTest(ApiTestCaseBase):
         ユーザがプロジェクトの唯一の所有者の場合でも、そのユーザを削除できること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # ユーザ1を作成する
         result = self.post_uri('/api/v0/users', {'email':'donald@mcdonalds.co.jp', 'name':'ドナルド', 'password':'mcdonald!!!!!!'}, self.USER1)
         user_uuid = result['uuid']
         # 作成したユーザを登録状態にする
-        new_user1 = self.factory.user.find_by_uuid(user_uuid)
+        new_user1 = self.finder.user.find_by_uuid(user_uuid)
         self.post_register_complete(user_uuid, 'mcdonald!!!!!!0')
 
         # ユーザ2を作成する
         result = self.post_uri('/api/v0/users', {'email':'kernel@kfc.co.jp', 'name':'カーネルサンダース', 'password':'kfc!kfc!kfc!'}, self.USER1)
         user_uuid = result['uuid']
         # 作成したユーザを登録状態にする
-        new_user2 = self.factory.user.find_by_uuid(user_uuid)
+        new_user2 = self.finder.user.find_by_uuid(user_uuid)
         self.post_register_complete(user_uuid, 'kfc!kfc!kfc!0')
 
         # プロジェクトを作成する
@@ -2466,7 +2466,7 @@ class SystemTest(ApiTestCaseBase):
         }
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Flowプロジェクト'}, self.USER2)
@@ -2523,7 +2523,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクトの閲覧者はそのプロジェクト内のDatumを編集できないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Testプロジェクト'}, self.USER2)
@@ -2582,7 +2582,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクト内のフローとフレームを参照できること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'みんな大好き虫食い'}, self.USER2)
@@ -2640,7 +2640,7 @@ class SystemTest(ApiTestCaseBase):
         ファイルの権限は移動先プロジェクトの権限に従うこと
         """
         # ルートフォルダを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         # ルートフォルダの下にプロジェクトAを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'格さん'}, self.USER0)
         project_a_uuid = result['uuid']
@@ -2694,7 +2694,7 @@ class SystemTest(ApiTestCaseBase):
         フォルダ内のファイルの権限は移動先プロジェクトの権限に従うこと
         """
         # ルートフォルダを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         # ルートフォルダの下にプロジェクトAを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'関西電気保安協会'}, self.USER0)
         project_a_uuid = result['uuid']
@@ -2892,7 +2892,7 @@ class SystemTest(ApiTestCaseBase):
         }
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトAを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトA'}, self.USER1)
@@ -3027,15 +3027,15 @@ class SystemTest(ApiTestCaseBase):
         # ここでロールが残るとself.test_get_admin_user()などのテストケースがパスしなくなる
         # そのため、ここで生成されたActivityを強制的に削除する
         # 
-        project1 = self.factory.data.find_by_uuid(project_uuid1)
-        activity = self.factory.data.find_by_uuid(activity_uuid)
+        project1 = self.finder.data.find_by_uuid(project_uuid1)
+        activity = self.finder.data.find_by_uuid(activity_uuid)
         # プロジェクトAに更新権限を付与する
         project1_writers_role = project1._find_writers_role()
         project1_writers_role.init_authz(activity.id, read=True, write=True, own=True)
         # Activityをほかす
         activity.throw_away()
         # 削除を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -3049,7 +3049,7 @@ class SystemTest(ApiTestCaseBase):
         フローの情報にeditLock属性が設定されていること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'後白河上皇'}, self.USER1)
@@ -3127,7 +3127,7 @@ class SystemTest(ApiTestCaseBase):
         閲覧者は編集ロックの値を変更できないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'猫耳モード'}, self.USER2)
@@ -3237,7 +3237,7 @@ class SystemTest(ApiTestCaseBase):
         編集ロックがONのFlowを実行できること
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'後鳥羽上皇'}, self.USER2)
@@ -3389,7 +3389,7 @@ class SystemTest(ApiTestCaseBase):
         編集ロックがONのFlowは更新・削除ができないこと
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃゴーにゃゴー'}, self.USER2)
@@ -3476,7 +3476,7 @@ class SystemTest(ApiTestCaseBase):
         排他ロック中のFlowの編集ロックは変更できないこと
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'後醍醐天皇'}, self.USER2)
@@ -3538,7 +3538,7 @@ class SystemTest(ApiTestCaseBase):
         プロジェクトメンバでなければキャッシュを参照できないこと
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'上様を語る不届き者じゃ'}, self.USER2)
@@ -3633,7 +3633,7 @@ class SystemTest(ApiTestCaseBase):
         キャッシュの権限はフローのプロジェクトに紐づいていること
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'祇園精舎の鐘の声'}, self.USER2)
@@ -3734,7 +3734,7 @@ class SystemTest(ApiTestCaseBase):
         閲覧者はフレームをダウンロードできないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'STAR⭐️BUCKS'}, self.USER2)

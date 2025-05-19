@@ -72,7 +72,7 @@ class LibraryTest(ApiTestCaseBase):
 
     def test_update_folder(self):
         # フォルダを作成する(POST /folders)
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する(POST /folders)
         result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": root.uuid}, self.USER1)
@@ -102,14 +102,14 @@ class LibraryTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER1)
 
         # フォルダはゴミ箱に移動していること
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 1)
         self.assertEqual(trashed[0].label, ' NEW FOLDER ')
 
     def test_move_folder(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動元フォルダを作成する(POST /folders)
         folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
@@ -141,7 +141,7 @@ class LibraryTest(ApiTestCaseBase):
 
     def test_move_folder2(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動元フォルダを作成する(POST /folders)
         folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
@@ -187,7 +187,7 @@ class LibraryTest(ApiTestCaseBase):
 
     def test_delete_folder(self):
         # フォルダを作成する(POST /folders)
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する(POST /folders)
         result = self.post_uri('/api/v0/folders', {"label" : "私の新しいフォルダ", "parent": root.uuid}, self.USER1)
@@ -197,7 +197,7 @@ class LibraryTest(ApiTestCaseBase):
         result = self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER1)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -215,7 +215,7 @@ class LibraryTest(ApiTestCaseBase):
         self.assertNotEqual(result['createdAt'], None)
 
         # フォルダはゴミ箱に移動していること
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 1)
         self.assertEqual(trashed[0].label, '私の新しいフォルダ')
@@ -225,7 +225,7 @@ class LibraryTest(ApiTestCaseBase):
         フォルダを複製できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する(POST /folders)
         result = self.post_uri('/api/v0/folders', {"label" : "私の新しいフォルダ", "parent": root.uuid}, self.USER1)
@@ -305,7 +305,7 @@ class LibraryTest(ApiTestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER1)
         # folder_uuid = result['uuid']
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -325,7 +325,7 @@ class LibraryTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER1)
 
         # ゴミ箱を空にする
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 0)
@@ -337,7 +337,7 @@ class LibraryTest(ApiTestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER1)
         # folder_uuid = result['uuid']
-        folder_uuid = self.factory.data.load_root().uuid
+        folder_uuid = self.finder.data.load_root().uuid
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -367,7 +367,7 @@ class LibraryTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER1)
 
         # ゴミ箱を空にする
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 0)
@@ -379,7 +379,7 @@ class LibraryTest(ApiTestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER1)
         # folder_uuid = result['uuid']
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -413,13 +413,13 @@ class LibraryTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER1)
 
         # ゴミ箱を空にする
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 0)
 
     def test_update_frame_encoding(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -457,7 +457,7 @@ class LibraryTest(ApiTestCaseBase):
 
     def test_move_frame(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER1)
@@ -495,7 +495,7 @@ class LibraryTest(ApiTestCaseBase):
         Datum.pathに%や_が含まれる値を格納できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         result = self.post_uri('/api/v0/folders', {'label': r'F O L \% E % R', 'parent': root.uuid}, self.USER1)

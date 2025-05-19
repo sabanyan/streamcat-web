@@ -114,7 +114,7 @@ class TrashTest(ApiTestCaseBase):
         GET /trashes
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1", "parent": root.uuid}, self.USER1)
@@ -225,7 +225,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミ箱に捨ててもフォルダ階層は維持される
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!", "parent": root.uuid}, self.USER1)
@@ -246,7 +246,7 @@ class TrashTest(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
         
         # フォルダ1はゴミ箱に移動していること
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         trashed1 = trash_folder.find_children()
         self.assertEqual(trashed1[0].uuid, folder1_uuid)
         self.assertEqual(trashed1[0].label, 'フォルダですよ1!')
@@ -257,7 +257,7 @@ class TrashTest(ApiTestCaseBase):
         self.assertEqual(trashed2[0].label, 'フォルダですよ2')
 
         # フレームはゴミ箱に移動していること
-        frame = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.uuid, frame_uuid_1)
         self.assertEqual(frame.find_parent().uuid, trashed2[0].uuid)
 
@@ -271,7 +271,7 @@ class TrashTest(ApiTestCaseBase):
         フローから参照されているフレームはゴミ箱に捨てられないこと
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ!1", "parent": root.uuid}, self.USER1)
@@ -293,7 +293,7 @@ class TrashTest(ApiTestCaseBase):
         flow.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フォルダ1をほかすが、中のフレームはフローで使用中なのでエラーになる
         with self.assertRaises(AssertionError) as e:
@@ -310,22 +310,22 @@ class TrashTest(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
 
         # フォルダ1は放されずに残っている
-        folder1 = self.factory.data.find_by_uuid(folder1_uuid)
+        folder1 = self.finder.data.find_by_uuid(folder1_uuid)
         self.assertEqual(folder1.find_parent().uuid, root.uuid)
 
         # フォルダ2は放されずに残っている
-        folder2 = self.factory.data.find_by_uuid(folder2_uuid)
+        folder2 = self.finder.data.find_by_uuid(folder2_uuid)
         self.assertEqual(folder2.find_parent().uuid, folder1_uuid)
 
         # ゴミ箱へはフォルダの階層構造を維持しつつ、フレーム2が捨てられている
-        trash_folder = self.factory.data.load_trash_folder()
+        trash_folder = self.finder.data.load_trash_folder()
         trashed1 = trash_folder.find_children()
         self.assertEqual(trashed1[0].label, 'フォルダですよ!1')
 
         trashed2 = trashed1[0].find_children()
         self.assertEqual(trashed2[0].label, 'フォルダですよ!2')
 
-        frame = self.factory.data.find_by_uuid(frame_uuid_2)
+        frame = self.finder.data.find_by_uuid(frame_uuid_2)
         self.assertEqual(frame.find_parent().uuid, trashed2[0].uuid)
 
         # ゴミ箱を空にする
@@ -338,7 +338,7 @@ class TrashTest(ApiTestCaseBase):
         フローから参照されているフレームはゴミ箱に捨てられないこと
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!1", "parent": root.uuid}, self.USER1)
@@ -412,7 +412,7 @@ class TrashTest(ApiTestCaseBase):
         そのフォルダを削除できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクト1を作成する(POST /folders)
         project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトどす!1", "parent": root.uuid}, self.USER1)
@@ -470,7 +470,7 @@ class TrashTest(ApiTestCaseBase):
         ルートフォルダは削除できない
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フレーム1を作成する
         import io
@@ -484,7 +484,7 @@ class TrashTest(ApiTestCaseBase):
             self.delete_uri(f'/api/v0/folders/{root.uuid}', self.USER1)
 
         # フレーム1はゴミ箱にないこと
-        frame = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.find_parent().uuid, root.uuid)
 
     def test_delete_remote_folder(self):
@@ -492,7 +492,7 @@ class TrashTest(ApiTestCaseBase):
         マウント状態のリモートフォルダをゴミ箱に捨てるとマウントが解除されること
         """
         # ルートを取得する
-        root = self.factory3.data.load_root()
+        root = self.finder3.data.load_root()
 
         # ルートの下にプロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'私のプロジェクトですよ'}, self.USER1)
@@ -513,7 +513,7 @@ class TrashTest(ApiTestCaseBase):
         remote_folder_uuid = result['uuid']
 
         # ゴミ箱を取得する
-        trashcan = self.factory3.data.find_trashcan()
+        trashcan = self.finder3.data.find_trashcan()
 
         # リモートフォルダをほかす
         result = self.delete_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER1)
@@ -547,7 +547,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミを捨てる前の場所に戻す
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトですよ1!!", "parent": root.uuid}, self.USER1)
@@ -575,7 +575,7 @@ class TrashTest(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{project1_uuid}', {}, self.USER1)
 
         # プロジェクト1はゴミ箱にないこと
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashed1 = trash_can.find_children()
         self.assertNotIn(project1_uuid, [t.uuid for t in trashed1])
 
@@ -584,11 +584,11 @@ class TrashTest(ApiTestCaseBase):
         self.assertIn(project1_uuid, [d.uuid for d in data])
 
         # フォルダ2は変更されていないこと
-        folder2 = self.factory.data.find_by_uuid(folder2_uuid)
+        folder2 = self.finder.data.find_by_uuid(folder2_uuid)
         self.assertEqual(folder2.modified_at, folder2.modified_at)
 
         # フレームは変更されていないこと
-        frame = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.modified_at, frame.modified_at)
 
         # プロジェクトをほかす
@@ -604,7 +604,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミを捨てる前の場所に戻そうとして失敗する場合の検証
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!", "parent": root.uuid}, self.USER1)
@@ -628,7 +628,7 @@ class TrashTest(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
         
         # フォルダ1を物理削除する
-        folder1 = self.factory.data.find_by_uuid(folder1_uuid)
+        folder1 = self.finder.data.find_by_uuid(folder1_uuid)
         folder1.delete()
 
         # フォルダ2を戻そうとする
@@ -637,7 +637,7 @@ class TrashTest(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
 
@@ -646,7 +646,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミを捨てる前の場所に重複するラベル名が存在する場合はリネームして戻す
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!", "parent": root.uuid}, self.USER1)
@@ -680,7 +680,7 @@ class TrashTest(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
 
@@ -689,7 +689,7 @@ class TrashTest(ApiTestCaseBase):
         フォルダ内の一部のファイルが戻される場合
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!!", "parent": root.uuid}, self.USER1)
@@ -717,41 +717,41 @@ class TrashTest(ApiTestCaseBase):
         flow.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フォルダ1をほかす
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
         
         # フォルダ1はほかされずに残っている
-        folder1 = self.factory.data.find_by_uuid(folder1_uuid)
+        folder1 = self.finder.data.find_by_uuid(folder1_uuid)
         self.assertEqual(folder1.find_parent().uuid, root.uuid)
 
         # フォルダ2はほかされずに残っている
-        folder2 = self.factory.data.find_by_uuid(folder2_uuid)
+        folder2 = self.finder.data.find_by_uuid(folder2_uuid)
         self.assertEqual(folder2.find_parent().uuid, folder1_uuid)
 
         # フレーム1はほかされずに残っている
-        frame1 = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame1 = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame1.find_parent().uuid, folder2_uuid)
 
         # フレーム2はゴミ箱にほかされている
-        frame2 = self.factory.data.find_by_uuid(frame_uuid_2)
+        frame2 = self.finder.data.find_by_uuid(frame_uuid_2)
         self.assertNotEqual(frame2.find_parent().uuid, folder2_uuid)
-        frame2_parent = self.factory.data.find_by_uuid(frame2.find_parent().uuid)
+        frame2_parent = self.finder.data.find_by_uuid(frame2.find_parent().uuid)
         self.assertEqual(frame2_parent.label, 'フォルダですよ2')
 
         self.assertNotEqual(frame2_parent.find_parent().uuid, folder1_uuid)
-        frame2_parent_parent = self.factory.data.find_by_uuid(frame2_parent.find_parent().uuid)
+        frame2_parent_parent = self.finder.data.find_by_uuid(frame2_parent.find_parent().uuid)
         self.assertEqual(frame2_parent_parent.label, 'フォルダですよ1!!!!')
 
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         self.assertEqual(frame2_parent_parent.find_parent().uuid, trash_can.uuid)
 
         # フォルダ1の形代を戻す
         self.put_uri(f'/api/v0/trashes/{frame2_parent_parent.uuid}', {}, self.USER1)
 
         # フレーム1は元の場所に戻っていること
-        frame1 = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame1 = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame1.find_parent().uuid, folder2.uuid)
 
         # ゴミ箱を空にする
@@ -764,7 +764,7 @@ class TrashTest(ApiTestCaseBase):
         フォルダ内の全てのファイルが戻せない場合
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!!!", "parent": root.uuid}, self.USER1)
@@ -796,30 +796,30 @@ class TrashTest(ApiTestCaseBase):
         flow2.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フォルダ1をほかすが、中のフレームは全てフローで使用中なのでエラーになる
         with self.assertRaises(AssertionError) as e:
             self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
         
         # フォルダ1はほかされずに残っている
-        folder1 = self.factory.data.find_by_uuid(folder1_uuid)
+        folder1 = self.finder.data.find_by_uuid(folder1_uuid)
         self.assertEqual(folder1.find_parent().uuid, root.uuid)
 
         # フォルダ2はほかされずに残っている
-        folder2 = self.factory.data.find_by_uuid(folder2_uuid)
+        folder2 = self.finder.data.find_by_uuid(folder2_uuid)
         self.assertEqual(folder2.find_parent().uuid, folder1_uuid)
 
         # フレーム1はほかされずに残っている
-        frame1 = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame1 = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame1.find_parent().uuid, folder2_uuid)
 
         # フレーム2はほかされずに残っている
-        frame1 = self.factory.data.find_by_uuid(frame_uuid_2)
+        frame1 = self.finder.data.find_by_uuid(frame_uuid_2)
         self.assertEqual(frame1.find_parent().uuid, folder2_uuid)
 
         # ゴミ箱にフォルダが作成されていないこと
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashes = trash_can.find_children()
         self.assertEqual(len(trashes), 0)
 
@@ -828,7 +828,7 @@ class TrashTest(ApiTestCaseBase):
         フォルダ1/フォルダ2/ファイル でフォルダ2だけprev_parentが設定されてる場合
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!!?", "parent": root.uuid}, self.USER1)
@@ -850,7 +850,7 @@ class TrashTest(ApiTestCaseBase):
         flow.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フォルダ2内にフレーム2を作成する
         f = io.BytesIO(b"abcdef")
@@ -862,24 +862,24 @@ class TrashTest(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
 
         # フォルダ1はほかされずに残っている
-        folder1 = self.factory.data.find_by_uuid(folder1_uuid)
+        folder1 = self.finder.data.find_by_uuid(folder1_uuid)
         self.assertEqual(folder1.find_parent().uuid, root.uuid)
 
         # フォルダ2はほかされている
-        folder2 = self.factory.data.find_by_uuid(folder2_uuid)
+        folder2 = self.finder.data.find_by_uuid(folder2_uuid)
         self.assertNotEqual(folder2.find_parent().uuid, folder1_uuid)
 
         # フォルダ2はゴミ箱へ移動していること
-        frame2 = self.factory.data.find_by_uuid(frame_uuid_2)
-        frame2_parent = self.factory.data.find_by_uuid(frame2.find_parent().uuid)
+        frame2 = self.finder.data.find_by_uuid(frame_uuid_2)
+        frame2_parent = self.finder.data.find_by_uuid(frame2.find_parent().uuid)
         self.assertEqual(frame2.find_parent().uuid, folder2_uuid)
         self.assertEqual(frame2_parent.label, 'フォルダですよ2')
 
         # フォルダ1は同じラベル名のフォルダが所定の位置に作成されていること
         self.assertNotEqual(frame2_parent.find_parent().uuid, folder1_uuid)
-        frame2_parent_parent = self.factory.data.find_by_uuid(frame2_parent.find_parent().uuid)
+        frame2_parent_parent = self.finder.data.find_by_uuid(frame2_parent.find_parent().uuid)
         self.assertEqual(frame2_parent_parent.label, 'フォルダですよ1!!!!?')
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         self.assertEqual(frame2_parent_parent.find_parent().uuid, trash_can.uuid)
 
         # フォルダ1の形代を戻す
@@ -907,15 +907,15 @@ class TrashTest(ApiTestCaseBase):
         システムフォルダをゴミ箱に捨てると、その形代がゴミ箱に捨てられる
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フローフォルダ内にフレーム1を作成する
         import io
-        FLOW_FOLDER_UUID = self.factory.data.load_flow_folder().uuid
-        FLOW_FOLDER_LABEL = self.factory.data.load_flow_folder().label
+        FLOW_FOLDER_UUID = self.finder.data.load_flow_folder().uuid
+        FLOW_FOLDER_LABEL = self.finder.data.load_flow_folder().label
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         f = io.BytesIO(b"abcdef")
         # フレームデータを作成する(POST /frames)
@@ -926,17 +926,17 @@ class TrashTest(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/folders/{FLOW_FOLDER_UUID}', self.USER1)
 
         # フローフォルダはほかされていないこと
-        flow_folder = self.factory.data.find_by_uuid(FLOW_FOLDER_UUID)
+        flow_folder = self.finder.data.find_by_uuid(FLOW_FOLDER_UUID)
         self.assertEqual(flow_folder.find_parent().uuid, root.uuid)
 
         # ゴミ箱に形代が作成されていること
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashes = trash_can.find_children()
         self.assertNotEqual(trashes[0], flow_folder)
         self.assertEqual(trashes[0].label, FLOW_FOLDER_LABEL)
 
         # フレーム1は形代フォルダ内にあること
-        frame = self.factory.data.find_by_uuid(frame_uuid_1)
+        frame = self.finder.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.find_parent().uuid, trashes[0].uuid)
 
         # フローフォルダの形代を戻す
@@ -958,7 +958,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミの戻し先がゴミ箱内の場合はエラーにする
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!Q", "parent": root.uuid}, self.USER1)
@@ -987,7 +987,7 @@ class TrashTest(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
 
@@ -997,7 +997,7 @@ class TrashTest(ApiTestCaseBase):
         prev_parent_id属性は変更されていこと
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "I am project", "parent": root.uuid}, self.USER1)
@@ -1047,12 +1047,12 @@ class TrashTest(ApiTestCaseBase):
         prev_parent_id属性は変更されていこと
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!", "parent": root.uuid}, self.USER1)
         project1_uuid = project1['uuid']
-        project1 = self.factory.data.find_by_uuid(project1_uuid)
+        project1 = self.finder.data.find_by_uuid(project1_uuid)
 
         # 参照先フレームを作成する
         import io
@@ -1062,10 +1062,10 @@ class TrashTest(ApiTestCaseBase):
         # フローを作成する
         flow = project1.create_flow('サブフロー1', self.get_flow_with_source(frame1.uuid))
         flow.save()
-        flow = self.factory.data.find_by_uuid(flow.uuid)
+        flow = self.finder.data.find_by_uuid(flow.uuid)
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # 削除前にフローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
@@ -1100,7 +1100,7 @@ class TrashTest(ApiTestCaseBase):
         prev_parent_id属性は変更されていこと
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!!", "parent": root.uuid}, self.USER1)
@@ -1134,7 +1134,7 @@ class TrashTest(ApiTestCaseBase):
         prev_parent_id属性は変更されていこと
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する(POST /projects)
         # ファイルパスに空白が含まれていてもエラーにならないこと
@@ -1184,7 +1184,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミフレームを使おうとしたらエラーにする
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フレーム1を作成する
         import io
@@ -1202,7 +1202,7 @@ class TrashTest(ApiTestCaseBase):
             flow.save()
 
         # ゴミ箱を空にする
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
@@ -1212,7 +1212,7 @@ class TrashTest(ApiTestCaseBase):
         ゴミフローを使おうとしたらエラーにする
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フレーム1を作成する
         import io
@@ -1226,7 +1226,7 @@ class TrashTest(ApiTestCaseBase):
         subflow.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # 削除前にフローのロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':subflow.uuid}, self.USER1)
@@ -1245,7 +1245,7 @@ class TrashTest(ApiTestCaseBase):
             flow.save()
 
         # ゴミ箱を空にする
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)     

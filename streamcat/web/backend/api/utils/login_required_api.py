@@ -79,7 +79,7 @@ def login_required_api(func:Callable):
             # Factoryを渡す必要がある場合はRequestとkwargsに格納する
             if 'factory' in kwargs:
                 # Factoryを生成する
-                factory = await ufactory.create_authz_factory(user)
+                factory = await ufactory.create_authz_finder(user)
                 # 全エンドポイントの共通処理にFactoryを渡すため
                 # FactoryをRequestオブジェクトに格納する
                 # _request.state.factory = factory

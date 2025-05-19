@@ -47,7 +47,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.assertFalse(result['conn'])
 
     def test_create_get_folders(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
 
         # RemoteFolderを作成する(POST /remote-folders)
@@ -98,14 +98,14 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
 
         # フォルダはゴミ箱に移動していること
-        folder = self.factory.data.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        folder = self.finder.data.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_update_label(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         
         # RemoteFolderを作成する(POST /remote-folders)
@@ -146,14 +146,14 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
 
         # フォルダはゴミ箱に移動していること
-        folder = self.factory.data.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        folder = self.finder.data.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_update_folders(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         root_uuid = root.uuid
         
         # RemoteFolderを作成する(POST /remote-folders)
@@ -200,15 +200,15 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
 
         # フォルダはゴミ箱に移動していること
-        folder = self.factory.data.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        folder = self.finder.data.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_move_folders(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER1)
@@ -260,15 +260,15 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
 
         # フォルダはゴミ箱に移動していること
-        folder = self.factory.data.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        folder = self.finder.data.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_delete_folders(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
@@ -288,7 +288,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         result = self.delete_uri(f'/api/v0/remote-folders/{folder_uuid}', self.USER1)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -319,8 +319,8 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.assertNotEqual(result['createdAt'], None)
 
         # RemoteFolderはゴミ箱に移動していること
-        folder = self.factory.data.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        folder = self.finder.data.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -330,7 +330,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         リモートフォルダを複製できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # RemoteFolderを作成する(POST /remote-folders)
         data = {

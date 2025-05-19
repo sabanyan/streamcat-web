@@ -36,7 +36,7 @@ class ExecuteTest(ApiTestCaseBase):
         # フローをライブラリに保存する
         test_flow.save()
 
-        if not self.factory.data.exists(subflow_uuid):
+        if not self.finder.data.exists(subflow_uuid):
             # テスト用フローから呼ばれるサブフローをライブラリに保存する
             subflow_path = Path(app.root_path) / 'api/tests/flows/833fdb62-2bb6-4a77-a0e1-77941ad951a3.json'
             subflow_data = json.loads(subflow_path.read_text(encoding='utf-8'))
@@ -52,8 +52,8 @@ class ExecuteTest(ApiTestCaseBase):
         # 出力結果がライブラリに登録されることを検証する
         frame_uuid_d1 = result['name'][0]['uuid']
         frame_uuid_d3 = result['name'][1]['uuid']
-        self.assertTrue(self.factory.data.exists(frame_uuid_d1))
-        self.assertTrue(self.factory.data.exists(frame_uuid_d3))
+        self.assertTrue(self.finder.data.exists(frame_uuid_d1))
+        self.assertTrue(self.finder.data.exists(frame_uuid_d3))
         
         # 削除
         # このテストで作成したjobsだけ削除する

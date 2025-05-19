@@ -7,7 +7,7 @@ from .api_test_case_base import ApiTestCaseBase
 class CacheTest(ApiTestCaseBase):
 
     def test_delete_cache(self):
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         datum_id = 'test'
 
@@ -38,7 +38,7 @@ class CacheTest(ApiTestCaseBase):
         test_flow.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
 		# キャッシュを削除する
         self.delete_uri('/api/v0/caches?of=%s.%s' % (test_flow.uuid, datum_id), self.USER1)

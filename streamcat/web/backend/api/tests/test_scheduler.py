@@ -8,9 +8,9 @@ class SchedulerTest(ApiTestCaseBase):
         スケジュールの登録と削除ができること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
@@ -96,9 +96,9 @@ class SchedulerTest(ApiTestCaseBase):
         スケジュールを複製できること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
@@ -166,7 +166,7 @@ class SchedulerTest(ApiTestCaseBase):
         スケジュールの楽観的ロックが機能すること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER2)
