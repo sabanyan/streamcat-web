@@ -85,9 +85,9 @@ def login_required(func):
             form = await __request.form()
             request_email = form.get('email', '')
 
-            async with UnAuthzFinder() as factory:
+            async with UnAuthzFinder() as finder:
                 try:
-                    user = await factory.find_user_by_email(request_email)
+                    user = await finder.find_user_by_email(request_email)
                 except Exception:
                     # 認証失敗した場合はCookieをクリアしてログインページを返す
                     response = _make_login_response(__request, last_url=last_url, email=request_email, login_failed=True)

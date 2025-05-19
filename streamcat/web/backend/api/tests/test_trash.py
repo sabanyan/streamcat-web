@@ -886,13 +886,13 @@ class TrashTest(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{frame2_parent_parent.uuid}', {}, self.USER1)
 
         # フォルダ2は元の場所に戻っていること
-        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        # (finderには上でキャッシュされてるのでGET /foldersを使う)
         result = self.get_uri(f'/api/v0/folders/{folder1.uuid}', self.USER1)
         self.assertEqual(len(result['children']), 2)
         self.assertEqual(result['children'][0]['uuid'], folder2_uuid)
 
         # フレーム2は元の場所に戻っていること
-        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        # (finderには上でキャッシュされてるのでGET /foldersを使う)
         result = self.get_uri(f'/api/v0/folders/{folder2.uuid}', self.USER1)
         self.assertEqual(len(result['children']), 1)
         self.assertEqual(result['children'][0]['uuid'], frame_uuid_2)
@@ -943,7 +943,7 @@ class TrashTest(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{frame.find_parent().uuid}', {}, self.USER1)
 
         # フレーム1は元の場所に戻っていること
-        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        # (finderには上でキャッシュされてるのでGET /foldersを使う)
         result = self.get_uri(f'/api/v0/folders/{FLOW_FOLDER_UUID}', self.USER1)
         self.assertEqual(len(result['children']), 1)
         self.assertEqual(result['children'][0]['uuid'], frame_uuid_1)

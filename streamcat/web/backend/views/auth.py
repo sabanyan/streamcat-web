@@ -88,14 +88,14 @@ async def complete_sign_up(request:Request):
     user_uuid = _get_claims(request.cookies).get('sub')
     new_password = (await request.form())['password']
 
-    async with UnAuthzFinder() as ufactory:
+    async with UnAuthzFinder() as ufinder:
         try:
-            user = await ufactory.find_user_by_uuid(user_uuid)
+            user = await ufinder.find_user_by_uuid(user_uuid)
         except Exception:
             return make_response(request, 'login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
-        factory = await ufactory.create_authz_finder(user)
-        user = factory.user.find_by_id(user.id)
+        finder = await ufinder.create_authz_finder(user)
+        user = finder.user.find_by_id(user.id)
         user_is_init = user.is_init
         # 本パスワードへの変更
         try:
@@ -106,7 +106,7 @@ async def complete_sign_up(request:Request):
 
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         if user_is_init:
-            root = factory.data.load_root()
+            root = finder.data.load_root()
             project =root.create_project_folder(MY_PROJECT)
             project.save()
 
@@ -204,11 +204,11 @@ if GOOGLE_LOGIN:
         subject=claims['sub']
 
         # ユーザ管理者を取得する
-        async with UnAuthzFinder() as ufactory:
-            usr_admin_user = ufactory.load_usr_admin_user()
+        async with UnAuthzFinder() as ufinder:
+            usr_admin_user = ufinder.load_usr_admin_user()
             # ユーザを取得する
-            factory = await ufactory.create_authz_finder(usr_admin_user)
-            user = factory.user.load_openid_user(email, name, issuer, subject)
+            finder = await ufinder.create_authz_finder(usr_admin_user)
+            user = finder.user.load_openid_user(email, name, issuer, subject)
             user_uuid = user.uuid
 
         # とりあえずライブラリ画面にリダイレクトする

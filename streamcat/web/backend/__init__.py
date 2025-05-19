@@ -40,9 +40,9 @@ async def wrap_endpoint_call(request:Request, call_next):
         response = await call_next(request)
     finally:
         # NOTE: Sessionを閉じないとSQLAlchemyのコネクションプールが枯渇する
-        # hasattr(request.state, 'factory') and request.state.factory.close()
+        # hasattr(request.state, 'finder') and request.state.finder.close()
         # NOTE: 複数のエンドポイントが同時に処理された場合は一度しか呼ばれない可能性がある
-        # そうなると、ここでFactoryを閉じるのは不適切かもしれない
+        # そうなると、ここでFinderを閉じるのは不適切かもしれない
         pass
 
     if SECURITY_LEVEL >= 1:

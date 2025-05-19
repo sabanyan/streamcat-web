@@ -58,10 +58,10 @@ def login_required_api(func:Callable):
             raise NotAuthenticationException('not authorized')
 
         # Userオブジェクトを取得する
-        async with UnAuthzFinder() as ufactory:
+        async with UnAuthzFinder() as ufinder:
             try:
                 user_uuid = claims['sub']
-                user = await ufactory.find_user_by_uuid(user_uuid)
+                user = await ufinder.find_user_by_uuid(user_uuid)
             except Exception as ex:
                 raise NotAuthenticationException('not authorized...')
                 # 存在しないuser_uuidはCookieから削除する
@@ -76,15 +76,15 @@ def login_required_api(func:Callable):
                 # 本パスワード登録画面に遷移する
                 raise NotAuthenticationException('user password is not registered')
 
-            # Factoryを渡す必要がある場合はRequestとkwargsに格納する
-            if 'factory' in kwargs:
-                # Factoryを生成する
-                factory = await ufactory.create_authz_finder(user)
-                # 全エンドポイントの共通処理にFactoryを渡すため
-                # FactoryをRequestオブジェクトに格納する
-                # _request.state.factory = factory
-                # Factoryをエンドポイント関数の引数に格納する
-                kwargs['factory'] = factory
+            # Finderを渡す必要がある場合はRequestとkwargsに格納する
+            if 'finder' in kwargs:
+                # Finderを生成する
+                finder = await ufinder.create_authz_finder(user)
+                # 全エンドポイントの共通処理にFinderを渡すため
+                # FinderをRequestオブジェクトに格納する
+                # _request.state.finder = finder
+                # Finderをエンドポイント関数の引数に格納する
+                kwargs['finder'] = finder
                 # エンドポイント関数を実行する
                 return await func(**kwargs)
 

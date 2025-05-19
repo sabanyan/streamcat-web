@@ -48,23 +48,23 @@ def _add_children_info(folder, offset=None, limit=None, prev_folder_path=False):
 @login_required_api
 @jsonify
 @update_projects_info
-async def fecth_library(members:bool=False, offset:int=None, limit:int=None, factory:Finder=Depends(get_finder)):
+async def fecth_library(members:bool=False, offset:int=None, limit:int=None, finder:Finder=Depends(get_finder)):
     """
     ルートフォルダを取得する
     """
-    root = factory.data.load_root()
+    root = finder.data.load_root()
     return _add_children_info(root, offset=offset, limit=limit)
 
 @router.get('/data')
 @login_required_api
 @jsonify
 @update_projects_info2
-def fecth_data(q:str=None, type:str=None, members:bool=False, offset:int=None, limit:int=None, factory:Finder=Depends(get_finder)):
+def fecth_data(q:str=None, type:str=None, members:bool=False, offset:int=None, limit:int=None, finder:Finder=Depends(get_finder)):
     """
     全てのDatum、または指定したキーワードを含むDatumを取得する
     """
     search_keyword = q
-    return factory.data.find_by_keyword(search_keyword,
+    return finder.data.find_by_keyword(search_keyword,
                                         type=type,
                                         except_trash=True,
                                         offset=offset,
@@ -74,7 +74,7 @@ def fecth_data(q:str=None, type:str=None, members:bool=False, offset:int=None, l
 @login_required_api
 @jsonify
 @update_projects_info2
-async def get_projects(members:bool=False, on_root:bool=False, except_myproject:bool=False, factory:Finder=Depends(get_finder)):
+async def get_projects(members:bool=False, on_root:bool=False, except_myproject:bool=False, finder:Finder=Depends(get_finder)):
     """
     全てのプロジェクトを取得する
     """
@@ -82,23 +82,23 @@ async def get_projects(members:bool=False, on_root:bool=False, except_myproject:
         except_label = MY_PROJECT
     else:
         except_label = None
-    return factory.data.find_all_projects(on_root=on_root, except_label=except_label)
+    return finder.data.find_all_projects(on_root=on_root, except_label=except_label)
 
 @router.get('/projects/{project_uuid}')
 @login_required_api
 @jsonify
 @update_project_info
-async def fetch_project(project_uuid, members=False, offset:int=None, limit:int=None, factory:Finder=Depends(get_finder)):
+async def fetch_project(project_uuid, members=False, offset:int=None, limit:int=None, finder:Finder=Depends(get_finder)):
     """
     指定したプロジェクトを取得する
     """
-    project = factory.data.find_by_uuid(project_uuid)
+    project = finder.data.find_by_uuid(project_uuid)
     return _add_children_info(project, offset=offset, limit=limit)
 
 @router.post('/projects')
 @login_required_api
 @jsonify
-async def new_project(request:Request, factory:Finder=Depends(get_finder)):
+async def new_project(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいプロジェクトを作成する
     """
@@ -106,9 +106,9 @@ async def new_project(request:Request, factory:Finder=Depends(get_finder)):
 
     if req.has('source'):
         # プロジェクトを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     elif req.has('parent'):
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         new_project = parent.create_project_folder(req['label'])
         new_project.save()
         return new_project
@@ -118,7 +118,7 @@ async def new_project(request:Request, factory:Finder=Depends(get_finder)):
 @router.put('/projects/{project_uuid}')
 @login_required_api
 @jsonify
-async def update_project(request:Request, project_uuid, factory:Finder=Depends(get_finder)):
+async def update_project(request:Request, project_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したプロジェクトのラベル名を変更する
     指定したプロジェクトを移動する
@@ -131,7 +131,7 @@ async def update_project(request:Request, project_uuid, factory:Finder=Depends(g
     elif req.has('parent') and req.has_at_least('label', 'members'):
         raise Exception('label,membersとはparent属性は同時に指定できません')
 
-    project = factory.data.find_by_uuid(project_uuid, for_update=True)
+    project = finder.data.find_by_uuid(project_uuid, for_update=True)
 
     if req.has('parent'):
         # プロジェクトを移動する
@@ -147,7 +147,7 @@ async def update_project(request:Request, project_uuid, factory:Finder=Depends(g
             # member属性からMembersオブジェクトを作成する
             members = []
             for member_dict in req['members']:
-                user = factory.user.find_by_uuid(member_dict['uuid'])
+                user = finder.user.find_by_uuid(member_dict['uuid'])
                 type = member_dict['type']
                 members.append(ProjectFolder.Member(user, type))
             # プロジェクト管理者が設定されない場合はエラーとする
@@ -172,11 +172,11 @@ async def update_project(request:Request, project_uuid, factory:Finder=Depends(g
 @router.delete('/projects/{project_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_project(project_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_project(project_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したプロジェクトをほかす
     """
-    project = factory.data.find_by_uuid(project_uuid)
+    project = finder.data.find_by_uuid(project_uuid)
     return project.throw_away()
 
 
@@ -184,17 +184,17 @@ async def throw_away_project(project_uuid, factory:Finder=Depends(get_finder)):
 @login_required_api
 @jsonify
 @update_projects_info
-async def fetch_folder(folder_uuid, members:bool=False, offset:int=None, limit:int=None, factory:Finder=Depends(get_finder)):
+async def fetch_folder(folder_uuid, members:bool=False, offset:int=None, limit:int=None, finder:Finder=Depends(get_finder)):
     """
     指定したフォルダを取得する
     """
-    folder = factory.data.find_by_uuid(folder_uuid)
+    folder = finder.data.find_by_uuid(folder_uuid)
     return _add_children_info(folder, offset=offset, limit=limit)
 
 @router.post('/folders')
 @login_required_api
 @jsonify
-async def make_new_folder(request:Request, factory:Finder=Depends(get_finder)):
+async def make_new_folder(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいフォルダを作成する
     """
@@ -202,9 +202,9 @@ async def make_new_folder(request:Request, factory:Finder=Depends(get_finder)):
 
     if req.has('source'):
         # フォルダを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     else:
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         new_folder = parent.create_folder(req['label'])
         new_folder.save()
         return new_folder
@@ -212,7 +212,7 @@ async def make_new_folder(request:Request, factory:Finder=Depends(get_finder)):
 @router.put('/folders/{folder_uuid}')
 @login_required_api
 @jsonify
-async def update_folder(request:Request, folder_uuid, factory:Finder=Depends(get_finder)):
+async def update_folder(request:Request, folder_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したフォルダのラベルを変更する、またはフォルダを移動する
     """
@@ -225,11 +225,11 @@ async def update_folder(request:Request, folder_uuid, factory:Finder=Depends(get
 
     if req.has('label'):
         # フォルダのラベルを変更する
-        folder = factory.data.find_by_uuid(folder_uuid, for_update=True)
+        folder = finder.data.find_by_uuid(folder_uuid, for_update=True)
         return folder.update_label(req['label'])
     elif req.has('parent'):
         # フォルダを移動する
-        folder = factory.data.find_by_uuid(folder_uuid, for_update=True)
+        folder = finder.data.find_by_uuid(folder_uuid, for_update=True)
         return folder.move(req['parent'])
     else:
         raise Exception('update_folder parameter error!')
@@ -237,22 +237,22 @@ async def update_folder(request:Request, folder_uuid, factory:Finder=Depends(get
 @router.delete('/folders/{folder_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_folder(folder_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_folder(folder_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したフォルダをほかす
     """
-    folder = factory.data.find_by_uuid(folder_uuid)
+    folder = finder.data.find_by_uuid(folder_uuid)
     return folder.throw_away()
 
 
 @router.get('/trashes')
 @login_required_api
 @jsonify
-async def fetch_trashes(offset:int=None, limit:int=None, factory:Finder=Depends(get_finder)):
+async def fetch_trashes(offset:int=None, limit:int=None, finder:Finder=Depends(get_finder)):
     """
     ゴミ箱を取得する
     """
-    trash_folder = factory.data.find_trashcan()
+    trash_folder = finder.data.find_trashcan()
     return _add_children_info(trash_folder,
                               offset=offset,
                               limit=limit,
@@ -261,21 +261,21 @@ async def fetch_trashes(offset:int=None, limit:int=None, factory:Finder=Depends(
 @router.put('/trashes/{datum_uuid}')
 @login_required_api
 @jsonify
-async def return_trashes(datum_uuid, factory:Finder=Depends(get_finder)):
+async def return_trashes(datum_uuid, finder:Finder=Depends(get_finder)):
     """
     ゴミを元のフォルダに戻す
     """
-    datum = factory.data.find_by_uuid(datum_uuid)
+    datum = finder.data.find_by_uuid(datum_uuid)
     return datum.put_back()
 
 @router.delete('/trashes')
 @login_required_api
 @jsonify
-async def empty_all(factory:Finder=Depends(get_finder)):
+async def empty_all(finder:Finder=Depends(get_finder)):
     """
     ゴミ箱を空にする
     """
-    trash_folder = factory.data.find_trashcan()
+    trash_folder = finder.data.find_trashcan()
     trash_folder.trash_all()
 
 
@@ -283,17 +283,17 @@ async def empty_all(factory:Finder=Depends(get_finder)):
 @login_required_api
 @jsonify
 @update_projects_info
-async def fetch_remote_folder(folder_uuid, members:bool=False, factory:Finder=Depends(get_finder)):
+async def fetch_remote_folder(folder_uuid, members:bool=False, finder:Finder=Depends(get_finder)):
     """
     指定したリモートフォルダを取得する
     """
-    folder = factory.data.find_by_uuid(folder_uuid)
+    folder = finder.data.find_by_uuid(folder_uuid)
     return folder
 
 @router.post('/remote-folders')
 @login_required_api
 @jsonify
-async def make_new_remote_folder(request:Request, factory:Finder=Depends(get_finder)):
+async def make_new_remote_folder(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいリモートフォルダを作成する
     """
@@ -301,13 +301,13 @@ async def make_new_remote_folder(request:Request, factory:Finder=Depends(get_fin
 
     if req.has('source'):
         # リモートフォルダを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     else:
         remote_folder_conn = RemoteFolderConn(req.json)
         # 接続情報に漏れがあれば例外を送出する
         remote_folder_conn.valid_or_raise()
 
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         new_folder = parent.create_remote_folder(req['label'],
                                                 remote_folder_conn)
         ret = new_folder.to_json()
@@ -317,7 +317,7 @@ async def make_new_remote_folder(request:Request, factory:Finder=Depends(get_fin
 @router.put('/remote-folders/{folder_uuid}')
 @login_required_api
 @jsonify
-async def update_remote_folder(request:Request, folder_uuid, factory:Finder=Depends(get_finder)):
+async def update_remote_folder(request:Request, folder_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したリモートフォルダを変更する、またはリモートフォルダを移動する
     """
@@ -330,7 +330,7 @@ async def update_remote_folder(request:Request, folder_uuid, factory:Finder=Depe
 
     if req.has('label'):
         label = req['label']
-        folder = factory.data.find_by_uuid(folder_uuid)
+        folder = finder.data.find_by_uuid(folder_uuid)
         if len(req) == 1:
             # ラベル名を変更する
             return folder.update_label(label)
@@ -343,7 +343,7 @@ async def update_remote_folder(request:Request, folder_uuid, factory:Finder=Depe
     elif req.has('parent'):
         # リモートフォルダを移動する
         new_parent = req['parent']
-        folder = factory.data.find_by_uuid(folder_uuid)
+        folder = finder.data.find_by_uuid(folder_uuid)
         return folder.move(new_parent)
     else:
         raise Exception('update_remote_folder parameter error!')
@@ -351,11 +351,11 @@ async def update_remote_folder(request:Request, folder_uuid, factory:Finder=Depe
 @router.delete('/remote-folders/{folder_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_remote_folder(folder_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_remote_folder(folder_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したリモートフォルダをほかす
     """
-    folder = factory.data.find_by_uuid(folder_uuid)
+    folder = finder.data.find_by_uuid(folder_uuid)
     # リモートフォルダレコードをDBから削除する
     return folder.throw_away()
 
@@ -363,17 +363,17 @@ async def throw_away_remote_folder(folder_uuid, factory:Finder=Depends(get_finde
 @router.get('/databases/{database_uuid}')
 @login_required_api
 @jsonify
-async def fetch_database(database_uuid, factory:Finder=Depends(get_finder)):
+async def fetch_database(database_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したデータベースを取得する
     """
-    database = factory.data.find_by_uuid(database_uuid)
+    database = finder.data.find_by_uuid(database_uuid)
     return database
 
 @router.post('/databases')
 @login_required_api
 @jsonify
-async def make_new_database(request:Request, factory:Finder=Depends(get_finder)):
+async def make_new_database(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいデータベースを作成する
     """
@@ -381,13 +381,13 @@ async def make_new_database(request:Request, factory:Finder=Depends(get_finder))
 
     if req.has('source'):
         # データベースを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     else:
         database_conn = DatabaseConn(req.json)
         # 接続情報に漏れがあれば例外を送出する
         database_conn.valid_or_raise()
 
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         new_database= parent.create_database(req['label'],
                                             database_conn)
         ret = new_database.to_json()
@@ -397,7 +397,7 @@ async def make_new_database(request:Request, factory:Finder=Depends(get_finder))
 @router.put('/databases/{database_uuid}')
 @login_required_api
 @jsonify
-async def update_database(request:Request, database_uuid, factory:Finder=Depends(get_finder)):
+async def update_database(request:Request, database_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したデータベースを変更する、またはデータベースを移動する
     """
@@ -410,7 +410,7 @@ async def update_database(request:Request, database_uuid, factory:Finder=Depends
 
     if req.has('label'):
         label = req['label']
-        database = factory.data.find_by_uuid(database_uuid)
+        database = finder.data.find_by_uuid(database_uuid)
         if len(req) == 1:
             # ラベル名を変更する
             return database.update_label(label)
@@ -423,7 +423,7 @@ async def update_database(request:Request, database_uuid, factory:Finder=Depends
     elif req.has('parent'):
         # データベースを移動する
         new_parent = req['parent']
-        database = factory.data.find_by_uuid(database_uuid)
+        database = finder.data.find_by_uuid(database_uuid)
         return database.move(new_parent)
     else:
         raise Exception('update_database parameter error!')
@@ -431,11 +431,11 @@ async def update_database(request:Request, database_uuid, factory:Finder=Depends
 @router.delete('/databases/{database_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_database(database_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_database(database_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したデータベースをほかす
     """
-    database = factory.data.find_by_uuid(database_uuid)
+    database = finder.data.find_by_uuid(database_uuid)
     # DatabaseレコードをDBから削除する
     return database.throw_away()
 
@@ -443,7 +443,7 @@ async def throw_away_database(database_uuid, factory:Finder=Depends(get_finder))
 @router.post('/frames')
 @login_required_api
 @jsonify
-async def create_frame(request:Request, factory:Finder=Depends(get_finder)):
+async def create_frame(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいフレームを作成する
     """
@@ -452,7 +452,7 @@ async def create_frame(request:Request, factory:Finder=Depends(get_finder)):
         if not req.has('source'):
             raise Exception('No source is designated.')
         # フレームを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     else:
         req = RequestJson(await request.form())
         if not req.has('file'):
@@ -460,7 +460,7 @@ async def create_frame(request:Request, factory:Finder=Depends(get_finder)):
         if not req.has_all('parent', 'label'):
             raise Exception('No parent or label are designated.')
 
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         with req['file'].file as f:
             new_frame = parent.create_frame(req['label'], f)
             # FrameをDBに格納する
@@ -470,7 +470,7 @@ async def create_frame(request:Request, factory:Finder=Depends(get_finder)):
 @router.put('/frames/{frame_uuid}')
 @login_required_api
 @jsonify
-async def update_frame(request:Request, frame_uuid, factory:Finder=Depends(get_finder)):
+async def update_frame(request:Request, frame_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したフレームのラベルを変更する、またはフレームを移動する
     """
@@ -481,7 +481,7 @@ async def update_frame(request:Request, frame_uuid, factory:Finder=Depends(get_f
     elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
         raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
 
-    frame = factory.data.find_by_uuid(frame_uuid, for_update=True)
+    frame = finder.data.find_by_uuid(frame_uuid, for_update=True)
 
     if req.has('parent'):
         # frameを移動する
@@ -505,11 +505,11 @@ async def update_frame(request:Request, frame_uuid, factory:Finder=Depends(get_f
 @router.delete('/frames/{frame_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_frame(frame_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_frame(frame_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したフレームをほかす
     """
-    frame = factory.data.find_by_uuid(frame_uuid)
+    frame = finder.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
     return frame.throw_away()
@@ -518,12 +518,12 @@ async def throw_away_frame(frame_uuid, factory:Finder=Depends(get_finder)):
 @router.get('/documents/{document_uuid}')
 @login_required_api
 @jsonify
-async def fetch_document(document_uuid, contents:bool=False, factory:Finder=Depends(get_finder)):
+async def fetch_document(document_uuid, contents:bool=False, finder:Finder=Depends(get_finder)):
     """
     指定したドキュメントを取得する
     """
     # ドキュメントを取得する
-    document = factory.data.find_by_uuid(document_uuid)
+    document = finder.data.find_by_uuid(document_uuid)
 
     if contents:
         # ドキュメントの内容を返す
@@ -535,7 +535,7 @@ async def fetch_document(document_uuid, contents:bool=False, factory:Finder=Depe
 @router.post('/documents')
 @login_required_api
 @jsonify
-async def make_new_document(request:Request, factory:Finder=Depends(get_finder)):
+async def make_new_document(request:Request, finder:Finder=Depends(get_finder)):
     """
     ファイルストリームからファイルタイプを判定して
     新しいフレームまたはドキュメントを作成する
@@ -550,7 +550,7 @@ async def make_new_document(request:Request, factory:Finder=Depends(get_finder))
         if not req.has('source'):
             raise Exception('No source is designated.')
         # ファイルを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     else:
         req = RequestJson(await request.form())
         if not req.has('file'):
@@ -563,7 +563,7 @@ async def make_new_document(request:Request, factory:Finder=Depends(get_finder))
         maybe_csv = content_type == 'text/csv'
 
         # 格納先フォルダを取得する
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         with req['file'].file as f:
             # ファイルを作成する
             new_file = parent.create_file(req['label'], f, maybe_csv=maybe_csv)
@@ -574,7 +574,7 @@ async def make_new_document(request:Request, factory:Finder=Depends(get_finder))
 @router.put('/documents/{document_uuid}')
 @login_required_api
 @jsonify
-async def update_document(request:Request, document_uuid, factory:Finder=Depends(get_finder)):
+async def update_document(request:Request, document_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したドキュメントのラベル名を変更する、または移動する
     """
@@ -585,7 +585,7 @@ async def update_document(request:Request, document_uuid, factory:Finder=Depends
     elif req.has_all('parent', 'label') and req.has('label'):
         raise Exception('labelとparent属性は同時に指定できません')
 
-    document = factory.data.find_by_uuid(document_uuid)
+    document = finder.data.find_by_uuid(document_uuid)
 
     if req.has('parent'):
         # ドキュメントを移動する
@@ -601,11 +601,11 @@ async def update_document(request:Request, document_uuid, factory:Finder=Depends
 @router.delete('/documents/{document_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_document(document_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_document(document_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したドキュメントをほかす
     """
-    document = factory.data.find_by_uuid(document_uuid)
+    document = finder.data.find_by_uuid(document_uuid)
     return document.throw_away()
 
 
@@ -613,22 +613,22 @@ async def throw_away_document(document_uuid, factory:Finder=Depends(get_finder))
 @login_required_api
 @jsonify
 @update_projects_info
-async def fetch_awss3_folder(awss3_uuid, members:bool=False, offset:int=None, limit:int=None, factory:Finder=Depends(get_finder)):
+async def fetch_awss3_folder(awss3_uuid, members:bool=False, offset:int=None, limit:int=None, finder:Finder=Depends(get_finder)):
     """
     指定したAWS S3フォルダを取得する
     """
-    folder = factory.data.find_by_uuid(awss3_uuid)
+    folder = finder.data.find_by_uuid(awss3_uuid)
     return _add_children_info(folder, offset=offset, limit=limit)
 
 @router.post('/awss3s')
 @login_required_api
 @jsonify
-async def make_new_awss3_folder(request:Request, factory:Finder=Depends(get_finder)):
+async def make_new_awss3_folder(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいAWS S3フォルダを作成する
     """
     request_json = await request.json()
-    parent = factory.data.find_by_uuid(request_json['parent'])
+    parent = finder.data.find_by_uuid(request_json['parent'])
     new_folder = parent.create_awss3(request_json['label'],
                                      request_json['bucket'])
     # AwsS3レコードをDBに格納する
@@ -638,26 +638,26 @@ async def make_new_awss3_folder(request:Request, factory:Finder=Depends(get_find
 @router.put('/awss3s/{awss3_uuid}')
 @login_required_api
 @jsonify
-async def update_awss3_folder(request:Request, awss3_uuid, factory:Finder=Depends(get_finder)):
+async def update_awss3_folder(request:Request, awss3_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したAWS S3フォルダを変更する
     """
     request_json = await request.json()
     label = request_json['label']
     bucket_name = request_json['bucket']
-    awss3 = factory.data.find_by_uuid(awss3_uuid)
+    awss3 = finder.data.find_by_uuid(awss3_uuid)
     return awss3.update_data(label, bucket_name)
 
 @router.delete('/awss3s/{awss3_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_awss3(awss3_uuid, factory:Finder=Depends(get_finder)):
+async def throw_away_awss3(awss3_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したAWS S3フォルダをほかす
     """
     # AWS S3ディレクトリ直下のファイルをDBから登録解除する
     pass
 
-    folder = factory.data.find_by_uuid(awss3_uuid)
+    folder = finder.data.find_by_uuid(awss3_uuid)
     # AWS S3 folderレコードをDBから削除する
     return folder.throw_away()

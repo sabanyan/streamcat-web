@@ -65,7 +65,7 @@ class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
         #     with client.session_transaction() as session:
         #         session['userId'] = self.USER1.id
         #         from streamcat.store.auth.authz_session import AuthzSession, Session
-        #         g.factory = AuthzSession(Session, user=self.USER1)
+        #         g.finder = AuthzSession(Session, user=self.USER1)
 
         # テストで用いるテスト用フレームをライブラリに登録する
         if not self.finder.data.exists(frame_uuid):

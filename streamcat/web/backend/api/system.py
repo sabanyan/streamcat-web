@@ -16,7 +16,7 @@ router = APIRouter()
 @router.get('/navigation')
 @login_required_api
 @jsonify
-async def get_navigation(factory:Finder=Depends(get_finder)):
+async def get_navigation(finder:Finder=Depends(get_finder)):
     """
     ナビゲーションバーに表示する情報などを取得する
     """
@@ -38,9 +38,9 @@ async def get_navigation(factory:Finder=Depends(get_finder)):
         'allowlist': {}
     }
 
-    if factory.myself is not None:
-        navigation['user'] = factory.myself.to_json()
-        navigation['allowlist'] = factory.myself.get_allowlist()
+    if finder.myself is not None:
+        navigation['user'] = finder.myself.to_json()
+        navigation['allowlist'] = finder.myself.get_allowlist()
 
     return navigation
 
@@ -48,29 +48,29 @@ async def get_navigation(factory:Finder=Depends(get_finder)):
 @router.get('/stores')
 @login_required_api
 @jsonify
-async def fecth_stores(factory:Finder=Depends(get_finder)):
+async def fecth_stores(finder:Finder=Depends(get_finder)):
     """
     データストアの定義(雛形)の一覧を返却する
     """
-    return factory.store.find_all()
+    return finder.store.find_all()
 
 @router.get('/stores/{store_id}')
 @login_required_api
 @jsonify
-async def fecth_store(store_id:str, factory:Finder=Depends(get_finder)):
+async def fecth_store(store_id:str, finder:Finder=Depends(get_finder)):
     """
     データストアの定義(雛形)を返却する
     """
-    return factory.store.find_by_id(store_id)
+    return finder.store.find_by_id(store_id)
 
 @router.post('/stores')
 @login_required_api
 @jsonify
-async def make_new_store(body:dict, factory:Finder=Depends(get_finder)):
+async def make_new_store(body:dict, finder:Finder=Depends(get_finder)):
     """
     データストアの定義(雛形)を作成する
     """
-    new_store = factory.store.create(body['id'],
+    new_store = finder.store.create(body['id'],
                                     body['version'],
                                     body['label'],
                                     body['description'],
@@ -82,18 +82,18 @@ async def make_new_store(body:dict, factory:Finder=Depends(get_finder)):
 @router.delete('/stores/{store_id}')
 @login_required_api
 @jsonify
-async def delete_store(store_id:str, factory:Finder=Depends(get_finder)):
+async def delete_store(store_id:str, finder:Finder=Depends(get_finder)):
     """
     データストアの定義(雛形)を削除する
     """
-    store = factory.store.find_by_id(store_id)
+    store = finder.store.find_by_id(store_id)
     store.delete()
 
 
 @router.get('/connections/remote-folders')
 @login_required_api
 @jsonify
-async def is_remote_folder_connectable(request:Request, factory:Finder=Depends(get_finder)):
+async def is_remote_folder_connectable(request:Request, finder:Finder=Depends(get_finder)):
     """
     リモートフォルダの接続を確認する
     """
@@ -103,7 +103,7 @@ async def is_remote_folder_connectable(request:Request, factory:Finder=Depends(g
     request_args = dict(request.query_params)
 
     # 接続に用いるリモートフォルダを作成する(保存しないこと)
-    root = factory.data.load_root()
+    root = finder.data.load_root()
     remote_folder_conn = RemoteFolderConn(request_args)
     tmp_folder = root.create_remote_folder('CONNECTION-TEST', remote_folder_conn)
 
@@ -116,7 +116,7 @@ async def is_remote_folder_connectable(request:Request, factory:Finder=Depends(g
 @router.get('/connections/databases')
 @login_required_api
 @jsonify
-async def is_database_connectable(request:Request, factory:Finder=Depends(get_finder)):
+async def is_database_connectable(request:Request, finder:Finder=Depends(get_finder)):
     """
     データベースの接続を確認する
     """
@@ -128,7 +128,7 @@ async def is_database_connectable(request:Request, factory:Finder=Depends(get_fi
     request_args = dict(request.query_params)
 
     # 接続に用いるデータベースを作成する(保存しないこと)
-    root = factory.data.load_root()
+    root = finder.data.load_root()
     db_conn = DatabaseConn(request_args)
     tmp_db = root.create_database('CONNECTION-TEST', db_conn)
 
@@ -144,11 +144,11 @@ async def is_database_connectable(request:Request, factory:Finder=Depends(get_fi
 @router.get('/archives/flows/{uuid}')
 @login_required_api
 @jsonify
-async def download_flow(uuid, factory:Finder=Depends(get_finder)):
+async def download_flow(uuid, finder:Finder=Depends(get_finder)):
     from starlette.background import BackgroundTask
     from streamcat.store import FlowDumper
     
-    flow_dumper = FlowDumper(factory)
+    flow_dumper = FlowDumper(finder)
     (archive_path, archive_name) = flow_dumper.dump_archive(uuid)
 
     # アーカイブファイルを返す
@@ -164,21 +164,21 @@ async def download_flow(uuid, factory:Finder=Depends(get_finder)):
 async def upload_flow(label:str=Form(None),
                 parent:str=Form(),
                 file:UploadFile=File(),
-                factory:Finder=Depends(get_finder)):
+                finder:Finder=Depends(get_finder)):
     from pathlib import Path
 
-    parent = factory.data.find_by_uuid(parent)
+    parent = finder.data.find_by_uuid(parent)
     file_name = Path(file.filename).stem
 
     from streamcat.store import FlowDumper
-    flow_dumper = FlowDumper(factory)
+    flow_dumper = FlowDumper(finder)
     flow_dumper.restore_archive(parent, label, file_name, file.file)
 
 
 @router.get('/dump')
 @login_required_api
 @jsonify
-async def get_dump(factory:Finder=Depends(get_finder)):
+async def get_dump(finder:Finder=Depends(get_finder)):
     """
     StreamCatのDumpファイルを取得する
     """
@@ -188,7 +188,7 @@ async def get_dump(factory:Finder=Depends(get_finder)):
     from streamcat.depo.std.commands.scmd.script import DumpCommand
 
     # Dumpコマンドを実行する
-    job = await aexecute(DumpCommand(), args={'datum_factory': factory.data})
+    job = await aexecute(DumpCommand(), args={'datum_finder': finder.data})
     outs = job.join()
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'DumpCommandの実行に失敗しました {outs.get("o","")}')
@@ -208,7 +208,7 @@ async def get_dump(factory:Finder=Depends(get_finder)):
 @login_required_api
 @jsonify
 async def upload_dump(file:UploadFile=File(),
-                      factory:Finder=Depends(get_finder)):
+                      finder:Finder=Depends(get_finder)):
     """
     StreamCatのDumpファイルを復元する
     """
@@ -216,7 +216,7 @@ async def upload_dump(file:UploadFile=File(),
     from streamcat.depo.std.commands.scmd.script import RestoreCommand
 
     # Restoreコマンドを実行する
-    job = await aexecute(RestoreCommand(), args={'factory':factory}, inputs={'i':file.file})
+    job = await aexecute(RestoreCommand(), args={'finder':finder}, inputs={'i':file.file})
     outs = job.join()
     if 'o' not in outs or isinstance(outs['o'], Exception):
         raise Exception(f'RestoreCommandの実行に失敗しました {outs.get("o","")}')
@@ -225,7 +225,7 @@ async def upload_dump(file:UploadFile=File(),
 @router.post('/tokens/refresh')
 @login_required_api
 @jsonify
-async def get_refresh_token(body:dict, factory:Finder=Depends(get_finder)):
+async def get_refresh_token(body:dict, finder:Finder=Depends(get_finder)):
     """
     リフレッシュトークンを発給する
     """
@@ -233,18 +233,18 @@ async def get_refresh_token(body:dict, factory:Finder=Depends(get_finder)):
 
     if not req.has('currentPassword'):
         raise Exception('現在のパスワードを指定してください')
-    if not factory.myself.authenticate(req['currentPassword']):
+    if not finder.myself.authenticate(req['currentPassword']):
         raise Exception('現在のパスワードが誤っています')
 
-    return make_refresh_token(factory.myself.uuid)
+    return make_refresh_token(finder.myself.uuid)
 
 @router.post('/tokens/access')
 @login_required_api
 @jsonify
-async def get_access_token(factory:Finder=Depends(get_finder)):
+async def get_access_token(finder:Finder=Depends(get_finder)):
     """
     アクセストークンを発給する
     """
     # アクセストークンを用いて新たなアクセストークンを
     # 発給できるが脆弱性にはならないだろう
-    return make_access_token(factory.myself.uuid)
+    return make_access_token(finder.myself.uuid)

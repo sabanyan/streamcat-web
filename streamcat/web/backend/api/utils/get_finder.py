@@ -3,7 +3,7 @@ from streamcat.store.finder import Finder
 
 def get_finder(request:Request) -> Finder:
     """
-    Requestに格納されたfactoryを取得する
+    Requestに格納されたfinderを取得する
     NOTE: FastAPIのDependsで型指定をする為だけに用いる無処理の関数
     """
     pass
