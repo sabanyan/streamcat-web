@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, FileResponse
 from streamcat.store.finder import Finder
 from .. import app
-from ..api.utils import login_required_api, get_factory
+from ..api.utils import login_required_api, get_finder
 from .utils import make_response, login_required
 
 router = APIRouter()
@@ -78,7 +78,7 @@ async def preview(request:Request):
 @router.get('/documents/{document_uuid}')
 @login_required
 @login_required_api
-async def document(request:Request, document_uuid, factory:Finder=Depends(get_factory)):
+async def document(request:Request, document_uuid, factory:Finder=Depends(get_finder)):
     document = factory.data.find_by_uuid(document_uuid)
     return make_response(request, 'document.html', document_uuid=document_uuid, label='👁' + document.label)
 
