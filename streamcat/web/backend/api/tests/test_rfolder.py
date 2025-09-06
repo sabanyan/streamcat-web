@@ -13,7 +13,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         # 
         data = {
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -55,7 +55,7 @@ class RemoteFolderTest(ApiTestCaseBase):
             "parent"   : root_uuid,
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -68,7 +68,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.assertEqual(result['type'], 'rfolder')
         self.assertEqual(result['label'], 'リモートフォルダ')
         self.assertEqual(result['protocol'], 'smb')
-        self.assertEqual(result['hostname'], '18.178.64.116')
+        self.assertEqual(result['hostname'], '15.168.34.0')
         self.assertEqual(result['domain'], 'WORKGROUP')
         self.assertEqual(result['directory'], 'share')
         self.assertEqual(result['userId'], 'samba')
@@ -86,7 +86,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.assertEqual(result['type'], 'rfolder')
         self.assertEqual(result['label'], 'リモートフォルダ')
         self.assertEqual(result['protocol'], 'smb')
-        self.assertEqual(result['hostname'], '18.178.64.116')
+        self.assertEqual(result['hostname'], '15.168.34.0')
         self.assertEqual(result['domain'], 'WORKGROUP')
         self.assertEqual(result['directory'], 'share')
         self.assertEqual(result['userId'], 'samba')
@@ -113,7 +113,7 @@ class RemoteFolderTest(ApiTestCaseBase):
             "parent"   : root_uuid,
             "label"    : "リモートフォルダ!",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -134,7 +134,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         self.assertEqual(result['type'], 'rfolder')
         self.assertEqual(result['label'], 'リモートフォルダ!?')
         self.assertEqual(result['protocol'], 'smb')
-        self.assertEqual(result['hostname'], '18.178.64.116')
+        self.assertEqual(result['hostname'], '15.168.34.0')
         self.assertEqual(result['domain'], 'WORKGROUP')
         self.assertEqual(result['directory'], 'share')
         self.assertEqual(result['userId'], 'samba')
@@ -161,7 +161,7 @@ class RemoteFolderTest(ApiTestCaseBase):
             "parent"   : root_uuid,
             "label"    : "リモートフォルダ!",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -219,7 +219,7 @@ class RemoteFolderTest(ApiTestCaseBase):
             "parent"   : root.uuid,
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -235,7 +235,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         expected_result = {
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -275,7 +275,7 @@ class RemoteFolderTest(ApiTestCaseBase):
             "parent"   : root.uuid,
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -294,7 +294,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         expected_result = {
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -337,7 +337,7 @@ class RemoteFolderTest(ApiTestCaseBase):
             "parent"   : root.uuid,
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -353,7 +353,7 @@ class RemoteFolderTest(ApiTestCaseBase):
         expected_result = {
             "label"    : "リモートフォルダ のコピー",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",

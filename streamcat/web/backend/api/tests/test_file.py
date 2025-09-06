@@ -338,7 +338,7 @@ class FileTest(ApiTestCaseBase):
             "parent"   : project_uuid0,
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
