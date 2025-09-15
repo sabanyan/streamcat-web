@@ -29,8 +29,8 @@ export const NoteIcon = (props: Props) => {
         y: 0,
         width: 50,
         height: 100,
-        textAnchor: "middle",
-        dominantBaseline: "central",
+        textAnchor: 'middle' as const,
+        dominantBaseline: 'central' as const,
         fontSize: 10,
         padding: 8,
         // FIXITL: 以下のプロパティを有効にすると、
