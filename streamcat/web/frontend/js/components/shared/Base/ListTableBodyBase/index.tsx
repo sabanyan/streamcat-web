@@ -1,5 +1,5 @@
 import React from 'react';
-import InfiniteScroll from 'react-infinite-scroller';
+import InfiniteScroll from '@amreraky/react-infinite-scroller';
 import * as style from './style.scss';
 
 type Props<TDatumType> = {
