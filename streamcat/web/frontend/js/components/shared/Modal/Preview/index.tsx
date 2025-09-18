@@ -1,5 +1,5 @@
 //@flow
-import React from 'react';
+import React, {JSX} from 'react';
 import classnames from 'classnames';
 import { Tab, TabBar, TabList } from 'Shared/Base';
 import { HttpUtil } from 'Utils/index';

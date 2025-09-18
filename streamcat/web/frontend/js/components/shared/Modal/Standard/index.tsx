@@ -1,5 +1,5 @@
 //@flow
-import React from 'react'
+import React, {JSX} from 'react'
 import classnames from 'classnames'
 
 type Props = {

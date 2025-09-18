@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {JSX} from 'react';
 import { Box } from '@mui/material';
 import { useStreamCatNotifications } from 'Shared/Notification';
 import { ErrorResponse } from 'Api';
