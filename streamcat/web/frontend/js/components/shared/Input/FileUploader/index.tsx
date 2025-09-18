@@ -32,6 +32,8 @@ type State = {
 
 export default class FileUploader extends React.Component<Props, State> {
 
+  private fileInputRef = React.createRef<HTMLInputElement>();
+
   static defaultProps = {
     accept: [],
     defaultLabel: '',
@@ -70,8 +72,8 @@ export default class FileUploader extends React.Component<Props, State> {
   };
 
   onClickFileSelect(e) {
-    const element: any = this.refs.file;
-    element.click();
+    e.preventDefault();
+    this.fileInputRef.current?.click();
   };
 
   onClickUpload(e) {
@@ -248,7 +250,7 @@ export default class FileUploader extends React.Component<Props, State> {
       {this.renderFields(this.state.uploadFiles)}
       <div className={'mt-8px'} />
       {this.state.isLoading ? null : this.renderSelectFiles()}
-      <input type='file' ref={'file'} accept={attrAccept} multiple={true} className={style.input_file} onChange={(e) => this.onChangeFile(e)} />
+      <input type='file' ref={this.fileInputRef} accept={attrAccept} multiple={true} className={style.input_file} onChange={(e) => this.onChangeFile(e)} />
     </div>;
   }
 };
