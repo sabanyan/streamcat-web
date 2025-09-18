@@ -1,5 +1,5 @@
 import React from "react";
-import { useAsyncResource } from "use-async-resource";
+import { suspend } from 'suspend-react';
 import { DatumType } from "Model/Library";
 import { MultiSelect2 } from "Shared/Input";
 import { SelectItem } from "Shared/Input/Select2";
@@ -27,11 +27,11 @@ export const MembersSelect = (props:Props) => {
     const [readers, setReaders] = props.readerState;
 
     // ここで全ユーザの取得を開始する
-    const [usersReader] = useAsyncResource(getAllUsers, []);
+    const users = suspend(getAllUsers);
 
     // 取得した全ユーザをキャッシュする
     const allUsers = React.useMemo(
-        () => usersReader().map((user):SelectItem => ({
+        () => users.map((user):SelectItem => ({
             label: user.name,
             value: user.uuid
         })),

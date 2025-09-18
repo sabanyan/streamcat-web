@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
-import {AsyncResourceContent} from 'use-async-resource';
 import EventEmitter from 'eventemitter3';
 import {StreamCat, ViewId} from './StreamCat';
 
@@ -53,8 +52,8 @@ if (elementId) {
         document.getElementById(elementId)!
     );
     root.render(
-        <AsyncResourceContent fallback={<p>Loading...</p>}>
+        <Suspense fallback={<p>Loading...</p>}>
             <StreamCat viewId={viewId} />
-        </AsyncResourceContent>
+        </Suspense>
     );
 }

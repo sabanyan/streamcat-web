@@ -1,5 +1,4 @@
-import React from 'react'
-import {AsyncResourceContent} from 'use-async-resource';
+import React, { Suspense } from 'react'
 import {
   CommandInspector,
   DataFrameInspector,
@@ -230,9 +229,9 @@ export const Inspector = (props:InspectorProps) => {
       <Resizer
         inspectorWidth={inspectorWidth}
         resizeInspector={resizeInspector}>
-        <AsyncResourceContent fallback={<p>Loading...</p>}>
+        <Suspense fallback={<p>Loading...</p>}>
           {property}
-        </AsyncResourceContent>
+        </Suspense>
       </Resizer>
     </React.Fragment>
 

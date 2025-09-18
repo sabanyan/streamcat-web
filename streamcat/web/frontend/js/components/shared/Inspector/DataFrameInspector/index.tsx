@@ -1,4 +1,5 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
+import { suspend } from 'suspend-react';
 import { Constants } from "Constants/index";
 import { Api } from 'Api';
 import {ModalUtil, StringUtil} from "Utils/index";
@@ -11,7 +12,6 @@ import {Loader} from "Shared/Base";
 import { AllNodeType, Command, Flow, FlowCommand, FlowType, InlineFlowCommand, Port } from "Model/Library";
 import { useStreamCatNotifications } from "Shared/Notification";
 import { FrameNodeType } from "Model/Node/NodeTypes";
-import { useAsyncResource } from "use-async-resource";
 
 type Props = {
     // selected_data_source_detail: FrameType;
@@ -90,9 +90,9 @@ export const DataFrameInspector = (props: Props) => {
         return selectedNodes[0] as FrameNodeType;
     };
 
-    // ここでFrameの取得を開始する
+    // Frameを取得する
     const selectedNode = getSelectedNode();
-    const [flowReader] = useAsyncResource(getFrame, selectedNode.uuid);
+    const selectedFrame = suspend(getFrame, [selectedNode.uuid]);
 
     const saveFlow = () => {
         const {flowData, lastSavedFlow, lockUUID, updateLastSavedFlow} = props;
@@ -344,9 +344,6 @@ export const DataFrameInspector = (props: Props) => {
     if (loading) {
         content = <Loader center={true} absolute={true} fixed={false} visible={true} />;
     } else {
-        // Frameを取得する
-        const selectedFrame = flowReader();
-
         const fileSize = selectedFrame && selectedFrame.fileSize ? selectedFrame.fileSize : 0;
         const fileSizeStr = StringUtil.convertToFileSize(fileSize);
         const createdAt = selectedFrame ? selectedFrame.createdAt : "";

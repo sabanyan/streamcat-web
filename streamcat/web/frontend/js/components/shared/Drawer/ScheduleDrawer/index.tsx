@@ -1,6 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
-import { useAsyncResource } from 'use-async-resource';
+import { suspend } from 'suspend-react';
 import { FolderType, ScheduleType } from 'Model/Library';
 import { Api } from 'Api';
 import { TextField2, DatePicker2, TimePicker2, Tabs2, Drawer2 } from 'Shared/Input';
@@ -260,7 +260,7 @@ export const ScheduleDrawer = (props:Props) => {
     const { createMode, parent, schedule, onSuccess } = props;
 
     // 起動させるフローを取得する
-    const [flowReader] = useAsyncResource(Api.findFlow, schedule.runnableUUID);
+    const loadFlow = (uuid:string) => suspend(Api.findFlow, [uuid]);
 
     const triggerDate = (datePropertyName:string) => {
         // DatePickerにundefinedを渡すと現在日時が表示されるので、未入力の場合はnullを渡す
@@ -307,7 +307,7 @@ export const ScheduleDrawer = (props:Props) => {
 
     // 初期表示値
     const initLabel   = {value:createMode? '': schedule.label, isError:createMode};
-    const initFlow    = {value:createMode? null: flowReader(), isError:createMode};
+    const initFlow    = {value:createMode? null: loadFlow(schedule.runnableUUID), isError:createMode};
     const initTabIndex = createMode? 0: tabIndexTable[schedule.trigger['type']] || 0;
     const initDate    = {value:createMode? null: triggerDate('date'), isError:!triggerDate('date')};
     const initTime    = {value:createMode? null: triggerDate('date'), isError:!triggerDate('date')};
