@@ -1,5 +1,5 @@
 import functools # wraps for decorator
-from fastapi import Request, Depends
+from fastapi import Request, Depends, status
 from fastapi.responses import Response, RedirectResponse
 from fastapi_decorators import depends
 from streamcat.store.finder import UnAuthzFinder
@@ -104,7 +104,8 @@ def login_required(func):
                     return _make_response_with_token(response, access_token)
                 else:
                     # ログアウト時のURLが得られない場合は、request_base_urlにリダイレクトさせる
-                    response = RedirectResponse(last_url or request_base_url)
+                    # Chromeでフォーム再送信の確認ダイアログが出るのを防ぐため、HTTP_303_SEE_OTHERを指定する
+                    response = RedirectResponse(last_url or request_base_url, status_code=status.HTTP_303_SEE_OTHER)
                     # アクセストークンをCookieに格納してWebブラウザに渡す
                     return _make_response_with_token(response, access_token)
 
@@ -128,7 +129,7 @@ def login_required(func):
             last_q_params = {k: v for k, v in q_params.items() if k != 'session'}
             # ログアウト時のURLをCookieに格納してWebブラウザに渡す
             last_url = request_base_url.include_query_params(**last_q_params)
-            response = RedirectResponse(last_url)
+            response = RedirectResponse(last_url, status_code=status.HTTP_303_SEE_OTHER)
             return _make_response_with_last_url(response, last_url)
 
         else:

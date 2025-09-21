@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, status
 from fastapi.responses import RedirectResponse, FileResponse
 from streamcat.store.finder import Finder
 from .. import app
@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post('/')
 async def top(session:bool=False):
     q_params = '?session=on' if session else ''
-    return RedirectResponse(app.url_path_for('library') + q_params)
+    return RedirectResponse(app.url_path_for('library') + q_params, status_code=status.HTTP_303_SEE_OTHER)
 
 @router.get('/favicon.ico')
 async def favicon():

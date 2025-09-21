@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, status
 from fastapi.responses import RedirectResponse
 from oauthlib.oauth2 import WebApplicationClient
 from .. import app, GOOGLE_LOGIN
@@ -111,7 +111,8 @@ async def complete_sign_up(request:Request):
             project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
-    response = RedirectResponse(app.url_path_for('library'))
+    # Chromeでフォーム再送信の確認ダイアログが出るのを防ぐため、HTTP_303_SEE_OTHERを指定する
+    response = RedirectResponse(app.url_path_for('library'), status_code=status.HTTP_303_SEE_OTHER)
     # アクセストークンをCookieに格納してWebブラウザに渡す
     access_token = make_access_token(user_uuid)
     return _make_response_with_token(response, access_token)
@@ -146,7 +147,7 @@ if GOOGLE_LOGIN:
             redirect_url=base_url + REDIRECT_URL_PATH,
             scope=GOOGLE_API_SCOPE)
         # 認証URLにリダイレクトする (Googleへの認可リクエスト)
-        return RedirectResponse(url)
+        return RedirectResponse(url, status_code=status.HTTP_303_SEE_OTHER)
 
     @router.get('/callback')
     async def callback(request:Request):
@@ -212,7 +213,7 @@ if GOOGLE_LOGIN:
             user_uuid = user.uuid
 
         # とりあえずライブラリ画面にリダイレクトする
-        response = RedirectResponse(app.url_path_for('library'))
+        response = RedirectResponse(app.url_path_for('library'), status_code=status.HTTP_303_SEE_OTHER)
         # アクセストークンをCookieに格納してWebブラウザに渡す
         access_token = make_access_token(user_uuid)
         return _make_response_with_token(response, access_token)
