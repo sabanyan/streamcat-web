@@ -29,7 +29,6 @@
 		"@emotion/styled": "11.14.1",
 		"@mui/material": "7.3.2",
 		"@mui/x-date-pickers": "8.11.2",
-		"array-move": "4.0.0",
 		"bootstrap": "5.3.8",
 		"classnames": "2.5.1",
 		"css-loader": "7.1.2",
@@ -51,7 +50,6 @@
 		"ts-loader": "9.5.4",
 		"typescript": "5.9.2",
 		"use-interval": "1.4.0",
-		"validate.js": "0.13.1",
 		"webpack-cli": "6.0.1"
 	},
 	"devDependencies": {
