@@ -117,6 +117,32 @@ async def delete_cache(request:Request, of=None, finder:Finder=Depends(get_finde
     cache = finder.data.find_by_uuid(unset_cache_uuid)
     cache.throw_away()
 
+def _make_streamz_datasrc_json(root) -> dict:
+    """
+    Apache Beamライブラリデータソースを作成する
+    TODO: 間に合わせの実装
+    """
+    from streamcat.depo.std.commands import CommandLink
+
+    label = 'ライブラリ(Streamz)'
+    loader_cmd = CommandLink('streamz_loader').resolve()
+    args = {'uuid':'@[uuid]'}
+    params = [
+        {
+            "name": "uuid",
+            "type": "frame",
+            "label": "ファイルを指定する",
+            "optional": False
+        }
+    ]
+    # データソースを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datasource = root.create_datasource(label, root, loader_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+    datasrc_json['classification'] = 'data_source'
+    datasrc_json['flow'] = datasource.flow_data.to_json()
+    return datasrc_json
 
 @router.get('/datasrcs')
 @login_required_api
@@ -154,6 +180,11 @@ async def fetch_datasrcs(finder:Finder=Depends(get_finder)):
     datasrc_json['flow'] = datasource.flow_data.to_json()
     # データソースの一覧に格納する
     datasrcs_json.append(datasrc_json)
+
+    # Streamzライブラリデータソースをデータソースの一覧に格納する
+    # TODO: 間に合わせの実装
+    streamz_datasrc_json = _make_streamz_datasrc_json(root)
+    datasrcs_json.append(streamz_datasrc_json)
 
     for store in finder.data.find_all_stores(except_trash=True):
         # 参照権限のないデータストアは取得しない
