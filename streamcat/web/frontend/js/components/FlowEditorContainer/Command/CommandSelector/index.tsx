@@ -6,6 +6,7 @@ import { Constants } from "Constants/index";
 import { RunnablesType } from "Types/index";
 import { TextField } from "Shared/Input";
 import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
+import StringUtil from 'Utils/StringUtil';
 
 type Props = {
     runnables: RunnablesType;
@@ -76,9 +77,9 @@ export const CommandSelector = (props: Props) => {
         if (isNoKeyword) {
             return true;
         }
-        const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1);
-        const foundDescriptionWithKeyword = (command.description && command.description.indexOf(keyword) != -1);
-        const foundCommandIdWithKeyword = ((command as Command).id && (command as Command).id.indexOf(keyword) != -1);
+        const foundLabelWithKeyword = StringUtil.includesNoCase(command.label, keyword);
+        const foundDescriptionWithKeyword = StringUtil.includesNoCase(command.description, keyword);
+        const foundCommandIdWithKeyword = StringUtil.includesNoCase((command as Command).id, keyword);
 
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });

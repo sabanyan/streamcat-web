@@ -1,6 +1,11 @@
 //@flow
 export default class StringUtil {
 
+  static includesNoCase (str:string, keyword:string): boolean {
+    if(!str || !keyword) return false;
+    return str.toLowerCase().includes(keyword.toLowerCase());
+  }
+
   static convertToFileSize (size:number, withUnit=true): string {
     if (!size && size !== 0) return '';
     const units = [' B', ' KB', ' MB', ' GB', ' TB', ' PB'];
