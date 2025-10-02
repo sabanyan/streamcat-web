@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import lodash from 'lodash';
 import * as style from './style.scss';
-import { CommandItem } from "FlowEditorContainer/Command";
-import { Constants } from "Constants/index";
-import { RunnablesType } from "Types/index";
-import { TextField } from "Shared/Input";
-import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from "Model/Library";
 import StringUtil from 'Utils/StringUtil';
+import { CommandItem } from 'FlowEditorContainer/Command';
+import { Constants } from 'Constants/index';
+import { RunnablesType } from 'Types/index';
+import { TextField } from 'Shared/Input';
+import { AllNodeType, Command, FlowCommand, InlineFlowCommand } from 'Model/Library';
 
 type Props = {
     runnables: RunnablesType;
@@ -24,7 +24,7 @@ type Props = {
 
 export const CommandSelector = (props: Props) => {
 
-    const [keyword, setKeyword] = useState<string>("");
+    const [keyword, setKeyword] = useState<string>('');
 
     const onChangeKeyword = (e) => {
         setKeyword(e.target.value);
@@ -43,7 +43,7 @@ export const CommandSelector = (props: Props) => {
     const isMultiInPorts = (command: any) => {
         if (!command.ports[0]) return false;
         if (!command.ports[0].length) return false;
-        return (command.ports[0][0].label === "*");
+        return (command.ports[0][0].label === '*');
     };
 
     const { numberOfInput, selectedNodes, zoom, addNode, addDataDstNode, addDataSrcNode,
@@ -116,8 +116,8 @@ export const CommandSelector = (props: Props) => {
         commandSelector = <div>
             {/* Note: ConsoleのIssueを抑制するためname属性を設定する */}
             <TextField  name='cmdKeyword'
-                        className={"mb-8px"} 
-                        placeholder={"キーワード"}
+                        className={'mb-8px'} 
+                        placeholder={'キーワード'}
                         onChange={(e) => onChangeKeyword(e)} />
             <div className={style.command_selector_container}>
                 {(operatorsContainer.length) ? operatorsContainer : <div

@@ -107,7 +107,7 @@ export const setCommandNodeFunc = (node:CommandNodeType) => {
         const srcKeys = Object.keys(node.srcs || {});
 
         const filterKeys = srcKeys.filter((key) => {
-            return (key.indexOf('*') != -1);
+            return key.includes('*');
         });
 
         let max = 0;
@@ -121,7 +121,7 @@ export const setCommandNodeFunc = (node:CommandNodeType) => {
     node.addableInPort = (command: Command) => {
         // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
         const filterKeys = command.ports[0].filter((inPort) => {
-            return (inPort.label.indexOf('*') >= 0);
+            return inPort.label.includes('*');
         });
         return filterKeys.length > 0;
     };
