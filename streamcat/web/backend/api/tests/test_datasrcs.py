@@ -503,10 +503,11 @@ class DatasrcsTest(ApiTestCaseBase):
 
         # データソースの一覧を取得する
         results = self.get_uri('/api/v0/datasrcs', self.USER2)
-        self.assertEqual(len(results), 3)
+        self.assertEqual(len(results), 4)
         self.assertEqual(results[0]['label'], 'ライブラリ')
         self.assertEqual(results[1]['label'], 'データベースぅぅ')
         self.assertEqual(results[2]['label'], 'リモートフォルダぁぁ')
+        self.assertEqual(results[3]['label'], 'ライブラリ(MYSOL)')
 
         # データデストの一覧を取得する
         results = self.get_uri('/api/v0/datadsts', self.USER2)
@@ -521,8 +522,9 @@ class DatasrcsTest(ApiTestCaseBase):
 
         # データソースの一覧を取得する
         results = self.get_uri('/api/v0/datasrcs', self.USER2)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results), 2)
         self.assertEqual(results[0]['label'], 'ライブラリ')
+        self.assertEqual(results[1]['label'], 'ライブラリ(MYSOL)')
 
         # データデストの一覧を取得する
         results = self.get_uri('/api/v0/datadsts', self.USER2)

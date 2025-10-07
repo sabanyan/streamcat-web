@@ -117,6 +117,32 @@ async def delete_cache(request:Request, of=None, finder:Finder=Depends(get_finde
     cache = finder.data.find_by_uuid(unset_cache_uuid)
     cache.throw_away()
 
+def _make_mysol_datasrc_json(root) -> dict:
+    """
+    MYSOLライブラリデータソースを作成する
+    TODO: 間に合わせの実装
+    """
+    from streamcat.depo.std.commands import CommandLink
+
+    label = 'ライブラリ(MYSOL)'
+    load_cmd = CommandLink('load').resolve()
+    args = {'uuid':'@[uuid]'}
+    params = [
+        {
+            "name": "uuid",
+            "type": "frame",
+            "label": "ファイルを指定する",
+            "optional": False
+        }
+    ]
+    # データソースを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datasource = root.create_datasource(label, root, load_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+    datasrc_json['classification'] = 'data_source'
+    datasrc_json['flow'] = datasource.flow_data.to_json()
+    return datasrc_json
 
 @router.get('/datasrcs')
 @login_required_api
@@ -208,6 +234,11 @@ async def fetch_datasrcs(finder:Finder=Depends(get_finder)):
         datasrc_json['flow'] = datasource_flow_data.to_json(ignore_authz=True)
         # データソースの一覧に格納する
         datasrcs_json.append(datasrc_json)
+
+    # MYSOLライブラリデータソースをデータソースの一覧に格納する
+    # TODO: 間に合わせの実装
+    mysol_datasrc_json = _make_mysol_datasrc_json(root)
+    datasrcs_json.append(mysol_datasrc_json)
 
     return datasrcs_json
 
@@ -324,25 +355,28 @@ async def fetch_subflows(finder:Finder=Depends(get_finder)):
 
 @router.get('/commands')
 @jsonify
-async def fetch_commands(request:Request, all=False, mcmd=False, kcmd=False, pcmd=False, scmd=False):
+async def fetch_commands(request:Request, all=False, mcmd=False, ncmd=False, kcmd=False, pcmd=False, scmd=False):
     """
     全てのコマンドJSONを取得する
     """
     visible_commands_json = []
     if len(request.query_params) == 0 or all:
         visible_commands_json.append('mcmd')
+        visible_commands_json.append('ncmd')
         # visible_commands_json.append('kcmd')
         visible_commands_json.append('pcmd')
         visible_commands_json.append('scmd')
     else:
         if mcmd:
-            visible_commands_json.append('mcmd') 
+            visible_commands_json.append('mcmd')
+        if ncmd:
+            visible_commands_json.append('ncmd')
         if kcmd:
-            visible_commands_json.append('kcmd') 
+            visible_commands_json.append('kcmd')
         if pcmd:
-            visible_commands_json.append('pcmd') 
+            visible_commands_json.append('pcmd')
         if scmd:
-            visible_commands_json.append('scmd') 
+            visible_commands_json.append('scmd')
 
     from streamcat.depo.std.commands import CommandsPathLink, CommandsPathFileSource
     commands_list = []
