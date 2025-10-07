@@ -232,8 +232,8 @@ export default class Visualizer extends React.Component<Props, State> {
         
         return promise.then(activity => {
             // TODO: 将来はModel
-            const headers = activity.outs[0].args.column_names;
-            const contents = activity.outs[0].contents;
+            const headers = activity.outs[0]?.args.column_names || [];
+            const contents = activity.outs[0]?.contents || '';
             const args = this.state.args;
             const result = {
                 html: contents,
