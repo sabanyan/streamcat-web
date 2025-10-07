@@ -245,7 +245,7 @@ class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
                                          'password': password},
                                    # リダイレクトを追わない
                                    follow_redirects=False)
-        self.assertEqual(response.status_code, 307, msg=f'POST {uri} is failed. response status: {response.status_code}')
+        self.assertEqual(response.status_code, 303, msg=f'POST {uri} is failed. response status: {response.status_code}')
         return response.text
 
 
@@ -262,5 +262,5 @@ class ApiTestCaseBase(TestCaseBase, unittest.TestCase):
                                    data={'password': new_password},
                                    # リダイレクトを追わない
                                    follow_redirects=False)
-        self.assertEqual(response.status_code, 307, msg=f'POST {uri} is failed. response status: {response.status_code}')
+        self.assertEqual(response.status_code, 303, msg=f'POST {uri} is failed. response status: {response.status_code}')
         return response.text
