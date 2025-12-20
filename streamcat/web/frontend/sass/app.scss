@@ -108,23 +108,34 @@ input::placeholder,textarea::placeholder {
 // テーブルプレビュー
 .s-tbl {
 	border-collapse: collapse;
+  tr {
+    &:nth-child(odd){
+      @include common.list-color();
+    }
+    &:nth-child(even){
+      @include common.list-select-color();
+    }
+  }
   th {
     padding: 5px 10px;
     border: 1px solid #c0c0c0;
     // ヘッダ行を固定する
     top: 0;
     position: sticky;
-    @include common.list-color();
-  }
-  tr:nth-child(odd){
     @include common.list-select-color();
-  }
-  tr:nth-child(even){
-    @include common.list-color();
   }
   td {
     padding: 5px 10px;
     border: 1px solid #c0c0c0;
+    &:empty {
+      /* 中身が完全に空のセルは透明色にする*/
+      @include common.paper-background-color();
+      &:only-child {
+        /* 空かつ行内で唯一のセルは枠線を表示しない */
+        height: 2.19rem;
+        border: 0px;
+      }
+    }
   }
 }
 

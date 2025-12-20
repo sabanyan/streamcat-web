@@ -13,9 +13,18 @@
         <tbody>
             {% for row in reader %}
             <tr>
-                {% for datum in row %}
-                <td style="white-space: nowrap;">{{ datum }}</td>
-                {% endfor %}
+                {% if row|length == 0 %}
+                    <!-- 
+                    行に含まれる値が0件の場合は空の<td>を出力する
+                    ・HTMLの規格では<tr>の下には必ず1つ以上の<td>が必要
+                    ・<td />を指定すると空白文字が入ってしまう
+                    -->
+                    <td></td>
+                {% else %}
+                    {% for datum in row %}
+                    <td style="white-space: nowrap;">{{ datum }}</td>
+                    {% endfor %}
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
