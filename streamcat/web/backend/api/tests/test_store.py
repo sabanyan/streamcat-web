@@ -91,7 +91,7 @@ class DataStoreTest(ApiTestCaseBase):
         # POST /stores
         result = self.post_uri('/api/v0/stores', data, self.USER0)
 
-        # POST /stores　apiが正常終了することを検証する
+        # POST /stores apiが正常終了することを検証する
         expected_result = data
         self.assertEqual(result, expected_result)
 
