@@ -10,12 +10,12 @@ setup(
     install_requires=[
         # テストスクリプトで用いているFlaskのtemplate_renderedが使用する
         # 'blinker==1.9.0',
-        'fastapi==0.127.1',
+        'fastapi==0.129.0',
         # FastAPIでMultipartリクエストを扱う場合に使用する
-        'python-multipart==0.0.21',
+        'python-multipart==0.0.22',
         'jinja2==3.1.6',
         # FastAPIでDatumをJSONに変換する時に使用する
-        'orjson==3.11.5',
+        'orjson==3.11.7',
         # FastAPIでデコレータ内でRequestオブジェクトを取得できるようにする
         'fastapi-decorators==1.0.19',
         # FastAPIのTestClientが使用する
@@ -23,7 +23,7 @@ setup(
         # 'Flask==3.1.0',
         # 'flask_mail',
         'oauthlib==3.3.1',
-        'PyJWT==2.10.1',
+        'PyJWT==2.11.0',
         # "standard"を指定して"--reload"指定によるCPUの高負荷を下げる
         'uvicorn[standard]==0.40.0'
     ],
