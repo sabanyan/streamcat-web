@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='streamcat.web',
     packages=['streamcat.web'],
-    version='3.5',
+    version='3.6',
     description='Web Frontend of StreamCat',
     url='https://www.kskp.io',
     include_package_data=True,
@@ -25,6 +25,6 @@ setup(
         'oauthlib==3.3.1',
         'PyJWT==2.11.0',
         # "standard"を指定して"--reload"指定によるCPUの高負荷を下げる
-        'uvicorn[standard]==0.40.0'
+        'uvicorn[standard]==0.41.0'
     ],
 )
