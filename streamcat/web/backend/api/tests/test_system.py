@@ -1129,12 +1129,12 @@ class SystemTest(ApiTestCaseBase):
         Userを検索する
         """
         # ユーザを作成する
-        email = '^ \% % \_ _  *#(.*)+ \\ @ugoge.co.jp$'
+        email = '^ \\% % \_ _  *#(.*)+ \\ @ugoge.co.jp$'
         result = self.post_uri('/api/v0/users', {'email':email, 'name':'うごゲ〜', 'password':None}, self.USER1)
         user_uuid1 = result['uuid']
         result = self.post_uri('/api/v0/users', {'email':'abc@abc.jp', 'name':'とうぜんですわ', 'password':None}, self.USER1)
         user_uuid2 = result['uuid']
-        result = self.post_uri('/api/v0/users', {'email':'\%@com', 'name':'ウゲー爆弾', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'\\%@com', 'name':'ウゲー爆弾', 'password':None}, self.USER1)
         user_uuid3 = result['uuid']
 
         # ユーザを検索する
@@ -1142,15 +1142,15 @@ class SystemTest(ApiTestCaseBase):
         results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
         # 期待するJSONが返ることを確認する
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0]['email'], '\%@com', msg=str(results))
+        self.assertEqual(results[0]['email'], '\\%@com', msg=str(results))
         self.assertEqual(results[1]['email'], email)
 
         # ユーザを検索する
-        keyword = '\%'
+        keyword = '\\%'
         results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
         # 期待するJSONが返ることを確認する
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0]['email'], '\%@com')
+        self.assertEqual(results[0]['email'], '\\%@com')
         self.assertEqual(results[1]['email'], email)
 
         # ユーザを検索する
