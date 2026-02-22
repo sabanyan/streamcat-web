@@ -1,21 +1,21 @@
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class DataStoreTestCase(ApiTestCaseBase):
+class DataStoreTest(ApiTestCaseBase):
 
     def test_create_fetchall_delete_stores(self):
         """
         fetch_stores APIをテストする
         """
         # storesテーブルへのセット
-        store1 = self.factory0.store.create(
+        store1 = self.finder0.store.create(
                             'Directory',
                             '1.0.0',
                             'ディレクトリ',
                             '',
                             '',
                             [{'name':'filePath', 'type':'string', 'label':'CSVファイル格納パス名'}])
-        store2 = self.factory0.store.create(
+        store2 = self.finder0.store.create(
                             'PostgreSQL',
                             '1.0.0',
                             'PostgreSQLへの接続設定(ODBC)',
@@ -26,7 +26,7 @@ class DataStoreTestCase(ApiTestCaseBase):
         store2.save()
 
         # 作成を確定する
-        self.factory0.end()
+        self.finder0.end()
 
         # GET /stores
         result = self.get_uri('/api/v0/stores', self.USER0)

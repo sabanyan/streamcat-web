@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {JSX} from 'react'
 import lodash from 'lodash';
 import {CommandParamType} from 'Types/index'
 import {AddButton, Button} from 'Shared/Input'

@@ -11,7 +11,7 @@ class AllowlistTest(ApiTestCaseBase):
         Datumのallowlistを検証する
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # キャッシュフォルダの下にフレームを作成する
         f = io.BytesIO(b'teihenda')
@@ -150,7 +150,7 @@ class AllowlistTest(ApiTestCaseBase):
             'parent'   : folder_uuid,
             'label'    : '中村主水',
             'protocol' : 'smb',
-            'hostname' : '18.178.64.116',
+            'hostname' : '15.168.34.0',
             'domain'   : 'WORKGROUP',
             'directory': 'share',
             'userId'   : 'samba',

@@ -2,7 +2,7 @@ import pprint
 from streamcat.core import STREAMCAT_VER
 from .api_test_case_base import ApiTestCaseBase
 
-class NavigationTestCase(ApiTestCaseBase):
+class NavigationTest(ApiTestCaseBase):
 
     def test_get_sys_admin_navi(self):
         """

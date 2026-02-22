@@ -1,6 +1,6 @@
 import React from 'react';
 import * as style from './style.scss';
-import { useAsyncResource } from 'use-async-resource';
+import { suspend } from 'suspend-react';
 import { Stack } from '@mui/material';
 import { Api } from 'Api';
 import { NotificationManager } from 'Shared/Notification';
@@ -15,11 +15,11 @@ type Props = {
 export const Profile = (props: Props) => {
     const {navigation} = props;
 
-    // ここでログインUserの取得を開始する
-    const [selfUserReader] = useAsyncResource(Api.findSelfUser, []);
-
     // ログインユーザ
-    const [selfUser, setSelfUser] = React.useState<SelfUserType>(selfUserReader());
+    const [selfUser, setSelfUser] = React.useState<SelfUserType>(
+        // ログインUserを取得する
+        suspend(Api.findSelfUser, [])
+    );
 
     return <div className={'container mt-40px'}>
         <div className={style.page_title}>ユーザー情報変更</div>

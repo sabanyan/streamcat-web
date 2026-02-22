@@ -1,5 +1,5 @@
 //@flow
-import React from 'react'
+import React, {JSX} from 'react'
 import * as style from './style.scss';
 import { Tab } from 'Shared/Base';
 

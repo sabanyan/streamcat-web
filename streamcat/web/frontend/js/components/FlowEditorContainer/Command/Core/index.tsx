@@ -101,7 +101,7 @@ export const CommandItem = (props: Props) => {
     let hasPdfLink = false;
 
     if (command.description) {
-        hasPdfLink = (command.description.indexOf(".pdf") !== -1);
+        hasPdfLink = (command.description.includes(".pdf"));
     }
 
     let description;

@@ -9,7 +9,7 @@ from streamcat.web.backend import app
 from streamcat.store import Flow, FlowData
 from .api_test_case_base import ApiTestCaseBase
 
-class FlowTestCase(ApiTestCaseBase):
+class FlowTest(ApiTestCaseBase):
 
     in_subflow = {
         "label": "INPUTだけがあるサブフロー", 
@@ -130,7 +130,7 @@ class FlowTestCase(ApiTestCaseBase):
         new_flow APIをテストする
         """
         # ルートフォルダを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # データソースを作成する
         import io
@@ -183,7 +183,7 @@ class FlowTestCase(ApiTestCaseBase):
         new_flow APIをテストする
         """
         # まずプロジェクトを作る
-        project_uuid = self.factory.data.load_root().uuid
+        project_uuid = self.finder.data.load_root().uuid
 
         # 必要最低限の項目だけを送る
         self.assertIsNotNone(project_uuid)
@@ -212,11 +212,11 @@ class FlowTestCase(ApiTestCaseBase):
         フローコピー用
         """
         # ルートフォルダを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         
         # まずユーザとプロジェクトとフローを作る
         test_flow_uuid = setUpFlow(self)
-        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_label = self.finder.data.find_by_uuid(test_flow_uuid).label
 
         # フローをコピーする
         data_copy_flow = {'source': test_flow_uuid}
@@ -252,11 +252,11 @@ class FlowTestCase(ApiTestCaseBase):
         フローコピー用
         """
         # ルートフォルダを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # まずユーザとプロジェクトとフローを作る
         test_flow_uuid = setUpFlow(self)
-        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_label = self.finder.data.find_by_uuid(test_flow_uuid).label
 
         # フローをコピーする
         data_copy_flow = {'source': test_flow_uuid}
@@ -418,7 +418,7 @@ class FlowTestCase(ApiTestCaseBase):
         """
         # フローを作成する
         test_flow_uuid = setUpFlow(self)
-        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_label = self.finder.data.find_by_uuid(test_flow_uuid).label
 
         # フローを取得する
         result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
@@ -443,7 +443,7 @@ class FlowTestCase(ApiTestCaseBase):
         test_flow_uuid = setUpFlow(self)
 
         # フロー格納フォルダを取得する
-        flow_folder = self.factory.data.load_flow_folder()
+        flow_folder = self.finder.data.load_flow_folder()
 
         # 参照先フレームを作成する
         frame1 = flow_folder.create_frame('CSV1', io.BytesIO(b''))
@@ -456,7 +456,7 @@ class FlowTestCase(ApiTestCaseBase):
         sub_flow1.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フレームを、フロー格納フォルダに格納する
         f = io.BytesIO(b"thisisaframefile")
@@ -530,7 +530,7 @@ class FlowTestCase(ApiTestCaseBase):
         PUT /flows でラベル名だけを指定すればラベル名だけを変更できること
         """
         # ROOTを取得する
-        root = self.factory3.data.load_root()
+        root = self.finder3.data.load_root()
 
         # ROOTの下にプロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows1'}, self.USER3)
@@ -596,7 +596,7 @@ class FlowTestCase(ApiTestCaseBase):
 
     def test_move_flow(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER1)
@@ -634,10 +634,10 @@ class FlowTestCase(ApiTestCaseBase):
         """
         # まずユーザとプロジェクトを作る
         test_flow_uuid = setUpFlow(self)
-        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        test_flow_label = self.finder.data.find_by_uuid(test_flow_uuid).label
 
         # APIを投げる前はフローは存在するはず
-        self.assertTrue(self.factory.data.exists(test_flow_uuid))
+        self.assertTrue(self.finder.data.exists(test_flow_uuid))
 
         # 削除前にフローのロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':test_flow_uuid}, self.USER1)
@@ -647,7 +647,7 @@ class FlowTestCase(ApiTestCaseBase):
         result = self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # APIの返り値を検証する
         self.assertEqual(result['uuid'], test_flow_uuid)
@@ -676,7 +676,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER1)
  
         # フローはゴミ箱に移動していること
-        flow = self.factory.data.find_by_uuid(test_flow_uuid)
+        flow = self.finder.data.find_by_uuid(test_flow_uuid)
         self.assertEqual(flow.find_parent().uuid, trash_folder_uuid)
 
     @unittest.skip('とりあえず手動でテストする')
@@ -689,7 +689,7 @@ class FlowTestCase(ApiTestCaseBase):
         # まずユーザとプロジェクトを作る
         with app.app_context():
             # まずプロジェクトを作る
-            project_uuid = self.factory.data.load_root().uuid
+            project_uuid = self.finder.data.load_root().uuid
 
             flow1_datasource_name = str(uuid.uuid4())
             data1 = {'project_uuid': project_uuid, 'name': 'サブフローテスト用', 'flow': {}}
@@ -729,7 +729,7 @@ class FlowTestCase(ApiTestCaseBase):
 
     def test_fetch_subflows(self):
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # ROOTの下にプロジェクト1を作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows1'}, self.USER3)
@@ -866,7 +866,7 @@ class FlowTestCase(ApiTestCaseBase):
         ゴミ箱にほかされたサブフローは取得されないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'わっちのプロジェクト'}, self.USER2)
@@ -975,7 +975,7 @@ class FlowTestCase(ApiTestCaseBase):
 
 def setUpFlow(self, flow_json={}):
     # ルートストアフォルダを取得する
-    root = self.factory.data.load_root()
+    root = self.finder.data.load_root()
 
     # テスト用フローのラベル名を作成する
     flow_label = 'フローテスト用です' + str(uuid.uuid4()).upper()[0:6]
@@ -988,6 +988,6 @@ def setUpFlow(self, flow_json={}):
     test_flow.save()
 
     # 作成を確定する
-    self.factory.end()
+    self.finder.end()
 
     return test_flow_uuid

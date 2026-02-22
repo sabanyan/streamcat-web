@@ -33,7 +33,7 @@ export default class WebUtil {
 
         if(currentUrl.endsWith('#')){
             logoutUrl = currentUrl.slice(0, -1) + '?';
-        }else if(currentUrl.indexOf('?') !== -1){
+        }else if(currentUrl.includes('?')){
             logoutUrl = currentUrl + '&';
         }else{
             logoutUrl = currentUrl + '?';

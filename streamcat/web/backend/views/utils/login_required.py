@@ -1,8 +1,8 @@
 import functools # wraps for decorator
-from fastapi import Request, Depends
+from fastapi import Request, Depends, status
 from fastapi.responses import Response, RedirectResponse
 from fastapi_decorators import depends
-from streamcat.store.factory import UnAuthzFactory
+from streamcat.store.finder import UnAuthzFinder
 from ... import SECURITY_LEVEL, GOOGLE_LOGIN
 from ...api.utils import (
     make_access_token,
@@ -85,9 +85,9 @@ def login_required(func):
             form = await __request.form()
             request_email = form.get('email', '')
 
-            async with UnAuthzFactory() as factory:
+            async with UnAuthzFinder() as finder:
                 try:
-                    user = await factory.find_user_by_email(request_email)
+                    user = await finder.find_user_by_email(request_email)
                 except Exception:
                     # 認証失敗した場合はCookieをクリアしてログインページを返す
                     response = _make_login_response(__request, last_url=last_url, email=request_email, login_failed=True)
@@ -104,7 +104,8 @@ def login_required(func):
                     return _make_response_with_token(response, access_token)
                 else:
                     # ログアウト時のURLが得られない場合は、request_base_urlにリダイレクトさせる
-                    response = RedirectResponse(last_url or request_base_url)
+                    # Chromeでフォーム再送信の確認ダイアログが出るのを防ぐため、HTTP_303_SEE_OTHERを指定する
+                    response = RedirectResponse(last_url or request_base_url, status_code=status.HTTP_303_SEE_OTHER)
                     # アクセストークンをCookieに格納してWebブラウザに渡す
                     return _make_response_with_token(response, access_token)
 
@@ -128,7 +129,7 @@ def login_required(func):
             last_q_params = {k: v for k, v in q_params.items() if k != 'session'}
             # ログアウト時のURLをCookieに格納してWebブラウザに渡す
             last_url = request_base_url.include_query_params(**last_q_params)
-            response = RedirectResponse(last_url)
+            response = RedirectResponse(last_url, status_code=status.HTTP_303_SEE_OTHER)
             return _make_response_with_last_url(response, last_url)
 
         else:

@@ -3,7 +3,7 @@ import unittest
 import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class LockTestCase(ApiTestCaseBase):
+class LockTest(ApiTestCaseBase):
 
     def create_flow(self, parent_uuid, source_uuid):
         new_flow_name = '新しいフローでーす！'
@@ -180,7 +180,7 @@ class LockTestCase(ApiTestCaseBase):
         lock_manager._valid_seconds = 1
         
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'DHCの健康食品'}, self.USER1)
@@ -227,7 +227,7 @@ class LockTestCase(ApiTestCaseBase):
         排他ロック中にGET /filesを発行しても排他ロックが解除されないこと
         """
         # ROOTを取得する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Mojave'}, self.USER2)
@@ -297,7 +297,7 @@ class LockTestCase(ApiTestCaseBase):
         lock_manager._valid_seconds = 1
         
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'(=^ェ^=)'}, self.USER1)
@@ -346,7 +346,7 @@ class LockTestCase(ApiTestCaseBase):
         lock_manager._valid_seconds = 1
         
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'Belkin'}, self.USER1)
@@ -401,7 +401,7 @@ class LockTestCase(ApiTestCaseBase):
         lock_manager._valid_seconds = 1
         
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Belkin'}, self.USER1)
@@ -459,7 +459,7 @@ class LockTestCase(ApiTestCaseBase):
         排他ロックされたフローはゴミ箱にほかせないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'伊右衛門'}, self.USER1)
@@ -504,7 +504,7 @@ class LockTestCase(ApiTestCaseBase):
         フォルダ内にある排他ロックされたフローを、フォルダごとゴミ箱にほかせないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダを作成する
         result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'三ツ矢サイダー'}, self.USER1)

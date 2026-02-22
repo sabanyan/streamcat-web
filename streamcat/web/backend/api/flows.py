@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Request, Depends
 from streamcat.core import SavableDatum
-from streamcat.store.factory import Factory
+from streamcat.store.finder import Finder
 from streamcat.store.lock import lock_manager
 from .utils import (
     RequestHeaders,
     RequestJson,
     Constraints,
     login_required_api,
-    get_factory,
+    get_finder,
     jsonify,
     duplicate_datum
 )
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post('/locks')
 @login_required_api
 @jsonify
-async def make_new_lock(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_lock(request:Request, finder:Finder=Depends(get_finder)):
     """
     排他ロックを獲得する
     """
@@ -28,13 +28,13 @@ async def make_new_lock(request:Request, factory:Factory=Depends(get_factory)):
     if req.has('lastModifiedAt'):
         # 排他ロックの再獲得の場合
         from datetime import datetime
-        target = factory.data.find_by_uuid(req['target'])
+        target = finder.data.find_by_uuid(req['target'])
         last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
-        lock = lock_manager.relock(target, lastModifiedAt=last_modified_at, creator=factory.myself)
+        lock = lock_manager.relock(target, lastModifiedAt=last_modified_at, creator=finder.myself)
     else:
         # 排他ロックの新規獲得の場合
         # (新規獲得の場合はfind_by_uuid()の実行で遅くしたくない)
-        lock = lock_manager.lock(req['target'], creator=factory.myself)
+        lock = lock_manager.lock(req['target'], creator=finder.myself)
 
     return lock.to_json()
 
@@ -85,7 +85,7 @@ async def delete_lock_by_post(lock_uuid):
 @router.delete('/caches')
 @login_required_api
 @jsonify
-async def delete_cache(request:Request, of=None, factory:Factory=Depends(get_factory)):
+async def delete_cache(request:Request, of=None, finder:Finder=Depends(get_finder)):
     """
     指定したフローのキャッシュを削除する
     """
@@ -106,7 +106,7 @@ async def delete_cache(request:Request, of=None, factory:Factory=Depends(get_fac
         lock_uuid = req.get('lock')
 
     # 対象のフローを取得する
-    flow = factory.data.find_by_uuid(flow_uuid)
+    flow = finder.data.find_by_uuid(flow_uuid)
     
     # フローに記録されたキャッシュをクリアする
     unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True, lock_uuid=lock_uuid)
@@ -114,14 +114,14 @@ async def delete_cache(request:Request, of=None, factory:Factory=Depends(get_fac
         return
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
-    cache = factory.data.find_by_uuid(unset_cache_uuid)
+    cache = finder.data.find_by_uuid(unset_cache_uuid)
     cache.throw_away()
 
 
 @router.get('/datasrcs')
 @login_required_api
 @jsonify
-async def fetch_datasrcs(factory:Factory=Depends(get_factory)):
+async def fetch_datasrcs(finder:Finder=Depends(get_finder)):
     """
     実行可能な全てのデータソースを取得する
     """
@@ -130,7 +130,7 @@ async def fetch_datasrcs(factory:Factory=Depends(get_factory)):
     datasrcs_json = []
 
     # create_datasource()を呼び出すためにRootを用いる
-    root = factory.data.load_root()
+    root = finder.data.load_root()
 
     # ライブラリデータソースを作成する
     label = 'ライブラリ'
@@ -155,7 +155,7 @@ async def fetch_datasrcs(factory:Factory=Depends(get_factory)):
     # データソースの一覧に格納する
     datasrcs_json.append(datasrc_json)
 
-    for store in factory.data.find_all_stores(except_trash=True):
+    for store in finder.data.find_all_stores(except_trash=True):
         # 参照権限のないデータストアは取得しない
         if not store.readable:
             continue
@@ -214,7 +214,7 @@ async def fetch_datasrcs(factory:Factory=Depends(get_factory)):
 @router.get('/datadsts')
 @login_required_api
 @jsonify
-async def fetch_datadsts(factory:Factory=Depends(get_factory)):
+async def fetch_datadsts(finder:Finder=Depends(get_finder)):
     """
     実行可能な全てのデータデストを取得する
     """
@@ -223,7 +223,7 @@ async def fetch_datadsts(factory:Factory=Depends(get_factory)):
     datadsts_json = []
 
     # create_datadest()を呼び出すためにRootを用いる
-    root = factory.data.load_root()
+    root = finder.data.load_root()
 
     # ライブラリデータデストを作成する
     label = 'ライブラリ'
@@ -241,7 +241,7 @@ async def fetch_datadsts(factory:Factory=Depends(get_factory)):
     # データソースの一覧に格納する
     datadsts_json.append(datadst_json)
 
-    for store in factory.data.find_all_stores(except_trash=True):
+    for store in finder.data.find_all_stores(except_trash=True):
         # 参照権限のないデータストアは取得しない
         if not store.readable:
             continue
@@ -300,12 +300,12 @@ async def fetch_datadsts(factory:Factory=Depends(get_factory)):
 @router.get('/subflows')
 @login_required_api
 @jsonify
-async def fetch_subflows(factory:Factory=Depends(get_factory)):
+async def fetch_subflows(finder:Finder=Depends(get_finder)):
     """
     実行可能な全てのサブフローを取得する
     """
     subflow_data_list = []
-    for subflow in factory.data.find_all_subflows():
+    for subflow in finder.data.find_all_subflows():
         # 実行権限のないサブフローは取得しない
         # NOTE: ゴミ箱フォルダには実行権限がないのでその中にあるサブフローにも実行権限はない
         #       従って、実行権限のないフローという条件があればゴミ箱にあるサブフローは取得されない
@@ -367,11 +367,11 @@ async def fetch_visualizers():
 @router.get('/flows/{flow_uuid}')
 @login_required_api
 @jsonify
-async def fetch_flow(flow_uuid, mini=False, factory:Factory=Depends(get_factory)):
+async def fetch_flow(flow_uuid, mini=False, finder:Finder=Depends(get_finder)):
     """
     指定したフローを取得する
     """
-    flow = factory.data.find_by_uuid(flow_uuid, folder_path=True)
+    flow = finder.data.find_by_uuid(flow_uuid, folder_path=True)
     ret = flow.to_json()
     ret.update({'flow' : flow.flow_data.to_json(minimize=mini)})
     return ret
@@ -379,7 +379,7 @@ async def fetch_flow(flow_uuid, mini=False, factory:Factory=Depends(get_factory)
 @router.post('/flows')
 @login_required_api
 @jsonify
-async def new_flow(request:Request, factory:Factory=Depends(get_factory)):
+async def new_flow(request:Request, finder:Finder=Depends(get_finder)):
     """
     新しいフローを作成する
     """
@@ -387,11 +387,11 @@ async def new_flow(request:Request, factory:Factory=Depends(get_factory)):
 
     if req.has('source'):
         # フローを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     elif req.has_all('parent', 'label', 'flow'):
         # フローを作成する
         from streamcat.store import FlowData
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         new_flow = parent.create_flow(req['label'], FlowData(req['flow']))
         # フローをDBに格納する
         new_flow.save()
@@ -402,7 +402,7 @@ async def new_flow(request:Request, factory:Factory=Depends(get_factory)):
 @router.put('/flows/{flow_uuid}')
 @login_required_api
 @jsonify
-async def update_flow(request:Request, flow_uuid, factory:Factory=Depends(get_factory)):
+async def update_flow(request:Request, flow_uuid, finder:Finder=Depends(get_finder)):
     """
     フローのラベルを変更する、またはフローを移動する
     """
@@ -414,19 +414,19 @@ async def update_flow(request:Request, flow_uuid, factory:Factory=Depends(get_fa
         if req.has('label'):
             raise Exception('labelとはparent属性は同時に指定できません')
         # flowを移動する
-        flow = factory.data.find_by_uuid(flow_uuid)
+        flow = finder.data.find_by_uuid(flow_uuid)
         return flow.move(req['parent'], lock_uuid=req['lock'])
     elif req.has('editLock'):
-        flow = factory.data.find_by_uuid(flow_uuid)
+        flow = finder.data.find_by_uuid(flow_uuid)
         flow.set_edit_lock(req['editLock'], lock_uuid=req['lock'])
         return flow
     elif req.has('flow'):
         from streamcat.store import FlowData
-        flow = factory.data.find_by_uuid(flow_uuid)
+        flow = finder.data.find_by_uuid(flow_uuid)
         flow_data = FlowData(req['flow'])
         return flow.update_data(req.get('label') or flow.label, flow_data, lock_uuid=req['lock'])
     elif req.has('label'):
-        flow = factory.data.find_by_uuid(flow_uuid)
+        flow = finder.data.find_by_uuid(flow_uuid)
         return flow.update_label(req['label'], lock_uuid=req['lock'])
     else:
         raise Exception('parent,editlock,label,flowのいずれか一つを指定してください')
@@ -434,7 +434,7 @@ async def update_flow(request:Request, flow_uuid, factory:Factory=Depends(get_fa
 @router.delete('/flows/{flow_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_flow(request:Request, flow_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_flow(request:Request, flow_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したフローをほかす
     """
@@ -444,14 +444,14 @@ async def throw_away_flow(request:Request, flow_uuid, factory:Factory=Depends(ge
     except Exception:
         raise Exception('排他ロックのUUIDを指定してください')
 
-    flow = factory.data.find_by_uuid(flow_uuid)
+    flow = finder.data.find_by_uuid(flow_uuid)
     return flow.throw_away(lock_uuid=lock_uuid)
 
 
 @router.get('/frames/{frame_uuid}')
 @login_required_api
 @jsonify
-async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, limit=100, factory:Factory=Depends(get_factory)):
+async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, limit=100, finder:Finder=Depends(get_finder)):
     """
     指定したフレームを取得する
     """
@@ -459,7 +459,7 @@ async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, lim
     from .utils import InvalidAcceptHeader
 
     # Frameを取得する
-    frame = factory.data.find_by_uuid(frame_uuid)
+    frame = finder.data.find_by_uuid(frame_uuid)
 
     if contents:
         # リクエストヘッダを取得する
@@ -471,15 +471,15 @@ async def fetch_frame(request:Request, frame_uuid, contents=False, offset=0, lim
             if target_encoding.lower() not in ('utf-8', 'cp932'):
                 raise InvalidAcceptHeader(f'Acceptヘッダに指定された文字コード({target_encoding})には対応していません')
             # フレームを取得する
-            frame = factory.data.find_by_uuid(frame_uuid)
+            frame = finder.data.find_by_uuid(frame_uuid)
             # フレームの内容をCSVファイルで返す
-            return _convert_file(frame, factory.myself, target_encoding=target_encoding)
+            return _convert_file(frame, finder.myself, target_encoding=target_encoding)
         else:
             # フレームの内容をHTMLで返す
             from .utils import VisConverter
             result_json = frame.to_json()
             # frameの内容を取得する
-            vis = await _get_vis(factory, frame_uuid, args={'offset':offset, 'limit':limit})
+            vis = await _get_vis(finder, frame_uuid, args={'offset':offset, 'limit':limit})
             result_json['args'] = {'column_names':vis.column_names}
             result_json['contents'] = VisConverter(request, vis)
             return result_json
@@ -555,7 +555,7 @@ def _convert_file(frame, user, target_encoding:str='UTF-8'):
         traceback.print_exc()
         raise e
 
-async def _get_vis(factory:Factory, frame_uuid:str, args={}):
+async def _get_vis(finder:Finder, frame_uuid:str, args={}):
     """
     指定したframeのVisデータを取得する
     """
@@ -571,7 +571,7 @@ async def _get_vis(factory:Factory, frame_uuid:str, args={}):
                     }
                }
     # Visを取得する
-    datasource = _make_flow(factory, frame_uuid=frame_uuid)
+    datasource = _make_flow(finder, frame_uuid=frame_uuid)
     job = await _execute_flow(datasource, vis_args=vis_args)
     outs = _get_outs(job)
     if len(outs.outs) == 0:
@@ -582,7 +582,7 @@ async def _get_vis(factory:Factory, frame_uuid:str, args={}):
 @router.post('/vizs')
 @login_required_api
 @jsonify
-async def make_new_vis(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_vis(request:Request, finder:Finder=Depends(get_finder)):
     """
     フローを実行してVisを作成する
     """
@@ -593,32 +593,32 @@ async def make_new_vis(request:Request, factory:Factory=Depends(get_factory)):
     if not vis_is_specified:
         raise Exception("Vizを取得するには'vis'属性の指定が必須です")
     # Activityを作成する
-    flow = _make_flow(factory, flow_uuid=req.get('uuid'), frame_uuid=req.get('frame'), flow_json=req.get('flow'))
+    flow = _make_flow(finder, flow_uuid=req.get('uuid'), frame_uuid=req.get('frame'), flow_json=req.get('flow'))
     return await _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
 
 
 @router.get('/activities/{activity_uuid}')
 @login_required_api
 @jsonify
-async def fetch_activity(activity_uuid, factory:Factory=Depends(get_factory)):
+async def fetch_activity(activity_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したActivityを取得する
     """
-    return factory.data.find_by_uuid(activity_uuid)
+    return finder.data.find_by_uuid(activity_uuid)
 
 @router.post('/activities')
 @login_required_api
 @jsonify
-async def make_new_acitivity(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_acitivity(request:Request, finder:Finder=Depends(get_finder)):
     """
     指定したフローを実行してActivityを作成する
     """
     # Activityを作成する
     req = RequestJson(await request.json())
-    flow = _make_flow(factory, flow_uuid=req.get('uuid'), flow_json=req.get('flow'))
+    flow = _make_flow(finder, flow_uuid=req.get('uuid'), flow_json=req.get('flow'))
     return await _make_new_acitivity(request, flow, req.get('lock'), req.get('args'))
 
-def _make_flow(factory:Factory, flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> object:
+def _make_flow(finder:Finder, flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> object:
     """
     リクエストJSONで指定された属性値からフローを用意する
     """
@@ -638,18 +638,18 @@ def _make_flow(factory:Factory, flow_uuid:str=None, frame_uuid:str=None, flow_js
     if frame_uuid is not None:
         # FrameのUUIDが指定された場合
         from streamcat.depo.std.commands import LoaderCommand
-        frame = factory.data.find_by_uuid(frame_uuid)
+        frame = finder.data.find_by_uuid(frame_uuid)
         parent_folder = frame.find_parent()
         # datasourceは保存しないので、親フォルダはどこでも良い
         return parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame.uuid})
     elif flow_uuid is not None:
         # FlowのUUIDが指定された場合
         # AssertCommandがflow.folder_pathを参照するため、folder_path=Trueにする
-        return factory.data.find_by_uuid(flow_uuid, folder_path=True)
+        return finder.data.find_by_uuid(flow_uuid, folder_path=True)
     elif flow_json is not None:
         # フローJSONが指定された場合
         from streamcat.store import FlowData
-        root = factory.data.load_root()
+        root = finder.data.load_root()
         return root.create_flow('FLOW_LITERAL', FlowData(flow_json))
     else:
         raise Exception(f'Either flow or flow uuid or frame uuid is required')
@@ -716,16 +716,16 @@ def _get_outs(job):
 @router.get('/schedules/{schedule_uuid}')
 @login_required_api
 @jsonify
-async def fetch_schedule(schedule_uuid, factory:Factory=Depends(get_factory)):
+async def fetch_schedule(schedule_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したスケジュールを取得する
     """
-    return factory.data.find_by_uuid(schedule_uuid)
+    return finder.data.find_by_uuid(schedule_uuid)
 
 @router.post('/schedules')
 @login_required_api
 @jsonify
-async def make_new_schedule(request:Request, factory:Factory=Depends(get_factory)):
+async def make_new_schedule(request:Request, finder:Finder=Depends(get_finder)):
     """
     スケジュールを作成する
     """
@@ -733,9 +733,9 @@ async def make_new_schedule(request:Request, factory:Factory=Depends(get_factory
 
     if req.has('source'):
         # スケジュールを複製する
-        return duplicate_datum(factory, req['source'])
+        return duplicate_datum(finder, req['source'])
     else:
-        parent = factory.data.find_by_uuid(req['parent'])
+        parent = finder.data.find_by_uuid(req['parent'])
         args = req.get('args') or {}
         inputs = req.get('inputs') or {}
         schedule = parent.create_schedule(req['label'],
@@ -749,7 +749,7 @@ async def make_new_schedule(request:Request, factory:Factory=Depends(get_factory
 @router.put('/schedules/{schedule_uuid}')
 @login_required_api
 @jsonify
-async def update_schedule(request:Request, schedule_uuid, factory:Factory=Depends(get_factory)):
+async def update_schedule(request:Request, schedule_uuid, finder:Finder=Depends(get_finder)):
     """
     スケジュールのラベルを変更する、またはスケジュールを移動する
     """
@@ -759,20 +759,25 @@ async def update_schedule(request:Request, schedule_uuid, factory:Factory=Depend
         if req.has('label'):
             raise Exception('labelとはparent属性は同時に指定できません')
         # scheduleを移動する
-        schedule = factory.data.find_by_uuid(schedule_uuid)
+        schedule = finder.data.find_by_uuid(schedule_uuid)
         return schedule.move(req['parent'])
     elif req.has_all('runnable', 'trigger'):
+        from datetime import datetime
+        if not req.has('lastModifiedAt'):
+            raise Exception('lastModifiedAtにスケジュールの最終更新時刻を指定してください')
         label = req.get('label') or schedule.label
         args = req.get('args') or {}
         inputs = req.get('inputs') or {}
-        schedule = factory.data.find_by_uuid(schedule_uuid)
+        last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
+        schedule = finder.data.find_by_uuid(schedule_uuid)
         return schedule.update_data(label,
                                     req['runnable'],
                                     args=args,
                                     inputs=inputs,
-                                    trigger=req['trigger'])
+                                    trigger=req['trigger'],
+                                    last_modified_at=last_modified_at)
     elif req.has('label'):
-        schedule = factory.data.find_by_uuid(schedule_uuid)
+        schedule = finder.data.find_by_uuid(schedule_uuid)
         return schedule.update_label(req['label'])
     else:
         raise Exception('parent,labelのいずれか一つ、またはflowとtriggerを指定してください')
@@ -780,9 +785,9 @@ async def update_schedule(request:Request, schedule_uuid, factory:Factory=Depend
 @router.delete('/schedules/{schedule_uuid}')
 @login_required_api
 @jsonify
-async def throw_away_schedule(schedule_uuid, factory:Factory=Depends(get_factory)):
+async def throw_away_schedule(schedule_uuid, finder:Finder=Depends(get_finder)):
     """
     指定したスケジュールをほかす
     """
-    schedule = factory.data.find_by_uuid(schedule_uuid)
+    schedule = finder.data.find_by_uuid(schedule_uuid)
     return schedule.throw_away()

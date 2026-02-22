@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAsyncResource } from 'use-async-resource';
+import { suspend } from 'suspend-react';
 import { Api } from 'Api';
 import { ProjectType } from 'Model/Library';
 import { NavigationType, UserType } from 'Model/Navigation/NavigationModel';
@@ -38,14 +38,15 @@ export const UserBody = (props: Props) => {
 
     // 選択中のユーザ
     const [selectedUsers, setSelectedUsers] = props.selectedUsers;
-    // 全てのユーザを取得する
-    const [usersReader, refreshUsers] = useAsyncResource(getUsers, keyword);
     // UserListTableに表示するUserリスト
-    const [users, setUsers] = React.useState(usersReader());
+    const [users, setUsers] = React.useState(
+        // 全てのユーザを取得する
+        suspend(getUsers, [keyword])
+    );
 
     // kewwordが変更されたら、ユーザを再取得する
     React.useEffect(() => {
-        setUsers(usersReader());
+        setUsers(suspend(getUsers, [keyword]));
     }, [keyword]);
 
     // フィルタリングしたusersを取得する

@@ -6,18 +6,18 @@ from pathlib import Path
 from streamcat.web.backend import app
 from .api_test_case_base import ApiTestCaseBase
 
-class FileTestCase(ApiTestCaseBase):
+class FileTest(ApiTestCaseBase):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
         app.testing = True
-        self.TESTDATA_DIR = self.factory.data.load_root().path
+        self.TESTDATA_DIR = self.finder.data.load_root().path
 
     def test_upload_frame(self):
         """
         upload_frame APIをテストする
         """
-        root_uuid = self.factory.data.load_root().uuid
+        root_uuid = self.finder.data.load_root().uuid
 
         # アップロード用に一時ファイルを作成する
         i, file_name = tempfile.mkstemp()
@@ -56,7 +56,7 @@ class FileTestCase(ApiTestCaseBase):
         self.assertEqual(result, expected_frame)
 
         # 後片付け
-        frame = self.factory.data.find_by_uuid(frame_uuid)
+        frame = self.finder.data.find_by_uuid(frame_uuid)
         frame.delete()
 
     def test_download_file_sjis(self):
@@ -83,7 +83,7 @@ class FileTestCase(ApiTestCaseBase):
                          b'A,1,10\r\nA,2,20\r\nB,1,30\r\nB,3,40\r\nB,1,50\r\n')
 
         # 後片付け
-        frame = self.factory.data.find_by_uuid(frame_uuid)
+        frame = self.finder.data.find_by_uuid(frame_uuid)
         frame.delete()
 
     def test_download_file_error_encoding(self):
@@ -120,7 +120,7 @@ class FileTestCase(ApiTestCaseBase):
         フローをエクスポート/インポートできること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # データソースを作成する
         import io
@@ -133,7 +133,7 @@ class FileTestCase(ApiTestCaseBase):
         flow.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フローをエクスポートする
         result = self.get_file(f'/api/v0/archives/flows/{flow.uuid}', charset=None, user=self.USER1)
@@ -150,7 +150,7 @@ class FileTestCase(ApiTestCaseBase):
             self.post_flows('宇宙ヤバイ', project_uuid, f, self.USER1)
 
         # フローはインポートされていること
-        project = self.factory.data.find_by_uuid(project_uuid)
+        project = self.finder.data.find_by_uuid(project_uuid)
         children = project.find_children_by_label('宇宙ヤバイ')
         result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
 
@@ -197,7 +197,7 @@ class FileTestCase(ApiTestCaseBase):
         フォルダ以下の全てのフローをエクスポート/インポートできること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # ルートの下にプロジェクト1を作成する
         project1 = root.create_project_folder('プロジェクト')
@@ -225,7 +225,7 @@ class FileTestCase(ApiTestCaseBase):
         flow2.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フローをエクスポートする
         result = self.get_file(f'/api/v0/archives/flows/{project1.uuid}', charset=None, user=self.USER1)
@@ -235,7 +235,7 @@ class FileTestCase(ApiTestCaseBase):
         project1.update_label('うごげ〜')
 
         # 作成と変更を確定する
-        self.factory.end()
+        self.finder.end()
 
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
@@ -313,7 +313,7 @@ class FileTestCase(ApiTestCaseBase):
         }
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'お京阪'}, self.USER1)
@@ -338,7 +338,7 @@ class FileTestCase(ApiTestCaseBase):
             "parent"   : project_uuid0,
             "label"    : "リモートフォルダ",
             "protocol" : "smb",
-            "hostname" : "18.178.64.116",
+            "hostname" : "15.168.34.0",
             "domain"   : "WORKGROUP",
             "directory": "share",
             'userId'  : "samba",
@@ -396,7 +396,7 @@ class FileTestCase(ApiTestCaseBase):
             result = self.post_flows('阪急電車', project_uuid1, f, self.USER1)
 
         # フローはインポートされていること
-        project = self.factory.data.find_by_uuid(project_uuid1)
+        project = self.finder.data.find_by_uuid(project_uuid1)
         children = project.find_children_by_label('阪急電車')
         children = children[0].find_children_by_label('半休電車')
         self.assertEqual(children[0].type, 'flow')

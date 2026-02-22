@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {JSX} from 'react';
 import { Dialog2 } from 'Shared/Base/Dialog2'
 import { Button2 } from 'Shared/Input';
 

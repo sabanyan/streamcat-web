@@ -6,7 +6,7 @@ from ...api.utils import make_access_token
 from ...api.tests.api_test_case_base import ApiTestCaseBase
 
 @unittest.skip('FastAPIにtemplate_renderedに相当する機能が見つからなかったのでこのテストをスキップする')
-class HtmlTestCase(ApiTestCaseBase):
+class HtmlTest(ApiTestCaseBase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
         app.testing = True
@@ -17,7 +17,7 @@ class HtmlTestCase(ApiTestCaseBase):
 
     def assertRenderTemplate(self, path, file_name):
         templates = []
-        with HtmlTestCase.captured_templates(app, templates):
+        with HtmlTest.captured_templates(app, templates):
             response = self.client.get(path)
             template, context = templates[0]
         self.assertEqual(template.name, file_name)
@@ -50,7 +50,7 @@ class HtmlTestCase(ApiTestCaseBase):
         プロジェクトを表示できること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃお〜ん😽'}, self.USER0)
         project_uuid = result['uuid']

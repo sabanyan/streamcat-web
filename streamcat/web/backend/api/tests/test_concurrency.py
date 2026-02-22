@@ -65,7 +65,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         複製した複数のフォルダを同時に削除できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {'label': 'フォルダですよ1!!!!', 'parent': root.uuid}, self.USER1)
@@ -103,7 +103,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         複製した複数のフォルダのラベルを同時に更新できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {'label': 'フォルダですよ1!!!!', 'parent': root.uuid}, self.USER1)
@@ -145,7 +145,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         同じフォルダのラベルを同時に更新できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # フォルダ1を作成する(POST /folders)
         folder1 = self.post_uri('/api/v0/folders', {'label': 'フォルダですよ1!!!!', 'parent': root.uuid}, self.USER1)
@@ -170,7 +170,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         同じプロジェクトのラベルとメンバーを同時に更新できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクト1を作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {'label': 'プロジェクト1', 'parent': root.uuid}, self.USER3)
@@ -206,7 +206,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         同じフレームのラベルと文字コードを同時に更新できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクト1を作成する(POST /projects)
         project1 = self.post_uri('/api/v0/projects', {'label': 'プロジェクト1', 'parent': root.uuid}, self.USER3)
@@ -248,7 +248,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         同じフローを同時に更新できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクト1を作成する(POST /projects)
         result = self.post_uri('/api/v0/projects', {'label': 'プロジェクト1', 'parent': root.uuid}, self.USER3)
@@ -291,7 +291,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         プレビューを同時に取得できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクト1を作成する(POST /projects)
         result = self.post_uri('/api/v0/projects', {'label': 'プロジェクト1', 'parent': root.uuid}, self.USER3)
@@ -382,11 +382,11 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         user_uuid = result['uuid']
 
         # 作成したユーザを登録状態にする
-        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user = self.finder.user.find_by_uuid(user_uuid)
         new_user.update_password('asginfof85')
 
         # 登録を確定する
-        self.factory.end()
+        self.finder.end()
 
         # ユーザ管理者は、ユーザ情報を変更する
         data = {
@@ -430,7 +430,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         ゴミ箱を同時に空にできること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する(POST /projects)
         project = self.post_uri('/api/v0/projects', {'label': 'プロジェクトですよ', 'parent': root.uuid}, self.USER1)
@@ -462,7 +462,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         )
 
         # ゴミ箱が空になっていることを検証する
-        trash_can = self.factory.data.load_trash_folder()
+        trash_can = self.finder.data.load_trash_folder()
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)
 
@@ -473,7 +473,7 @@ class ConcurrencyTest(ApiAsyncTestCaseBase):
         import time
 
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 処理時間の計測を開始する
         start = time.process_time()

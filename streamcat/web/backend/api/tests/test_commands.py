@@ -1,6 +1,6 @@
 from .api_test_case_base import ApiTestCaseBase
 
-class CommandTestCase(ApiTestCaseBase):
+class CommandTest(ApiTestCaseBase):
 
     def test_flow_execute(self):
         """

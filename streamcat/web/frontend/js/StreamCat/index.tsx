@@ -1,5 +1,5 @@
-import React from 'react';
-import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
+import React, { Suspense } from 'react';
+import { suspend } from 'suspend-react';
 import { createTheme, ThemeProvider } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {NotificationsProvider} from 'reapop';
@@ -46,8 +46,8 @@ const getNavigation = (viewId: ViewId) => {
 export const StreamCat = (props: Props) => {
     const {viewId} = props;
 
-    // Navigationの取得を開始する
-    const [readNavigation] = useAsyncResource(getNavigation, viewId);
+    // Navigationを取得する
+    const nav = suspend(getNavigation, [viewId]);
 
     // Webブラウザの設定に従って、ライト/ダークテーマを設定する
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -55,9 +55,6 @@ export const StreamCat = (props: Props) => {
         () => createTheme({palette: {mode:prefersDarkMode? 'dark': 'light'}}),
         [prefersDarkMode],
     );
-
-    // Navigationを取得する
-    const nav = readNavigation();
 
     const renderNavigationBar = () => {
         if(isDialog){
@@ -97,11 +94,11 @@ export const StreamCat = (props: Props) => {
         }
 
         return (
-            <AsyncResourceContent fallback={<p>Loading...</p>}>
+            <Suspense fallback={<p>Loading...</p>}>
             <div>
                 {viewComponent}
             </div>
-            </AsyncResourceContent>
+            </Suspense>
         );
     };
 

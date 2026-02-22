@@ -1,8 +1,8 @@
-def duplicate_datum(factory, source:str):
+def duplicate_datum(finder, source:str):
     """
     指定した複製元からDatumを複製する
     """
-    source_datum = factory.data.find_by_uuid(source)
+    source_datum = finder.data.find_by_uuid(source)
     source_label = source_datum.label + ' のコピー'
     # 同じフォルダ内の他Datumと重複しないラベル名を取得する
     parent = source_datum.find_parent()

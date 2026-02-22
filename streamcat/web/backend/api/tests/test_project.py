@@ -4,14 +4,14 @@ import pprint
 
 from .api_test_case_base import ApiTestCaseBase
 
-class ProjectTestCase(ApiTestCaseBase):
+class ProjectTest(ApiTestCaseBase):
 
     def get_row_by_sql(self, sql):
         """
         指定したSQL文を発行し、一つの結果行を取得する
         """
         from sqlalchemy import text
-        rows = self.factory._session.execute(text(sql))
+        rows = self.finder._session.execute(text(sql))
         # 結果行の最初の1件目を返す
         for row in rows:
             return row
@@ -25,7 +25,7 @@ class ProjectTestCase(ApiTestCaseBase):
         from streamcat.core import SavableDatum
 
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         project_name = 'プロジェクトです'
         data = {'parent': root.uuid,
@@ -68,7 +68,7 @@ class ProjectTestCase(ApiTestCaseBase):
         GET /projects APIをテストする
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
@@ -119,7 +119,7 @@ class ProjectTestCase(ApiTestCaseBase):
         GET /projects?except_myproject=on APIをテストする
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
@@ -165,7 +165,7 @@ class ProjectTestCase(ApiTestCaseBase):
         GET /projects?offset=&limit= APIをテストする
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
@@ -222,12 +222,12 @@ class ProjectTestCase(ApiTestCaseBase):
         一般ユーザがGET /projects APIを発行する
         """
         # プロジェクトを作成する
-        root = self.factory2.data.load_root()
+        root = self.finder2.data.load_root()
         project = root.create_project_folder('フロー格納プロジェクトA')
         project.save()
 
         # 作成を確定する
-        self.factory2.end()
+        self.finder2.end()
 
         # プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER2)
@@ -269,12 +269,12 @@ class ProjectTestCase(ApiTestCaseBase):
         ユーザ管理者がGET /projects APIを発行する
         """
         # プロジェクトを作成する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         project = root.create_project_folder('フロー格納プロジェクトB')
         project.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
@@ -316,12 +316,12 @@ class ProjectTestCase(ApiTestCaseBase):
         PUT /projects APIをテストする
         """
         # フォルダを作成する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
         project = root.create_project_folder('フロー格納フォルダ')
         project.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         # PUT /projects
         new_label = '変更後のフォルダ名'
@@ -334,7 +334,7 @@ class ProjectTestCase(ApiTestCaseBase):
         self.assertEqual(result['label'], new_label)
 
         # フォルダを削除する
-        project = self.factory.data.find_by_uuid(project.uuid)
+        project = self.finder.data.find_by_uuid(project.uuid)
         self.assertFalse(project.delete())
 
     def test_update_project_label_and_members(self):
@@ -342,7 +342,7 @@ class ProjectTestCase(ApiTestCaseBase):
         プロジェクトのラベルとメンバを一緒に更新する
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'名無しのプロジェクト'}, self.USER1)
@@ -378,7 +378,7 @@ class ProjectTestCase(ApiTestCaseBase):
         プロジェクトのメンバの更新に失敗すると一緒に指定したラベルも更新されないこと
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'名無しのプロジェクト'}, self.USER1)
@@ -412,7 +412,7 @@ class ProjectTestCase(ApiTestCaseBase):
     @unittest.skip('Projectの移動は禁止する仕様に変更した')
     def test_move_project(self):
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # 移動元フォルダを作成する(POST /projects)
         folder_src = self.post_uri('/api/v0/projects', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
@@ -461,7 +461,7 @@ class ProjectTestCase(ApiTestCaseBase):
         result = self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # APIの返り値を検証する
         self.assertEqual(result['uuid'], project_uuid)
@@ -492,8 +492,8 @@ class ProjectTestCase(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['lock'])
 
         # プロジェクトはゴミ箱に移動していること
-        project = self.factory.data.find_by_uuid(project_uuid)
-        self.assertEqual(project.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+        project = self.finder.data.find_by_uuid(project_uuid)
+        self.assertEqual(project.find_parent().uuid, self.finder.data.load_trash_folder().uuid)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)

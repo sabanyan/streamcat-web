@@ -150,7 +150,7 @@ class DocumentTest(ApiTestCaseBase):
         result = self.delete_uri(f'/api/v0/documents/{document_uuid}', self.USER3)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # DELETE /documents apiの戻り値が正しいことを検証する
         self.assertEqual(result['uuid'], document_uuid)

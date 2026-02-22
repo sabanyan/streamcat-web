@@ -1,5 +1,5 @@
 import React from 'react';
-import {useAsyncResource} from 'use-async-resource';
+import { suspend } from 'suspend-react';
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import * as style from '../style.scss';
 import {Button} from "Shared/Input";
@@ -38,8 +38,8 @@ export const CommandInspector = (props: Props) => {
     // 選択中のNodeを取得する
     const runableNode = props.selectedNode as CommandNodeType|FlowNodeType;
 
-    // ここでFlowの取得を開始する
-    const [flowReader] = useAsyncResource(getFlow, (runableNode as any).uuid);
+    // Flowを取得する
+    const flow = suspend(getFlow, [(runableNode as any).uuid]);
 
     const onHide = () => {
         //this.props.addHistory()
@@ -139,7 +139,6 @@ export const CommandInspector = (props: Props) => {
             subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, flowNode.uuid)}>フローを開く</Button>;
 
             // サブフローがライブラリに存在する場合(リテラルでない場合)はそのサブフローの格納フォルダへのリンクを表示する
-            const flow = flowReader();
             if(flow){
                 detail = <div>
                     <a href={'/folders/' + flow.folderUuid} target={'_blank'}>{flow.folderPath}</a>

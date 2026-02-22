@@ -1,5 +1,5 @@
-import React from 'react';
-import {useAsyncResource, resourceCache, AsyncResourceContent} from 'use-async-resource';
+import React, { Suspense } from 'react';
+import { suspend, preload, clear } from 'suspend-react';
 import { EmptyState, Spacer } from 'Shared/Base';
 import { Flex } from 'Shared/Base/Layouts/Flex';
 import { NotificationManager, useStreamCatNotifications } from 'Shared/Notification';
@@ -73,16 +73,17 @@ const getProjects = (members:boolean) => {
 
 export const Library = () => {
 
-     // ここでフォルダの取得を開始する
-    const [folderReader] = useAsyncResource(getParentFolder, []);
-
     // ルートフォルダを表示する場合は
-    // ここで全てのプロジェクトのメンバリストを取得する
+    // ここで全てのプロジェクトのメンバリストの取得を開始してフォルダの取得と並行させる
     // (GET /projects?members=1はSQLが遅いので画面表示用とは別に非同期に取得する)
-    const [projectsReader, refreshProjects] = useAsyncResource(getProjects, true);
+    const suspendCacheKey = 'getProjects/fetch';
+    preload(getProjects, [true, suspendCacheKey]);
 
     const {notifyError} = useStreamCatNotifications();
-    const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(folderReader());
+    const [parentFolder, setParentFolder] = React.useState<ParentFolderType>(
+        // ここでフォルダを取得する
+        suspend(getParentFolder, [])
+    );
     const [selectedDatas, setSelectedDatas] = React.useState<DatumType[]>([]);
 
     React.useEffect(() => {
@@ -262,10 +263,8 @@ export const Library = () => {
     };
 
     const forceFetchFolder = (datum) => {
-        // useAsyncResourceが保持するプロジェクトのキャッシュを削除する
-        resourceCache(getProjects).clear();
-        // ルートフォルダ直下の全てのプロジェクトを再取得する
-        refreshProjects(true);
+        // suspend-reactが保持するプロジェクトのキャッシュを削除する
+        clear([true, suspendCacheKey]);
         // フォルダを再取得する
         fetchFolder();
     };
@@ -290,7 +289,8 @@ export const Library = () => {
         }
         const projectUuid = project.uuid;
         // ルートフォルダ直下の全てのプロジェクトから、指定されたプロジェクトを取得する
-        const ret = projectsReader().find(child => child.uuid===projectUuid) as ParentProjectType;
+        const projects = suspend(getProjects, [true, suspendCacheKey]);
+        const ret = projects.find(child => child.uuid===projectUuid) as ParentProjectType;
         if(!ret){
             return null;
         }
@@ -408,9 +408,9 @@ export const Library = () => {
 
     return <>
         {renderAll()}
-        <AsyncResourceContent fallback={<p>Loading...</p>}>
+        <Suspense fallback={<p>Loading...</p>}>
             <Drawer selectedDatas={selectedDatas} />
-        </AsyncResourceContent>
+        </Suspense>
         <NotificationManager />
     </>;
 

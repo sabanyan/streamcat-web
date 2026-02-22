@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {JSX} from 'react';
 import { ParamString, ParamBoolean, ParamSelect, ParamList, ParamFrame } from 'Shared/Inspector/index';
 import { CommandParamType } from 'Types/index';
 import { Constants } from 'Constants/index';

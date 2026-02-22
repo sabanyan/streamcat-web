@@ -4,7 +4,7 @@ from streamcat.core import SavableDatum
 from streamcat.store import DatabaseConn
 from .api_test_case_base import ApiTestCaseBase
 
-class FrameTestCase(ApiTestCaseBase):
+class FrameTest(ApiTestCaseBase):
     """
     実行以外のFramesAPIのテストを行う
     """
@@ -20,7 +20,7 @@ class FrameTestCase(ApiTestCaseBase):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.root = self.factory.data.load_root()
+        self.root = self.finder.data.load_root()
         self.root_path = self.root.path
         # テスト用のフロー
         self.flow_json = {
@@ -80,7 +80,7 @@ class FrameTestCase(ApiTestCaseBase):
         new_flow = parent.create_flow(label, FlowData(flow_json))
         new_flow.save()
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
         # save()によりreadable=Noneになるため再取得する
         return new_flow.reload()
 
@@ -229,7 +229,7 @@ class FrameTestCase(ApiTestCaseBase):
         }
         self.put_uri('/api/v0/frames/%s' % frame_uuid, data, self.USER1)
 
-        frame = self.factory.data.find_by_uuid(frame_uuid)
+        frame = self.finder.data.find_by_uuid(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
         self.assertEqual(frame.label, '変更後')
         self.assertEqual(frame.modifier, self.USER1)
@@ -251,12 +251,12 @@ class FrameTestCase(ApiTestCaseBase):
         ]
         frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
-        frame_label = self.factory.data.find_by_uuid(frame_uuid).label
+        frame_label = self.finder.data.find_by_uuid(frame_uuid).label
 
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
 
         # ゴミ箱のUUID
-        trash_folder_uuid = self.factory.data.load_trash_folder().uuid
+        trash_folder_uuid = self.finder.data.load_trash_folder().uuid
 
         # APIの返り値を検証する
         self.assertEqual(result['uuid'], frame_uuid)
@@ -283,7 +283,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertFalse(result['allowlist']['updateMember'])
 
         # ゴミ箱に移動しているかのテスト
-        frame = self.factory.data.find_by_uuid(frame_uuid)
+        frame = self.finder.data.find_by_uuid(frame_uuid)
         self.assertEqual(frame.find_parent().uuid, trash_folder_uuid)
 
     def test_duplicate_frame(self):
@@ -291,7 +291,7 @@ class FrameTestCase(ApiTestCaseBase):
         フレームを複製できること
         """
         # ルートを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -377,7 +377,7 @@ class FrameTestCase(ApiTestCaseBase):
         data = result
 
         # DBにframeデータが生成されているか
-        self.assertIsNotNone(self.factory.data.find_by_uuid(data['outs'][0]['datum']))
+        self.assertIsNotNone(self.finder.data.find_by_uuid(data['outs'][0]['datum']))
 
         # ラベルとIDチェック
         self.assertEqual(data['outs'][0]['id'], 'd1')
@@ -570,7 +570,7 @@ class FrameTestCase(ApiTestCaseBase):
         GET /activities でActivityを取得できること
         """
         # ROOTを取得する
-        root = self.factory.data.load_root()
+        root = self.finder.data.load_root()
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'☀️'}, self.USER2)
@@ -1134,7 +1134,7 @@ class FrameTestCase(ApiTestCaseBase):
         db.save()
 
         # 作成を確定する
-        self.factory.end()
+        self.finder.end()
 
         from streamcat.engine.tests.make_flow_json import postgre_src, postgre_dst
 

@@ -35,10 +35,6 @@ export default class ModalManager extends React.Component<Props> {
               super(props);
        }
 
-       componentDidUpdate() {
-              (window as any).modalRefs = this.refs;
-       }
-
        render() {
               return <>
                      {/* <Modal key={Constants.modal.ADD_COMMAND}
@@ -59,7 +55,6 @@ export default class ModalManager extends React.Component<Props> {
                      </Modal> */}
                      <Modal key={Constants.modal.CONFIRM}
                             id={Constants.modal.CONFIRM} title="" dynamic={true}>
-                            <div ref={Constants.modal.CONFIRM} />
                      </Modal>
                      {/* <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
                             title="プロジェクトの新規作成" dynamic={true} done={"作成する"} primary={true}>

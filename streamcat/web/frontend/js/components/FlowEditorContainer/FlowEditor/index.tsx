@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAsyncResource } from 'use-async-resource';
+import { preload, suspend } from 'suspend-react';
 import useInterval from 'use-interval';
 import * as jsonpatch from 'fast-json-patch';
 import * as style from './style.scss';
@@ -115,11 +115,9 @@ const getLock = (targetUUID:string, updatable:boolean) => {
 
 export const FlowEditor = () => {
 
-    // ここでRunnableの取得を開始する
+    // ここでRunnableの取得を開始してFlowの取得と並行させる
     // runnable: FlowまたはCommandを表す
-    const [runnablesReader] = useAsyncResource(getRunnables, []);
-    // ここでFlowの取得を開始する
-    const [flowReader] = useAsyncResource(getFlow, []);
+    preload(getRunnables);
 
     const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
     useInterval(() => {;
@@ -131,10 +129,16 @@ export const FlowEditor = () => {
     }, extendLockInterval);
 
     // 直近で保存したFlow
-    const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(flowReader().clone());
+    const [lastSavedFlow, setLastSavedFlow] = useState<FlowType>(
+        // Flowを取得する
+        suspend(getFlow).clone()
+    );
 
     // Canvasに表示するFlow
-    const [flow, setFlow] = useState<FlowType>(flowReader());
+    const [flow, setFlow] = useState<FlowType>(
+        // Flowを取得する
+        suspend(getFlow)
+    );
 
     // 変更後のFlowに対する差分(履歴)を取得するための起点
     const [prevFlow, setPrevFlow] = useState<FlowType>(flow.clone());
@@ -158,8 +162,10 @@ export const FlowEditor = () => {
     // Canvasの拡大率
     const [zoom, setZoom] = useState(100);
 
-    const [readLock] = useAsyncResource(getLock, inject_flow_uuid, flow.allowlist.update);
-    const [lock, setLock] = useState(readLock());
+    const [lock, setLock] = useState(
+        // ロックを取得する
+        suspend(getLock, [inject_flow_uuid, flow.allowlist.update])
+    );
 
     // ネットワークの接続状態
     const [serverConnectivity, setServerConnectivity] = useState<Connectivity>(Connectivity.UnKnown);
@@ -425,7 +431,7 @@ export const FlowEditor = () => {
     //     dispatch(addMasterAction(flow));
     // };
     const addNode = (addNode:AllNodeType, srcNodes:AllNodeType[], dstNodes:AllNodeType[], zoom:number) => {
-        addNodeAction(flow.flow, addNode, srcNodes, dstNodes, runnablesReader(), zoom);
+        addNodeAction(flow.flow, addNode, srcNodes, dstNodes, suspend(getRunnables), zoom);
         setFlow({...flow});
         setGraph(graphUtil.getGraph(flow.flow.nodes, zoom));
     };
@@ -758,7 +764,7 @@ export const FlowEditor = () => {
                     selectedNodes={selectedNodes}
                     readOnly={paperReadOnly}
                     zoom={zoom}
-                    runnables={runnablesReader()}
+                    runnables={suspend(getRunnables)}
                     dragRange={dragRange}
                     flowState={[flow, setFlow]}
                     graphState={[graph, setGraph]}
@@ -771,7 +777,7 @@ export const FlowEditor = () => {
             <Inspector
                 selectedNodes={selectedNodes}
                 // nodes={flow?.nodes || []}
-                runnables={runnablesReader()}
+                runnables={suspend(getRunnables)}
                 zoom={zoom}
                 addNode={addNode}
                 selectNodes={selectNodes}

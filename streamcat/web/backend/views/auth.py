@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, status
 from fastapi.responses import RedirectResponse
 from oauthlib.oauth2 import WebApplicationClient
 from .. import app, GOOGLE_LOGIN
@@ -81,21 +81,21 @@ async def complete_sign_up(request:Request):
     """
     パスワードが決定されたので、それを元にユーザー登録を行う
     """
-    from streamcat.store.factory import Factory, UnAuthzFactory
+    from streamcat.store.finder import Finder, UnAuthzFinder
     from streamcat.store.auth import InvalidPassword
 
     # FORMの値は送信者が容易に改竄できるので、FORMからE-Mailを取得しないこと
     user_uuid = _get_claims(request.cookies).get('sub')
     new_password = (await request.form())['password']
 
-    async with UnAuthzFactory() as ufactory:
+    async with UnAuthzFinder() as ufinder:
         try:
-            user = await ufactory.find_user_by_uuid(user_uuid)
+            user = await ufinder.find_user_by_uuid(user_uuid)
         except Exception:
             return make_response(request, 'login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
-        factory = await ufactory.create_authz_factory(user)
-        user = factory.user.find_by_id(user.id)
+        finder = await ufinder.create_authz_finder(user)
+        user = finder.user.find_by_id(user.id)
         user_is_init = user.is_init
         # 本パスワードへの変更
         try:
@@ -106,12 +106,13 @@ async def complete_sign_up(request:Request):
 
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         if user_is_init:
-            root = factory.data.load_root()
+            root = finder.data.load_root()
             project =root.create_project_folder(MY_PROJECT)
             project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
-    response = RedirectResponse(app.url_path_for('library'))
+    # Chromeでフォーム再送信の確認ダイアログが出るのを防ぐため、HTTP_303_SEE_OTHERを指定する
+    response = RedirectResponse(app.url_path_for('library'), status_code=status.HTTP_303_SEE_OTHER)
     # アクセストークンをCookieに格納してWebブラウザに渡す
     access_token = make_access_token(user_uuid)
     return _make_response_with_token(response, access_token)
@@ -146,7 +147,7 @@ if GOOGLE_LOGIN:
             redirect_url=base_url + REDIRECT_URL_PATH,
             scope=GOOGLE_API_SCOPE)
         # 認証URLにリダイレクトする (Googleへの認可リクエスト)
-        return RedirectResponse(url)
+        return RedirectResponse(url, status_code=status.HTTP_303_SEE_OTHER)
 
     @router.get('/callback')
     async def callback(request:Request):
@@ -154,7 +155,7 @@ if GOOGLE_LOGIN:
         import jwt
         import urllib.request
         from jwt.algorithms import RSAAlgorithm
-        from streamcat.store.factory import UnAuthzFactory, Factory
+        from streamcat.store.finder import UnAuthzFinder, Finder
 
         client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
         # クエリパラメータを除いたURL
@@ -204,15 +205,15 @@ if GOOGLE_LOGIN:
         subject=claims['sub']
 
         # ユーザ管理者を取得する
-        async with UnAuthzFactory() as ufactory:
-            usr_admin_user = ufactory.load_usr_admin_user()
+        async with UnAuthzFinder() as ufinder:
+            usr_admin_user = ufinder.load_usr_admin_user()
             # ユーザを取得する
-            factory = await ufactory.create_authz_factory(usr_admin_user)
-            user = factory.user.load_openid_user(email, name, issuer, subject)
+            finder = await ufinder.create_authz_finder(usr_admin_user)
+            user = finder.user.load_openid_user(email, name, issuer, subject)
             user_uuid = user.uuid
 
         # とりあえずライブラリ画面にリダイレクトする
-        response = RedirectResponse(app.url_path_for('library'))
+        response = RedirectResponse(app.url_path_for('library'), status_code=status.HTTP_303_SEE_OTHER)
         # アクセストークンをCookieに格納してWebブラウザに渡す
         access_token = make_access_token(user_uuid)
         return _make_response_with_token(response, access_token)

@@ -1,5 +1,5 @@
-import React, {useRef, useState} from 'react';
-import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
+import React, {Suspense, useRef, useState} from 'react';
+import { suspend } from 'suspend-react';
 import * as style from './style.scss';
 import { Constants } from 'Constants/index';
 import {Api} from 'Api';
@@ -19,7 +19,7 @@ type Props = {
 export const UserList = (props: Props) => {
     // 全てのプロジェクトを取得する
     const exceptMyProject = true;
-    const [projectsReader] = useAsyncResource(Api.findProjects, true, exceptMyProject);
+    const allProjects = suspend(Api.findProjects, [true, exceptMyProject]);
 
     // 自身のユーザ情報が変更された時は最新のNavigationを再取得するため状態変数として保持する
     const [navigation, setNavigation] = useState(props.navigation);
@@ -43,9 +43,6 @@ export const UserList = (props: Props) => {
     if(! navigation?.allowlist.findUsers){
         return <NotAllowed />;
     };
-
-    // 全てのプロジェクト
-    const allProjects = projectsReader();
 
     const getSelectedSub = (filterItems: IFilterListItem[]) => {
         return filterItems.filter(listItem => listItem.selected).map(listItem => listItem.id);
@@ -196,7 +193,7 @@ export const UserList = (props: Props) => {
                     </Flex>
                     <Spacer height={30}/>
                     <span onClick={onClickBody}>
-                        <AsyncResourceContent fallback={<p>Loading...</p>}>
+                        <Suspense fallback={<p>Loading...</p>}>
                             <UserBody navigation={navigation}
                                     allProjects={allProjects}
                                     keyword={keyword.value}
@@ -205,7 +202,7 @@ export const UserList = (props: Props) => {
                                     selectedUsers = {[selectedUsers, setSelectedUsers]}
                                     onSuccess={onSuccess}
                             />
-                        </AsyncResourceContent>
+                        </Suspense>
                     </span>
                     <Spacer height={80}/>
                 </Flex>

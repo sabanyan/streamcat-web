@@ -12,5 +12,5 @@ from .response import Status, is_ok
 from .exceptions import BadRequestException, InvalidAcceptHeader, NotAuthenticationException
 from .vis_converter import VisConverter
 from .duplicate_datum import duplicate_datum
-from .get_factory import get_factory
+from .get_finder import get_finder
 from .jsonify import jsonify

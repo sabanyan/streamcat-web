@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {JSX} from 'react';
 import {Tab, Tabs, Box} from '@mui/material';
 
 type Props = {
